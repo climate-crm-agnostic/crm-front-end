@@ -80,7 +80,7 @@ export const Login = ({ className, ...props }) => {
                 </h1>
                 <p className="text-sm mt-1.5" style={{ color: "#6b6560" }}>
                   Sign in to your{" "}
-                  <span className="font-bold" style={{ color: "#4F8071" }}>Codex CRM</span>{" "}
+                  <span className="font-bold" style={{ color: "#4F8071" }}>CodeX CRM</span>{" "}
                   workspace
                 </p>
               </div>
