@@ -11,6 +11,9 @@ const OLIVE = "#5E6A43";
 const LINEN = "#FBF7EF";
 const PEBBLE = "#D8D2C4";
 const INK = "#2E2A26";
+const CITRON = "#B8C76A";
+const APRICOT = "#F29B6B";
+const CODEX_PRIMARY = "#4F8071";
 
 export const LandingPage = () => {
     const [pipelines, setPipelines] = useState([]);
@@ -26,7 +29,13 @@ export const LandingPage = () => {
         const fetchPipes = async () => {
             try {
                 const data = await getPublicPipelines();
-                setPipelines(data);
+                // Filter to show only specific Pipeline IDs (Chett AI and Climate CRM)
+                const allowedIds = [
+                    "fb4afe4c-6d48-4f15-9f71-6a25f3292bf8", 
+                    "865191bf-2e53-464d-af34-ad2e2dd42377"
+                ];
+                const filtered = data.filter(p => allowedIds.includes(p.id));
+                setPipelines(filtered);
             } catch (err) {
                 console.error("Error fetching pipelines", err);
             }
@@ -108,7 +117,7 @@ export const LandingPage = () => {
                 icon: "success",
                 title: "Thank You!",
                 text: "Your inquiry has been received. Our team will contact you soon.",
-                confirmButtonColor: OLIVE
+                confirmButtonColor: CODEX_PRIMARY
             });
         } catch (err) {
             console.error("Submit error", err);
@@ -133,8 +142,8 @@ export const LandingPage = () => {
             <div className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: LINEN, fontFamily: FONT }}>
                 <div className="max-w-md w-full text-center space-y-6 animate-in fade-in zoom-in duration-500">
                     <div className="flex justify-center">
-                        <div className="h-24 w-24 rounded-full bg-olive/10 flex items-center justify-center" style={{ backgroundColor: "rgba(94,106,67,0.1)" }}>
-                            <CheckCircle2 className="h-12 w-12" style={{ color: OLIVE }} />
+                        <div className="h-24 w-24 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(79,128,113,0.1)" }}>
+                            <CheckCircle2 className="h-12 w-12" style={{ color: CODEX_PRIMARY }} />
                         </div>
                     </div>
                     <h1 className="text-3xl font-black tracking-tight" style={{ color: INK }}>Success!</h1>
@@ -148,7 +157,7 @@ export const LandingPage = () => {
                             target="_blank"
                             rel="noopener noreferrer"
                             className="w-full py-4 rounded-xl font-bold transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
-                            style={{ backgroundColor: OLIVE, color: LINEN }}
+                            style={{ backgroundColor: APRICOT, color: LINEN }}
                         >
                             Schedule a Meeting
                         </a>
@@ -168,13 +177,14 @@ export const LandingPage = () => {
     return (
         <div className="min-h-screen flex flex-col md:flex-row" style={{ backgroundColor: LINEN, fontFamily: FONT }}>
             {/* Left Side: Hero Section - Hidden on mobile */}
-            <div className="hidden md:flex md:w-1/2 p-12 md:p-24 flex-col justify-center bg-white border-r" style={{ borderColor: PEBBLE }}>
+            <div className="hidden md:flex md:w-1/2 p-12 md:p-24 flex-col justify-center border-r" 
+                 style={{ 
+                    borderColor: PEBBLE,
+                    background: `linear-gradient(135deg, #FFFFFF 0%, ${LINEN} 100%)`
+                 }}>
                 <div className="space-y-8 max-w-lg">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest" style={{ backgroundColor: "rgba(94,106,67,0.1)", color: OLIVE }}>
-                        <Sparkles size={12} /> Transform Your Business
-                    </div>
                     <h1 className="text-5xl md:text-6xl font-black leading-[1.1] tracking-tight" style={{ color: INK }}>
-                        Empower Your <span style={{ color: OLIVE }}>Sales</span> Workflow.
+                        Empower Your <span style={{ color: CODEX_PRIMARY }}>Sales</span> Workflow.
                     </h1>
                     <p className="text-lg leading-relaxed opacity-70" style={{ color: "#2E2A26" }}>
                         Experience the next generation of CRM. Personalizable pipelines, 
@@ -189,8 +199,8 @@ export const LandingPage = () => {
                             "Real-time Lead Tracking"
                         ].map((item, idx) => (
                             <div key={idx} className="flex items-center gap-3">
-                                <div className="h-5 w-5 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(94,106,67,0.1)" }}>
-                                    <ChevronRight size={12} style={{ color: OLIVE }} />
+                                <div className="h-5 w-5 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(184,199,106,0.2)" }}>
+                                    <ChevronRight size={12} style={{ color: CITRON }} />
                                 </div>
                                 <span className="text-sm font-bold" style={{ color: "#2E2A26" }}>{item}</span>
                             </div>
@@ -203,8 +213,8 @@ export const LandingPage = () => {
             <div className="w-full md:w-1/2 p-8 md:p-16 flex flex-col items-center justify-center overflow-y-auto">
                 {/* Mobile Title - only visible on small screens */}
                 <div className="md:hidden w-full max-w-md mb-8 text-center">
-                    <h1 className="text-3xl font-black tracking-tight" style={{ color: OLIVE }}>CodeX <span style={{ color: INK }}>Technologies</span></h1>
-                    <div className="h-1 w-12 bg-olive mx-auto mt-2 rounded-full" style={{ backgroundColor: OLIVE }}></div>
+                    <h1 className="text-3xl font-black tracking-tight" style={{ color: CODEX_PRIMARY }}>CodeX <span style={{ color: INK }}>Technologies</span></h1>
+                    <div className="h-1 w-12 mx-auto mt-2 rounded-full" style={{ backgroundColor: CITRON }}></div>
                 </div>
 
                 <div className="w-full max-w-md bg-white p-8 rounded-3xl shadow-2xl border" style={{ borderColor: PEBBLE }}>
@@ -224,9 +234,9 @@ export const LandingPage = () => {
                                     required
                                     value={selectedPipelineId}
                                     onChange={(e) => setSelectedPipelineId(e.target.value)}
-                                    className="w-full h-12 pl-10 pr-4 rounded-xl border appearance-none focus:outline-none transition-all"
+                                    className="w-full h-12 pl-10 pr-4 rounded-xl border appearance-none focus:outline-none transition-all shadow-sm"
                                     style={{ borderColor: PEBBLE, backgroundColor: "#F9F8F6", color: INK }}
-                                    onFocus={e => e.target.style.borderColor = OLIVE}
+                                    onFocus={e => e.target.style.borderColor = CODEX_PRIMARY}
                                     onBlur={e => e.target.style.borderColor = PEBBLE}
                                 >
                                     <option value="">Select an option</option>
@@ -240,8 +250,8 @@ export const LandingPage = () => {
 
                         {/* Dynamic Attributes */}
                         {fetchingAttrs ? (
-                            <div className="py-4 flex items-center justify-center gap-2 text-xs font-bold" style={{ color: OLIVE }}>
-                                <div className="h-4 w-4 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: `${OLIVE} transparent ${OLIVE} ${OLIVE}` }} />
+                            <div className="py-4 flex items-center justify-center gap-2 text-xs font-bold" style={{ color: CODEX_PRIMARY }}>
+                                <div className="h-4 w-4 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: `${CODEX_PRIMARY} transparent ${CODEX_PRIMARY} ${CODEX_PRIMARY}` }} />
                                 Loading form fields...
                             </div>
                         ) : (
@@ -265,7 +275,7 @@ export const LandingPage = () => {
                                                     onChange={handleInputChange}
                                                     className="w-full h-12 px-4 rounded-xl border focus:outline-none transition-all"
                                                     style={{ borderColor: PEBBLE, backgroundColor: "#F9F8F6", color: INK }}
-                                                    onFocus={e => e.target.style.borderColor = OLIVE}
+                                                    onFocus={e => e.target.style.borderColor = CODEX_PRIMARY}
                                                     onBlur={e => e.target.style.borderColor = PEBBLE}
                                                 >
                                                     <option value="">Select {attr.label}</option>
@@ -282,7 +292,7 @@ export const LandingPage = () => {
                                                     placeholder={`Enter ${attr.label}`}
                                                     className="w-full p-4 rounded-xl border focus:outline-none transition-all min-h-[100px]"
                                                     style={{ borderColor: PEBBLE, backgroundColor: "#F9F8F6", color: INK }}
-                                                    onFocus={e => e.target.style.borderColor = OLIVE}
+                                                    onFocus={e => e.target.style.borderColor = CODEX_PRIMARY}
                                                     onBlur={e => e.target.style.borderColor = PEBBLE}
                                                 />
                                             ) : attr.type === "boolean" ? (
@@ -292,7 +302,7 @@ export const LandingPage = () => {
                                                         name={attr.name}
                                                         checked={formData[attr.name] || false}
                                                         onChange={handleInputChange}
-                                                        className="w-5 h-5 accent-olive cursor-pointer"
+                                                        className="w-5 h-5 accent-citron cursor-pointer"
                                                     />
                                                     <span className="text-sm font-medium">{attr.label}</span>
                                                 </div>
@@ -306,7 +316,7 @@ export const LandingPage = () => {
                                                     placeholder={`Enter ${attr.label}`}
                                                     className="w-full h-12 px-4 rounded-xl border focus:outline-none transition-all"
                                                     style={{ borderColor: PEBBLE, backgroundColor: "#F9F8F6", color: INK }}
-                                                    onFocus={e => e.target.style.borderColor = OLIVE}
+                                                    onFocus={e => e.target.style.borderColor = CODEX_PRIMARY}
                                                     onBlur={e => e.target.style.borderColor = PEBBLE}
                                                 />
                                             )}
@@ -321,7 +331,7 @@ export const LandingPage = () => {
                             disabled={loading || !selectedPipelineId}
                             className="w-full h-14 rounded-2xl font-black uppercase tracking-widest text-sm flex items-center justify-center gap-3 transition-all shadow-xl hover:scale-[1.02] active:scale-[0.98] mt-4"
                             style={{ 
-                                backgroundColor: loading || !selectedPipelineId ? PEBBLE : OLIVE, 
+                                backgroundColor: loading || !selectedPipelineId ? PEBBLE : CODEX_PRIMARY, 
                                 color: LINEN,
                                 cursor: loading || !selectedPipelineId ? "not-allowed" : "pointer"
                             }}
