@@ -13,13 +13,13 @@ const OLIVE = "#5E6A43";
 const APRICOT = "#F29B6B";
 
 const inputStyle = {
-    width: "100%", padding: "8px 12px", border: `1px solid ${PEBBLE}`,
+    width: "100%", padding: "10px 14px", border: `1px solid ${PEBBLE}`,
     borderRadius: "6px", backgroundColor: "#fff", color: INK,
-    fontFamily: FONT, fontSize: "14px", outline: "none", boxSizing: "border-box",
+    fontFamily: FONT, fontSize: "16px", outline: "none", boxSizing: "border-box",
 };
 
-const labelStyle = { display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 600, color: INK, fontFamily: FONT };
-const hintStyle = { fontSize: "12px", color: HINT, fontFamily: FONT, marginTop: "2px" };
+const labelStyle = { display: "block", marginBottom: "6px", fontSize: "16px", fontWeight: 600, color: INK, fontFamily: FONT };
+const hintStyle = { fontSize: "14px", color: HINT, fontFamily: FONT, marginTop: "2px" };
 
 function Field({ label, hint, children }) {
     return (
@@ -40,7 +40,7 @@ function RadioGroup({ name, options, value, onChange, allowOther }) {
     return (
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             {options.map(opt => (
-                <label key={opt.value} style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontFamily: FONT, fontSize: "14px", color: INK }}>
+                <label key={opt.value} style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontFamily: FONT, fontSize: "16px", color: INK }}>
                     <input type="radio" name={name} value={opt.value} checked={value === opt.value} onChange={() => handleChange(opt.value)}
                         style={{ accentColor: OLIVE, width: "16px", height: "16px" }} />
                     {opt.label}
@@ -62,7 +62,7 @@ function CheckGroup({ options, values, onChange, allowOther, otherValue, onOther
     return (
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             {options.map(opt => (
-                <label key={opt.value} style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontFamily: FONT, fontSize: "14px", color: INK }}>
+                <label key={opt.value} style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontFamily: FONT, fontSize: "16px", color: INK }}>
                     <input type="checkbox" checked={values.includes(opt.value)} onChange={() => toggle(opt.value)}
                         style={{ accentColor: OLIVE, width: "16px", height: "16px" }} />
                     {opt.label}
@@ -72,7 +72,7 @@ function CheckGroup({ options, values, onChange, allowOther, otherValue, onOther
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     <input type="checkbox" checked={values.includes("other")} onChange={() => toggle("other")}
                         style={{ accentColor: OLIVE, width: "16px", height: "16px" }} />
-                    <span style={{ fontFamily: FONT, fontSize: "14px", color: INK }}>Other:</span>
+                    <span style={{ fontFamily: FONT, fontSize: "16px", color: INK }}>Other:</span>
                     {values.includes("other") && (
                         <input style={{ ...inputStyle, width: "200px" }} placeholder="Please specify..." value={otherValue || ""}
                             onChange={e => onOtherChange(e.target.value)} />
@@ -86,10 +86,10 @@ function CheckGroup({ options, values, onChange, allowOther, otherValue, onOther
 function SectionTitle({ number, title, subtitle }) {
     return (
         <div style={{ borderBottom: `2px solid ${OLIVE}`, paddingBottom: "10px", marginBottom: "24px", marginTop: "32px" }}>
-            <p style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', fontSize: "22px", fontStyle: "italic", color: OLIVE, margin: 0 }}>
+            <p style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', fontSize: "26px", fontStyle: "italic", color: OLIVE, margin: 0 }}>
                 {number}. {title}
             </p>
-            {subtitle && <p style={{ fontFamily: FONT, fontSize: "12px", color: HINT, marginTop: "4px" }}>{subtitle}</p>}
+            {subtitle && <p style={{ fontFamily: FONT, fontSize: "14px", color: HINT, marginTop: "4px" }}>{subtitle}</p>}
         </div>
     );
 }
@@ -174,10 +174,10 @@ export const SurveyForm = () => {
                     <div style={{ width: "64px", height: "64px", borderRadius: "50%", backgroundColor: "rgba(94,106,67,0.12)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
                         <span style={{ fontSize: "28px" }}>✓</span>
                     </div>
-                    <p style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', fontSize: "28px", fontStyle: "italic", color: OLIVE, marginBottom: "12px" }}>
+                    <p style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', fontSize: "32px", fontStyle: "italic", color: OLIVE, marginBottom: "12px" }}>
                         Registration Submitted
                     </p>
-                    <p style={{ color: MUTED, fontSize: "15px", lineHeight: 1.6 }}>
+                    <p style={{ color: MUTED, fontSize: "17px", lineHeight: 1.6 }}>
                         Thank you for registering. We will be in touch soon.
                     </p>
                 </div>
@@ -189,7 +189,7 @@ export const SurveyForm = () => {
         <div style={{ minHeight: "100vh", backgroundColor: LINEN, fontFamily: FONT }}>
             {/* Header */}
             <div style={{ backgroundColor: OLIVE, padding: "24px 0", textAlign: "center" }}>
-                <p style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', fontSize: "32px", fontStyle: "italic", color: "#FBF7EF", margin: 0 }}>
+                <p style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', fontSize: "36px", fontStyle: "italic", color: "#FBF7EF", margin: 0 }}>
                     Registration Form
                 </p>
             </div>
@@ -208,25 +208,25 @@ export const SurveyForm = () => {
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                     <Field label="Full Name *">
                         <input style={inputStyle} value={form.full_name} onChange={e => set("full_name", e.target.value)} required />
-                        {errors.full_name && <p style={{ color: "#dc2626", fontSize: "12px" }}>{errors.full_name}</p>}
+                        {errors.full_name && <p style={{ color: "#dc2626", fontSize: "14px" }}>{errors.full_name}</p>}
                     </Field>
                     <Field label="Date of Birth">
                         <input style={inputStyle} type="date" value={form.date_of_birth} onChange={e => set("date_of_birth", e.target.value)} />
                     </Field>
                     <Field label="Email Address *">
                         <input style={inputStyle} type="email" value={form.email} onChange={e => set("email", e.target.value)} required />
-                        {errors.email && <p style={{ color: "#dc2626", fontSize: "12px" }}>{errors.email}</p>}
+                        {errors.email && <p style={{ color: "#dc2626", fontSize: "14px" }}>{errors.email}</p>}
                     </Field>
                     <Field label="Phone Number *">
                         <input style={inputStyle} type="tel" value={form.phone} onChange={e => set("phone", e.target.value)} required />
-                        {errors.phone && <p style={{ color: "#dc2626", fontSize: "12px" }}>{errors.phone}</p>}
+                        {errors.phone && <p style={{ color: "#dc2626", fontSize: "14px" }}>{errors.phone}</p>}
                     </Field>
                 </div>
 
                 <Field label="Preferred Method of Contact *">
                     <RadioGroup name="preferred_contact" value={form.preferred_contact} onChange={v => set("preferred_contact", v)}
                         options={[{ value: "email", label: "Email" }, { value: "phone", label: "Phone" }, { value: "text", label: "Text Message" }]} />
-                    {errors.preferred_contact && <p style={{ color: "#dc2626", fontSize: "12px" }}>{errors.preferred_contact}</p>}
+                    {errors.preferred_contact && <p style={{ color: "#dc2626", fontSize: "14px" }}>{errors.preferred_contact}</p>}
                 </Field>
 
                 <Field label="Home Address">
@@ -390,32 +390,32 @@ export const SurveyForm = () => {
                     <label style={{ display: "flex", alignItems: "flex-start", gap: "10px", cursor: "pointer" }}>
                         <input type="checkbox" checked={form.info_accurate} onChange={e => set("info_accurate", e.target.checked)}
                             style={{ accentColor: OLIVE, width: "16px", height: "16px", marginTop: "2px", flexShrink: 0 }} required />
-                        <span style={{ fontFamily: FONT, fontSize: "14px", color: INK }}>
+                        <span style={{ fontFamily: FONT, fontSize: "16px", color: INK }}>
                             I confirm that the information provided is accurate to the best of my knowledge.
                         </span>
                     </label>
                     <label style={{ display: "flex", alignItems: "flex-start", gap: "10px", cursor: "pointer" }}>
                         <input type="checkbox" checked={form.agree_contact} onChange={e => set("agree_contact", e.target.checked)}
                             style={{ accentColor: OLIVE, width: "16px", height: "16px", marginTop: "2px", flexShrink: 0 }} required />
-                        <span style={{ fontFamily: FONT, fontSize: "14px", color: INK }}>
+                        <span style={{ fontFamily: FONT, fontSize: "16px", color: INK }}>
                             I agree to be contacted regarding this program.
                         </span>
                     </label>
                     {(errors.info_accurate || errors.agree_contact) && (
-                        <p style={{ color: "#dc2626", fontSize: "12px" }}>Both agreements are required to submit.</p>
+                        <p style={{ color: "#dc2626", fontSize: "14px" }}>Both agreements are required to submit.</p>
                     )}
                 </div>
 
                 <div style={{ display: "flex", justifyContent: "center", marginTop: "32px" }}>
                     <button type="submit" disabled={submitting}
-                        style={{ backgroundColor: OLIVE, color: LINEN, border: "none", borderRadius: "8px", padding: "12px 48px", fontSize: "15px", fontWeight: 600, fontFamily: FONT, cursor: submitting ? "not-allowed" : "pointer", opacity: submitting ? 0.7 : 1, transition: "background-color 0.2s" }}
+                        style={{ backgroundColor: OLIVE, color: LINEN, border: "none", borderRadius: "8px", padding: "12px 48px", fontSize: "17px", fontWeight: 600, fontFamily: FONT, cursor: submitting ? "not-allowed" : "pointer", opacity: submitting ? 0.7 : 1, transition: "background-color 0.2s" }}
                         onMouseEnter={e => { if (!submitting) e.currentTarget.style.backgroundColor = "#4a5535"; }}
                         onMouseLeave={e => { e.currentTarget.style.backgroundColor = OLIVE; }}>
                         {submitting ? "Submitting..." : "Submit Registration"}
                     </button>
                 </div>
 
-                <p style={{ textAlign: "center", color: HINT, fontSize: "12px", marginTop: "20px", fontFamily: FONT }}>
+                <p style={{ textAlign: "center", color: HINT, fontSize: "14px", marginTop: "20px", fontFamily: FONT }}>
                     * Required fields
                 </p>
             </form>
