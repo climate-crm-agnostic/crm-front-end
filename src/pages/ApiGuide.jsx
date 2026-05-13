@@ -107,7 +107,7 @@ export const ApiGuide = () => {
                         <div>
                             <p className="text-sm font-semibold mb-1" style={{ color: "#2E2A26" }}>1. Obtain a Token</p>
                             <p className="text-sm mb-2" style={{ color: "#6b6560" }}>Send a POST request with your credentials to receive an authentication token.</p>
-                            <CopyBlock text={`curl -X POST https://dev.codexcrm.click/api-token-auth/ \\
+                            <CopyBlock text={`curl -X POST https://climatebycodex.com/api-token-auth/ \\
 -H "Content-Type: application/json" \\
 -d '{"username": "YOUR_USERNAME", "password": "YOUR_PASSWORD"}'`} />
                         </div>
@@ -154,7 +154,7 @@ export const ApiGuide = () => {
                                 {activeTab === 'leads' && (<>
                                     <SectionTitle>Leads (Opportunities)</SectionTitle>
                                     <EndpointBlock method="GET" path="/api/leads/" description="Retrieve a paginated list of leads.">
-                                        <CopyBlock text={`curl -X GET https://dev.codexcrm.click/api/leads/ \\\n-H "Authorization: Token YOUR_TOKEN"`} />
+                                        <CopyBlock text={`curl -X GET https://climatebycodex.com/api/leads/ \\\n-H "Authorization: Token YOUR_TOKEN"`} />
                                     </EndpointBlock>
                                     <EndpointBlock method="POST" path="/api/leads/">
                                         <p className="text-sm mb-3" style={{ color: "#6b6560" }}>Create a new lead. Uses <code>attributes</code> for custom fields, <code>client_attributes</code> for future Client data, and <code>items</code> array linking catalogue items.</p>
@@ -164,14 +164,14 @@ export const ApiGuide = () => {
                                         <CopyBlock text={`{ "stage": "Lost", "lost_reason": "Budget constraints (Required)", "name": "Updated Name" }`} />
                                     </EndpointBlock>
                                     <EndpointBlock method="DELETE" path="/api/leads/{uuid}/" description="Delete a lead.">
-                                        <CopyBlock text={`curl -X DELETE https://dev.codexcrm.click/api/leads/{uuid}/ \\\n-H "Authorization: Token YOUR_TOKEN"`} />
+                                        <CopyBlock text={`curl -X DELETE https://climatebycodex.com/api/leads/{uuid}/ \\\n-H "Authorization: Token YOUR_TOKEN"`} />
                                     </EndpointBlock>
                                 </>)}
 
                                 {activeTab === 'clients' && (<>
                                     <SectionTitle>Clients</SectionTitle>
                                     <EndpointBlock method="GET" path="/api/clients/" description="List all clients. Supports filtering by name.">
-                                        <CopyBlock text={`curl -X GET "https://dev.codexcrm.click/api/clients/?name=Acme" \\\n-H "Authorization: Token YOUR_TOKEN"`} />
+                                        <CopyBlock text={`curl -X GET "https://climatebycodex.com/api/clients/?name=Acme" \\\n-H "Authorization: Token YOUR_TOKEN"`} />
                                     </EndpointBlock>
                                     <EndpointBlock method="POST" path="/api/clients/" description="Create a new client.">
                                         <CopyBlock text={`{ "name": "Acme Corp", "attributes": { "industry": "Tech" } }`} />
@@ -180,14 +180,14 @@ export const ApiGuide = () => {
                                         <CopyBlock text={`{ "name": "Acme Inc", "attributes": { "industry": "Finance" } }`} />
                                     </EndpointBlock>
                                     <EndpointBlock method="DELETE" path="/api/clients/{uuid}/" description="Delete a client.">
-                                        <CopyBlock text={`curl -X DELETE https://dev.codexcrm.click/api/clients/{uuid}/ \\\n-H "Authorization: Token YOUR_TOKEN"`} />
+                                        <CopyBlock text={`curl -X DELETE https://climatebycodex.com/api/clients/{uuid}/ \\\n-H "Authorization: Token YOUR_TOKEN"`} />
                                     </EndpointBlock>
                                 </>)}
 
                                 {activeTab === 'contacts' && (<>
                                     <SectionTitle>Contacts</SectionTitle>
                                     <EndpointBlock method="GET" path="/api/contacts/" description="List all contacts. Supports filtering by client or name.">
-                                        <CopyBlock text={`curl -X GET "https://dev.codexcrm.click/api/contacts/?client={client_uuid}" \\\n-H "Authorization: Token YOUR_TOKEN"`} />
+                                        <CopyBlock text={`curl -X GET "https://climatebycodex.com/api/contacts/?client={client_uuid}" \\\n-H "Authorization: Token YOUR_TOKEN"`} />
                                     </EndpointBlock>
                                     <EndpointBlock method="POST" path="/api/contacts/" description="Create a new contact.">
                                         <CopyBlock text={`{ "client": "client-uuid", "first_name": "Maria", "last_name": "Lopez", "email": "m.lopez@example.com", "is_primary": true }`} />
@@ -196,14 +196,14 @@ export const ApiGuide = () => {
                                         <CopyBlock text={`{ "job_title": "CEO", "is_primary": true }`} />
                                     </EndpointBlock>
                                     <EndpointBlock method="DELETE" path="/api/contacts/{uuid}/" description="Delete a contact.">
-                                        <CopyBlock text={`curl -X DELETE https://dev.codexcrm.click/api/contacts/{uuid}/ \\\n-H "Authorization: Token YOUR_TOKEN"`} />
+                                        <CopyBlock text={`curl -X DELETE https://climatebycodex.com/api/contacts/{uuid}/ \\\n-H "Authorization: Token YOUR_TOKEN"`} />
                                     </EndpointBlock>
                                 </>)}
 
                                 {activeTab === 'services' && (<>
                                     <SectionTitle>Services</SectionTitle>
                                     <EndpointBlock method="GET" path="/api/services/" description="Retrieve services provided to clients.">
-                                        <CopyBlock text={`curl -X GET https://dev.codexcrm.click/api/services/ \\\n-H "Authorization: Token YOUR_TOKEN"`} />
+                                        <CopyBlock text={`curl -X GET https://climatebycodex.com/api/services/ \\\n-H "Authorization: Token YOUR_TOKEN"`} />
                                     </EndpointBlock>
                                     <EndpointBlock method="POST" path="/api/services/" description="Create a service.">
                                         <CopyBlock text={`{ "name": "Jane Doe", "client": "client-uuid", "attributes": { "program": "Full Stack" } }`} />
@@ -212,7 +212,7 @@ export const ApiGuide = () => {
                                         <CopyBlock text={`{ "name": "Jane Doe Smith", "attributes": { "program": "Data Science" } }`} />
                                     </EndpointBlock>
                                     <EndpointBlock method="DELETE" path="/api/services/{uuid}/" description="Delete a service.">
-                                        <CopyBlock text={`curl -X DELETE https://dev.codexcrm.click/api/services/{uuid}/ \\\n-H "Authorization: Token YOUR_TOKEN"`} />
+                                        <CopyBlock text={`curl -X DELETE https://climatebycodex.com/api/services/{uuid}/ \\\n-H "Authorization: Token YOUR_TOKEN"`} />
                                     </EndpointBlock>
                                 </>)}
 
@@ -228,7 +228,7 @@ export const ApiGuide = () => {
                                         <CopyBlock text={`{ "name": "B2B Sales V2", "stages": [{"name": "Qualification", "color": "#6c6f73", "order": 1}] }`} />
                                     </EndpointBlock>
                                     <EndpointBlock method="DELETE" path="/api/pipelines/{uuid}/" description="Delete a pipeline.">
-                                        <CopyBlock text={`curl -X DELETE https://dev.codexcrm.click/api/pipelines/{uuid}/ \\\n-H "Authorization: Token YOUR_TOKEN"`} />
+                                        <CopyBlock text={`curl -X DELETE https://climatebycodex.com/api/pipelines/{uuid}/ \\\n-H "Authorization: Token YOUR_TOKEN"`} />
                                     </EndpointBlock>
                                 </>)}
 
@@ -243,7 +243,7 @@ export const ApiGuide = () => {
                                         <CopyBlock text={`{ "comment": "Sent updated brochure and pricing.", "follow_up_date": "2025-01-16T10:00:00Z" }`} />
                                     </EndpointBlock>
                                     <EndpointBlock method="DELETE" path="/services/{service_id}/follow-ups/{uuid}/" description="Delete a follow-up.">
-                                        <CopyBlock text={`curl -X DELETE https://dev.codexcrm.click/services/{service_id}/follow-ups/{uuid}/ \\\n-H "Authorization: Token YOUR_TOKEN"`} />
+                                        <CopyBlock text={`curl -X DELETE https://climatebycodex.com/services/{service_id}/follow-ups/{uuid}/ \\\n-H "Authorization: Token YOUR_TOKEN"`} />
                                     </EndpointBlock>
                                 </>)}
 
@@ -262,7 +262,7 @@ export const ApiGuide = () => {
                                         <CopyBlock text={`{ "base_price": "120.00" }`} />
                                     </EndpointBlock>
                                     <EndpointBlock method="DELETE" path="/api/catalogue/{uuid}/" description="Delete a catalogue item.">
-                                        <CopyBlock text={`curl -X DELETE https://dev.codexcrm.click/api/catalogue/{uuid}/ \\\n-H "Authorization: Token YOUR_TOKEN"`} />
+                                        <CopyBlock text={`curl -X DELETE https://climatebycodex.com/api/catalogue/{uuid}/ \\\n-H "Authorization: Token YOUR_TOKEN"`} />
                                     </EndpointBlock>
                                     <p className="text-sm font-semibold mt-4" style={{ color: "#2E2A26" }}>Base Fields Guide</p>
                                     <InfoBlock title="Category Fields" color="#5E6A43" items={[
@@ -338,7 +338,7 @@ export const ApiGuide = () => {
                                             Get schema/attributes for an entity.<br />
                                             Options: <code>client</code>, <code>contact</code>, <code>service</code>, <code>lead</code>, <code>follow_up</code>, <code>category</code>, <code>catalogue_item</code>, <code>invoice</code>, <code>payment</code>, <code>asset</code>, <code>asset_assignment</code>.
                                         </p>
-                                        <CopyBlock text={`curl -X GET https://dev.codexcrm.click/api/attributes/lead/ \\\n-H "Authorization: Token YOUR_TOKEN"`} />
+                                        <CopyBlock text={`curl -X GET https://climatebycodex.com/api/attributes/lead/ \\\n-H "Authorization: Token YOUR_TOKEN"`} />
                                     </EndpointBlock>
                                 </>)}
 
@@ -358,7 +358,7 @@ export const ApiGuide = () => {
                                     <SectionTitle>File Uploads</SectionTitle>
                                     <p className="text-sm" style={{ color: "#6b6560" }}>Upload and link attachments to system records like Clients or Services via S3.</p>
                                     <EndpointBlock method="POST" path="/api/clients/{uuid}/files/" description="Upload an image/file and attach it to a Client.">
-                                        <CopyBlock text={`curl -X POST https://dev.codexcrm.click/api/clients/{uuid}/files/ \\\n  -H "Authorization: Token YOUR_TOKEN" \\\n  -H "Content-Type: multipart/form-data" \\\n  -F "file=@/path/to/local/image.jpg"`} />
+                                        <CopyBlock text={`curl -X POST https://climatebycodex.com/api/clients/{uuid}/files/ \\\n  -H "Authorization: Token YOUR_TOKEN" \\\n  -H "Content-Type: multipart/form-data" \\\n  -F "file=@/path/to/local/image.jpg"`} />
                                     </EndpointBlock>
                                     <EndpointBlock method="POST" path="/api/services/{uuid}/files/" description="Upload a file to a Service. The API responds with the generated S3 public URL.">
                                         <CopyBlock text={`{ "url": "https://bucket.s3.amazonaws.com/services/uuid/image.jpg" }`} />

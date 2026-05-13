@@ -215,7 +215,7 @@ export const Login = ({ className, ...props }) => {
               style={{ backgroundColor: "rgba(94,106,67,0.2)", border: "1px solid rgba(94,106,67,0.4)", color: "#B8C76A" }}
             >
               <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ backgroundColor: "#B8C76A" }} />
-              Codex CRM Platform
+              Climate by CodeX
             </div>
 
             {/* Hero heading — Cormorant Garamond */}
@@ -263,7 +263,7 @@ export const Login = ({ className, ...props }) => {
                 "Technology that takes your business to the next level."
               </blockquote>
               <p className="text-xs mt-2 font-semibold uppercase tracking-widest" style={{ color: "#B8C76A" }}>
-                — Codex Technologies
+                — Climate by CodeX
               </p>
             </div>
           </div>

@@ -26,37 +26,14 @@ export const useLogin = () => {
     setLoading(true);
 
     try {
-      const authData = { username: user, password: password };
-      const res = await postToken(authData);
+      const res = await postToken({ username: user, password: password });
 
-      if (res?.ok && res?.data?.token) {
-        const token = res.data.token;
-
-        try {
-          const userResponse = await fetch(`${API_URL}/me/`, {
-            method: "GET",
-            headers: {
-              'Content-Type': "application/json",
-              'Authorization': `Token ${token}`
-            }
-          });
-
-          if (userResponse.ok) {
-            const userData = await userResponse.json();
-            login(token, userData);
-            navigate("/", { replace: true });
-          } else {
-            setError("Error fetching user permissions.");
-          }
-        } catch (error) {
-          console.error(error);
-          setError("Error validating session.");
-        }
-
+      if (res?.ok && res?.data) {
+        login(res.data);
+        navigate("/", { replace: true });
       } else {
-        const msg = res?.data?.message || res?.status_text || "Invalid credentials.";
+        const msg = res?.data?.detail || res?.status_text || "Invalid credentials.";
         setError(msg);
-
         setUser("");
         setPassword("");
       }

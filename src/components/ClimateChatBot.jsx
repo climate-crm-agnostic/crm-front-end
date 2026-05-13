@@ -1,307 +1,442 @@
-import { useEffect } from "react";
-import { createChat } from "@n8n/chat";
-import "@n8n/chat/style.css";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { sendMessage, getConversations, getConversation, renameConversation, deleteConversation } from "../services/aiService";
 
+// ── Icons (inline SVGs — no extra package needed) ─────────────────────────
 
-export const BOT_URL = import.meta.env.VITE_API_BOT;
+const BotIcon = ({ size = 20 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 8V4H8" /><rect width="16" height="12" x="4" y="8" rx="2" />
+        <path d="M2 14h2M20 14h2M15 13v2M9 13v2" />
+    </svg>
+);
 
+const SendIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="m22 2-7 20-4-9-9-4Z" /><path d="M22 2 11 13" />
+    </svg>
+);
+
+const PlusIcon = () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M5 12h14M12 5v14" />
+    </svg>
+);
+
+const ChevronIcon = ({ dir = "left" }) => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: dir === "right" ? "rotate(180deg)" : undefined }}>
+        <path d="m15 18-6-6 6-6" />
+    </svg>
+);
+
+const TrashIcon = () => (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
+    </svg>
+);
+
+const PencilIcon = () => (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5Z" />
+    </svg>
+);
+
+// ── Typing indicator ───────────────────────────────────────────────────────
+
+const TypingDots = () => (
+    <div style={{ display: "flex", gap: 4, alignItems: "center", padding: "8px 12px" }}>
+        {[0, 1, 2].map(i => (
+            <div key={i} style={{
+                width: 7, height: 7, borderRadius: "50%",
+                background: "var(--muted-foreground)",
+                animation: "chett-dot 1.2s infinite",
+                animationDelay: `${i * 0.2}s`,
+                opacity: 0.6,
+            }} />
+        ))}
+    </div>
+);
+
+// ── Message bubble ─────────────────────────────────────────────────────────
+
+const MessageBubble = ({ role, content }) => {
+    const isUser = role === "user";
+    return (
+        <div style={{
+            display: "flex",
+            justifyContent: isUser ? "flex-end" : "flex-start",
+            marginBottom: 8,
+        }}>
+            <div style={{
+                maxWidth: "80%",
+                padding: "8px 12px",
+                borderRadius: isUser ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
+                background: isUser ? "var(--primary)" : "var(--muted)",
+                color: isUser ? "var(--primary-foreground)" : "var(--foreground)",
+                fontSize: 13,
+                lineHeight: 1.5,
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-word",
+            }}>
+                {content}
+            </div>
+        </div>
+    );
+};
+
+// ── Main component ─────────────────────────────────────────────────────────
 
 export const ClimateChatBot = () => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [view, setView] = useState("chat"); // "chat" | "history"
+
+    // current conversation
+    const [convId, setConvId] = useState(null);
+    const [convName, setConvName] = useState("New Conversation");
+    const [messages, setMessages] = useState([]);
+
+    // history panel
+    const [conversations, setConversations] = useState([]);
+    const [historyLoading, setHistoryLoading] = useState(false);
+
+    // rename state
+    const [renaming, setRenaming] = useState(false);
+    const [renameVal, setRenameVal] = useState("");
+
+    // input
+    const [input, setInput] = useState("");
+    const [loading, setLoading] = useState(false);
+
+    const messagesEndRef = useRef(null);
+    const inputRef = useRef(null);
+
     useEffect(() => {
-        createChat({
-            webhookUrl:
-                BOT_URL,
-            mode: "window",
-            chatInputKey: "chatInput",
-            chatSessionKey: "sessionId",
-            loadPreviousSession: true,
-            showWelcomeScreen: false,
-            defaultLanguage: "es",
-            initialMessages: [
-                "Hello! I'm Chett AI, your virtual CRM assistant. How can I help you today?",
-            ],
-            i18n: {
-                es: {
-                    title: "Chett AI – CRM Assistant",
-                    subtitle:
-                        "Access information, manage clients, and resolve system questions quickly and easily.",
-                    footer: "Codex CRM • Smart Support",
-                    getStarted: "New conversation",
-                    inputPlaceholder: "Type your question here...",
-                },
-            },
-        });
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [messages, loading]);
 
-        if (window.innerWidth <= 768) {
-            setTimeout(() => {
-                const header = document.querySelector(".chat-header");
-                const toggleBtn = document.querySelector(".chat-window-toggle"); // botón flotante
+    useEffect(() => {
+        if (isOpen && view === "chat") inputRef.current?.focus();
+    }, [isOpen, view]);
 
-                if (header && toggleBtn && !document.querySelector("#closeChatBtn")) {
-                    const btn = document.createElement("button");
-                    btn.id = "closeChatBtn";
-                    btn.innerHTML = "✕";
-                    btn.style.cssText = `
-                    background: transparent;
-                    border: none;
-                    color: var(--primary-foreground);
-                    font-size: 1rem;      
-                    cursor: pointer;
-                    position: absolute;       
-                    top: 10px;                
-                    right: 10px;              
-                    z-index: 1000;           
-                    padding: 4px 8px;
-                    border-radius: 4px;
-                `;
-
-                    // Aseguramos que el header tenga position relativa
-                    if (getComputedStyle(header).position === "static") {
-                        header.style.position = "relative";
-                    }
-
-                    btn.onclick = () => {
-                        const chatWindow = document.querySelector(".chat-window");
-                        if (chatWindow && chatWindow.style.display !== "none") {
-                            toggleBtn.click(); // cierra el chat y sincroniza el toggle
-                        }
-                    };
-
-                    header.appendChild(btn); // queda flotando en la esquina
-                }
-            }, 600);
+    const openHistory = useCallback(async () => {
+        setView("history");
+        setHistoryLoading(true);
+        try {
+            const data = await getConversations();
+            setConversations(data);
+        } catch {
+            // ignore
+        } finally {
+            setHistoryLoading(false);
         }
-
-
-
-
-
-        const style = document.createElement("style");
-        style.innerHTML = `
-      :root {
-        --chat--color-primary: var(--primary);
-        --chat--color-secondary: var(--muted);
-        --chat--color-accent: var(--accent);
-        --chat--color-white: var(--background);
-        --chat--color-light: var(--card);
-        --chat--color-dark: var(--foreground);
-        --chat--color-muted: var(--muted-foreground);
-
-        --chat--window--width: 380px;
-        --chat--window--height: 520px;
-        --chat--window--bottom: 15px;
-        --chat--window--right: 1.5rem;
-        --chat--window--border-radius: var(--radius);
-        --chat--window--border: 1px solid var(--border);
-        --chat--window--z-index: 9999;
-	
-        --chat--header--background: var(--primary);
-        --chat--header--color: var(--primary-foreground);
-
-        --chat--message--bot--background: var(--muted);
-        --chat--message--bot--color: var(--foreground);
-        --chat--message--user--background: var(--primary);
-        --chat--message--user--color: var(--primary-foreground);
-	      --chat--message--padding: 0.7em;
-
-        --chat--input--background: var(--card);
-        --chat--input--text-color: var(--foreground);
-        --chat--input--border-active: 1px solid var(--ring);
-        --chat--input--send--button--color: var(--primary);
-        --chat--input--send--button--color-hover: var(--accent);
-        --chat--input--font-size: 0.9em;
-
-        --chat--toggle--size: 47px;
-        --chat--toggle--background: var(--primary);
-        --chat--toggle--hover--background: var(--accent);
-        --chat--toggle--active--background: var(--primary);
-        --chat--toggle--color: var(--primary-foreground);
-        --chat--toggle--bottom: 20px;
-        --chat--toggle--right: 40px;
-        --chat--toggle--border-radius: 50%;
-        --chat--toggle--box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-      }
-
-      .chat-layout .chat-header{
-        gap: 0.6em;
-      }
-
-      .chat-layout .chat-header h1 {
-        display: flex;
-        align-items: center;
-        gap: 3px;
-        font-size: 1.2em;
-        font-weight: 600;
-      }
-
-      .chat-layout .chat-header h1::before {
-        content: "";
-        display: inline-block;
-        width: 50px;
-        height: 50px;
-        background-color: var(--chat--header--color);
-        -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>');
-        mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>');
-        -webkit-mask-size: contain;
-        mask-size: contain;
-        -webkit-mask-repeat: no-repeat;
-        mask-repeat: no-repeat;
-        -webkit-mask-position: center;
-        mask-position: center;
-        background-image: none;
-      }
-
-      .chat-layout .chat-header p{
-        font-size: 0.8em;
-      }
-
-      .chat-message{
-        font-size: 0.9em;
-      }
-
-      svg{
-        transform: scale(0.8);
-      }
-
-      @media (max-width: 768px) {
-        :root {
-          --chat--window--width: 100%;
-          --chat--window--height: 100dvh;
-          --chat--window--bottom: 15px;
-          --chat--window--right: 1.5rem;
-          --chat--window--border-radius: 0;
-        }
-
-        .chat-window {
-          position: fixed !important;
-          inset: 0 !important;
-          width: 100% !important;
-          height: 100% !important;
-          border-radius: 0 !important;
-          box-shadow: none !important;
-          overflow: hidden !important;
-        }
-
-        .chat-layout {
-          display: flex !important;
-          flex-direction: column !important;
-          height: 100% !important;
-        }
-
-        .chat-messages {
-          flex: 1 1 auto !important;
-          overflow-y: auto !important;
-          -webkit-overflow-scrolling: touch;
-        }
-
-        .chat-input {
-          flex: 0 0 auto !important;
-          padding-bottom: env(safe-area-inset-bottom, 16px) !important;
-        }
-
-        .chat-window.chat-keyboard-open {
-          position: fixed !important;
-          inset: 0 !important;
-          height: auto !important;
-        }
-
-        .chat-input input, .chat-input textarea {
-           background-color: var(--input);
-           color: var(--foreground);
-        }
-      }
-    `;
-        document.head.appendChild(style);
-
-        const applyViewportHeight = () => {
-            if (window.innerWidth > 768) return;
-            const chatWindow = document.querySelector(".chat-window");
-            if (!chatWindow) return;
-            const vh =
-                (window.visualViewport && window.visualViewport.height) ||
-                window.innerHeight;
-            chatWindow.style.height = `${vh}px`;
-            chatWindow.style.maxHeight = `${vh}px`;
-        };
-
-
-        const onInputFocus = (ev) => {
-            const chatWindow = document.querySelector(".chat-window");
-            const messages = document.querySelector(".chat-messages");
-            const input = ev.target;
-
-            if (chatWindow) chatWindow.classList.add("chat-keyboard-open");
-            applyViewportHeight();
-
-            setTimeout(() => {
-                messages?.scrollTo({ top: messages.scrollHeight, behavior: "smooth" });
-                try {
-                    input.scrollIntoView({ behavior: "smooth", block: "nearest" });
-                } catch { }
-            }, 100);
-        };
-
-        const onInputBlur = () => {
-            const chatWindow = document.querySelector(".chat-window");
-            if (chatWindow) {
-                chatWindow.classList.remove("chat-keyboard-open");
-                setTimeout(applyViewportHeight, 50);
-            }
-        };
-
-        const setupListeners = () => {
-            if (window.innerWidth <= 768) {
-                if (window.visualViewport) {
-                    window.visualViewport.addEventListener("resize", applyViewportHeight);
-                    window.visualViewport.addEventListener("scroll", applyViewportHeight);
-                } else {
-                    window.addEventListener("resize", applyViewportHeight);
-                }
-            }
-
-            const observe = new MutationObserver(() => {
-                const input = document.querySelector(
-                    ".chat-input input, .chat-input textarea, .chat-footer input, .chat-footer textarea"
-                );
-                if (input && !input._n8n_attached) {
-                    input.addEventListener("focus", onInputFocus);
-                    input.addEventListener("blur", onInputBlur);
-                    input._n8n_attached = true;
-                }
-            });
-
-            observe.observe(document.body, { childList: true, subtree: true });
-
-            setTimeout(() => {
-                applyViewportHeight();
-                const input = document.querySelector(
-                    ".chat-input input, .chat-input textarea, .chat-footer input, .chat-footer textarea"
-                );
-                if (input && !input._n8n_attached) {
-                    input.addEventListener("focus", onInputFocus);
-                    input.addEventListener("blur", onInputBlur);
-                    input._n8n_attached = true;
-                }
-            }, 300);
-
-            return () => {
-                if (window.visualViewport) {
-                    window.visualViewport.removeEventListener("resize", applyViewportHeight);
-                    window.visualViewport.removeEventListener("scroll", applyViewportHeight);
-                } else {
-                    window.removeEventListener("resize", applyViewportHeight);
-                }
-                observe.disconnect();
-            };
-        };
-
-        const cleanup = setupListeners();
-
-        return () => {
-            cleanup();
-            document.head.removeChild(style);
-        };
     }, []);
 
-    return null;
+    const loadConversation = useCallback(async (id, name) => {
+        try {
+            const data = await getConversation(id);
+            setConvId(id);
+            setConvName(data.name);
+            setMessages(data.messages.map(m => ({ role: m.role, content: m.content })));
+            setView("chat");
+        } catch {
+            // ignore
+        }
+    }, []);
+
+    const startNewConversation = useCallback(() => {
+        setConvId(null);
+        setConvName("New Conversation");
+        setMessages([]);
+        setView("chat");
+    }, []);
+
+    const handleSend = useCallback(async () => {
+        const text = input.trim();
+        if (!text || loading) return;
+
+        setInput("");
+        setMessages(prev => [...prev, { role: "user", content: text }]);
+        setLoading(true);
+
+        try {
+            const res = await sendMessage(text, convId);
+            setConvId(res.conversation_id);
+            setConvName(res.conversation_name);
+            setMessages(prev => [...prev, { role: "assistant", content: res.assistant_message }]);
+        } catch (err) {
+            setMessages(prev => [...prev, { role: "assistant", content: `Error: ${err.message}` }]);
+        } finally {
+            setLoading(false);
+            setTimeout(() => inputRef.current?.focus(), 50);
+        }
+    }, [input, loading, convId]);
+
+    const handleKeyDown = (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            handleSend();
+        }
+    };
+
+    const handleRename = async () => {
+        if (!convId || !renameVal.trim()) { setRenaming(false); return; }
+        try {
+            await renameConversation(convId, renameVal.trim());
+            setConvName(renameVal.trim());
+        } catch { }
+        setRenaming(false);
+    };
+
+    const handleDeleteConv = async (id, e) => {
+        e.stopPropagation();
+        try {
+            await deleteConversation(id);
+            setConversations(prev => prev.filter(c => c.id !== id));
+            if (id === convId) startNewConversation();
+        } catch { }
+    };
+
+    const toggleOpen = () => {
+        setIsOpen(o => !o);
+        if (!isOpen) setView("chat");
+    };
+
+    return (
+        <>
+            {/* keyframe injection */}
+            <style>{`
+                @keyframes chett-dot {
+                    0%, 80%, 100% { transform: scale(0.7); opacity: 0.4; }
+                    40% { transform: scale(1); opacity: 1; }
+                }
+                @keyframes chett-slide-up {
+                    from { opacity: 0; transform: translateY(16px) scale(0.97); }
+                    to   { opacity: 1; transform: translateY(0) scale(1); }
+                }
+            `}</style>
+
+            {/* ── Floating toggle button ── */}
+            <button
+                onClick={toggleOpen}
+                title="Chett AI"
+                style={{
+                    position: "fixed", bottom: 20, right: 40, zIndex: 9999,
+                    width: 47, height: 47, borderRadius: "50%",
+                    background: "var(--primary)", color: "var(--primary-foreground)",
+                    border: "none", cursor: "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
+                    transition: "background 0.2s",
+                }}
+            >
+                <BotIcon size={22} />
+            </button>
+
+            {/* ── Chat window ── */}
+            {isOpen && (
+                <div style={{
+                    position: "fixed", bottom: 80, right: 40, zIndex: 9999,
+                    width: 380, height: 520,
+                    borderRadius: "var(--radius, 8px)",
+                    border: "1px solid var(--border)",
+                    background: "var(--background)",
+                    boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
+                    display: "flex", flexDirection: "column", overflow: "hidden",
+                    animation: "chett-slide-up 0.18s ease-out",
+                }}>
+
+                    {/* ── Header ── */}
+                    <div style={{
+                        background: "var(--primary)", color: "var(--primary-foreground)",
+                        padding: "10px 14px",
+                        display: "flex", alignItems: "center", gap: 8, flexShrink: 0,
+                    }}>
+                        <BotIcon size={18} />
+                        {view === "chat" ? (
+                            renaming ? (
+                                <input
+                                    autoFocus
+                                    value={renameVal}
+                                    onChange={e => setRenameVal(e.target.value)}
+                                    onBlur={handleRename}
+                                    onKeyDown={e => { if (e.key === "Enter") handleRename(); if (e.key === "Escape") setRenaming(false); }}
+                                    style={{
+                                        flex: 1, background: "transparent", border: "none",
+                                        borderBottom: "1px solid var(--primary-foreground)",
+                                        color: "var(--primary-foreground)", fontSize: 13,
+                                        fontWeight: 600, outline: "none", padding: "0 2px",
+                                    }}
+                                />
+                            ) : (
+                                <span
+                                    style={{ flex: 1, fontSize: 13, fontWeight: 600, cursor: convId ? "pointer" : "default", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                                    title={convId ? "Click to rename" : undefined}
+                                    onClick={() => { if (convId) { setRenameVal(convName); setRenaming(true); } }}
+                                >
+                                    {convName}
+                                </span>
+                            )
+                        ) : (
+                            <span style={{ flex: 1, fontSize: 13, fontWeight: 600 }}>Conversations</span>
+                        )}
+
+                        {view === "chat" && (
+                            <>
+                                <button onClick={startNewConversation} title="New conversation"
+                                    style={{ background: "transparent", border: "none", cursor: "pointer", color: "var(--primary-foreground)", padding: 4, display: "flex", opacity: 0.8 }}>
+                                    <PlusIcon />
+                                </button>
+                                <button onClick={openHistory} title="History"
+                                    style={{ background: "transparent", border: "none", cursor: "pointer", color: "var(--primary-foreground)", padding: 4, display: "flex", opacity: 0.8 }}>
+                                    <ChevronIcon dir="right" />
+                                </button>
+                            </>
+                        )}
+                        {view === "history" && (
+                            <button onClick={() => setView("chat")} title="Back"
+                                style={{ background: "transparent", border: "none", cursor: "pointer", color: "var(--primary-foreground)", padding: 4, display: "flex" }}>
+                                <ChevronIcon dir="left" />
+                            </button>
+                        )}
+                    </div>
+
+                    {/* ── Chat view ── */}
+                    {view === "chat" && (
+                        <>
+                            <div style={{ flex: 1, overflowY: "auto", padding: "12px 14px" }}>
+                                {messages.length === 0 && (
+                                    <div style={{ textAlign: "center", color: "var(--muted-foreground)", fontSize: 12, marginTop: 40 }}>
+                                        <BotIcon size={32} />
+                                        <p style={{ marginTop: 8 }}>Hi! I'm <strong>Chett AI</strong>.<br />Ask me anything about your CRM data.</p>
+                                    </div>
+                                )}
+                                {messages.map((m, i) => (
+                                    <MessageBubble key={i} role={m.role} content={m.content} />
+                                ))}
+                                {loading && (
+                                    <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                                        <div style={{ background: "var(--muted)", borderRadius: "18px 18px 18px 4px" }}>
+                                            <TypingDots />
+                                        </div>
+                                    </div>
+                                )}
+                                <div ref={messagesEndRef} />
+                            </div>
+
+                            {/* Input */}
+                            <div style={{
+                                borderTop: "1px solid var(--border)",
+                                padding: "10px 12px",
+                                display: "flex", gap: 8, alignItems: "flex-end",
+                                flexShrink: 0, background: "var(--card)",
+                            }}>
+                                <textarea
+                                    ref={inputRef}
+                                    value={input}
+                                    onChange={e => setInput(e.target.value)}
+                                    onKeyDown={handleKeyDown}
+                                    placeholder="Ask about your CRM data..."
+                                    rows={1}
+                                    style={{
+                                        flex: 1, resize: "none", border: "1px solid var(--border)",
+                                        borderRadius: 8, padding: "8px 10px",
+                                        fontSize: 13, background: "var(--input)", color: "var(--foreground)",
+                                        outline: "none", fontFamily: "inherit",
+                                        maxHeight: 80, overflowY: "auto",
+                                    }}
+                                    onInput={e => {
+                                        e.target.style.height = "auto";
+                                        e.target.style.height = Math.min(e.target.scrollHeight, 80) + "px";
+                                    }}
+                                />
+                                <button
+                                    onClick={handleSend}
+                                    disabled={!input.trim() || loading}
+                                    style={{
+                                        width: 34, height: 34, borderRadius: 8, flexShrink: 0,
+                                        background: (!input.trim() || loading) ? "var(--muted)" : "var(--primary)",
+                                        color: (!input.trim() || loading) ? "var(--muted-foreground)" : "var(--primary-foreground)",
+                                        border: "none", cursor: (!input.trim() || loading) ? "default" : "pointer",
+                                        display: "flex", alignItems: "center", justifyContent: "center",
+                                        transition: "background 0.2s",
+                                    }}
+                                >
+                                    <SendIcon />
+                                </button>
+                            </div>
+                        </>
+                    )}
+
+                    {/* ── History view ── */}
+                    {view === "history" && (
+                        <div style={{ flex: 1, overflowY: "auto" }}>
+                            <div style={{ padding: "10px 14px", borderBottom: "1px solid var(--border)" }}>
+                                <button
+                                    onClick={() => { startNewConversation(); }}
+                                    style={{
+                                        width: "100%", padding: "8px 12px",
+                                        border: "1px dashed var(--border)", borderRadius: 8,
+                                        background: "transparent", cursor: "pointer",
+                                        color: "var(--muted-foreground)", fontSize: 12,
+                                        display: "flex", alignItems: "center", gap: 6,
+                                    }}
+                                >
+                                    <PlusIcon /> New Conversation
+                                </button>
+                            </div>
+
+                            {historyLoading && (
+                                <div style={{ textAlign: "center", padding: 24, color: "var(--muted-foreground)", fontSize: 12 }}>
+                                    Loading...
+                                </div>
+                            )}
+
+                            {!historyLoading && conversations.length === 0 && (
+                                <div style={{ textAlign: "center", padding: 24, color: "var(--muted-foreground)", fontSize: 12 }}>
+                                    No conversations yet.
+                                </div>
+                            )}
+
+                            {!historyLoading && conversations.map(conv => (
+                                <div
+                                    key={conv.id}
+                                    onClick={() => loadConversation(conv.id, conv.name)}
+                                    style={{
+                                        padding: "10px 14px",
+                                        borderBottom: "1px solid var(--border)",
+                                        cursor: "pointer",
+                                        display: "flex", alignItems: "center", gap: 8,
+                                        background: conv.id === convId ? "var(--accent)" : "transparent",
+                                        transition: "background 0.15s",
+                                    }}
+                                    onMouseEnter={e => { if (conv.id !== convId) e.currentTarget.style.background = "var(--muted)"; }}
+                                    onMouseLeave={e => { if (conv.id !== convId) e.currentTarget.style.background = "transparent"; }}
+                                >
+                                    <div style={{ flex: 1, overflow: "hidden" }}>
+                                        <div style={{ fontSize: 13, fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                            {conv.name}
+                                        </div>
+                                        <div style={{ fontSize: 11, color: "var(--muted-foreground)", marginTop: 2 }}>
+                                            {new Date(conv.updated_at).toLocaleDateString()}
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={(e) => handleDeleteConv(conv.id, e)}
+                                        title="Delete"
+                                        style={{
+                                            background: "transparent", border: "none", cursor: "pointer",
+                                            color: "var(--muted-foreground)", padding: 4, borderRadius: 4,
+                                            display: "flex", opacity: 0.6, flexShrink: 0,
+                                        }}
+                                    >
+                                        <TrashIcon />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
+        </>
+    );
 };

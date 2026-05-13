@@ -5,22 +5,27 @@ export const API_URL =
     ? import.meta.env.VITE_API_PROD
     : import.meta.env.VITE_API_DEV;
 
-// Header with token updated every time
-export const getHeaders = () => {
-  const token = localStorage.getItem('auth_token');
-  return {
-    'Content-Type': 'application/json',
-    ...(token && { 'Authorization': `Token ${token}` })
-  };
-};
+// Headers for all API requests — token is in the HttpOnly cookie, not here
+export const getHeaders = () => ({
+  'Content-Type': 'application/json',
+});
 
-// Global 401 interceptor — fires a custom event when any API call returns 401.
-// AuthContext listens for this event and triggers logout automatically.
-// Excludes the login endpoint to avoid interfering with wrong-password responses.
+// Global fetch interceptor:
+// 1. Adds credentials: 'include' so the browser always sends the auth cookie
+// 2. Fires auth:token-expired on 401 so AuthContext can trigger logout
 const _originalFetch = window.fetch.bind(window);
-window.fetch = async (url, ...args) => {
-  const response = await _originalFetch(url, ...args);
-  if (response.status === 401 && !String(url).includes('api-token-auth')) {
+window.fetch = async (url, options = {}) => {
+  const mergedOptions = {
+    credentials: 'include',
+    ...options,
+  };
+  const response = await _originalFetch(url, mergedOptions);
+  const urlStr = String(url);
+  if (
+    response.status === 401 &&
+    !urlStr.includes('/login/') &&
+    !urlStr.includes('/me/')
+  ) {
     window.dispatchEvent(new CustomEvent('auth:token-expired'));
   }
   return response;

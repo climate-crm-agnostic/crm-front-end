@@ -1,136 +1,67 @@
-import { useRef, useState } from "react";
+import { useMemo } from "react";
+import { useAuth } from "@/context/AuthContext";
+
+const MENU_CONFIG = [
+    {
+        label: "CRM",
+        items: [
+            { title: "Leads",    url: "/lead",     icon: "Magnet",    permission: "app.add_lead" },
+            { title: "Clients",  url: "/client",   icon: "Building2", permission: "app.add_client" },
+            { title: "Contacts", url: "/contact",  icon: "UserCircle",permission: "app.add_contact" },
+            { title: "Services", url: "/service",  icon: "Briefcase", permission: "app.add_service" },
+            { title: "Pipeline", url: "/pipeline", icon: "GitMerge",  permission: "app.add_pipeline" },
+        ],
+    },
+    {
+        label: "Billing / Inventory",
+        items: [
+            { title: "Invoices",   url: "/invoice",   icon: "Receipt",    permission: "app.add_invoice" },
+            { title: "Catalogue",  url: "/catalogue", icon: "Package",    permission: "app.add_catalogueitem" },
+            { title: "Categories", url: "/category",  icon: "FolderTree", permission: "app.add_category" },
+            { title: "Inventory",  url: "/inventory", icon: "Warehouse",  permission: "app.add_inventory" },
+        ],
+    },
+    {
+        label: "Assets",
+        items: [
+            { title: "Assets",            url: "/asset",           icon: "Laptop",        permission: "app.add_asset" },
+            { title: "Asset Assignments", url: "/assetassignment", icon: "ClipboardList", permission: "app.add_assetassignment" },
+        ],
+    },
+    {
+        label: "AI",
+        items: [
+            { title: "Chett AI", url: "/chett-ai", icon: "Bot", permission: "app.view_aiconversation" },
+        ],
+    },
+    {
+        label: "Admin",
+        items: [
+            { title: "Attributes", url: "/attribute",           icon: "SlidersHorizontal", permission: "app.add_attribute" },
+            { title: "Lead Fields", url: "/attribute-pipeline", icon: "SlidersHorizontal", permission: "app.add_pipeline" },
+            { title: "Webhooks",   url: "/webhook",             icon: "Webhook",           permission: "app.add_webhook" },
+            { title: "Users",      url: "/users",               icon: "Users",             permission: "auth.add_user" },
+            { title: "Settings",   url: "/settings",            icon: "Settings2",         permission: "auth.add_user" },
+        ],
+    },
+];
 
 export const useMenu = () => {
-    const [menu, setMenu] = useState([]);
-    const menuRef = useRef([]);
+    const { user } = useAuth();
 
-    const MenuLoad = async () => {
-        const storedPermissions = localStorage.getItem("user_permissions");
+    const menu = useMemo(() => {
+        const permissions = new Set(user?.permissions || []);
+        const isSuperuser = user?.is_superuser === true;
 
-        if (storedPermissions) {
-            try {
-                let permissions = JSON.parse(storedPermissions);
+        return MENU_CONFIG
+            .map(group => ({
+                ...group,
+                items: group.items.filter(item =>
+                    isSuperuser || permissions.has(item.permission)
+                ),
+            }))
+            .filter(group => group.items.length > 0);
+    }, [user]);
 
-                // Inject missing permissions just in case backend didn't provide them
-                if (!permissions.includes("app.add_inventory")) permissions.push("app.add_inventory");
-                if (!permissions.includes("app.add_asset")) permissions.push("app.add_asset");
-                if (!permissions.includes("app.add_assetassignment")) permissions.push("app.add_assetassignment");
-                if (!permissions.includes("app.add_catalogueitem") && !permissions.includes("app.add_catalogue_item")) {
-                    permissions.push("app.add_catalogueitem");
-                }
-
-                // Views that no longer exist or are nested only — always hide
-                const hiddenViews = [
-                    "cohort", "enrollment", "enrollmentdetail",
-                    "attendance", "attendancedetail", "followup",
-                    "pricetier", "invoicelineitem", "invoicepayment"
-                ];
-
-                // Dictionary of known words to separate PascalCase
-                const commonWords = [
-                    "Detail", "List", "History", "Report", "User", "Profile",
-                    "Settings", "Dashboard", "Company", "Role", "Log", "Board",
-                    "Lead", "Request", "Item", "Tier",
-                ];
-
-                // Icon mapping — every item gets a meaningful icon
-                const iconMap = {
-                    "Attribute": "SlidersHorizontal",
-                    "Catalogueitem": "Package",
-                    "Category": "FolderTree",
-                    "Client": "Building2",
-                    "Contact": "UserCircle",
-                    "Invoice": "Receipt",
-                    "Invoicelineitem": "FileSpreadsheet",
-                    "Lead": "Magnet",
-                    "Payment": "CreditCard",
-                    "Pipeline": "GitMerge",
-                    "Pricetier": "BadgeDollarSign",
-                    "Service": "Briefcase",
-                    "Inventory": "Warehouse",
-                    "Asset": "Laptop",
-                    "Assetassignment": "ClipboardList",
-                    "Webhook": "Webhook",
-                };
-
-                // Display-friendly labels
-                const labelMap = {
-                    "CatalogueItem": "Catalogue",
-                    "Catalogueitem": "Catalogue",
-                    "Contact": "Contacts",
-                    "Category": "Categories",
-                    "Invoice": "Invoices",
-                    "Client": "Clients",
-                    "Asset": "Assets",
-                    "Assetassignment": "Asset Assignments",
-                };
-
-                const formattedMenu = permissions
-                    .filter(perm => {
-                        if (!perm.startsWith("app.add_")) return false;
-                        const raw = perm.replace("app.add_", "").replace("_", "");
-                        return !hiddenViews.includes(raw);
-                    })
-                    .map(perm => {
-                        let rawName = perm.replace("app.add_", "").replace("_", "");
-                        let name = rawName.charAt(0).toUpperCase() + rawName.slice(1);
-
-                        for (const word of commonWords) {
-                            const lowerWord = word.toLowerCase();
-                            if (name.toLowerCase().endsWith(lowerWord) && name.length > word.length) {
-                                const prefix = name.slice(0, -word.length);
-                                name = prefix + word;
-                                break;
-                            }
-                        }
-
-                        return {
-                            title: labelMap[name] || name,
-                            url: name === 'CatalogueItem' || name === 'Catalogueitem' ? '/catalogue' : `/${name.toLowerCase()}`,
-                            icon: iconMap[name] || "CircleDot",
-                            items: [],
-                        };
-                    });
-
-                // Inject Pipeline Attributes if pipeline permission exists
-                if (permissions.includes("app.add_pipeline")) {
-                    formattedMenu.push({
-                        title: "Lead Fields",
-                        url: "/attribute-pipeline",
-                        icon: "SlidersHorizontal",
-                        items: [],
-                    });
-                }
-
-                // Grouping — meaningful buckets, no "Others" catch-all
-                const crmItems = ["Lead", "Clients", "Contacts", "Service", "Pipeline"];
-                const billingItems = ["Invoices", "Catalogue", "Categories", "Inventory"];
-                const assetItems = ["Assets", "Asset Assignments"];
-                const adminItems = ["Attribute", "Lead Fields", "Webhook"];
-
-                const groups = [
-                    { label: "CRM", items: formattedMenu.filter(i => crmItems.includes(i.title)) },
-                    { label: "Billing / Inventory", items: formattedMenu.filter(i => billingItems.includes(i.title)) },
-                    { label: "Assets", items: formattedMenu.filter(i => assetItems.includes(i.title)) },
-                    { label: "Admin", items: formattedMenu.filter(i => adminItems.includes(i.title)) },
-                ].filter(g => g.items.length > 0);
-
-                menuRef.current = groups;
-                setMenu(groups);
-            } catch (error) {
-                console.error("Error parsing user_permissions:", error);
-                menuRef.current = [];
-                setMenu([]);
-            }
-        } else {
-            menuRef.current = [];
-            setMenu([]);
-        }
-    };
-
-    return {
-        menu,
-        menuRef,
-        MenuLoad,
-    };
+    return { menu };
 };

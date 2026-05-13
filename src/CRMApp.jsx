@@ -1,6 +1,6 @@
 import { RouterApp } from "./router/RouterApp"
 
-export const CodexApp = () => {
+export const CRMApp = () => {
     return (
         <RouterApp />
     )

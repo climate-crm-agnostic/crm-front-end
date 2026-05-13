@@ -4,8 +4,10 @@ import {
     createInvoice, updateInvoice, getInvoiceById, getInvoiceAttributes,
     recalculateInvoice, updateInvoiceTask, deleteInvoiceNote,
     getLineItems, createLineItem, deleteLineItem,
-    getPayments, createPayment, deletePayment
+    getPayments, createPayment, deletePayment,
+    sendInvoiceToStripe,
 } from "../services/invoiceService";
+import { getSettings } from "../services/settingsService";
 import { getClients } from "../services/clientService";
 import { getContacts } from "../services/contactService";
 import { getCatalogueItems } from "../services/catalogueService";
@@ -18,7 +20,9 @@ import { Label } from "../components/ui/label";
 import { Button } from "../components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Textarea } from "../components/ui/textarea";
-import { ArrowLeft, Plus, RefreshCw } from "lucide-react";
+import { ArrowLeft, Download, Plus, RefreshCw, ExternalLink, CreditCard } from "lucide-react";
+import { pdf } from "@react-pdf/renderer";
+import { InvoicePDF } from "../components/InvoicePDF";
 import { Checkbox } from "../components/ui/checkbox";
 import { Switch } from "../components/ui/switch";
 import { Badge } from "../components/ui/badge";
@@ -57,6 +61,14 @@ export const InvoiceDetail = () => {
     const [fetching, setFetching] = useState(!isNew);
     const [error, setError] = useState(null);
 
+    // Stripe state
+    const [stripeEnabled, setStripeEnabled] = useState(false);
+    const [stripeInvoiceId, setStripeInvoiceId] = useState('');
+    const [stripeHostedUrl, setStripeHostedUrl] = useState('');
+    const [stripeSending, setStripeSending] = useState(false);
+    const [stripeEmailPrompt, setStripeEmailPrompt] = useState(false);
+    const [stripeEmail, setStripeEmail] = useState('');
+
     // Tasks & Notes List
     const [tasks, setTasks] = useState([]);
     const [newTaskDate, setNewTaskDate] = useState(new Date().toISOString().split('T')[0]);
@@ -89,7 +101,8 @@ export const InvoiceDetail = () => {
                 await Promise.all([
                     fetchAttributes(),
                     fetchClients(),
-                    fetchCatalogueItems()
+                    fetchCatalogueItems(),
+                    getSettings().then(s => setStripeEnabled(!!s.stripe_enabled)).catch(() => {}),
                 ]);
 
                 if (!isNew) {
@@ -218,6 +231,9 @@ export const InvoiceDetail = () => {
 
         setTasks(data.list_of_tasks || []);
         setNotesList(data.list_of_notes || []);
+
+        setStripeInvoiceId(data.stripe_invoice_id || '');
+        setStripeHostedUrl(data.stripe_hosted_url || '');
 
         setDynamicData(prev => {
             const updated = { ...prev };
@@ -452,6 +468,52 @@ export const InvoiceDetail = () => {
         if (!isNew) updateInvoice(id, { list_of_notes: updatedNotes });
     };
 
+    const handleSendToStripe = async (emailOverride) => {
+        setStripeSending(true);
+        try {
+            const updated = await sendInvoiceToStripe(id, emailOverride || stripeEmail);
+            setStripeInvoiceId(updated.stripe_invoice_id || '');
+            setStripeHostedUrl(updated.stripe_hosted_url || '');
+            setStatus(updated.status);
+            setStripeEmailPrompt(false);
+            setStripeEmail('');
+            Swal.fire({ title: 'Sent to Stripe!', text: 'The payment link is ready.', icon: 'success', timer: 2000, showConfirmButton: false });
+        } catch (err) {
+            if (err.requires_email) {
+                setStripeEmailPrompt(true);
+            } else {
+                Swal.fire('Error', err.detail || 'Failed to send to Stripe.', 'error');
+            }
+        } finally {
+            setStripeSending(false);
+        }
+    };
+
+    const handleDownloadPDF = async () => {
+        const client = clients.find(c => String(c.id) === String(clientId)) || null;
+        const contact = contacts.find(c => String(c.id) === String(contactId)) || null;
+        const invoiceData = {
+            invoice_number: invoiceNumber, issue_date: issueDate, due_date: dueDate,
+            currency, notes: notesText, discount, subtotal, tax_amount: taxAmount,
+            total, amount_paid: amountPaid, balance_due: balanceDue, status,
+        };
+        const blob = await pdf(
+            <InvoicePDF
+                invoice={invoiceData}
+                client={client}
+                contact={contact}
+                lineItems={lineItems}
+                payments={payments}
+            />
+        ).toBlob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `invoice-${invoiceNumber || id}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+
     const handleForceRecalculate = async () => {
         if (isNew) return;
         try {
@@ -499,12 +561,38 @@ export const InvoiceDetail = () => {
                         </p>
                     </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center flex-wrap">
                     <Button variant="outline" onClick={() => navigate(-1)}>Cancel</Button>
                     {!isNew && (
-                        <Button variant="secondary" onClick={handleForceRecalculate} title="Recalculate Line Items">
-                            <RefreshCw className="h-4 w-4 mr-2" /> Recalc
-                        </Button>
+                        <>
+                            <Button variant="outline" onClick={handleDownloadPDF} title="Download PDF">
+                                <Download className="h-4 w-4 mr-2" /> PDF
+                            </Button>
+                            <Button variant="secondary" onClick={handleForceRecalculate} title="Recalculate Line Items">
+                                <RefreshCw className="h-4 w-4 mr-2" /> Recalc
+                            </Button>
+                            {stripeEnabled && !stripeInvoiceId && ['draft', 'sent'].includes(status) && (
+                                <Button
+                                    variant="outline"
+                                    className="border-purple-400 text-purple-700 hover:bg-purple-50"
+                                    onClick={() => handleSendToStripe()}
+                                    disabled={stripeSending}
+                                >
+                                    <CreditCard className="h-4 w-4 mr-2" />
+                                    {stripeSending ? 'Sending...' : 'Send via Stripe'}
+                                </Button>
+                            )}
+                            {stripeHostedUrl && (
+                                <a
+                                    href={stripeHostedUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md bg-purple-600 text-white hover:bg-purple-700"
+                                >
+                                    <ExternalLink className="h-4 w-4" /> Pay Now
+                                </a>
+                            )}
+                        </>
                     )}
                     <Button onClick={handleSubmit} disabled={loading}>
                         {loading ? "Saving..." : (isNew ? "Create Invoice" : "Save Changes")}
@@ -516,6 +604,37 @@ export const InvoiceDetail = () => {
                 {error && (
                     <div className="p-4 mb-6 text-sm text-red-500 bg-red-50 rounded-md border border-red-200">
                         {error}
+                    </div>
+                )}
+
+                {stripeEmailPrompt && (
+                    <div className="p-4 mb-6 bg-purple-50 border border-purple-200 rounded-md flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                        <CreditCard className="h-5 w-5 text-purple-600 shrink-0 mt-0.5 sm:mt-0" />
+                        <div className="flex-1">
+                            <p className="text-sm font-medium text-purple-800 mb-1">Customer email required</p>
+                            <p className="text-xs text-purple-600 mb-2">No email found on this invoice's contact. Enter one to send via Stripe.</p>
+                            <div className="flex gap-2">
+                                <input
+                                    type="email"
+                                    className="flex-1 h-9 px-3 text-sm border rounded-md border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                                    placeholder="customer@example.com"
+                                    value={stripeEmail}
+                                    onChange={e => setStripeEmail(e.target.value)}
+                                    onKeyDown={e => e.key === 'Enter' && stripeEmail && handleSendToStripe(stripeEmail)}
+                                />
+                                <Button
+                                    size="sm"
+                                    className="bg-purple-600 hover:bg-purple-700 text-white"
+                                    disabled={!stripeEmail || stripeSending}
+                                    onClick={() => handleSendToStripe(stripeEmail)}
+                                >
+                                    {stripeSending ? 'Sending...' : 'Send'}
+                                </Button>
+                                <Button size="sm" variant="ghost" onClick={() => setStripeEmailPrompt(false)}>
+                                    Cancel
+                                </Button>
+                            </div>
+                        </div>
                     </div>
                 )}
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { React, useEffect } from "react"
+import { React } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { LayoutDashboard } from "lucide-react"
 
@@ -25,7 +25,7 @@ import { useAuth } from "@/context/AuthContext"
 
 export function AppSidebar({ ...props }) {
 
-  const { MenuLoad, menu } = useMenu();
+  const { menu } = useMenu();
   const { user } = useAuth();
   const location = useLocation();
   const isDashboardActive = location.pathname === "/";
@@ -41,7 +41,6 @@ export function AppSidebar({ ...props }) {
     }
   }
 
-  useEffect(() => { MenuLoad(); }, []);
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -63,10 +62,10 @@ export function AppSidebar({ ...props }) {
           </div>
           <div className="leading-none">
             <p className="text-sm font-bold tracking-tight text-foreground" style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
-              Codex CRM
+              Climate by CodeX
             </p>
             <p className="text-[10px] font-medium uppercase tracking-widest mt-0.5 text-muted-foreground">
-              by Codex Technologies
+              CRM Platform
             </p>
           </div>
         </div>

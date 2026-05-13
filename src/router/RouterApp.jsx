@@ -31,6 +31,11 @@ import { WebhookDetail } from "../pages/Webhooks/WebhookDetail";
 import { ApiGuide } from "../pages/ApiGuide";
 import { Faq } from "../pages/Faq";
 import { Dashboard } from "../pages/Dashboard";
+import { Users } from "../pages/Users";
+import { UserDetail } from "../pages/UserDetail";
+import { ResetPassword } from "../pages/ResetPassword";
+import { Settings } from "../pages/Settings"
+import { ChettAI } from "../pages/ChettAI";
 import AdminLayout from "@/layout/AdminLayout"
 import { useAuth } from "@/context/AuthContext"
 import { PermissionGuard } from "../components/PermissionGuard"
@@ -62,6 +67,7 @@ export const RouterApp = () => {
 
             {/* public routes */}
             <Route path="/login" element={<RedirectIfAuth><Login /></RedirectIfAuth>} />
+            <Route path="/reset-password/:uid/:token" element={<ResetPassword />} />
 
             {/* private routes */}
 
@@ -94,6 +100,10 @@ export const RouterApp = () => {
                 <Route path="followup" element={<PermissionGuard requiredPermission="app.add_followup"><Followup /></PermissionGuard>} />
                 <Route path="webhook" element={<PermissionGuard requiredPermission="app.add_webhook"><WebhookList /></PermissionGuard>} />
                 <Route path="webhook/:id" element={<PermissionGuard requiredPermission="app.add_webhook"><WebhookDetail /></PermissionGuard>} />
+                <Route path="users" element={<PermissionGuard requiredPermission="auth.add_user"><Users /></PermissionGuard>} />
+                <Route path="users/:id" element={<PermissionGuard requiredPermission="auth.add_user"><UserDetail /></PermissionGuard>} />
+                <Route path="settings" element={<PermissionGuard requiredPermission="auth.add_user"><Settings /></PermissionGuard>} />
+                <Route path="chett-ai" element={<PermissionGuard requiredPermission="app.view_aiconversation"><ChettAI /></PermissionGuard>} />
             </Route>
 
             {/* Protected Documentation Routes */}

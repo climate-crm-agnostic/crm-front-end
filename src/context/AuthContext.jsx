@@ -9,12 +9,6 @@ export const AuthProvider = ({ children }) => {
   const loggingOut = useRef(false);
 
   const sessionValidate = async () => {
-    const token = localStorage.getItem("auth_token");
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-
     try {
       const res = await fetch(`${API_URL}/me/`, {
         method: "GET",
@@ -23,18 +17,17 @@ export const AuthProvider = ({ children }) => {
 
       if (res.ok) {
         const data = await res.json();
-        setUser(data); // Data is the user object directly based on docs
+        setUser(data);
         if (data.permissions) {
           localStorage.setItem("user_permissions", JSON.stringify(data.permissions));
           localStorage.setItem("user_data", JSON.stringify(data));
         }
       } else {
-        // Token invalid or expired
-        logout();
+        setUser(null);
       }
     } catch (err) {
       console.error("Error session validation:", err.message);
-      logout();
+      setUser(null);
     } finally {
       setLoading(false);
     }
@@ -52,10 +45,9 @@ export const AuthProvider = ({ children }) => {
     return () => window.removeEventListener("auth:token-expired", handleTokenExpired);
   }, []);
 
-  const login = (token, userData) => {
-    localStorage.setItem("auth_token", token);
+  const login = (userData) => {
     setUser(userData);
-    if (userData && userData.permissions) {
+    if (userData?.permissions) {
       localStorage.setItem("user_permissions", JSON.stringify(userData.permissions));
       localStorage.setItem("user_data", JSON.stringify(userData));
     }
@@ -75,12 +67,13 @@ export const AuthProvider = ({ children }) => {
       // Network error — proceed with local logout regardless
     }
 
-    localStorage.removeItem("auth_token");
     localStorage.removeItem("user_permissions");
     localStorage.removeItem("user_data");
     setUser(null);
     loggingOut.current = false;
-    window.location.href = "/login";
+    if (!window.location.pathname.includes('/login')) {
+      window.location.href = "/login";
+    }
   };
 
   return (

@@ -194,6 +194,18 @@ export const deletePayment = async (invoiceId, paymentId) => {
     return true;
 };
 
+export const sendInvoiceToStripe = async (invoiceId, email = '') => {
+    const body = email ? { email } : {};
+    const res = await fetch(`${url}${invoiceId}/stripe/send/`, {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok) throw { status: res.status, ...data };
+    return data;
+};
+
 export const getPaymentAttributes = async () => {
     const res = await fetch(`${API_URL}/attributes/payment/`, {
         method: "GET",

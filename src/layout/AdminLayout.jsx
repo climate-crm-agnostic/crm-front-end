@@ -7,7 +7,6 @@ import {
     useSidebar
 } from "@/components/ui/sidebar"
 import { Outlet, useLocation } from "react-router-dom"
-import { ClimateChatBot } from "@/components/ClimateChatBot";
 
 const routeLabels = {
     "/": "Dashboard", "/lead": "Leads", "/client": "Clients",
@@ -67,7 +66,6 @@ function AdminLayoutContent() {
                 </div>
             </SidebarInset>
 
-            <ClimateChatBot />
         </>
     )
 }
