@@ -46,7 +46,6 @@ export const LeadDetail = () => {
     const [name, setName] = useState("");
     const [selectedResponsible, setSelectedResponsible] = useState("");
     const [possibleClient, setPossibleClient] = useState("");
-    const [moodleCourseId, setMoodleCourseId] = useState("");
     const [clients, setClients] = useState([]);
 
     // File upload state
@@ -99,7 +98,6 @@ export const LeadDetail = () => {
                     }
                     setName("");
                     setPossibleClient("");
-                    setMoodleCourseId("");
                     if (user?.id) setSelectedResponsible(String(user.id));
                 }
             } catch (err) {
@@ -138,9 +136,6 @@ export const LeadDetail = () => {
         // Handle possible client
         const clientId = leadData.possible_client?.id || leadData.possible_client || "";
         setPossibleClient(String(clientId));
-
-        // Handle Moodle Course ID
-        setMoodleCourseId(leadData.moodle_course_id || "");
 
         // Populate dynamic attributes
         // formData state is initialized in fetchAttributes, but we update it here
@@ -431,7 +426,6 @@ export const LeadDetail = () => {
                 items: finalItems,
                 responsible: selectedResponsible,
                 possible_client: (possibleClient === "new_client" || !possibleClient) ? null : possibleClient,
-                moodle_course_id: moodleCourseId || ""
             };
 
             console.log("LEAD DETAIL PAYLOAD:", payload);
@@ -571,17 +565,6 @@ export const LeadDetail = () => {
                                     fontSize: "14px", cursor: isAutoName ? "default" : "text",
                                     outline: "none", boxSizing: "border-box",
                                 }}
-                            />
-                        </div>
-
-                        {/* Moodle Course ID */}
-                        <div className="space-y-2">
-                            <Label htmlFor="moodle-id">Moodle Course ID</Label>
-                            <Input
-                                id="moodle-id"
-                                placeholder="e.g. 123456"
-                                value={moodleCourseId}
-                                onChange={(e) => setMoodleCourseId(e.target.value)}
                             />
                         </div>
 

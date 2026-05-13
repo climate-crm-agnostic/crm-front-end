@@ -106,7 +106,7 @@ export const WebhookDetail = () => {
                 if (entity) {
                     const attrs = await getAttributes(entity);
                     const standardFields = {
-                        'Lead': ['name', 'stage', 'source', 'lost_reason', 'moodle_course_id', 'possible_client', 'responsible', 'pipeline'],
+                        'Lead': ['name', 'stage', 'source', 'lost_reason', 'possible_client', 'responsible', 'pipeline'],
                         'Client': ['name'],
                         'Service': ['name'],
                         'FollowUp': ['follow_up_date', 'comment']
