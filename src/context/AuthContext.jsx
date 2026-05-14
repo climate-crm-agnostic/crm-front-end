@@ -5,8 +5,21 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [plan, setPlan] = useState(null);
   const [loading, setLoading] = useState(true);
   const loggingOut = useRef(false);
+
+  const fetchPlan = async () => {
+    try {
+      const res = await fetch(`${API_URL}/plan/`, { headers: getHeaders() });
+      if (res.ok) {
+        const data = await res.json();
+        setPlan(data);
+      }
+    } catch {
+      // Plan fetch failure is non-fatal
+    }
+  };
 
   const sessionValidate = async () => {
     try {
@@ -22,7 +35,18 @@ export const AuthProvider = ({ children }) => {
           localStorage.setItem("user_permissions", JSON.stringify(data.permissions));
           localStorage.setItem("user_data", JSON.stringify(data));
         }
+        await fetchPlan();
       } else {
+        // Check if the failure is due to plan expiry
+        try {
+          const body = await res.json();
+          if (body.plan_expired) {
+            window.location.href = "/plan-expired";
+            return;
+          }
+        } catch {
+          // Non-JSON body — treat as normal auth failure
+        }
         setUser(null);
       }
     } catch (err) {
@@ -51,6 +75,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem("user_permissions", JSON.stringify(userData.permissions));
       localStorage.setItem("user_data", JSON.stringify(userData));
     }
+    fetchPlan();
   };
 
   const logout = async () => {
@@ -70,17 +95,31 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("user_permissions");
     localStorage.removeItem("user_data");
     setUser(null);
+    setPlan(null);
     loggingOut.current = false;
     if (!window.location.pathname.includes('/login')) {
       window.location.href = "/login";
     }
   };
 
+  /**
+   * Returns whether a named feature is enabled on the current plan.
+   * Defaults to true when plan data hasn't loaded yet (avoids false negatives).
+   */
+  const isFeatureEnabled = (featureName) => {
+    if (!plan?.features) return true;
+    const val = plan.features[featureName];
+    if (val === undefined) return true;
+    return val !== false && val !== 0;
+  };
+
   return (
     <AuthContext.Provider
       value={{
         user,
+        plan,
         isAuthenticated: !!user,
+        isFeatureEnabled,
         login,
         logout,
         loading,

@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes, useLocation } from "react-router-dom"
 import { Login } from "../pages/Login"
 import { NotFound } from "../pages/NotFound"
+import { PlanExpired } from "../pages/PlanExpired"
 import { Lead } from "../pages/Lead"
 import { Pipeline } from "../pages/Pipeline";
 import { Attributes } from "../pages/Attributes";
@@ -39,6 +40,7 @@ import { ChettAI } from "../pages/ChettAI";
 import AdminLayout from "@/layout/AdminLayout"
 import { useAuth } from "@/context/AuthContext"
 import { PermissionGuard } from "../components/PermissionGuard"
+import { FeatureGate } from "../components/FeatureGate"
 
 const LoginValidate = ({ children }) => {
     const { isAuthenticated, loading } = useAuth();
@@ -68,6 +70,7 @@ export const RouterApp = () => {
             {/* public routes */}
             <Route path="/login" element={<RedirectIfAuth><Login /></RedirectIfAuth>} />
             <Route path="/reset-password/:uid/:token" element={<ResetPassword />} />
+            <Route path="/plan-expired" element={<PlanExpired />} />
 
             {/* private routes */}
 
@@ -91,19 +94,19 @@ export const RouterApp = () => {
                 <Route path="catalogue/:id" element={<PermissionGuard requiredPermission="app.add_catalogueitem"><CatalogueitemDetail /></PermissionGuard>} />
                 <Route path="invoice" element={<PermissionGuard requiredPermission="app.add_invoice"><Invoice /></PermissionGuard>} />
                 <Route path="invoice/:id" element={<PermissionGuard requiredPermission="app.add_invoice"><InvoiceDetail /></PermissionGuard>} />
-                <Route path="inventory" element={<PermissionGuard requiredPermission="app.add_inventory"><Inventory /></PermissionGuard>} />
-                <Route path="inventory/:id" element={<PermissionGuard requiredPermission="app.add_inventory"><InventoryDetail /></PermissionGuard>} />
-                <Route path="asset" element={<PermissionGuard requiredPermission="app.add_asset"><Asset /></PermissionGuard>} />
-                <Route path="asset/:id" element={<PermissionGuard requiredPermission="app.add_asset"><AssetDetail /></PermissionGuard>} />
-                <Route path="assetassignment" element={<PermissionGuard requiredPermission="app.add_assetassignment"><AssetAssignment /></PermissionGuard>} />
-                <Route path="assetassignment/:id" element={<PermissionGuard requiredPermission="app.add_assetassignment"><AssetAssignmentDetail /></PermissionGuard>} />
+                <Route path="inventory" element={<PermissionGuard requiredPermission="app.add_inventory"><FeatureGate feature="inventory"><Inventory /></FeatureGate></PermissionGuard>} />
+                <Route path="inventory/:id" element={<PermissionGuard requiredPermission="app.add_inventory"><FeatureGate feature="inventory"><InventoryDetail /></FeatureGate></PermissionGuard>} />
+                <Route path="asset" element={<PermissionGuard requiredPermission="app.add_asset"><FeatureGate feature="assets"><Asset /></FeatureGate></PermissionGuard>} />
+                <Route path="asset/:id" element={<PermissionGuard requiredPermission="app.add_asset"><FeatureGate feature="assets"><AssetDetail /></FeatureGate></PermissionGuard>} />
+                <Route path="assetassignment" element={<PermissionGuard requiredPermission="app.add_assetassignment"><FeatureGate feature="assets"><AssetAssignment /></FeatureGate></PermissionGuard>} />
+                <Route path="assetassignment/:id" element={<PermissionGuard requiredPermission="app.add_assetassignment"><FeatureGate feature="assets"><AssetAssignmentDetail /></FeatureGate></PermissionGuard>} />
                 <Route path="followup" element={<PermissionGuard requiredPermission="app.add_followup"><Followup /></PermissionGuard>} />
-                <Route path="webhook" element={<PermissionGuard requiredPermission="app.add_webhook"><WebhookList /></PermissionGuard>} />
-                <Route path="webhook/:id" element={<PermissionGuard requiredPermission="app.add_webhook"><WebhookDetail /></PermissionGuard>} />
+                <Route path="webhook" element={<PermissionGuard requiredPermission="app.add_webhook"><FeatureGate feature="webhooks"><WebhookList /></FeatureGate></PermissionGuard>} />
+                <Route path="webhook/:id" element={<PermissionGuard requiredPermission="app.add_webhook"><FeatureGate feature="webhooks"><WebhookDetail /></FeatureGate></PermissionGuard>} />
                 <Route path="users" element={<PermissionGuard requiredPermission="auth.add_user"><Users /></PermissionGuard>} />
                 <Route path="users/:id" element={<PermissionGuard requiredPermission="auth.add_user"><UserDetail /></PermissionGuard>} />
                 <Route path="settings" element={<PermissionGuard requiredPermission="auth.add_user"><Settings /></PermissionGuard>} />
-                <Route path="chett-ai" element={<PermissionGuard requiredPermission="app.view_aiconversation"><ChettAI /></PermissionGuard>} />
+                <Route path="chett-ai" element={<PermissionGuard requiredPermission="app.view_aiconversation"><FeatureGate feature="ai"><ChettAI /></FeatureGate></PermissionGuard>} />
             </Route>
 
             {/* Protected Documentation Routes */}
