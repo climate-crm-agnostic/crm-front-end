@@ -14,7 +14,7 @@ const routeLabels = {
     "/inventory": "Inventory", "/asset": "Assets", "/assetassignment": "Asset Assignments",
     "/pipeline": "Pipelines", "/attribute": "Attributes", "/category": "Categories",
     "/catalogue": "Catalogue", "/followup": "Follow-ups", "/webhook": "Webhooks",
-    "/apidocs": "API Docs", "/faq": "FAQ",
+    "/apidocs": "API Docs", "/faq": "FAQ", "/my-info": "My Info",
 };
 
 function getPageTitle(pathname) {

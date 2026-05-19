@@ -46,3 +46,9 @@ export const deleteConversation = async (id) => {
     if (!res.ok) throw new Error("Failed to delete conversation");
     return true;
 };
+
+export const getMyAIUsage = async () => {
+    const res = await fetch(`${API_URL}/me/ai-usage/`, { headers: getHeaders() });
+    if (!res.ok) throw new Error("Failed to fetch AI usage");
+    return res.json();
+};

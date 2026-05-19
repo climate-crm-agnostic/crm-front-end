@@ -45,6 +45,12 @@ const MENU_CONFIG = [
             { title: "Settings",    url: "/settings",            icon: "Settings2",         permission: "auth.add_user" },
         ],
     },
+    {
+        label: "Account",
+        items: [
+            { title: "My Info", url: "/my-info", icon: "UserCircle2" },
+        ],
+    },
 ];
 
 export const useMenu = () => {
@@ -58,7 +64,7 @@ export const useMenu = () => {
             .map(group => ({
                 ...group,
                 items: group.items.filter(item => {
-                    if (!isSuperuser && !permissions.has(item.permission)) return false;
+                    if (item.permission && !isSuperuser && !permissions.has(item.permission)) return false;
                     if (item.feature && !isFeatureEnabled(item.feature)) return false;
                     return true;
                 }),
