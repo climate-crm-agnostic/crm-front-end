@@ -35,6 +35,12 @@ const MENU_CONFIG = [
         ],
     },
     {
+        label: "Communication",
+        items: [
+            { title: "Team Chat", url: "/chat", icon: "MessageCircle", feature: "chat" },
+        ],
+    },
+    {
         label: "Admin",
         items: [
             { title: "Attributes",  url: "/attribute",           icon: "SlidersHorizontal", permission: "app.add_attribute" },

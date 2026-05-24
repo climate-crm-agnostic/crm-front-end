@@ -6,7 +6,8 @@ import {
     SidebarTrigger,
     useSidebar
 } from "@/components/ui/sidebar"
-import { Outlet, useLocation } from "react-router-dom"
+import { Outlet, useLocation, useNavigate } from "react-router-dom"
+import { ChatNotificationProvider, useChatNotifications } from "@/context/ChatNotificationContext"
 
 const routeLabels = {
     "/": "Dashboard", "/lead": "Leads", "/client": "Clients",
@@ -15,6 +16,7 @@ const routeLabels = {
     "/pipeline": "Pipelines", "/attribute": "Attributes", "/category": "Categories",
     "/catalogue": "Catalogue", "/followup": "Follow-ups", "/webhook": "Webhooks",
     "/apidocs": "API Docs", "/faq": "FAQ", "/my-info": "My Info",
+    "/chat": "Team Chat",
 };
 
 function getPageTitle(pathname) {
@@ -70,10 +72,53 @@ function AdminLayoutContent() {
     )
 }
 
+function ChatToasts() {
+    const { toasts, dismissToast } = useChatNotifications();
+    const navigate = useNavigate();
+    if (toasts.length === 0) return null;
+    return (
+        <div style={{
+            position: 'fixed', bottom: 24, right: 24, zIndex: 9999,
+            display: 'flex', flexDirection: 'column-reverse', gap: 8,
+            pointerEvents: 'none',
+        }}>
+            {toasts.map(toast => (
+                <div
+                    key={toast.id}
+                    onClick={() => { dismissToast(toast.id); navigate('/chat'); }}
+                    style={{
+                        pointerEvents: 'auto', cursor: 'pointer',
+                        background: 'var(--card)',
+                        border: '1px solid var(--border)',
+                        borderLeft: '3px solid #5E6A43',
+                        borderRadius: 10,
+                        padding: '10px 14px',
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.14)',
+                        minWidth: 220, maxWidth: 300,
+                    }}
+                >
+                    <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: 'var(--foreground)' }}>
+                        💬 {toast.sender_username}
+                    </p>
+                    <p style={{
+                        margin: '3px 0 0', fontSize: 12, color: 'var(--muted-foreground)',
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}>
+                        {toast.content}
+                    </p>
+                </div>
+            ))}
+        </div>
+    );
+}
+
 export default function AdminLayout() {
     return (
-        <SidebarProvider defaultOpen={false}>
-            <AdminLayoutContent />
-        </SidebarProvider>
+        <ChatNotificationProvider>
+            <SidebarProvider defaultOpen={false}>
+                <AdminLayoutContent />
+                <ChatToasts />
+            </SidebarProvider>
+        </ChatNotificationProvider>
     )
 }

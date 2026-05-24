@@ -1,5 +1,6 @@
 import * as Icons from "lucide-react";
 import { ChevronRight } from "lucide-react";
+import { useChatNotifications } from "@/context/ChatNotificationContext";
 
 import {
   Collapsible,
@@ -21,6 +22,7 @@ const ACTIVE_BORDER = "3px solid #5E6A43";
 
 export function NavMain({ items }) {
   const location = useLocation();
+  const { totalUnread } = useChatNotifications();
 
   return (
     <SidebarMenu>
@@ -54,6 +56,16 @@ export function NavMain({ items }) {
                     />
                   )}
                   <span className="font-medium text-foreground">{item.title}</span>
+                  {item.url === '/chat' && totalUnread > 0 && (
+                    <span style={{
+                      marginLeft: 'auto', minWidth: 18, height: 18, borderRadius: 9,
+                      background: '#e53e3e', color: '#fff', fontSize: 10, fontWeight: 700,
+                      flexShrink: 0, display: 'flex', alignItems: 'center',
+                      justifyContent: 'center', padding: '0 4px',
+                    }}>
+                      {totalUnread > 99 ? '99+' : totalUnread}
+                    </span>
+                  )}
                 </a>
               </SidebarMenuButton>
             </SidebarMenuItem>

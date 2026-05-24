@@ -39,6 +39,7 @@ import { Settings } from "../pages/Settings"
 import { ChettAI } from "../pages/ChettAI";
 import { AuditLog } from "../pages/AuditLog";
 import { MyInfo } from "../pages/MyInfo";
+import { Chat } from "../pages/Chat";
 import AdminLayout from "@/layout/AdminLayout"
 import { useAuth } from "@/context/AuthContext"
 import { PermissionGuard } from "../components/PermissionGuard"
@@ -110,6 +111,7 @@ export const RouterApp = () => {
                 <Route path="settings" element={<PermissionGuard requiredPermission="auth.add_user"><Settings /></PermissionGuard>} />
                 <Route path="chett-ai" element={<PermissionGuard requiredPermission="app.view_aiconversation"><FeatureGate feature="ai"><ChettAI /></FeatureGate></PermissionGuard>} />
                 <Route path="audit-log" element={<PermissionGuard requiredPermission="auth.add_user"><FeatureGate feature="audit_trail"><AuditLog /></FeatureGate></PermissionGuard>} />
+                <Route path="chat" element={<FeatureGate feature="chat"><Chat /></FeatureGate>} />
                 <Route path="my-info" element={<MyInfo />} />
             </Route>
 
