@@ -64,6 +64,20 @@ export const getClientAttributes = async () => {
     return data.results || data;
 };
 
+export const importClientsFromExcel = async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const res = await fetch(`${API_URL}/clients/import_excel/`, {
+        method: 'POST',
+        body: formData,
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Import failed');
+    return data;
+};
+
 export const uploadClientImage = async (id, file) => {
     const formData = new FormData();
     formData.append("file", file, file.name);
