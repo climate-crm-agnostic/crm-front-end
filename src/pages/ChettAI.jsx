@@ -51,6 +51,14 @@ function groupByDate(conversations) {
 
 // ── Markdown renderer ─────────────────────────────────────────────────────
 
+// A GFM table separator row looks like `|---|:---:|---|` — only whitespace,
+// pipes, dashes and colons, with at least one of each pipe and dash.
+function isTableSeparatorRow(line) {
+    if (!line) return false;
+    const trimmed = line.trim();
+    return /^[\s|:-]+$/.test(trimmed) && trimmed.includes("|") && trimmed.includes("-");
+}
+
 function parseInline(text, key) {
     const parts = [];
     const regex = /(\*\*([^*\n]+)\*\*)|(\*([^*\n]+)\*)|(`([^`\n]+)`)/g;
@@ -127,6 +135,54 @@ function MarkdownContent({ text }) {
                 i++;
             }
             elements.push(<ol key={`ol${i}`} style={{ paddingLeft: 18, margin: "4px 0" }}>{items}</ol>);
+            continue;
+        }
+
+        // Markdown table — header row, then a |---|---| separator row, then body rows
+        if (line.trim().startsWith("|") && isTableSeparatorRow(lines[i + 1])) {
+            const parseRow = (row) =>
+                row.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map(c => c.trim());
+
+            const headerCells = parseRow(line);
+            const tableKey = i;
+            i += 2; // skip header row + separator row
+
+            const bodyRows = [];
+            while (i < lines.length && lines[i].trim().startsWith("|") && lines[i].trim().endsWith("|")) {
+                bodyRows.push(parseRow(lines[i]));
+                i++;
+            }
+
+            elements.push(
+                <div key={`table${tableKey}`} style={{ overflowX: "auto", margin: "8px 0" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                        <thead>
+                            <tr>
+                                {headerCells.map((cell, ci) => (
+                                    <th key={ci} style={{
+                                        textAlign: "left", padding: "6px 10px",
+                                        borderBottom: "2px solid var(--border)",
+                                        fontWeight: 700, color: "var(--foreground)", whiteSpace: "nowrap",
+                                    }}>
+                                        {parseInline(cell, `th${tableKey}-${ci}`)}
+                                    </th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {bodyRows.map((row, ri) => (
+                                <tr key={ri} style={{ borderBottom: "1px solid var(--border)" }}>
+                                    {row.map((cell, ci) => (
+                                        <td key={ci} style={{ padding: "6px 10px", color: "var(--foreground)" }}>
+                                            {parseInline(cell, `td${tableKey}-${ri}-${ci}`)}
+                                        </td>
+                                    ))}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            );
             continue;
         }
 
