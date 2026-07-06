@@ -8,6 +8,7 @@ import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Switch } from "../ui/switch";
+import { DateInput } from "../ui/date-input";
 
 export const FollowupModal = ({ isOpen, onClose, onFollowupSaved, followupToEdit = null, serviceId }) => {
     const { user } = useAuth();
@@ -183,10 +184,16 @@ export const FollowupModal = ({ isOpen, onClose, onFollowupSaved, followupToEdit
                                     {formData[attr.name] ? 'Yes' : 'No'}
                                 </Label>
                             </div>
+                        ) : attr.type === 'date' ? (
+                            <DateInput
+                                id={attr.name}
+                                value={formData[attr.name] || ""}
+                                onChange={(e) => handleAttributeChange(attr.name, e.target.value)}
+                            />
                         ) : (
                             <Input
                                 id={attr.name}
-                                type={attr.type === 'number' ? 'number' : attr.type === 'date' ? 'date' : 'text'}
+                                type={attr.type === 'number' ? 'number' : 'text'}
                                 placeholder={attr.label}
                                 value={formData[attr.name] || ""}
                                 onChange={(e) => handleAttributeChange(attr.name, e.target.value)}
@@ -197,9 +204,8 @@ export const FollowupModal = ({ isOpen, onClose, onFollowupSaved, followupToEdit
 
                 <div className="space-y-2">
                     <Label htmlFor="date">Date</Label>
-                    <Input
+                    <DateInput
                         id="date"
-                        type="date"
                         value={followUpDate}
                         onChange={(e) => setFollowUpDate(e.target.value)}
                     />

@@ -102,3 +102,12 @@ export const deleteContactNote = async (id, payload) => {
     if (!res.ok) throw new Error("Error deleting note");
     return res.json();
 };
+
+export const exportContactsExcel = async () => {
+    const res = await fetch(`${url}export_excel/`, {
+        method: "GET",
+        headers: getHeaders(),
+    });
+    if (!res.ok) throw new Error("Error exporting contacts to Excel");
+    return res.blob();
+};

@@ -3,20 +3,33 @@ import { LeadCard } from "./LeadCard";
 import { getPipelines } from "../../services/pipelineService";
 import { getLeads, updateLead } from "../../services/leadService";
 import { getSales } from "../../services/salesService";
+import { getClients } from "../../services/clientService";
+import { useAuth } from "../../context/AuthContext";
 import { Link } from "react-router-dom";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { Modal } from "../Modal";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
+
+const LEAD_MY_LEADS_STORAGE_KEY = 'lead_my_leads_only';
+const LEAD_SEARCH_STORAGE_KEY = 'lead_search_term';
 
 export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipelineId, onLeadClick }) => {
     const [pipelines, setPipelines] = useState([]);
     const [leads, setLeads] = useState([]);
     const [stages, setStages] = useState([]);
     const [salesUsers, setSalesUsers] = useState([]);
+    const [clientsById, setClientsById] = useState({});
     const [loading, setLoading] = useState(true);
+    const [myLeadsOnly, setMyLeadsOnly] = useState(
+        () => localStorage.getItem(LEAD_MY_LEADS_STORAGE_KEY) === 'true'
+    );
+    const [searchTerm, setSearchTerm] = useState(
+        () => localStorage.getItem(LEAD_SEARCH_STORAGE_KEY) || ""
+    );
     const scrollContainerRef = useRef(null);
+    const { user } = useAuth();
 
     const [lostModalOpen, setLostModalOpen] = useState(false);
     const [lostReason, setLostReason] = useState("");
@@ -42,8 +55,19 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
                 console.error("Failed to load sales users", err);
             }
         };
+        const fetchClients = async () => {
+            try {
+                const clientsData = await getClients();
+                const map = {};
+                (clientsData || []).forEach(c => { map[String(c.id)] = c.name; });
+                setClientsById(map);
+            } catch (err) {
+                console.error("Failed to load clients", err);
+            }
+        };
         fetchPipelines();
         fetchSalesUsers();
+        fetchClients();
     }, []);
 
     useEffect(() => {
@@ -71,6 +95,28 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
             setStages([]);
         }
     }, [selectedPipelineId, pipelines]);
+
+    const getResponsibleId = (lead) => {
+        const resp = lead.responsible;
+        if (!resp) return null;
+        if (typeof resp === 'object') return resp.id ?? null;
+        const parsed = parseInt(resp, 10);
+        return isNaN(parsed) ? null : parsed;
+    };
+
+    const filteredLeads = leads.filter(lead => {
+        if (myLeadsOnly && user && getResponsibleId(lead) !== user.id) return false;
+        if (searchTerm.trim() && !lead.name?.toLowerCase().includes(searchTerm.trim().toLowerCase())) return false;
+        return true;
+    });
+
+    useEffect(() => {
+        localStorage.setItem(LEAD_MY_LEADS_STORAGE_KEY, String(myLeadsOnly));
+    }, [myLeadsOnly]);
+
+    useEffect(() => {
+        localStorage.setItem(LEAD_SEARCH_STORAGE_KEY, searchTerm);
+    }, [searchTerm]);
 
     const handleDragOver = (e) => e.preventDefault();
 
@@ -168,6 +214,33 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
                         style={{ color: "#9b948e" }}
                     />
                 </div>
+
+                <label className="flex items-center gap-1.5 shrink-0 cursor-pointer select-none">
+                    <input
+                        type="checkbox"
+                        checked={myLeadsOnly}
+                        onChange={(e) => setMyLeadsOnly(e.target.checked)}
+                        className="h-3.5 w-3.5 rounded cursor-pointer"
+                        style={{ accentColor: "#5E6A43" }}
+                    />
+                    <span className="text-xs font-semibold" style={{ color: "#2E2A26" }}>My Leads</span>
+                </label>
+
+                <div className="relative w-[220px]">
+                    <Search
+                        size={13}
+                        className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
+                        style={{ color: "#9b948e" }}
+                    />
+                    <input
+                        type="text"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        placeholder="Search leads by name..."
+                        className="w-full pl-8 pr-3 py-1.5 rounded-full text-xs focus:outline-none transition-colors"
+                        style={{ border: "1px solid #D8D2C4", backgroundColor: "#FBF7EF", color: "#2E2A26" }}
+                    />
+                </div>
             </div>
 
             {/* Scroll buttons */}
@@ -194,7 +267,7 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
             >
                 {stages.map((stage, index) => {
                     const stageColor = stage.color || "#5E6A43";
-                    const stageLeads = leads.filter(l => {
+                    const stageLeads = filteredLeads.filter(l => {
                         const matchesStage = l.stage === stage.name || l.stage_id === stage.id;
                         if (index === 0 && !l.stage && !l.stage_id) return true;
                         return matchesStage;
@@ -248,6 +321,7 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
                                         key={lead.id}
                                         lead={lead}
                                         salesUsers={salesUsers}
+                                        clientsById={clientsById}
                                         onDragStart={(e, l) => e.dataTransfer.setData("leadId", l.id)}
                                         onClick={() => onLeadClick?.(lead)}
                                     />

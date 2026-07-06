@@ -26,6 +26,8 @@ import { InvoicePDF } from "../components/InvoicePDF";
 import { Checkbox } from "../components/ui/checkbox";
 import { Switch } from "../components/ui/switch";
 import { Badge } from "../components/ui/badge";
+import { DateInput } from "../components/ui/date-input";
+import { formatDate } from "../utils/date";
 
 export const InvoiceDetail = () => {
     const { id } = useParams();
@@ -383,7 +385,7 @@ export const InvoiceDetail = () => {
         {
             key: "paid_at",
             label: "Date",
-            render: (value) => new Date(value).toLocaleDateString()
+            render: (value) => formatDate(value)
         },
         {
             key: "method",
@@ -672,11 +674,11 @@ export const InvoiceDetail = () => {
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="issue_date">Issue Date</Label>
-                                    <Input id="issue_date" type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} />
+                                    <DateInput id="issue_date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="due_date">Due Date</Label>
-                                    <Input id="due_date" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+                                    <DateInput id="due_date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="status">Status</Label>
@@ -884,7 +886,7 @@ export const InvoiceDetail = () => {
                                     <div className="flex gap-2">
                                         <div className="w-1/2 space-y-1">
                                             <Label className="text-xs">Date</Label>
-                                            <Input type="date" value={newTaskDate} onChange={(e) => setNewTaskDate(e.target.value)} />
+                                            <DateInput value={newTaskDate} onChange={(e) => setNewTaskDate(e.target.value)} />
                                         </div>
                                         <div className="w-full flex items-center justify-end gap-2 pt-6">
                                             <Checkbox id="new-completed" checked={newTaskCompleted} onCheckedChange={setNewTaskCompleted} />

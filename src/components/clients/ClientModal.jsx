@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Checkbox } from "../ui/checkbox";
 import { Textarea } from "../ui/textarea";
 import { Switch } from "../ui/switch";
+import { DateInput } from "../ui/date-input";
 
 export const ClientModal = ({ isOpen, onClose, onClientSaved, clientToEdit = null, attributes = [] }) => {
     const [loading, setLoading] = useState(false);
@@ -375,11 +376,9 @@ export const ClientModal = ({ isOpen, onClose, onClientSaved, clientToEdit = nul
                                     </div>
                                     <div className="w-32">
                                         <Label className="text-xs">Date</Label>
-                                        <Input
-                                            type="date"
+                                        <DateInput
                                             value={newTaskDate}
                                             onChange={(e) => setNewTaskDate(e.target.value)}
-                                            className="h-8"
                                         />
                                     </div>
                                     <div className="flex items-center space-x-2 pb-2">

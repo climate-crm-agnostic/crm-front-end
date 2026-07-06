@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Table } from "../components/Table";
 import { Button } from "../components/ui/button";
 import { Plus, Download } from "lucide-react";
-import { getInvoices, deleteInvoice, getInvoiceAttributes } from "../services/invoiceService";
-import * as XLSX from "xlsx";
+import { getInvoices, deleteInvoice, getInvoiceAttributes, exportInvoicesExcel } from "../services/invoiceService";
 import { saveAs } from "file-saver";
 import Swal from "sweetalert2";
 import { Badge } from "../components/ui/badge";
@@ -125,16 +124,14 @@ export const Invoice = () => {
         }
     };
 
-    const handleExportExcel = () => {
-        const worksheet = XLSX.utils.json_to_sheet(invoices.map(inv => ({
-            ...inv,
-            client_name: inv.client?.name || inv.client
-        })));
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Invoices");
-        const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-        const data = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8" });
-        saveAs(data, "invoices_report.xlsx");
+    const handleExportExcel = async () => {
+        try {
+            const blob = await exportInvoicesExcel();
+            saveAs(blob, "invoices_report.xlsx");
+        } catch (error) {
+            console.error("Error exporting invoices", error);
+            Swal.fire('Error!', 'There was an error exporting the invoices.', 'error');
+        }
     };
 
     return (

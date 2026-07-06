@@ -215,3 +215,12 @@ export const getPaymentAttributes = async () => {
     const data = await res.json();
     return data.results || data;
 };
+
+export const exportInvoicesExcel = async () => {
+    const res = await fetch(`${url}export_excel/`, {
+        method: "GET",
+        headers: getHeaders(),
+    });
+    if (!res.ok) throw new Error("Error exporting invoices to Excel");
+    return res.blob();
+};

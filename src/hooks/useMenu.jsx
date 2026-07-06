@@ -49,6 +49,7 @@ const MENU_CONFIG = [
             { title: "Audit Log",   url: "/audit-log",           icon: "ClipboardList",     permission: "auth.add_user",   feature: "audit_trail" },
             { title: "Users",       url: "/users",               icon: "Users",             permission: "auth.add_user" },
             { title: "Settings",    url: "/settings",            icon: "Settings2",         permission: "auth.add_user" },
+            { title: "Lead Reassignment", url: "/lead-reassignment", icon: "ArrowLeftRight", superuserOnly: true },
         ],
     },
     {
@@ -70,6 +71,7 @@ export const useMenu = () => {
             .map(group => ({
                 ...group,
                 items: group.items.filter(item => {
+                    if (item.superuserOnly && !isSuperuser) return false;
                     if (item.permission && !isSuperuser && !permissions.has(item.permission)) return false;
                     if (item.feature && !isFeatureEnabled(item.feature)) return false;
                     return true;

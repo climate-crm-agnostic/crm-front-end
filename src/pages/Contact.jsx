@@ -3,9 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Table } from "../components/Table";
 import { Button } from "../components/ui/button";
 import { Plus, Download, Upload, X, CheckCircle, AlertCircle } from "lucide-react";
-import { getContacts, deleteContact, getContactAttributes, importContactsFromExcel } from "../services/contactService";
+import { getContacts, deleteContact, getContactAttributes, importContactsFromExcel, exportContactsExcel } from "../services/contactService";
 import { getClients } from "../services/clientService";
-import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import Swal from "sweetalert2";
 
@@ -113,13 +112,14 @@ export const Contact = () => {
         }
     };
 
-    const handleExportExcel = () => {
-        const worksheet = XLSX.utils.json_to_sheet(contacts);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Contacts");
-        const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-        const data = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8" });
-        saveAs(data, "contacts_report.xlsx");
+    const handleExportExcel = async () => {
+        try {
+            const blob = await exportContactsExcel();
+            saveAs(blob, "contacts_report.xlsx");
+        } catch (error) {
+            console.error("Error exporting contacts", error);
+            Swal.fire('Error!', 'There was an error exporting the contacts.', 'error');
+        }
     };
 
     const openImportModal = async () => {

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { ClipboardList, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from "lucide-react";
 import Swal from "sweetalert2";
 import { getAuditLogs } from "@/services/auditLogService";
+import { DateInput } from "@/components/ui/date-input";
 
 const ACTION_STYLE = {
     CREATE: { bg: "rgba(94,106,67,0.12)",   border: "rgba(94,106,67,0.4)",   text: "#4a5535" },
@@ -140,24 +141,18 @@ export const AuditLog = () => {
                         ))}
                     </select>
                 </div>
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1" style={{ width: 160 }}>
                     <label className="text-xs font-medium" style={{ color: "#9b948e" }}>From</label>
-                    <input
-                        type="date"
+                    <DateInput
                         value={dateFrom}
                         onChange={e => { setDateFrom(e.target.value); setPage(1); }}
-                        className="h-9 rounded-md border px-2.5 text-sm focus:outline-none"
-                        style={{ borderColor: "#D8D2C4", color: "#2E2A26" }}
                     />
                 </div>
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1" style={{ width: 160 }}>
                     <label className="text-xs font-medium" style={{ color: "#9b948e" }}>To</label>
-                    <input
-                        type="date"
+                    <DateInput
                         value={dateTo}
                         onChange={e => { setDateTo(e.target.value); setPage(1); }}
-                        className="h-9 rounded-md border px-2.5 text-sm focus:outline-none"
-                        style={{ borderColor: "#D8D2C4", color: "#2E2A26" }}
                     />
                 </div>
                 <button

@@ -12,6 +12,7 @@ import { Checkbox } from "../components/ui/checkbox";
 import { Textarea } from "../components/ui/textarea";
 import { ArrowLeft } from "lucide-react";
 import { Switch } from "../components/ui/switch";
+import { DateInput } from "../components/ui/date-input";
 
 export const ClientDetail = () => {
     const { id } = useParams();
@@ -384,7 +385,7 @@ export const ClientDetail = () => {
                                     <div className="flex gap-2">
                                         <div className="w-1/2 space-y-1">
                                             <Label className="text-xs">Date</Label>
-                                            <Input type="date" value={newTaskDate} onChange={(e) => setNewTaskDate(e.target.value)} />
+                                            <DateInput value={newTaskDate} onChange={(e) => setNewTaskDate(e.target.value)} />
                                         </div>
                                         <div className="w-1/2 flex items-center justify-end gap-2 pt-6">
                                             <Checkbox id="new-completed" checked={newTaskCompleted} onCheckedChange={setNewTaskCompleted} />

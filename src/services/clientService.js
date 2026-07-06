@@ -78,6 +78,15 @@ export const importClientsFromExcel = async (file) => {
     return data;
 };
 
+export const exportClientsExcel = async () => {
+    const res = await fetch(`${url}export_excel/`, {
+        method: "GET",
+        headers: getHeaders(),
+    });
+    if (!res.ok) throw new Error("Error exporting clients to Excel");
+    return res.blob();
+};
+
 export const uploadClientImage = async (id, file) => {
     const formData = new FormData();
     formData.append("file", file, file.name);

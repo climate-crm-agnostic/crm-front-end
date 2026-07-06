@@ -12,6 +12,7 @@ import { Button } from "../components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { ArrowLeft } from "lucide-react";
 import { Switch } from "../components/ui/switch";
+import { DateInput } from "../components/ui/date-input";
 
 export const InventoryDetail = () => {
     const { id } = useParams();
@@ -249,10 +250,16 @@ export const InventoryDetail = () => {
                                                     {dynamicData[attr.name] ? 'Yes' : 'No'}
                                                 </Label>
                                             </div>
+                                        ) : attr.type === 'date' ? (
+                                            <DateInput
+                                                id={attr.name}
+                                                value={dynamicData[attr.name] || ""}
+                                                onChange={(e) => handleDynamicChange(attr.name, e.target.value)}
+                                            />
                                         ) : (
                                             <Input
                                                 id={attr.name}
-                                                type={attr.type === 'number' ? 'number' : attr.type === 'date' ? 'date' : 'text'}
+                                                type={attr.type === 'number' ? 'number' : 'text'}
                                                 placeholder={attr.label}
                                                 value={dynamicData[attr.name] || ""}
                                                 onChange={(e) => handleDynamicChange(attr.name, e.target.value)}

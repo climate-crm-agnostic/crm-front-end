@@ -43,11 +43,6 @@ export const Table = ({
   );
 
   const isDateKey = (k) => typeof k === "string" && k.startsWith("fecha");
-  const fmtDate = (v) => {
-    if (!v) return "";
-    const d = new Date(v);
-    return isNaN(d.getTime()) ? String(v ?? "") : d.toLocaleDateString();
-  };
 
   const renderCell = (col, row) => {
     if (col.key === "_actions") {
@@ -65,6 +60,8 @@ export const Table = ({
     }
 
     const val = row[col.key];
+
+    if (col.render) return col.render(val, row);
 
     if (col.key === "activo") {
       const activo =

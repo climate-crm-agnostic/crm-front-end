@@ -13,6 +13,7 @@ import { Checkbox } from "../components/ui/checkbox";
 import { Textarea } from "../components/ui/textarea";
 import { ArrowLeft } from "lucide-react";
 import { Switch } from "../components/ui/switch";
+import { DateInput } from "../components/ui/date-input";
 
 export const ServiceDetail = () => {
     const { id } = useParams();
@@ -386,10 +387,16 @@ export const ServiceDetail = () => {
                                                     {dynamicData[attr.name] ? 'Yes' : 'No'}
                                                 </Label>
                                             </div>
+                                        ) : attr.type === 'date' ? (
+                                            <DateInput
+                                                id={attr.name}
+                                                value={dynamicData[attr.name] || ""}
+                                                onChange={(e) => handleDynamicChange(attr.name, e.target.value)}
+                                            />
                                         ) : (
                                             <Input
                                                 id={attr.name}
-                                                type={attr.type === 'number' ? 'number' : attr.type === 'date' ? 'date' : 'text'}
+                                                type={attr.type === 'number' ? 'number' : 'text'}
                                                 placeholder={attr.label}
                                                 value={dynamicData[attr.name] || ""}
                                                 onChange={(e) => handleDynamicChange(attr.name, e.target.value)}
@@ -419,7 +426,7 @@ export const ServiceDetail = () => {
                                     <div className="flex gap-2">
                                         <div className="w-1/2 space-y-1">
                                             <Label className="text-xs">Date</Label>
-                                            <Input type="date" value={newTaskDate} onChange={(e) => setNewTaskDate(e.target.value)} />
+                                            <DateInput value={newTaskDate} onChange={(e) => setNewTaskDate(e.target.value)} />
                                         </div>
                                         <div className="w-full flex items-center justify-end gap-2 pt-6">
                                             <Checkbox id="new-completed" checked={newTaskCompleted} onCheckedChange={setNewTaskCompleted} />

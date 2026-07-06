@@ -3,6 +3,7 @@ import { Login } from "../pages/Login"
 import { NotFound } from "../pages/NotFound"
 import { PlanExpired } from "../pages/PlanExpired"
 import { Lead } from "../pages/Lead"
+import { LeadReassignment } from "../pages/LeadReassignment"
 import { Pipeline } from "../pages/Pipeline";
 import { Attributes } from "../pages/Attributes";
 import { PipelineAttributesAdmin } from "../pages/PipelineAttributesAdmin";
@@ -113,6 +114,7 @@ export const RouterApp = () => {
                 <Route path="audit-log" element={<PermissionGuard requiredPermission="auth.add_user"><FeatureGate feature="audit_trail"><AuditLog /></FeatureGate></PermissionGuard>} />
                 <Route path="chat" element={<FeatureGate feature="chat"><Chat /></FeatureGate>} />
                 <Route path="my-info" element={<MyInfo />} />
+                <Route path="lead-reassignment" element={<PermissionGuard requireSuperuser><LeadReassignment /></PermissionGuard>} />
             </Route>
 
             {/* Protected Documentation Routes */}

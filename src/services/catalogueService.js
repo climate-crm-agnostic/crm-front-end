@@ -67,6 +67,15 @@ export const getCatalogueItemAttributes = async () => {
     return data.results || data;
 };
 
+export const exportCatalogueItemsExcel = async () => {
+    const res = await fetch(`${url}export_excel/`, {
+        method: "GET",
+        headers: getHeaders(),
+    });
+    if (!res.ok) throw new Error("Error exporting catalogue to Excel");
+    return res.blob();
+};
+
 export const uploadCatalogueItemImage = async (id, file) => {
     const formData = new FormData();
     formData.append("file", file, file.name);

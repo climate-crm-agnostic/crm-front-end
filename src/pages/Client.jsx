@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Table } from "../components/Table";
 import { Button } from "../components/ui/button";
 import { Plus, Download, Upload, X, CheckCircle, AlertCircle } from "lucide-react";
-import { getClients, deleteClient, getClientAttributes, importClientsFromExcel } from "../services/clientService";
-import * as XLSX from "xlsx";
+import { getClients, deleteClient, getClientAttributes, importClientsFromExcel, exportClientsExcel } from "../services/clientService";
 import { saveAs } from "file-saver";
 import Swal from "sweetalert2";
 
@@ -95,13 +94,14 @@ export const Client = () => {
         }
     };
 
-    const handleExportExcel = () => {
-        const worksheet = XLSX.utils.json_to_sheet(clients);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Clients");
-        const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-        const data = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8" });
-        saveAs(data, "clients_report.xlsx");
+    const handleExportExcel = async () => {
+        try {
+            const blob = await exportClientsExcel();
+            saveAs(blob, "clients_report.xlsx");
+        } catch (error) {
+            console.error("Error exporting clients", error);
+            Swal.fire('Error!', 'There was an error exporting the clients.', 'error');
+        }
     };
 
     const openImportModal = () => {

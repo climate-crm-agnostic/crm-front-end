@@ -13,6 +13,7 @@ import { Button } from "../components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { ArrowLeft } from "lucide-react";
 import { Switch } from "../components/ui/switch";
+import { DateInput } from "../components/ui/date-input";
 
 export const AssetAssignmentDetail = () => {
     const { id } = useParams();
@@ -273,11 +274,11 @@ export const AssetAssignmentDetail = () => {
 
                             <div className="space-y-2">
                                 <Label htmlFor="borrow_date">Borrow Date <span className="text-red-500">*</span></Label>
-                                <Input id="borrow_date" type="date" value={borrowDate} onChange={(e) => setBorrowDate(e.target.value)} />
+                                <DateInput id="borrow_date" value={borrowDate} onChange={(e) => setBorrowDate(e.target.value)} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="return_date">Return Date</Label>
-                                <Input id="return_date" type="date" value={returnDate} onChange={(e) => setReturnDate(e.target.value)} />
+                                <DateInput id="return_date" value={returnDate} onChange={(e) => setReturnDate(e.target.value)} />
                             </div>
 
                             <div className="space-y-2">
@@ -351,10 +352,16 @@ export const AssetAssignmentDetail = () => {
                                                     {dynamicData[attr.name] ? 'Yes' : 'No'}
                                                 </Label>
                                             </div>
+                                        ) : attr.type === 'date' ? (
+                                            <DateInput
+                                                id={attr.name}
+                                                value={dynamicData[attr.name] || ""}
+                                                onChange={(e) => handleDynamicChange(attr.name, e.target.value)}
+                                            />
                                         ) : (
                                             <Input
                                                 id={attr.name}
-                                                type={attr.type === 'number' ? 'number' : attr.type === 'date' ? 'date' : 'text'}
+                                                type={attr.type === 'number' ? 'number' : 'text'}
                                                 placeholder={attr.label}
                                                 value={dynamicData[attr.name] || ""}
                                                 onChange={(e) => handleDynamicChange(attr.name, e.target.value)}

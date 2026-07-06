@@ -66,3 +66,12 @@ export const getCategoryAttributes = async () => {
     const data = await res.json();
     return data.results || data;
 };
+
+export const exportCategoriesExcel = async () => {
+    const res = await fetch(`${url}export_excel/`, {
+        method: "GET",
+        headers: getHeaders(),
+    });
+    if (!res.ok) throw new Error("Error exporting categories to Excel");
+    return res.blob();
+};

@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Table } from "../components/Table";
 import { Button } from "../components/ui/button";
 import { Plus, Download } from "lucide-react";
-import { getCatalogueItems, deleteCatalogueItem, getCatalogueItemAttributes } from "../services/catalogueService";
-import * as XLSX from "xlsx";
+import { getCatalogueItems, deleteCatalogueItem, getCatalogueItemAttributes, exportCatalogueItemsExcel } from "../services/catalogueService";
 import { saveAs } from "file-saver";
 import Swal from "sweetalert2";
 import { Badge } from "../components/ui/badge";
@@ -110,13 +109,14 @@ export const Catalogueitem = () => {
         }
     };
 
-    const handleExportExcel = () => {
-        const worksheet = XLSX.utils.json_to_sheet(items);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Catalogue");
-        const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-        const data = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8" });
-        saveAs(data, "catalogue_report.xlsx");
+    const handleExportExcel = async () => {
+        try {
+            const blob = await exportCatalogueItemsExcel();
+            saveAs(blob, "catalogue_report.xlsx");
+        } catch (error) {
+            console.error("Error exporting catalogue", error);
+            Swal.fire('Error!', 'There was an error exporting the catalogue.', 'error');
+        }
     };
 
     return (
