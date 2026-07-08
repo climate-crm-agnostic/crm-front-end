@@ -11,15 +11,20 @@ import { handleSaveCrud } from "@/utils/handleOperacion";
 
 export const Login = ({ className, ...props }) => {
   const {
-    usuario,
+    user,
     loading,
     error,
     showPass,
     password,
+    code,
+    step,
     handleSubmit,
+    handleVerifyCode,
+    resetToCredentials,
     setUser,
     setShowPass,
     setPassword,
+    setCode,
     isModalOpen,
     setIsModalOpen,
   } = useLogin();
@@ -87,103 +92,187 @@ export const Login = ({ className, ...props }) => {
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="grid gap-4">
-              {error && (
-                <div
-                  className="flex items-start gap-2.5 rounded-lg p-3 text-sm"
-                  style={{ backgroundColor: "#FFDCC8", border: "1px solid #F29B6B", color: "#2E2A26" }}
-                >
-                  <span
-                    className="mt-0.5 shrink-0 flex h-4 w-4 items-center justify-center rounded-full text-white text-xs font-bold"
-                    style={{ backgroundColor: "#F29B6B" }}
-                  >!</span>
-                  <span>{error}</span>
-                </div>
-              )}
-
-              <div className="grid gap-1.5">
-                <Label htmlFor="usuario" className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#6b6560" }}>
-                  Username
-                </Label>
-                <Input
-                  id="usuario"
-                  type="text"
-                  placeholder="Enter your username"
-                  required
-                  value={usuario}
-                  onChange={(e) => setUser(e.target.value)}
-                  disabled={loading}
-                  className="h-11 rounded-md transition-all"
-                  style={{
-                    backgroundColor: "#fff",
-                    border: "1px solid #D8D2C4",
-                    color: "#2E2A26",
-                    fontFamily: '"Source Sans 3", Arial, sans-serif',
-                  }}
-                />
-              </div>
-
-              <div className="grid gap-1.5">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password" className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#6b6560" }}>
-                    Password
-                  </Label>
-                  <button
-                    type="button"
-                    onClick={() => setShowPass((s) => !s)}
-                    className="text-xs font-medium transition-colors"
-                    style={{ color: "#F29B6B" }}
-                    tabIndex={-1}
+            {step === "credentials" ? (
+              <form onSubmit={handleSubmit} className="grid gap-4">
+                {error && (
+                  <div
+                    className="flex items-start gap-2.5 rounded-lg p-3 text-sm"
+                    style={{ backgroundColor: "#FFDCC8", border: "1px solid #F29B6B", color: "#2E2A26" }}
                   >
-                    {showPass ? "Hide" : "Show"}
-                  </button>
-                </div>
-                <Input
-                  id="password"
-                  type={showPass ? "text" : "password"}
-                  placeholder="Enter your password"
-                  autoComplete="current-password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={loading}
-                  className="h-11 rounded-md transition-all"
-                  style={{
-                    backgroundColor: "#fff",
-                    border: "1px solid #D8D2C4",
-                    color: "#2E2A26",
-                    fontFamily: '"Source Sans 3", Arial, sans-serif',
-                  }}
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full mt-1 h-11 rounded-md font-semibold text-sm transition-all duration-200 active:scale-[0.99] flex items-center justify-center gap-2 shadow-sm"
-                style={{
-                  backgroundColor: loading ? "#d97c4a" : "#F29B6B",
-                  color: "#FBF7EF",
-                  fontFamily: '"Source Sans 3", Arial, sans-serif',
-                  letterSpacing: "0.02em",
-                  cursor: loading ? "not-allowed" : "pointer",
-                }}
-                onMouseEnter={e => !loading && (e.currentTarget.style.backgroundColor = "#d97c4a")}
-                onMouseLeave={e => !loading && (e.currentTarget.style.backgroundColor = "#F29B6B")}
-              >
-                {loading ? (
-                  <>
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                    Signing in...
-                  </>
-                ) : (
-                  <>
-                    Sign in to Dashboard
-                    <ArrowRight className="h-4 w-4" />
-                  </>
+                    <span
+                      className="mt-0.5 shrink-0 flex h-4 w-4 items-center justify-center rounded-full text-white text-xs font-bold"
+                      style={{ backgroundColor: "#F29B6B" }}
+                    >!</span>
+                    <span>{error}</span>
+                  </div>
                 )}
-              </button>
-            </form>
+
+                <div className="grid gap-1.5">
+                  <Label htmlFor="usuario" className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#6b6560" }}>
+                    Username
+                  </Label>
+                  <Input
+                    id="usuario"
+                    type="text"
+                    placeholder="Enter your username"
+                    required
+                    value={user}
+                    onChange={(e) => setUser(e.target.value)}
+                    disabled={loading}
+                    className="h-11 rounded-md transition-all"
+                    style={{
+                      backgroundColor: "#fff",
+                      border: "1px solid #D8D2C4",
+                      color: "#2E2A26",
+                      fontFamily: '"Source Sans 3", Arial, sans-serif',
+                    }}
+                  />
+                </div>
+
+                <div className="grid gap-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password" className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#6b6560" }}>
+                      Password
+                    </Label>
+                    <button
+                      type="button"
+                      onClick={() => setShowPass((s) => !s)}
+                      className="text-xs font-medium transition-colors"
+                      style={{ color: "#F29B6B" }}
+                      tabIndex={-1}
+                    >
+                      {showPass ? "Hide" : "Show"}
+                    </button>
+                  </div>
+                  <Input
+                    id="password"
+                    type={showPass ? "text" : "password"}
+                    placeholder="Enter your password"
+                    autoComplete="current-password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={loading}
+                    className="h-11 rounded-md transition-all"
+                    style={{
+                      backgroundColor: "#fff",
+                      border: "1px solid #D8D2C4",
+                      color: "#2E2A26",
+                      fontFamily: '"Source Sans 3", Arial, sans-serif',
+                    }}
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full mt-1 h-11 rounded-md font-semibold text-sm transition-all duration-200 active:scale-[0.99] flex items-center justify-center gap-2 shadow-sm"
+                  style={{
+                    backgroundColor: loading ? "#d97c4a" : "#F29B6B",
+                    color: "#FBF7EF",
+                    fontFamily: '"Source Sans 3", Arial, sans-serif',
+                    letterSpacing: "0.02em",
+                    cursor: loading ? "not-allowed" : "pointer",
+                  }}
+                  onMouseEnter={e => !loading && (e.currentTarget.style.backgroundColor = "#d97c4a")}
+                  onMouseLeave={e => !loading && (e.currentTarget.style.backgroundColor = "#F29B6B")}
+                >
+                  {loading ? (
+                    <>
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                      Signing in...
+                    </>
+                  ) : (
+                    <>
+                      Sign in to Dashboard
+                      <ArrowRight className="h-4 w-4" />
+                    </>
+                  )}
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleVerifyCode} className="grid gap-4">
+                {error && (
+                  <div
+                    className="flex items-start gap-2.5 rounded-lg p-3 text-sm"
+                    style={{ backgroundColor: "#FFDCC8", border: "1px solid #F29B6B", color: "#2E2A26" }}
+                  >
+                    <span
+                      className="mt-0.5 shrink-0 flex h-4 w-4 items-center justify-center rounded-full text-white text-xs font-bold"
+                      style={{ backgroundColor: "#F29B6B" }}
+                    >!</span>
+                    <span>{error}</span>
+                  </div>
+                )}
+
+                <div className="text-sm" style={{ color: "#6b6560" }}>
+                  We emailed a verification code to <strong style={{ color: "#2E2A26" }}>{user}</strong>'s address.
+                  It expires in <strong style={{ color: "#2E2A26" }}>1 minute</strong>.
+                </div>
+
+                <div className="grid gap-1.5">
+                  <Label htmlFor="code" className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#6b6560" }}>
+                    Verification code
+                  </Label>
+                  <Input
+                    id="code"
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    placeholder="000000"
+                    required
+                    autoFocus
+                    value={code}
+                    onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+                    disabled={loading}
+                    className="h-11 rounded-md transition-all text-center tracking-[0.5em] text-lg"
+                    style={{
+                      backgroundColor: "#fff",
+                      border: "1px solid #D8D2C4",
+                      color: "#2E2A26",
+                      fontFamily: '"Source Sans 3", Arial, sans-serif',
+                    }}
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full mt-1 h-11 rounded-md font-semibold text-sm transition-all duration-200 active:scale-[0.99] flex items-center justify-center gap-2 shadow-sm"
+                  style={{
+                    backgroundColor: loading ? "#d97c4a" : "#F29B6B",
+                    color: "#FBF7EF",
+                    fontFamily: '"Source Sans 3", Arial, sans-serif',
+                    letterSpacing: "0.02em",
+                    cursor: loading ? "not-allowed" : "pointer",
+                  }}
+                  onMouseEnter={e => !loading && (e.currentTarget.style.backgroundColor = "#d97c4a")}
+                  onMouseLeave={e => !loading && (e.currentTarget.style.backgroundColor = "#F29B6B")}
+                >
+                  {loading ? (
+                    <>
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                      Verifying...
+                    </>
+                  ) : (
+                    <>
+                      Verify code
+                      <ArrowRight className="h-4 w-4" />
+                    </>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={resetToCredentials}
+                  disabled={loading}
+                  className="text-xs font-medium text-center"
+                  style={{ color: "#6b6560" }}
+                >
+                  Back to login
+                </button>
+              </form>
+            )}
 
             <p className="text-center text-xs" style={{ color: "#D8D2C4" }}>
               © {new Date().getFullYear()} Codex Technologies
@@ -271,7 +360,7 @@ export const Login = ({ className, ...props }) => {
       </div>
 
       <Modal isOpen={isModalOpen} onClose={handleCloseModal} title="Change Password" widthClass="sm:w-1/2 lg:w-1/3">
-        <Form fields={changePassFields} initialValues={{ password: "", confirmar_contrasenia: "", usuario }} onSubmit={handlePass} />
+        <Form fields={changePassFields} initialValues={{ password: "", confirmar_contrasenia: "", usuario: user }} onSubmit={handlePass} />
       </Modal>
 
       {notification && (

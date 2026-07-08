@@ -25,7 +25,7 @@ const labelClass = {
     fontFamily: '"Source Sans 3", Arial, sans-serif',
 };
 
-export const AttributeForm = ({ entity, onSubmit, onCancel, isLoading, initialData = null, defaultOrder = 1 }) => {
+export const AttributeForm = ({ entity, onSubmit, onCancel, isLoading, initialData = null, defaultOrder = 1, supportsUnique = false }) => {
     const isEdit = !!initialData;
 
     const getDefaultValues = () => {
@@ -48,6 +48,9 @@ export const AttributeForm = ({ entity, onSubmit, onCancel, isLoading, initialDa
 
     const handleFormSubmit = (data) => {
         let payload = { ...data, is_required: data.is_required === true };
+        if (supportsUnique) {
+            payload.is_unique = data.is_unique === true;
+        }
         if (data.type === 'list' && typeof data.list_values === 'string') {
             payload.list_values = data.list_values.split(',').map(s => s.trim()).filter(s => s);
         } else {
@@ -183,6 +186,21 @@ export const AttributeForm = ({ entity, onSubmit, onCancel, isLoading, initialDa
                     Required Field
                 </label>
             </div>
+
+            {/* Unique checkbox */}
+            {supportsUnique && (
+                <div className="flex items-center gap-2">
+                    <input
+                        type="checkbox"
+                        id="is_unique"
+                        {...register("is_unique")}
+                        style={{ accentColor: "#5E6A43", width: "14px", height: "14px", cursor: "pointer" }}
+                    />
+                    <label htmlFor="is_unique" style={{ fontSize: "13px", fontWeight: 500, color: "#2E2A26", cursor: "pointer" }}>
+                        Unique — no two leads can share this value
+                    </label>
+                </div>
+            )}
 
             {/* Actions */}
             <div className="flex justify-end gap-2 pt-2" style={{ borderTop: "1px solid #D8D2C4" }}>

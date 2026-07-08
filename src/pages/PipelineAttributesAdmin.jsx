@@ -453,6 +453,7 @@ export const PipelineAttributesAdmin = () => {
                     isLoading={formLoading}
                     initialData={editingAttribute}
                     defaultOrder={(attributesData[currentPipeline?.id]?.length ?? 0) + 1}
+                    supportsUnique
                 />
             </Modal>
         </div>

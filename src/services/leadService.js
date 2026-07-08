@@ -29,7 +29,14 @@ export const updateLead = async (id, data) => {
         headers: getHeaders(),
         body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error("Error updating lead");
+    if (!res.ok) {
+        // Surface the actual validation detail (e.g. a blocked stage move from
+        // a StageValidationRule) instead of a generic message.
+        const errorData = await res.json().catch(() => null);
+        const firstError = errorData && Object.values(errorData)[0];
+        const message = Array.isArray(firstError) ? firstError[0] : (firstError || "Error updating lead");
+        throw new Error(message);
+    }
     return res.json();
 };
 

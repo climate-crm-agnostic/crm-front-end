@@ -11,6 +11,7 @@ import { Modal } from "../Modal";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
+import Swal from "sweetalert2";
 
 const LEAD_MY_LEADS_STORAGE_KEY = 'lead_my_leads_only';
 const LEAD_SEARCH_STORAGE_KEY = 'lead_search_term';
@@ -140,6 +141,9 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
         } catch (error) {
             console.error("Failed to update stage", error);
             setLeads(originalLeads);
+            // A StageValidationRule (or other backend validation) blocked the
+            // move — revert the optimistic update above and tell the user why.
+            Swal.fire('Cannot move lead', error.message || 'The stage change was rejected.', 'error');
         }
     };
 
