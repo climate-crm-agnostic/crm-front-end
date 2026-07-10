@@ -113,7 +113,7 @@ function AttributeManager({ pipeline }) {
             cancelEdit();
             await load();
         } catch (err) {
-            setError(err?.detail || err?.name?.[0] || "Error saving attribute.");
+            setError(err.message || "Error saving attribute.");
         } finally {
             setSaving(false);
         }
@@ -367,7 +367,7 @@ function ValidationRuleManager({ pipeline }) {
             cancelEdit();
             await load();
         } catch (err) {
-            setError(err?.name?.[0] || err?.pipeline?.[0] || err?.target_stage?.[0] || err?.non_field_errors?.[0] || err?.detail || "Error saving rule.");
+            setError(err.message || "Error saving rule.");
         } finally {
             setSaving(false);
         }

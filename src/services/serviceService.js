@@ -1,4 +1,4 @@
-import { API_URL, getHeaders } from "./api";
+import { API_URL, getHeaders, fetchAllPages, extractErrorMessage } from "./api";
 
 const endPoint = "services";
 const url = `${API_URL}/${endPoint}/`;
@@ -7,23 +7,17 @@ export const getServices = async (filters = {}) => {
     const queryParams = new URLSearchParams(filters).toString();
     const finalUrl = queryParams ? `${url}?${queryParams}` : url;
 
-    const res = await fetch(finalUrl, {
+    return fetchAllPages(finalUrl, {
         method: "GET",
         headers: getHeaders(),
     });
-    if (!res.ok) throw new Error("Error fetching services");
-    const data = await res.json();
-    return data.results || data;
 };
 
 export const searchServices = async (name) => {
-    const res = await fetch(`${url}?name=${name}`, {
+    return fetchAllPages(`${url}?name=${name}`, {
         method: "GET",
         headers: getHeaders(),
     });
-    if (!res.ok) throw new Error("Error searching services");
-    const data = await res.json();
-    return data.results || data;
 };
 
 export const getServiceById = async (id) => {
@@ -42,8 +36,8 @@ export const createService = async (data) => {
         body: JSON.stringify(data),
     });
     if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(JSON.stringify(errorData));
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error creating service"));
     }
     return res.json();
 };
@@ -54,7 +48,10 @@ export const updateService = async (id, data) => {
         headers: getHeaders(),
         body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error("Error updating service");
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error updating service"));
+    }
     return res.json();
 };
 
@@ -68,13 +65,10 @@ export const deleteService = async (id) => {
 };
 
 export const getServiceAttributes = async () => {
-    const res = await fetch(`${API_URL}/attributes/service/`, {
+    return fetchAllPages(`${API_URL}/attributes/service/`, {
         method: "GET",
         headers: getHeaders(),
     });
-    if (!res.ok) throw new Error("Error fetching service attributes");
-    const data = await res.json();
-    return data.results || data;
 };
 
 export const importServicesFromExcel = async (clientId, file) => {

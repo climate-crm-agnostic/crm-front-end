@@ -1,4 +1,4 @@
-import { API_URL, getHeaders } from "./api";
+import { API_URL, getHeaders, fetchAllPages, extractErrorMessage } from "./api";
 
 const endPoint = "invoices";
 const url = `${API_URL}/${endPoint}/`;
@@ -7,13 +7,10 @@ export const getInvoices = async (filters = {}) => {
     const queryParams = new URLSearchParams(filters).toString();
     const finalUrl = queryParams ? `${url}?${queryParams}` : url;
 
-    const res = await fetch(finalUrl, {
+    return fetchAllPages(finalUrl, {
         method: "GET",
         headers: getHeaders(),
     });
-    if (!res.ok) throw new Error("Error fetching invoices");
-    const data = await res.json();
-    return data.results || data;
 };
 
 export const getInvoiceById = async (id) => {
@@ -32,8 +29,8 @@ export const createInvoice = async (data) => {
         body: JSON.stringify(data),
     });
     if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(JSON.stringify(errorData));
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error creating invoice"));
     }
     return res.json();
 };
@@ -44,7 +41,10 @@ export const updateInvoice = async (id, data) => {
         headers: getHeaders(),
         body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error("Error updating invoice");
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error updating invoice"));
+    }
     return res.json();
 };
 
@@ -58,13 +58,10 @@ export const deleteInvoice = async (id) => {
 };
 
 export const getInvoiceAttributes = async () => {
-    const res = await fetch(`${API_URL}/attributes/invoice/`, {
+    return fetchAllPages(`${API_URL}/attributes/invoice/`, {
         method: "GET",
         headers: getHeaders(),
     });
-    if (!res.ok) throw new Error("Error fetching invoice attributes");
-    const data = await res.json();
-    return data.results || data;
 };
 
 export const recalculateInvoice = async (id) => {
@@ -99,13 +96,10 @@ export const deleteInvoiceNote = async (id, payload) => {
 // --- Invoice Line Items (Nested) ---
 
 export const getLineItems = async (invoiceId) => {
-    const res = await fetch(`${url}${invoiceId}/line-items/`, {
+    return fetchAllPages(`${url}${invoiceId}/line-items/`, {
         method: "GET",
         headers: getHeaders(),
     });
-    if (!res.ok) throw new Error("Error fetching line items");
-    const data = await res.json();
-    return data.results || data;
 };
 
 export const createLineItem = async (invoiceId, data) => {
@@ -115,8 +109,8 @@ export const createLineItem = async (invoiceId, data) => {
         body: JSON.stringify(data),
     });
     if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(JSON.stringify(errorData));
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error creating line item"));
     }
     return res.json();
 };
@@ -127,7 +121,10 @@ export const updateLineItem = async (invoiceId, lineItemId, data) => {
         headers: getHeaders(),
         body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error("Error updating line item");
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error updating line item"));
+    }
     return res.json();
 };
 
@@ -141,25 +138,19 @@ export const deleteLineItem = async (invoiceId, lineItemId) => {
 };
 
 export const getLineItemAttributes = async () => {
-    const res = await fetch(`${API_URL}/attributes/invoice_line_item/`, {
+    return fetchAllPages(`${API_URL}/attributes/invoice_line_item/`, {
         method: "GET",
         headers: getHeaders(),
     });
-    if (!res.ok) throw new Error("Error fetching line item attributes");
-    const data = await res.json();
-    return data.results || data;
 };
 
 // --- Payments (Nested) ---
 
 export const getPayments = async (invoiceId) => {
-    const res = await fetch(`${url}${invoiceId}/payments/`, {
+    return fetchAllPages(`${url}${invoiceId}/payments/`, {
         method: "GET",
         headers: getHeaders(),
     });
-    if (!res.ok) throw new Error("Error fetching payments");
-    const data = await res.json();
-    return data.results || data;
 };
 
 export const createPayment = async (invoiceId, data) => {
@@ -169,8 +160,8 @@ export const createPayment = async (invoiceId, data) => {
         body: JSON.stringify(data),
     });
     if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(JSON.stringify(errorData));
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error creating payment"));
     }
     return res.json();
 };
@@ -181,7 +172,10 @@ export const updatePayment = async (invoiceId, paymentId, data) => {
         headers: getHeaders(),
         body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error("Error updating payment");
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error updating payment"));
+    }
     return res.json();
 };
 
@@ -207,13 +201,10 @@ export const sendInvoiceToStripe = async (invoiceId, email = '') => {
 };
 
 export const getPaymentAttributes = async () => {
-    const res = await fetch(`${API_URL}/attributes/payment/`, {
+    return fetchAllPages(`${API_URL}/attributes/payment/`, {
         method: "GET",
         headers: getHeaders(),
     });
-    if (!res.ok) throw new Error("Error fetching payment attributes");
-    const data = await res.json();
-    return data.results || data;
 };
 
 export const exportInvoicesExcel = async () => {

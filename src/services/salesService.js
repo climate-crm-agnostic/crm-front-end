@@ -1,16 +1,13 @@
-import { API_URL, getHeaders } from "./api";
+import { API_URL, getHeaders, fetchAllPages, extractErrorMessage } from "./api";
 
 const endPoint = "sales";
 const url = `${API_URL}/${endPoint}/`;
 
 export const getSales = async () => {
-    const res = await fetch(url, {
+    return fetchAllPages(url, {
         method: "GET",
         headers: getHeaders(),
     });
-    if (!res.ok) throw new Error("Error fetching sales");
-    const data = await res.json();
-    return data.results || data;
 };
 
 export const getSaleById = async (id) => {
@@ -30,8 +27,8 @@ export const createSale = async (data) => {
         body: JSON.stringify(data),
     });
     if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(JSON.stringify(errorData));
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error creating sale"));
     }
     return res.json();
 };
@@ -42,7 +39,10 @@ export const updateSale = async (id, data) => {
         headers: getHeaders(),
         body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error("Error updating sale");
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error updating sale"));
+    }
     return res.json();
 };
 

@@ -1,14 +1,11 @@
-import { API_URL, getHeaders } from './api';
+import { API_URL, getHeaders, fetchAllPages, extractErrorMessage } from './api';
 
 const WEBHOOK_API_URL = `${API_URL}/webhooks/`;
 
 export const getWebhooks = async () => {
-  const response = await fetch(WEBHOOK_API_URL, {
+  return fetchAllPages(WEBHOOK_API_URL, {
     headers: getHeaders(),
   });
-  if (!response.ok) throw new Error('Failed to fetch webhooks');
-  const data = await response.json();
-  return data.results || data;
 };
 
 export const getWebhook = async (id) => {
@@ -25,7 +22,10 @@ export const createWebhook = async (webhook) => {
     headers: getHeaders(),
     body: JSON.stringify(webhook),
   });
-  if (!response.ok) throw new Error('Failed to create webhook');
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => null);
+    throw new Error(extractErrorMessage(errorData, "Failed to create webhook"));
+  }
   return await response.json();
 };
 
@@ -35,7 +35,10 @@ export const updateWebhook = async (id, webhook) => {
     headers: getHeaders(),
     body: JSON.stringify(webhook),
   });
-  if (!response.ok) throw new Error('Failed to update webhook');
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => null);
+    throw new Error(extractErrorMessage(errorData, "Failed to update webhook"));
+  }
   return await response.json();
 };
 

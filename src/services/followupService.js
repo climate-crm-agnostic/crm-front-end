@@ -1,4 +1,4 @@
-import { API_URL, getHeaders } from "./api";
+import { API_URL, getHeaders, fetchAllPages, extractErrorMessage } from "./api";
 
 // Helper to construct nested URL: /services/:serviceId/follow-ups/
 const getBaseUrl = (serviceId) => `${API_URL}/services/${serviceId}/follow-ups/`;
@@ -9,13 +9,10 @@ export const getFollowups = async (serviceId) => {
     // We can likely pass other query params if needed, but for now just the list
     const url = getBaseUrl(serviceId);
 
-    const res = await fetch(url, {
+    return fetchAllPages(url, {
         method: "GET",
         headers: getHeaders(),
     });
-    if (!res.ok) throw new Error("Error fetching followups");
-    const data = await res.json();
-    return data.results || data;
 };
 
 export const createFollowup = async (serviceId, data) => {
@@ -28,14 +25,8 @@ export const createFollowup = async (serviceId, data) => {
         body: JSON.stringify(data),
     });
     if (!res.ok) {
-        let errorMsg = "Error creating follow-up";
-        try {
-            const errorData = await res.json();
-            errorMsg = JSON.stringify(errorData);
-        } catch (e) {
-            errorMsg = await res.text();
-        }
-        throw new Error(errorMsg);
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error creating follow-up"));
     }
     return res.json();
 };
@@ -49,7 +40,10 @@ export const updateFollowup = async (serviceId, followupId, data) => {
         headers: getHeaders(),
         body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error("Error updating followup");
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error updating followup"));
+    }
     return res.json();
 };
 
@@ -66,11 +60,8 @@ export const deleteFollowup = async (serviceId, followupId) => {
 };
 
 export const getFollowupAttributes = async () => {
-    const res = await fetch(`${API_URL}/attributes/followup/`, {
+    return fetchAllPages(`${API_URL}/attributes/followup/`, {
         method: "GET",
         headers: getHeaders(),
     });
-    if (!res.ok) throw new Error("Error fetching follow-up attributes");
-    const data = await res.json();
-    return data.results || data;
 };

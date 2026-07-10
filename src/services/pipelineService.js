@@ -1,13 +1,10 @@
-import { API_URL, getHeaders } from "./api";
+import { API_URL, getHeaders, fetchAllPages, extractErrorMessage } from "./api";
 
 export const getPipelines = async () => {
-    const res = await fetch(`${API_URL}/pipelines/`, {
+    return fetchAllPages(`${API_URL}/pipelines/`, {
         method: "GET",
         headers: getHeaders(),
     });
-    // ... existing code ...
-    if (!res.ok) throw new Error("Error fetching pipelines");
-    return res.json();
 };
 
 export const updatePipeline = async (id, pipelineData) => {
@@ -17,8 +14,8 @@ export const updatePipeline = async (id, pipelineData) => {
         body: JSON.stringify(pipelineData),
     });
     if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.detail || "Error updating pipeline");
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error updating pipeline"));
     }
     return res.json();
 };
@@ -30,8 +27,8 @@ export const createPipeline = async (pipelineData) => {
         body: JSON.stringify(pipelineData),
     });
     if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.detail || "Error creating pipeline");
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error creating pipeline"));
     }
     return res.json();
 };

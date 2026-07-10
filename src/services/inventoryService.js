@@ -1,16 +1,13 @@
-import { API_URL, getHeaders } from "./api";
+import { API_URL, getHeaders, fetchAllPages, extractErrorMessage } from "./api";
 
 const endPoint = "inventory";
 const url = `${API_URL}/${endPoint}/`;
 
 export const getInventoryItems = async (filters = {}) => {
     const queryParams = new URLSearchParams(filters).toString();
-    const res = await fetch(`${url}${queryParams ? `?${queryParams}` : ''}`, {
+    return fetchAllPages(`${url}${queryParams ? `?${queryParams}` : ''}`, {
         headers: getHeaders(),
     });
-    if (!res.ok) throw new Error("Error fetching inventory items");
-    const data = await res.json();
-    return data.results || data;
 };
 
 export const getInventoryItemById = async (id) => {
@@ -27,12 +24,10 @@ export const createInventoryItem = async (data) => {
         headers: getHeaders(),
         body: JSON.stringify(data),
     });
-    // Handle 400 Bad Request if SKU exists
-    if (res.status === 400) {
-        const errorData = await res.json();
-        throw new Error(errorData.sku ? errorData.sku[0] : "Validation Error");
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error creating inventory item"));
     }
-    if (!res.ok) throw new Error("Error creating inventory item");
     return res.json();
 };
 
@@ -42,11 +37,10 @@ export const updateInventoryItem = async (id, data) => {
         headers: getHeaders(),
         body: JSON.stringify(data),
     });
-    if (res.status === 400) {
-        const errorData = await res.json();
-        throw new Error(errorData.sku ? errorData.sku[0] : "Validation Error");
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error updating inventory item"));
     }
-    if (!res.ok) throw new Error("Error updating inventory item");
     return res.json();
 };
 
@@ -60,10 +54,7 @@ export const deleteInventoryItem = async (id) => {
 };
 
 export const getInventoryItemAttributes = async () => {
-    const res = await fetch(`${API_URL}/attributes/inventory/`, {
+    return fetchAllPages(`${API_URL}/attributes/inventory/`, {
         headers: getHeaders(),
     });
-    if (!res.ok) throw new Error("Error fetching inventory attributes");
-    const data = await res.json();
-    return data.results || data;
 };

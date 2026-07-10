@@ -1,16 +1,13 @@
-import { API_URL, getHeaders } from "./api";
+import { API_URL, getHeaders, fetchAllPages, extractErrorMessage } from "./api";
 
 const endPoint = "asset-assignments";
 const url = `${API_URL}/${endPoint}/`;
 
 export const getAssetAssignments = async (filters = {}) => {
     const queryParams = new URLSearchParams(filters).toString();
-    const res = await fetch(`${url}${queryParams ? `?${queryParams}` : ''}`, {
+    return fetchAllPages(`${url}${queryParams ? `?${queryParams}` : ''}`, {
         headers: getHeaders(),
     });
-    if (!res.ok) throw new Error("Error fetching asset assignments");
-    const data = await res.json();
-    return data.results || data;
 };
 
 export const getAssetAssignmentById = async (id) => {
@@ -28,12 +25,8 @@ export const createAssetAssignment = async (data) => {
         body: JSON.stringify(data),
     });
     if (!res.ok) {
-        let errorMsg = "Error creating asset assignment";
-        try {
-            const errorData = await res.json();
-            errorMsg = Object.values(errorData).flat().join(", ") || errorMsg;
-        } catch (e) { }
-        throw new Error(errorMsg);
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error creating asset assignment"));
     }
     return res.json();
 };
@@ -45,12 +38,8 @@ export const updateAssetAssignment = async (id, data) => {
         body: JSON.stringify(data),
     });
     if (!res.ok) {
-        let errorMsg = "Error updating asset assignment";
-        try {
-            const errorData = await res.json();
-            errorMsg = Object.values(errorData).flat().join(", ") || errorMsg;
-        } catch (e) { }
-        throw new Error(errorMsg);
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error updating asset assignment"));
     }
     return res.json();
 };
@@ -65,10 +54,7 @@ export const deleteAssetAssignment = async (id) => {
 };
 
 export const getAssetAssignmentAttributes = async () => {
-    const res = await fetch(`${API_URL}/attributes/asset_assignment/`, {
+    return fetchAllPages(`${API_URL}/attributes/asset_assignment/`, {
         headers: getHeaders(),
     });
-    if (!res.ok) throw new Error("Error fetching asset assignment attributes");
-    const data = await res.json();
-    return data.results || data;
 };

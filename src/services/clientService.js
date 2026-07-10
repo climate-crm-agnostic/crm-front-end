@@ -1,16 +1,13 @@
-import { API_URL, getHeaders } from "./api";
+import { API_URL, getHeaders, fetchAllPages, extractErrorMessage } from "./api";
 
 const endPoint = "clients";
 const url = `${API_URL}/${endPoint}/`;
 
 export const getClients = async () => {
-    const res = await fetch(url, {
+    return fetchAllPages(url, {
         method: "GET",
         headers: getHeaders(),
     });
-    if (!res.ok) throw new Error("Error fetching clients");
-    const data = await res.json();
-    return data.results || data;
 };
 
 export const getClientById = async (id) => {
@@ -29,8 +26,8 @@ export const createClient = async (data) => {
         body: JSON.stringify(data),
     });
     if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(JSON.stringify(errorData));
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error creating client"));
     }
     return res.json();
 };
@@ -41,7 +38,10 @@ export const updateClient = async (id, data) => {
         headers: getHeaders(),
         body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error("Error updating client");
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error updating client"));
+    }
     return res.json();
 };
 
@@ -55,13 +55,10 @@ export const deleteClient = async (id) => {
 };
 
 export const getClientAttributes = async () => {
-    const res = await fetch(`${API_URL}/attributes/client/`, {
+    return fetchAllPages(`${API_URL}/attributes/client/`, {
         method: "GET",
         headers: getHeaders(),
     });
-    if (!res.ok) throw new Error("Error fetching client attributes");
-    const data = await res.json();
-    return data.results || data;
 };
 
 export const importClientsFromExcel = async (file) => {

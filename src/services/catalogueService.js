@@ -1,4 +1,4 @@
-import { API_URL, getHeaders } from "./api";
+import { API_URL, getHeaders, fetchAllPages, extractErrorMessage } from "./api";
 
 const endPoint = "catalogue";
 const url = `${API_URL}/${endPoint}/`;
@@ -7,13 +7,10 @@ export const getCatalogueItems = async (filters = {}) => {
     const queryParams = new URLSearchParams(filters).toString();
     const finalUrl = queryParams ? `${url}?${queryParams}` : url;
 
-    const res = await fetch(finalUrl, {
+    return fetchAllPages(finalUrl, {
         method: "GET",
         headers: getHeaders(),
     });
-    if (!res.ok) throw new Error("Error fetching catalogue items");
-    const data = await res.json();
-    return data.results || data;
 };
 
 export const getCatalogueItemById = async (id) => {
@@ -32,8 +29,8 @@ export const createCatalogueItem = async (data) => {
         body: JSON.stringify(data),
     });
     if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(JSON.stringify(errorData));
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error creating catalogue item"));
     }
     return res.json();
 };
@@ -44,7 +41,10 @@ export const updateCatalogueItem = async (id, data) => {
         headers: getHeaders(),
         body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error("Error updating catalogue item");
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error updating catalogue item"));
+    }
     return res.json();
 };
 
@@ -58,13 +58,10 @@ export const deleteCatalogueItem = async (id) => {
 };
 
 export const getCatalogueItemAttributes = async () => {
-    const res = await fetch(`${API_URL}/attributes/catalogue_item/`, {
+    return fetchAllPages(`${API_URL}/attributes/catalogue_item/`, {
         method: "GET",
         headers: getHeaders(),
     });
-    if (!res.ok) throw new Error("Error fetching catalogue item attributes");
-    const data = await res.json();
-    return data.results || data;
 };
 
 export const exportCatalogueItemsExcel = async () => {
@@ -101,13 +98,10 @@ export const uploadCatalogueItemImage = async (id, file) => {
 // --- Price Tiers (Nested under Catalogue Item) ---
 
 export const getPriceTiers = async (catalogueItemId) => {
-    const res = await fetch(`${url}${catalogueItemId}/price-tiers/`, {
+    return fetchAllPages(`${url}${catalogueItemId}/price-tiers/`, {
         method: "GET",
         headers: getHeaders(),
     });
-    if (!res.ok) throw new Error("Error fetching price tiers");
-    const data = await res.json();
-    return data.results || data;
 };
 
 export const getPriceTierById = async (catalogueItemId, tierId) => {
@@ -126,8 +120,8 @@ export const createPriceTier = async (catalogueItemId, data) => {
         body: JSON.stringify(data),
     });
     if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(JSON.stringify(errorData));
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error creating price tier"));
     }
     return res.json();
 };
@@ -138,7 +132,10 @@ export const updatePriceTier = async (catalogueItemId, tierId, data) => {
         headers: getHeaders(),
         body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error("Error updating price tier");
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error updating price tier"));
+    }
     return res.json();
 };
 
@@ -152,11 +149,8 @@ export const deletePriceTier = async (catalogueItemId, tierId) => {
 };
 
 export const getPriceTierAttributes = async () => {
-    const res = await fetch(`${API_URL}/attributes/price_tier/`, {
+    return fetchAllPages(`${API_URL}/attributes/price_tier/`, {
         method: "GET",
         headers: getHeaders(),
     });
-    if (!res.ok) throw new Error("Error fetching price tier attributes");
-    const data = await res.json();
-    return data.results || data;
 };

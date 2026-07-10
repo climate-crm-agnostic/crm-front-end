@@ -1,4 +1,4 @@
-import { API_URL, getHeaders } from "./api";
+import { API_URL, getHeaders, fetchAllPages, extractErrorMessage } from "./api";
 
 const endPoint = "contacts";
 const url = `${API_URL}/${endPoint}/`;
@@ -7,13 +7,10 @@ export const getContacts = async (filters = {}) => {
     const queryParams = new URLSearchParams(filters).toString();
     const finalUrl = queryParams ? `${url}?${queryParams}` : url;
 
-    const res = await fetch(finalUrl, {
+    return fetchAllPages(finalUrl, {
         method: "GET",
         headers: getHeaders(),
     });
-    if (!res.ok) throw new Error("Error fetching contacts");
-    const data = await res.json();
-    return data.results || data;
 };
 
 export const getContactById = async (id) => {
@@ -32,8 +29,8 @@ export const createContact = async (data) => {
         body: JSON.stringify(data),
     });
     if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(JSON.stringify(errorData));
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error creating contact"));
     }
     return res.json();
 };
@@ -44,7 +41,10 @@ export const updateContact = async (id, data) => {
         headers: getHeaders(),
         body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error("Error updating contact");
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error updating contact"));
+    }
     return res.json();
 };
 
@@ -58,13 +58,10 @@ export const deleteContact = async (id) => {
 };
 
 export const getContactAttributes = async () => {
-    const res = await fetch(`${API_URL}/attributes/contact/`, {
+    return fetchAllPages(`${API_URL}/attributes/contact/`, {
         method: "GET",
         headers: getHeaders(),
     });
-    if (!res.ok) throw new Error("Error fetching contact attributes");
-    const data = await res.json();
-    return data.results || data;
 };
 
 export const importContactsFromExcel = async (clientId, file) => {

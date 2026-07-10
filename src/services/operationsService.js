@@ -1,16 +1,13 @@
-import { API_URL, getHeaders } from "./api";
+import { API_URL, getHeaders, fetchAllPages, extractErrorMessage } from "./api";
 
 const endPoint = "operations";
 const url = `${API_URL}/${endPoint}/`;
 
 export const getOperations = async () => {
-    const res = await fetch(url, {
+    return fetchAllPages(url, {
         method: "GET",
         headers: getHeaders(),
     });
-    if (!res.ok) throw new Error("Error fetching operations");
-    const data = await res.json();
-    return data.results || data;
 };
 
 export const getOperationById = async (id) => {
@@ -30,8 +27,8 @@ export const createOperation = async (data) => {
         body: JSON.stringify(data),
     });
     if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(JSON.stringify(errorData));
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error creating operation"));
     }
     return res.json();
 };
@@ -42,7 +39,10 @@ export const updateOperation = async (id, data) => {
         headers: getHeaders(),
         body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error("Error updating operation");
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error updating operation"));
+    }
     return res.json();
 };
 

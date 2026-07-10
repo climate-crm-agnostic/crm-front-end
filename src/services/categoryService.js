@@ -1,4 +1,4 @@
-import { API_URL, getHeaders } from "./api";
+import { API_URL, getHeaders, fetchAllPages, extractErrorMessage } from "./api";
 
 const endPoint = "categories";
 const url = `${API_URL}/${endPoint}/`;
@@ -7,13 +7,10 @@ export const getCategories = async (filters = {}) => {
     const queryParams = new URLSearchParams(filters).toString();
     const finalUrl = queryParams ? `${url}?${queryParams}` : url;
 
-    const res = await fetch(finalUrl, {
+    return fetchAllPages(finalUrl, {
         method: "GET",
         headers: getHeaders(),
     });
-    if (!res.ok) throw new Error("Error fetching categories");
-    const data = await res.json();
-    return data.results || data;
 };
 
 export const getCategoryById = async (id) => {
@@ -32,8 +29,8 @@ export const createCategory = async (data) => {
         body: JSON.stringify(data),
     });
     if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(JSON.stringify(errorData));
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error creating category"));
     }
     return res.json();
 };
@@ -44,7 +41,10 @@ export const updateCategory = async (id, data) => {
         headers: getHeaders(),
         body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error("Error updating category");
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error updating category"));
+    }
     return res.json();
 };
 
@@ -58,13 +58,10 @@ export const deleteCategory = async (id) => {
 };
 
 export const getCategoryAttributes = async () => {
-    const res = await fetch(`${API_URL}/attributes/category/`, {
+    return fetchAllPages(`${API_URL}/attributes/category/`, {
         method: "GET",
         headers: getHeaders(),
     });
-    if (!res.ok) throw new Error("Error fetching category attributes");
-    const data = await res.json();
-    return data.results || data;
 };
 
 export const exportCategoriesExcel = async () => {

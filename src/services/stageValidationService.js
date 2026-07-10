@@ -1,4 +1,4 @@
-import { API_URL, getHeaders } from './api';
+import { API_URL, getHeaders, fetchAllPages, extractErrorMessage } from './api';
 
 const STAGE_VALIDATION_API_URL = `${API_URL}/stage-validation-rules/`;
 
@@ -6,10 +6,7 @@ export const getStageValidationRules = async (pipelineId) => {
   const url = pipelineId
     ? `${STAGE_VALIDATION_API_URL}?pipeline=${pipelineId}`
     : STAGE_VALIDATION_API_URL;
-  const response = await fetch(url, { headers: getHeaders() });
-  if (!response.ok) throw new Error('Failed to fetch stage validation rules');
-  const data = await response.json();
-  return data.results || data;
+  return fetchAllPages(url, { headers: getHeaders() });
 };
 
 export const createStageValidationRule = async (rule) => {
@@ -18,9 +15,11 @@ export const createStageValidationRule = async (rule) => {
     headers: getHeaders(),
     body: JSON.stringify(rule),
   });
-  const data = await response.json();
-  if (!response.ok) throw data;
-  return data;
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => null);
+    throw new Error(extractErrorMessage(errorData, "Error saving rule."));
+  }
+  return response.json();
 };
 
 export const updateStageValidationRule = async (id, rule) => {
@@ -29,9 +28,11 @@ export const updateStageValidationRule = async (id, rule) => {
     headers: getHeaders(),
     body: JSON.stringify(rule),
   });
-  const data = await response.json();
-  if (!response.ok) throw data;
-  return data;
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => null);
+    throw new Error(extractErrorMessage(errorData, "Error saving rule."));
+  }
+  return response.json();
 };
 
 export const deleteStageValidationRule = async (id) => {

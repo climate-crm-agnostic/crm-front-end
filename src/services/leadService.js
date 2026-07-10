@@ -1,13 +1,13 @@
-import { API_URL, getHeaders } from "./api";
+import { API_URL, getHeaders, fetchAllPages, extractErrorMessage } from "./api";
 
+// Follows pagination (`next`) so callers always get every lead matching the
+// filters, not just the first 250 (DRF PAGE_SIZE).
 export const getLeads = async (filters = {}) => {
     const query = new URLSearchParams(filters).toString();
-    const res = await fetch(`${API_URL}/leads/?${query}`, {
+    return fetchAllPages(`${API_URL}/leads/?${query}`, {
         method: "GET",
         headers: getHeaders(),
     });
-    if (!res.ok) throw new Error("Error fetching leads");
-    return res.json();
 };
 
 export const createLead = async (data) => {
@@ -17,8 +17,8 @@ export const createLead = async (data) => {
         body: JSON.stringify(data),
     });
     if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(JSON.stringify(errorData));
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error creating lead"));
     }
     return res.json();
 };
@@ -31,11 +31,10 @@ export const updateLead = async (id, data) => {
     });
     if (!res.ok) {
         // Surface the actual validation detail (e.g. a blocked stage move from
-        // a StageValidationRule) instead of a generic message.
+        // a StageValidationRule, or a nested attributes.* uniqueness error)
+        // instead of a generic message.
         const errorData = await res.json().catch(() => null);
-        const firstError = errorData && Object.values(errorData)[0];
-        const message = Array.isArray(firstError) ? firstError[0] : (firstError || "Error updating lead");
-        throw new Error(message);
+        throw new Error(extractErrorMessage(errorData, "Error updating lead"));
     }
     return res.json();
 };
@@ -50,33 +49,24 @@ export const getLead = async (id) => {
 };
 
 export const getLeadAttributes = async () => {
-    const res = await fetch(`${API_URL}/attributes/lead/`, {
+    return fetchAllPages(`${API_URL}/attributes/lead/`, {
         method: "GET",
         headers: getHeaders(),
     });
-    if (!res.ok) throw new Error("Error fetching lead attributes");
-    const data = await res.json();
-    return data.results || data;
 }
 
 export const getLeadClientAttributes = async () => {
-    const res = await fetch(`${API_URL}/attributes/client/`, {
+    return fetchAllPages(`${API_URL}/attributes/client/`, {
         method: "GET",
         headers: getHeaders(),
     });
-    if (!res.ok) throw new Error("Error fetching lead client attributes");
-    const data = await res.json();
-    return data.results || data;
 };
 
 export const getLeadServiceAttributes = async () => {
-    const res = await fetch(`${API_URL}/attributes/service/`, {
+    return fetchAllPages(`${API_URL}/attributes/service/`, {
         method: "GET",
         headers: getHeaders(),
     });
-    if (!res.ok) throw new Error("Error fetching lead service attributes");
-    const data = await res.json();
-    return data.results || data;
 };
 
 export const importLeadsFromExcel = async (pipelineId, file, clientId, newClientName) => {
