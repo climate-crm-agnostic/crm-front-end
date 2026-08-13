@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { API_URL, getHeaders } from "@/services/api";
+import { API_URL, getHeaders, fetchAllPages } from "@/services/api";
 import { getMyTasks } from "@/services/taskService";
+import { getClients } from "@/services/clientService";
+import { Modal } from "../components/Modal";
 import { Magnet, Building2, Receipt, Laptop, ArrowUpRight, ClipboardList, ChevronLeft, ChevronRight } from "lucide-react";
 
 const fetchCount = async (endpoint) => {
@@ -27,6 +29,73 @@ const TASK_COLORS = {
 };
 
 const ENTITY_PATHS = { lead: "/lead", client: "/client", service: "/service" };
+
+// Single source of truth for a task row — used by both the calendar's
+// "Selected day" panel and the Tasks-KPI modals, so the two never visually
+// drift apart. `navigate` decides what a click does; the modal version wraps
+// it to also close the modal.
+const TaskRow = ({ task, navigate }) => {
+    const colors = TASK_COLORS[task.entity_type];
+    const path = `${ENTITY_PATHS[task.entity_type]}/${task.entity_id}`;
+    return (
+        <div
+            onClick={() => navigate(path)}
+            className="px-4 py-3 flex items-start gap-3 cursor-pointer hover:bg-gray-50 transition-colors"
+            style={{ backgroundColor: "#FAFAF8" }}
+        >
+            <span
+                className="mt-0.5 shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full"
+                style={{ backgroundColor: colors.bg, color: colors.text }}
+            >
+                {colors.label}
+            </span>
+            <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate" style={{ color: "#2E2A26" }}>{task.task}</p>
+                <p className="text-xs mt-0.5" style={{ color: "#9b948e" }}>{task.entity_name}</p>
+            </div>
+            <ArrowUpRight className="h-3.5 w-3.5 shrink-0 mt-0.5" style={{ color: "#9b948e" }} />
+        </div>
+    );
+};
+
+// Opens from a Tasks-KPI card — shows every pending task for that entity
+// type assigned to the logged-in user (same data already loaded via
+// getMyTasks(), just filtered by entity_type — no new request).
+const TaskListModal = ({ isOpen, entityType, tasks, onClose, navigate }) => {
+    const colors = TASK_COLORS[entityType];
+    const title = colors ? `${colors.label} Tasks` : "Tasks";
+
+    const goToTask = (path) => {
+        onClose();
+        navigate(path);
+    };
+
+    return (
+        <Modal isOpen={isOpen} onClose={onClose} title={title}>
+            {tasks.length === 0 ? (
+                <p className="text-sm text-center py-6" style={{ color: "#9b948e" }}>
+                    No pending tasks assigned to you.
+                </p>
+            ) : (
+                <div className="rounded-lg overflow-hidden divide-y divide-gray-100" style={{ border: "1px solid #D8D2C4" }}>
+                    {tasks.map(task => (
+                        <TaskRow key={task.id} task={task} navigate={goToTask} />
+                    ))}
+                </div>
+            )}
+            {entityType && ENTITY_PATHS[entityType] && (
+                <button
+                    onClick={() => goToTask(ENTITY_PATHS[entityType])}
+                    className="mt-4 flex items-center gap-1.5 text-xs font-semibold hover:gap-2.5 transition-all cursor-pointer"
+                    style={{ color: colors?.text ?? "#5E6A43" }}
+                >
+                    <span>View all {colors?.label}s</span>
+                    <ArrowUpRight className="h-3.5 w-3.5" />
+                </button>
+            )}
+        </Modal>
+    );
+};
 
 const StatCard = ({ title, count, icon: Icon, href, loading, navigate }) => {
     const accent = CARD_ACCENTS[title] ?? CARD_ACCENTS.Assets;
@@ -101,13 +170,13 @@ const StatCard = ({ title, count, icon: Icon, href, loading, navigate }) => {
     );
 };
 
-const TaskKpiCard = ({ title, count, color, href, loading, navigate }) => (
+const TaskKpiCard = ({ title, count, color, entityKey, onOpenModal, loading }) => (
     <div
         className="group relative overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-0.5"
         style={{ backgroundColor: "#F2EBDD", border: "1px solid #D8D2C4", borderRadius: "8px", boxShadow: "0 1px 3px rgba(46,42,38,0.06)" }}
         onMouseEnter={e => e.currentTarget.style.boxShadow = "0 8px 24px rgba(46,42,38,0.12)"}
         onMouseLeave={e => e.currentTarget.style.boxShadow = "0 1px 3px rgba(46,42,38,0.06)"}
-        onClick={() => navigate(href)}
+        onClick={() => onOpenModal(entityKey)}
     >
         <div className="absolute top-0 left-0 right-0 h-1" style={{ backgroundColor: color.dot }} />
         <div className="relative p-5 flex flex-col gap-4 pt-6">
@@ -270,30 +339,9 @@ const TaskCalendar = ({ tasks, navigate }) => {
                         <button onClick={() => setSelectedDay(null)} className="text-xs text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
                     </div>
                     <div className="divide-y divide-gray-100">
-                        {selectedTasks.map(task => {
-                            const colors = TASK_COLORS[task.entity_type];
-                            const path = `${ENTITY_PATHS[task.entity_type]}/${task.entity_id}`;
-                            return (
-                                <div
-                                    key={task.id}
-                                    onClick={() => navigate(path)}
-                                    className="px-4 py-3 flex items-start gap-3 cursor-pointer hover:bg-gray-50 transition-colors"
-                                    style={{ backgroundColor: "#FAFAF8" }}
-                                >
-                                    <span
-                                        className="mt-0.5 shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full"
-                                        style={{ backgroundColor: colors.bg, color: colors.text }}
-                                    >
-                                        {colors.label}
-                                    </span>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-medium truncate" style={{ color: "#2E2A26" }}>{task.task}</p>
-                                        <p className="text-xs mt-0.5" style={{ color: "#9b948e" }}>{task.entity_name}</p>
-                                    </div>
-                                    <ArrowUpRight className="h-3.5 w-3.5 shrink-0 mt-0.5" style={{ color: "#9b948e" }} />
-                                </div>
-                            );
-                        })}
+                        {selectedTasks.map(task => (
+                            <TaskRow key={task.id} task={task} navigate={navigate} />
+                        ))}
                     </div>
                 </div>
             )}
@@ -311,6 +359,92 @@ const TaskCalendar = ({ tasks, navigate }) => {
     );
 };
 
+// ─── Pipeline report ────────────────────────────────────────────────────────
+
+const STAGE_PALETTE = ["#5E6A43", "#F29B6B", "#B8C76A", "#6b8560", "#9b948e", "#D8D2C4", "#a0856a"];
+
+const PipelineReportCard = ({ pipeline }) => {
+    const maxCount = Math.max(...pipeline.orderedStages.map(s => pipeline.byStage[s] || 0), 1);
+    return (
+        <div style={{ backgroundColor: "#F2EBDD", border: "1px solid #D8D2C4", borderRadius: 8, overflow: "hidden", boxShadow: "0 1px 3px rgba(46,42,38,0.06)" }}>
+            <div style={{ borderBottom: "1px solid #D8D2C4", padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <p style={{ fontSize: 14, fontWeight: 700, color: "#2E2A26", fontFamily: '"Source Sans 3", Arial, sans-serif', margin: 0 }}>
+                    {pipeline.name}
+                </p>
+                <span style={{ fontSize: 11, fontWeight: 600, color: "#5E6A43", backgroundColor: "#e8edde", border: "1px solid #B8C76A", borderRadius: 99, padding: "2px 10px" }}>
+                    {pipeline.total} lead{pipeline.total !== 1 ? "s" : ""}
+                </span>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
+                {/* By stage */}
+                <div style={{ padding: "16px 20px", borderRight: "1px solid #D8D2C4" }}>
+                    <p style={{ fontSize: 10, fontWeight: 700, color: "#9b948e", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12, fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+                        By Stage
+                    </p>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                        {pipeline.orderedStages.map((stage, i) => {
+                            const count = pipeline.byStage[stage] || 0;
+                            const pct = Math.round((count / maxCount) * 100);
+                            const color = STAGE_PALETTE[i % STAGE_PALETTE.length];
+                            return (
+                                <div key={stage}>
+                                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                                        <span style={{ fontSize: 12, color: "#2E2A26", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>{stage}</span>
+                                        <span style={{ fontSize: 12, fontWeight: 700, color: "#2E2A26", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>{count}</span>
+                                    </div>
+                                    <div style={{ height: 7, backgroundColor: "#E8E3DA", borderRadius: 4 }}>
+                                        <div style={{ height: 7, width: `${pct}%`, backgroundColor: color, borderRadius: 4, transition: "width 0.5s ease" }} />
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+                {/* By responsible */}
+                <div style={{ padding: "16px 20px" }}>
+                    <p style={{ fontSize: 10, fontWeight: 700, color: "#9b948e", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12, fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+                        By Responsible
+                    </p>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                        {pipeline.orderedUsers.map(([userName, data]) => (
+                            <div key={userName} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                                <div style={{ width: 26, height: 26, borderRadius: "50%", backgroundColor: "#5E6A43", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
+                                    <span style={{ fontSize: 11, fontWeight: 700, color: "#FBF7EF" }}>
+                                        {userName.charAt(0).toUpperCase()}
+                                    </span>
+                                </div>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                                        <span style={{ fontSize: 12, color: "#2E2A26", fontFamily: '"Source Sans 3", Arial, sans-serif', overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                            {userName}
+                                        </span>
+                                        <span style={{ fontSize: 12, fontWeight: 700, color: "#2E2A26", fontFamily: '"Source Sans 3", Arial, sans-serif', marginLeft: 8, flexShrink: 0 }}>
+                                            {data.total}
+                                        </span>
+                                    </div>
+                                    <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                                        {Object.entries(data.stages).sort((a, b) => pipeline.orderedStages.indexOf(a[0]) - pipeline.orderedStages.indexOf(b[0])).map(([stage, count]) => {
+                                            const idx = pipeline.orderedStages.indexOf(stage);
+                                            const color = idx >= 0 ? STAGE_PALETTE[idx % STAGE_PALETTE.length] : "#9b948e";
+                                            return (
+                                                <span key={stage} style={{ fontSize: 10, color: "#fff", backgroundColor: color, borderRadius: 3, padding: "1px 6px", fontFamily: '"Source Sans 3", Arial, sans-serif', whiteSpace: "nowrap" }}>
+                                                    {stage} · {count}
+                                                </span>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// ────────────────────────────────────────────────────────────────────────────
+
 export const Dashboard = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -318,6 +452,15 @@ export const Dashboard = () => {
     const [loading, setLoading] = useState(true);
     const [taskData, setTaskData] = useState({ totals: { leads: 0, clients: 0, services: 0 }, tasks: [] });
     const [tasksLoading, setTasksLoading] = useState(true);
+    const [pipelineReport, setPipelineReport] = useState([]);
+    const [reportLoading, setReportLoading] = useState(true);
+    // Raw data behind the "Leads by Pipeline" report, kept as-is so the
+    // Client filter below can recompute byStage/byUser client-side without
+    // re-fetching every lead on every filter change.
+    const [reportRaw, setReportRaw] = useState({ pipelines: [], leads: [], userMap: {} });
+    const [reportClients, setReportClients] = useState([]);
+    const [reportClientFilter, setReportClientFilter] = useState("");
+    const [openTaskModal, setOpenTaskModal] = useState(null); // 'lead' | 'client' | 'service' | null
 
     useEffect(() => {
         const load = async () => {
@@ -336,6 +479,87 @@ export const Dashboard = () => {
     }, []);
 
     useEffect(() => {
+        const loadReport = async () => {
+            try {
+                const [pipelines, leads, users, clients] = await Promise.all([
+                    fetchAllPages(`${API_URL}/pipelines/`, { headers: getHeaders() }),
+                    fetchAllPages(`${API_URL}/leads/`, { headers: getHeaders() }),
+                    fetchAllPages(`${API_URL}/sales/`, { headers: getHeaders() }),
+                    getClients().catch(() => []),
+                ]);
+
+                const userMap = {};
+                users.forEach(u => {
+                    userMap[u.id] = u.name || u.username || "Unassigned";
+                });
+
+                setReportRaw({ pipelines, leads, userMap });
+                setReportClients(clients || []);
+            } catch (e) {
+                console.error("Error loading pipeline report", e);
+            } finally {
+                setReportLoading(false);
+            }
+        };
+        loadReport();
+    }, []);
+
+    // Recomputes byStage/byUser from the raw leads already in memory whenever
+    // the Client filter changes — no re-fetch needed (see reportRaw).
+    useEffect(() => {
+        const { pipelines, leads, userMap } = reportRaw;
+        if (!pipelines.length) {
+            setPipelineReport([]);
+            return;
+        }
+
+        const filteredLeads = leads.filter(l => {
+            if (reportClientFilter) {
+                const clientId = typeof l.possible_client === "object" ? l.possible_client?.id : l.possible_client;
+                if (String(clientId || "") !== String(reportClientFilter)) return false;
+            }
+            return true;
+        });
+
+        const report = pipelines.map(pipeline => {
+            const pipelineLeads = filteredLeads.filter(l => {
+                const pId = typeof l.pipeline === "object" ? l.pipeline?.id : l.pipeline;
+                return String(pId) === String(pipeline.id);
+            });
+            if (pipelineLeads.length === 0) return null;
+
+            const stageOrder = [...(pipeline.stages || [])].sort((a, b) => a.order - b.order).map(s => s.name);
+
+            const byStage = {};
+            const byUser = {};
+            pipelineLeads.forEach(l => {
+                byStage[l.stage] = (byStage[l.stage] || 0) + 1;
+
+                const resp = l.responsible;
+                let userName = "Unassigned";
+                if (typeof resp === "object" && resp) {
+                    userName = resp.name || resp.username || "Unassigned";
+                } else if (resp && userMap[resp]) {
+                    userName = userMap[resp];
+                }
+                if (!byUser[userName]) byUser[userName] = { total: 0, stages: {} };
+                byUser[userName].total++;
+                byUser[userName].stages[l.stage] = (byUser[userName].stages[l.stage] || 0) + 1;
+            });
+
+            const orderedStages = [
+                ...stageOrder.filter(s => byStage[s]),
+                ...Object.keys(byStage).filter(s => !stageOrder.includes(s)),
+            ];
+            const orderedUsers = Object.entries(byUser).sort((a, b) => b[1].total - a[1].total);
+
+            return { id: pipeline.id, name: pipeline.name, total: pipelineLeads.length, orderedStages, byStage, orderedUsers };
+        }).filter(Boolean);
+
+        setPipelineReport(report);
+    }, [reportRaw, reportClientFilter]);
+
+    useEffect(() => {
         const loadTasks = async () => {
             try {
                 const data = await getMyTasks();
@@ -350,16 +574,16 @@ export const Dashboard = () => {
     }, []);
 
     const cards = [
-        { title: "Leads",    count: counts.leads,    icon: Magnet,   href: "/lead" },
+        { title: "Leads",    count: counts.leads,    icon: Magnet,    href: "/lead" },
         { title: "Clients",  count: counts.clients,  icon: Building2, href: "/client" },
-        { title: "Invoices", count: counts.invoices,  icon: Receipt,  href: "/invoice" },
-        { title: "Assets",   count: counts.assets,   icon: Laptop,   href: "/asset" },
+        { title: "Invoices", count: counts.invoices,  icon: Receipt,   href: "/invoice" },
+        { title: "Assets",   count: counts.assets,   icon: Laptop,    href: "/asset" },
     ];
 
     const taskCards = [
-        { title: "Tasks in Leads",    count: taskData.totals.leads,    color: TASK_COLORS.lead,    href: "/lead" },
-        { title: "Tasks in Clients",  count: taskData.totals.clients,  color: TASK_COLORS.client,  href: "/client" },
-        { title: "Tasks in Services", count: taskData.totals.services, color: TASK_COLORS.service, href: "/service" },
+        { title: "Tasks in Leads",    count: taskData.totals.leads,    color: TASK_COLORS.lead,    entityKey: "lead" },
+        { title: "Tasks in Clients",  count: taskData.totals.clients,  color: TASK_COLORS.client,  entityKey: "client" },
+        { title: "Tasks in Services", count: taskData.totals.services, color: TASK_COLORS.service, entityKey: "service" },
     ];
 
     const hour = new Date().getHours();
@@ -426,6 +650,47 @@ export const Dashboard = () => {
                     </div>
                 </section>
 
+                {/* Leads by Pipeline */}
+                {(reportLoading || reportRaw.pipelines.length > 0) && (
+                    <section className="space-y-4">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                            <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#9b948e", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+                                Leads by Pipeline
+                            </p>
+                            {!reportLoading && (
+                                <select
+                                    value={reportClientFilter}
+                                    onChange={e => setReportClientFilter(e.target.value)}
+                                    className="appearance-none pl-3 pr-7 py-1.5 rounded-full text-xs font-semibold focus:outline-none cursor-pointer"
+                                    style={{ border: "1px solid #D8D2C4", backgroundColor: "#F2EBDD", color: "#2E2A26" }}
+                                >
+                                    <option value="">All Clients</option>
+                                    {reportClients.map(c => (
+                                        <option key={c.id} value={c.id}>{c.name}</option>
+                                    ))}
+                                </select>
+                            )}
+                        </div>
+                        {reportLoading ? (
+                            <div className="space-y-3">
+                                {[1, 2].map(i => (
+                                    <div key={i} className="h-40 rounded-xl animate-pulse" style={{ backgroundColor: "#E8E3DA" }} />
+                                ))}
+                            </div>
+                        ) : pipelineReport.length === 0 ? (
+                            <p className="text-sm py-4 text-center" style={{ color: "#9b948e" }}>
+                                No leads match the selected filters.
+                            </p>
+                        ) : (
+                            <div className="space-y-4">
+                                {pipelineReport.map(pipeline => (
+                                    <PipelineReportCard key={pipeline.id} pipeline={pipeline} />
+                                ))}
+                            </div>
+                        )}
+                    </section>
+                )}
+
                 {/* My Pending Tasks KPIs */}
                 <section className="space-y-4">
                     <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#9b948e", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
@@ -433,7 +698,7 @@ export const Dashboard = () => {
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                         {taskCards.map(card => (
-                            <TaskKpiCard key={card.title} {...card} loading={tasksLoading} navigate={navigate} />
+                            <TaskKpiCard key={card.title} {...card} loading={tasksLoading} onOpenModal={setOpenTaskModal} />
                         ))}
                     </div>
                 </section>
@@ -451,6 +716,14 @@ export const Dashboard = () => {
                 </section>
 
             </div>
+
+            <TaskListModal
+                isOpen={!!openTaskModal}
+                entityType={openTaskModal}
+                tasks={taskData.tasks.filter(t => t.entity_type === openTaskModal)}
+                onClose={() => setOpenTaskModal(null)}
+                navigate={navigate}
+            />
         </div>
     );
 };

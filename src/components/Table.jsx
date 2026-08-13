@@ -27,7 +27,14 @@ export const Table = ({
   onResetPassword,
   onViewContact,
   verSeguimiento,
+  // Optional list of extra per-row actions: [{ label, icon: LucideIcon, onClick(row) }].
+  // Rendered as additional DropdownMenuItems above the built-in Edit/Delete —
+  // additive only, every existing caller that doesn't pass this is unaffected.
+  rowActions,
   searchable = true,
+  // Optional override for the built-in filter's placeholder — additive,
+  // every existing caller that doesn't pass it keeps "Search...".
+  searchPlaceholder = "Search...",
   pageSizeOptions = [10, 20, 50],
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -55,6 +62,7 @@ export const Table = ({
           onResetPassword={onResetPassword}
           onViewContact={onViewContact}
           verSeguimiento={verSeguimiento}
+          rowActions={rowActions}
         />
       );
     }
@@ -174,6 +182,27 @@ export const Table = ({
     ? Math.min(currentPage * pageSize, totalRecords)
     : 0;
 
+  // Windowed page list (first, last, current ± 1, "…" for gaps) instead of
+  // one button per page — with dozens of pages the full list overflowed the
+  // table's bordered container sideways with no scroll affordance of its own.
+  const pageNumbers = useMemo(() => {
+    const delta = 1;
+    const pages = [];
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
+        pages.push(i);
+      }
+    }
+    const withEllipsis = [];
+    let prev = 0;
+    for (const p of pages) {
+      if (prev && p - prev > 1) withEllipsis.push(`ellipsis-${p}`);
+      withEllipsis.push(p);
+      prev = p;
+    }
+    return withEllipsis;
+  }, [currentPage, totalPages]);
+
   const toggleSort = (key) => {
     if (key === "_actions") return;
     if (sortKey !== key) {
@@ -193,7 +222,7 @@ export const Table = ({
             <div className="relative w-full">
               {/* Input de shadcn */}
               <input
-                placeholder="Search..."
+                placeholder={searchPlaceholder}
                 value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
@@ -349,23 +378,29 @@ export const Table = ({
             <span className="font-semibold" style={{ color: "#2E2A26" }}>{endRecord}</span>{" "}
             (Page {currentPage} of {totalPages})
           </div>
-          <div className="flex items-center justify-center gap-1">
+          <div className="flex items-center justify-center gap-1 overflow-x-auto max-w-full">
             <Button
               variant="terciary"
-              className="h-9 px-3"
+              className="h-9 px-3 shrink-0"
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
             >
               ← Previous
             </Button>
-            {Array.from({ length: totalPages }).map((_, idx) => {
-              const page = idx + 1;
+            {pageNumbers.map((page) => {
+              if (typeof page === "string") {
+                return (
+                  <span key={page} className="px-1.5 shrink-0" style={{ color: "#9b948e" }}>
+                    …
+                  </span>
+                );
+              }
               const isActive = page === currentPage;
               return (
                 <Button
                   key={page}
                   variant={isActive ? "terciary" : "paginacionNoActive"}
-                  className={isActive ? "text-codex-cards-secondary-variante1 h-9 px-3" : "h-9 px-3"}
+                  className={isActive ? "text-codex-cards-secondary-variante1 h-9 px-3 shrink-0" : "h-9 px-3 shrink-0"}
                   onClick={() => setCurrentPage(page)}
                 >
                   {page}
@@ -374,7 +409,7 @@ export const Table = ({
             })}
             <Button
               variant="terciary"
-              className="h-9 px-3"
+              className="h-9 px-3 shrink-0"
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
             >
@@ -394,7 +429,8 @@ const RowActions = ({
   onAskDelete,
   onResetPassword,
   onViewContact,
-  verSeguimiento
+  verSeguimiento,
+  rowActions,
 }) => {
   const activo =
     typeof row.activo === "boolean"
@@ -446,6 +482,25 @@ const RowActions = ({
               <FileInput className="w-6 h-6 text-codex-iconos-terciario dark:text-codex-iconos-primary-variante2" />
               View Tracking
             </DropdownMenuItem>
+          </>
+        )}
+
+        {Array.isArray(rowActions) && rowActions.length > 0 && (
+          <>
+            <DropdownMenuSeparator />
+            {rowActions.map((action) => {
+              // icon is always a plain component reference (not a
+              // per-row function) — components are themselves functions, so
+              // a "call if function" check here couldn't tell the two apart.
+              const ActionIcon = action.icon;
+              const label = typeof action.label === "function" ? action.label(row) : action.label;
+              return (
+                <DropdownMenuItem key={label} onClick={() => action.onClick(row)}>
+                  {ActionIcon && <ActionIcon className="w-6 h-6 text-codex-iconos-terciario dark:text-codex-iconos-primary-variante2" />}
+                  {label}
+                </DropdownMenuItem>
+              );
+            })}
           </>
         )}
 

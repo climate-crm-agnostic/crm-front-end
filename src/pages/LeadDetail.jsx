@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { getLeadClientAttributes, createLead, updateLead, uploadLeadImage, getLead } from "../services/leadService";
+import { getLeadClientAttributes, createLead, updateLead, uploadLeadImage, getLead, archiveLead, unarchiveLead } from "../services/leadService";
 import { getPipelineAttributes } from "../services/pipelineAttributeService";
 import { getPipelines } from "../services/pipelineService";
 import { getCatalogueItems } from "../services/catalogueService";
@@ -54,6 +54,8 @@ export const LeadDetail = () => {
     const [showLostModal, setShowLostModal] = useState(false);
     const [lostReason, setLostReason] = useState("");
     const [movingToLost, setMovingToLost] = useState(false);
+    const [isArchived, setIsArchived] = useState(false);
+    const [archiving, setArchiving] = useState(false);
 
     // File upload state
     const [uploading, setUploading] = useState(false);
@@ -132,6 +134,7 @@ export const LeadDetail = () => {
     const populateForm = (leadData) => {
         setName(leadData.name || "");
         setCurrentStage(leadData.stage || "");
+        setIsArchived(!!leadData.is_archived);
 
         // Capture pipeline so attributes can be fetched from the right pipeline
         const pid = leadData.pipeline?.id || leadData.pipeline || null;
@@ -481,6 +484,31 @@ export const LeadDetail = () => {
         }
     };
 
+    const handleToggleArchive = async () => {
+        const willArchive = !isArchived;
+        const confirm = await Swal.fire({
+            title: willArchive ? 'Archive this lead?' : 'Unarchive this lead?',
+            text: willArchive
+                ? 'It will be hidden from the pipeline board until you unarchive it.'
+                : 'It will show up in the pipeline board again.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: willArchive ? 'Archive' : 'Unarchive',
+        });
+        if (!confirm.isConfirmed) return;
+
+        setArchiving(true);
+        try {
+            const updated = willArchive ? await archiveLead(id) : await unarchiveLead(id);
+            setIsArchived(!!updated.is_archived);
+        } catch (err) {
+            console.error("Failed to toggle archive state", err);
+            Swal.fire('Error', err.message || 'Could not update the archive state.', 'error');
+        } finally {
+            setArchiving(false);
+        }
+    };
+
     const handleStageChange = async (newStage) => {
         if (!newStage || newStage === currentStage) return;
         const previousStage = currentStage;
@@ -524,6 +552,11 @@ export const LeadDetail = () => {
                     </div>
                 </div>
                 <div className="flex gap-2">
+                    {!isNew && isArchived && (
+                        <span style={{ fontSize: "12px", backgroundColor: "#E8E3DA", color: "#6b6560", border: "1px solid #D8D2C4", borderRadius: "12px", padding: "2px 10px", fontWeight: 600, display: "flex", alignItems: "center" }}>
+                            Archived
+                        </span>
+                    )}
                     {!isNew && availableStages.length > 0 && (
                         <Select
                             value={currentStage}
@@ -551,6 +584,15 @@ export const LeadDetail = () => {
                             onClick={() => { setLostReason(""); setShowLostModal(true); }}
                             style={{ display: "flex", alignItems: "center", gap: "6px", height: "36px", padding: "0 14px", borderRadius: "6px", border: "1px solid #f9a8a8", backgroundColor: "transparent", color: "#b91c1c", fontSize: "13px", fontWeight: 500, cursor: "pointer", transition: "all 0.2s" }}>
                             Move to Lost
+                        </button>
+                    )}
+                    {!isNew && (
+                        <button
+                            type="button"
+                            onClick={handleToggleArchive}
+                            disabled={archiving}
+                            style={{ display: "flex", alignItems: "center", gap: "6px", height: "36px", padding: "0 14px", borderRadius: "6px", border: "1px solid #D8D2C4", backgroundColor: "transparent", color: "#6b6560", fontSize: "13px", fontWeight: 500, cursor: archiving ? "not-allowed" : "pointer", transition: "all 0.2s", opacity: archiving ? 0.6 : 1 }}>
+                            {archiving ? "Saving…" : isArchived ? "Unarchive" : "Archive"}
                         </button>
                     )}
                     <Button variant="outline" onClick={() => navigate(-1)}>Cancel</Button>

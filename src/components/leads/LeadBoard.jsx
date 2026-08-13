@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { LeadCard } from "./LeadCard";
 import { getPipelines } from "../../services/pipelineService";
-import { getLeads, updateLead } from "../../services/leadService";
+import { getLeads, updateLead, archiveLead } from "../../services/leadService";
 import { getSales } from "../../services/salesService";
 import { getClients } from "../../services/clientService";
 import { useAuth } from "../../context/AuthContext";
@@ -144,6 +144,16 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
             // A StageValidationRule (or other backend validation) blocked the
             // move — revert the optimistic update above and tell the user why.
             Swal.fire('Cannot move lead', error.message || 'The stage change was rejected.', 'error');
+        }
+    };
+
+    const handleArchiveLead = async (leadId) => {
+        try {
+            await archiveLead(leadId);
+            setLeads(prev => prev.filter(l => l.id.toString() !== leadId.toString()));
+        } catch (error) {
+            console.error("Failed to archive lead", error);
+            Swal.fire('Error', error.message || 'Could not archive the lead.', 'error');
         }
     };
 
@@ -328,6 +338,7 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
                                         clientsById={clientsById}
                                         onDragStart={(e, l) => e.dataTransfer.setData("leadId", l.id)}
                                         onClick={() => onLeadClick?.(lead)}
+                                        onArchive={handleArchiveLead}
                                     />
                                 ))}
                                 {stageLeads.length === 0 && (

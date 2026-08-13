@@ -89,6 +89,40 @@ export const importLeadsFromExcel = async (pipelineId, file, clientId, newClient
     return data;
 };
 
+export const exportLeadsToExcel = async (filters = {}) => {
+    const query = new URLSearchParams(filters).toString();
+    const res = await fetch(`${API_URL}/leads/export_excel/?${query}`, {
+        method: "GET",
+        headers: getHeaders(),
+    });
+    if (!res.ok) throw new Error("Error exporting leads to Excel");
+    return res.blob();
+};
+
+export const archiveLead = async (id) => {
+    const res = await fetch(`${API_URL}/leads/${id}/archive/`, {
+        method: "POST",
+        headers: getHeaders(),
+    });
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error archiving lead"));
+    }
+    return res.json();
+};
+
+export const unarchiveLead = async (id) => {
+    const res = await fetch(`${API_URL}/leads/${id}/unarchive/`, {
+        method: "POST",
+        headers: getHeaders(),
+    });
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error unarchiving lead"));
+    }
+    return res.json();
+};
+
 export const reassignLeads = async (fromUserId, toUserId) => {
     const res = await fetch(`${API_URL}/leads/reassign/`, {
         method: "POST",

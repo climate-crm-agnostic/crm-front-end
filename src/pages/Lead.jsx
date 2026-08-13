@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
 import { LeadBoard } from "../components/leads/LeadBoard";
-import { Plus, TrendingUp, Upload, X, CheckCircle, AlertCircle } from "lucide-react";
+import { LeadTable } from "../components/leads/LeadTable";
+import { Plus, TrendingUp, Upload, X, CheckCircle, AlertCircle, LayoutGrid, Table as TableIcon, Download } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { getPipelines } from "../services/pipelineService";
-import { importLeadsFromExcel } from "../services/leadService";
+import { importLeadsFromExcel, exportLeadsToExcel } from "../services/leadService";
 import { getPipelineAttributes } from "../services/pipelineAttributeService";
 import { getClients } from "../services/clientService";
+import { saveAs } from "file-saver";
 import Swal from "sweetalert2";
 
 const LEAD_FIXED_FIELDS = [
@@ -16,14 +18,46 @@ const LEAD_FIXED_FIELDS = [
 ];
 
 const LEAD_PIPELINE_STORAGE_KEY = 'lead_selected_pipeline_id';
+const LEAD_VIEW_MODE_STORAGE_KEY = 'lead_view_mode';
 
 export const Lead = () => {
     const [refreshBoard, setRefreshBoard] = useState(0);
     const [selectedPipelineId, setSelectedPipelineId] = useState(
         () => localStorage.getItem(LEAD_PIPELINE_STORAGE_KEY) || null
     );
+    const [viewMode, setViewMode] = useState(
+        () => localStorage.getItem(LEAD_VIEW_MODE_STORAGE_KEY) || 'kanban'
+    );
+    const [tablePipelines, setTablePipelines] = useState([]);
+    const [exporting, setExporting] = useState(false);
     const { user } = useAuth();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        localStorage.setItem(LEAD_VIEW_MODE_STORAGE_KEY, viewMode);
+    }, [viewMode]);
+
+    // Table view has no toolbar of its own (unlike LeadBoard) — it still
+    // needs the pipeline selector so switching Kanban<->Table keeps showing
+    // the same pipeline (selectedPipelineId is shared between both).
+    useEffect(() => {
+        getPipelines().then(data => setTablePipelines(data.results || data || [])).catch(() => setTablePipelines([]));
+    }, []);
+
+    const handleExportExcel = async () => {
+        setExporting(true);
+        try {
+            const filters = { include_archived: "true" };
+            if (selectedPipelineId) filters.pipeline_id = selectedPipelineId;
+            const blob = await exportLeadsToExcel(filters);
+            saveAs(blob, "leads_report.xlsx");
+        } catch (error) {
+            console.error("Error exporting leads", error);
+            Swal.fire('Error!', 'There was an error exporting the leads.', 'error');
+        } finally {
+            setExporting(false);
+        }
+    };
 
     // Import modal state
     const [showImportModal, setShowImportModal] = useState(false);
@@ -160,6 +194,36 @@ export const Lead = () => {
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center rounded-lg p-0.5" style={{ backgroundColor: "#F2EBDD", border: "1px solid #D8D2C4" }}>
+                        <button
+                            onClick={() => setViewMode('kanban')}
+                            title="Kanban view"
+                            className="flex items-center justify-center h-9 w-9 rounded-md cursor-pointer transition-colors"
+                            style={{ backgroundColor: viewMode === 'kanban' ? "#5E6A43" : "transparent", color: viewMode === 'kanban' ? "#FBF7EF" : "#6b6560" }}
+                        >
+                            <LayoutGrid className="h-4 w-4" />
+                        </button>
+                        <button
+                            onClick={() => setViewMode('table')}
+                            title="Table view"
+                            className="flex items-center justify-center h-9 w-9 rounded-md cursor-pointer transition-colors"
+                            style={{ backgroundColor: viewMode === 'table' ? "#5E6A43" : "transparent", color: viewMode === 'table' ? "#FBF7EF" : "#6b6560" }}
+                        >
+                            <TableIcon className="h-4 w-4" />
+                        </button>
+                    </div>
+                    {viewMode === 'table' && (
+                        <button
+                            onClick={handleExportExcel}
+                            disabled={exporting}
+                            className="flex items-center gap-2 h-10 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer disabled:opacity-60"
+                            style={{ backgroundColor: "#F2EBDD", border: "1px solid #5E6A43", color: "#5E6A43" }}
+                            onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(94,106,67,0.15)"}
+                            onMouseLeave={e => e.currentTarget.style.backgroundColor = "#F2EBDD"}
+                        >
+                            <Download className="h-4 w-4" /> {exporting ? "Exporting…" : "Export Excel"}
+                        </button>
+                    )}
                     <button
                         onClick={openImportModal}
                         className="flex items-center gap-2 h-10 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
@@ -182,13 +246,43 @@ export const Lead = () => {
                 </div>
             </div>
 
-            <div className="flex-1 min-h-0">
-                <LeadBoard
-                    refreshTrigger={refreshBoard}
-                    selectedPipelineId={selectedPipelineId}
-                    setSelectedPipelineId={setSelectedPipelineId}
-                    onLeadClick={handleLeadClick}
-                />
+            <div className="flex-1 min-h-0 min-w-0 flex flex-col">
+                {viewMode === 'kanban' ? (
+                    <LeadBoard
+                        refreshTrigger={refreshBoard}
+                        selectedPipelineId={selectedPipelineId}
+                        setSelectedPipelineId={setSelectedPipelineId}
+                        onLeadClick={handleLeadClick}
+                    />
+                ) : (
+                    <>
+                        <div
+                            className="px-5 py-2.5 flex items-center gap-3 shrink-0"
+                            style={{ borderBottom: "1px solid #D8D2C4", backgroundColor: "#FBF7EF" }}
+                        >
+                            <span className="text-[10px] uppercase tracking-widest font-bold shrink-0" style={{ color: "#9b948e" }}>
+                                Active Pipeline
+                            </span>
+                            <select
+                                value={selectedPipelineId || ""}
+                                onChange={(e) => setSelectedPipelineId(e.target.value)}
+                                className="appearance-none pl-3 pr-7 py-1.5 rounded-full text-xs font-semibold focus:outline-none cursor-pointer"
+                                style={{ border: "1px solid #D8D2C4", backgroundColor: "#F2EBDD", color: "#2E2A26", minWidth: "200px" }}
+                            >
+                                {tablePipelines.map(p => (
+                                    <option key={p.id} value={p.id}>{p.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="flex-1 min-h-0 overflow-auto">
+                            <LeadTable
+                                selectedPipelineId={selectedPipelineId}
+                                refreshTrigger={refreshBoard}
+                                onLeadClick={handleLeadClick}
+                            />
+                        </div>
+                    </>
+                )}
             </div>
 
             {/* Import Modal */}

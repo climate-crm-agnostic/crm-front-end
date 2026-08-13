@@ -1,8 +1,21 @@
 import React from "react";
-import { Calendar, Building } from "lucide-react";
+import { Calendar, Building, Archive } from "lucide-react";
 import { formatDate } from "../../utils/date";
+import Swal from "sweetalert2";
 
-export const LeadCard = ({ lead, salesUsers = [], clientsById = {}, onDragStart, onClick }) => {
+export const LeadCard = ({ lead, salesUsers = [], clientsById = {}, onDragStart, onClick, onArchive }) => {
+
+    const handleArchiveClick = async (e) => {
+        e.stopPropagation();
+        const confirm = await Swal.fire({
+            title: 'Archive this lead?',
+            text: 'It will be hidden from the pipeline board until you unarchive it.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Archive',
+        });
+        if (confirm.isConfirmed) onArchive?.(lead.id);
+    };
 
     const getResponsibleName = () => {
         const resp = lead.responsible;
@@ -49,12 +62,23 @@ export const LeadCard = ({ lead, salesUsers = [], clientsById = {}, onDragStart,
                 }}
             >
                 {/* Lead name */}
-                <p
-                    className="text-[11px] font-bold uppercase tracking-tight leading-tight line-clamp-2 mb-2.5"
-                    style={{ color: "#2E2A26" }}
-                >
-                    {lead.name}
-                </p>
+                <div className="flex items-start justify-between gap-1.5 mb-2.5">
+                    <p
+                        className="text-[11px] font-bold uppercase tracking-tight leading-tight line-clamp-2"
+                        style={{ color: "#2E2A26" }}
+                    >
+                        {lead.name}
+                    </p>
+                    <button
+                        type="button"
+                        onClick={handleArchiveClick}
+                        title="Archive lead"
+                        className="cursor-pointer hover:opacity-70 transition-opacity shrink-0"
+                        style={{ color: "#9b948e", lineHeight: 0 }}
+                    >
+                        <Archive className="w-3.5 h-3.5" />
+                    </button>
+                </div>
 
                 {/* Responsible */}
                 <div
