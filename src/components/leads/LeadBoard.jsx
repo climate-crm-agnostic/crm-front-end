@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { LeadCard } from "./LeadCard";
+import { LeadMobileBoard } from "./LeadMobileBoard";
 import { getPipelines } from "../../services/pipelineService";
 import { getLeads, updateLead, archiveLead } from "../../services/leadService";
 import { getSales } from "../../services/salesService";
@@ -121,9 +122,7 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
 
     const handleDragOver = (e) => e.preventDefault();
 
-    const handleDrop = async (e, targetStageName) => {
-        e.preventDefault();
-        const leadId = e.dataTransfer.getData("leadId");
+    const changeStage = (leadId, targetStageName) => {
         if (targetStageName.toLowerCase() === "lost") {
             setPendingLostLeadId(leadId);
             setLostReason("");
@@ -133,9 +132,15 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
         performStageUpdate(leadId, targetStageName);
     };
 
+    const handleDrop = (e, targetStageName) => {
+        e.preventDefault();
+        const leadId = e.dataTransfer.getData("leadId");
+        changeStage(leadId, targetStageName);
+    };
+
     const performStageUpdate = async (leadId, targetStageName, additionalPayload = {}) => {
         const originalLeads = [...leads];
-        setLeads(leads.map(l => l.id.toString() === leadId ? { ...l, stage: targetStageName } : l));
+        setLeads(leads.map(l => l.id.toString() === leadId.toString() ? { ...l, stage: targetStageName } : l));
         try {
             await updateLead(leadId, { stage: targetStageName, ...additionalPayload });
         } catch (error) {
@@ -197,86 +202,103 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
         >
             {/* Pipeline selector toolbar */}
             <div
-                className="px-5 py-2.5 flex items-center gap-3 shrink-0"
+                className="px-4 sm:px-5 py-2.5 flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-3 shrink-0"
                 style={{ borderBottom: "1px solid #D8D2C4", backgroundColor: "#FBF7EF" }}
             >
-                <span
-                    className="text-[10px] uppercase tracking-widest font-bold shrink-0"
-                    style={{ color: "#9b948e" }}
-                >
-                    Active Pipeline
-                </span>
-                <div className="relative">
-                    <select
-                        value={selectedPipelineId || ""}
-                        onChange={(e) => setSelectedPipelineId(e.target.value)}
-                        className="appearance-none pl-3 pr-7 py-1.5 rounded-full text-xs font-semibold focus:outline-none cursor-pointer transition-colors"
-                        style={{
-                            border: "1px solid #D8D2C4",
-                            backgroundColor: "#F2EBDD",
-                            color: "#2E2A26",
-                            minWidth: "200px",
-                        }}
-                    >
-                        {pipelines.map(p => (
-                            <option key={p.id} value={p.id}>{p.name}</option>
-                        ))}
-                    </select>
-                    <ChevronRight
-                        size={13}
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none rotate-90"
+                <div className="flex items-center gap-2">
+                    <span
+                        className="text-[10px] uppercase tracking-widest font-bold shrink-0"
                         style={{ color: "#9b948e" }}
-                    />
+                    >
+                        Active Pipeline
+                    </span>
+                    <div className="relative flex-1 sm:flex-none">
+                        <select
+                            value={selectedPipelineId || ""}
+                            onChange={(e) => setSelectedPipelineId(e.target.value)}
+                            className="appearance-none w-full pl-3 pr-7 py-1.5 rounded-full text-xs font-semibold focus:outline-none cursor-pointer transition-colors"
+                            style={{
+                                border: "1px solid #D8D2C4",
+                                backgroundColor: "#F2EBDD",
+                                color: "#2E2A26",
+                                minWidth: "160px",
+                            }}
+                        >
+                            {pipelines.map(p => (
+                                <option key={p.id} value={p.id}>{p.name}</option>
+                            ))}
+                        </select>
+                        <ChevronRight
+                            size={13}
+                            className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none rotate-90"
+                            style={{ color: "#9b948e" }}
+                        />
+                    </div>
                 </div>
 
-                <label className="flex items-center gap-1.5 shrink-0 cursor-pointer select-none">
-                    <input
-                        type="checkbox"
-                        checked={myLeadsOnly}
-                        onChange={(e) => setMyLeadsOnly(e.target.checked)}
-                        className="h-3.5 w-3.5 rounded cursor-pointer"
-                        style={{ accentColor: "#5E6A43" }}
-                    />
-                    <span className="text-xs font-semibold" style={{ color: "#2E2A26" }}>My Leads</span>
-                </label>
+                <div className="flex items-center gap-3 min-w-0">
+                    <label className="flex items-center gap-1.5 shrink-0 cursor-pointer select-none">
+                        <input
+                            type="checkbox"
+                            checked={myLeadsOnly}
+                            onChange={(e) => setMyLeadsOnly(e.target.checked)}
+                            className="h-3.5 w-3.5 rounded cursor-pointer"
+                            style={{ accentColor: "#5E6A43" }}
+                        />
+                        <span className="text-xs font-semibold whitespace-nowrap" style={{ color: "#2E2A26" }}>My Leads</span>
+                    </label>
 
-                <div className="relative w-[220px]">
-                    <Search
-                        size={13}
-                        className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
-                        style={{ color: "#9b948e" }}
-                    />
-                    <input
-                        type="text"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        placeholder="Search leads by name..."
-                        className="w-full pl-8 pr-3 py-1.5 rounded-full text-xs focus:outline-none transition-colors"
-                        style={{ border: "1px solid #D8D2C4", backgroundColor: "#FBF7EF", color: "#2E2A26" }}
-                    />
+                    <div className="relative flex-1 min-w-0 sm:flex-none sm:w-[220px]">
+                        <Search
+                            size={13}
+                            className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
+                            style={{ color: "#9b948e" }}
+                        />
+                        <input
+                            type="text"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            placeholder="Search leads by name..."
+                            className="w-full pl-8 pr-3 py-1.5 rounded-full text-xs focus:outline-none transition-colors"
+                            style={{ border: "1px solid #D8D2C4", backgroundColor: "#FBF7EF", color: "#2E2A26" }}
+                        />
+                    </div>
                 </div>
             </div>
 
-            {/* Scroll buttons */}
+            {/* Scroll buttons (desktop board only) */}
             <button
                 onClick={scrollLeft}
-                className="absolute left-2 top-1/2 z-20 h-9 w-9 flex items-center justify-center rounded-full opacity-0 group-hover/board:opacity-100 transition-opacity"
+                className="hidden md:flex absolute left-2 top-1/2 z-20 h-9 w-9 items-center justify-center rounded-full opacity-0 group-hover/board:opacity-100 transition-opacity"
                 style={{ backgroundColor: "#FBF7EF", border: "1px solid #D8D2C4", color: "#5E6A43", boxShadow: "0 2px 8px rgba(0,0,0,0.10)" }}
             >
                 <ChevronLeft size={18} />
             </button>
             <button
                 onClick={scrollRight}
-                className="absolute right-2 top-1/2 z-20 h-9 w-9 flex items-center justify-center rounded-full opacity-0 group-hover/board:opacity-100 transition-opacity"
+                className="hidden md:flex absolute right-2 top-1/2 z-20 h-9 w-9 items-center justify-center rounded-full opacity-0 group-hover/board:opacity-100 transition-opacity"
                 style={{ backgroundColor: "#FBF7EF", border: "1px solid #D8D2C4", color: "#5E6A43", boxShadow: "0 2px 8px rgba(0,0,0,0.10)" }}
             >
                 <ChevronRight size={18} />
             </button>
 
-            {/* Kanban columns */}
+            {/* Mobile: single-stage list with stage chips instead of side-by-side columns */}
+            <div className="flex-1 min-h-0 md:hidden">
+                <LeadMobileBoard
+                    stages={stages}
+                    leads={filteredLeads}
+                    salesUsers={salesUsers}
+                    clientsById={clientsById}
+                    onLeadClick={onLeadClick}
+                    onArchive={handleArchiveLead}
+                    onChangeStage={changeStage}
+                />
+            </div>
+
+            {/* Desktop: Kanban columns */}
             <div
                 ref={scrollContainerRef}
-                className="flex gap-4 overflow-x-auto pb-4 px-4 h-full mt-3 scroll-smooth"
+                className="hidden md:flex gap-4 overflow-x-auto pb-4 px-4 h-full mt-3 scroll-smooth"
                 style={{ scrollbarWidth: "thin", scrollbarColor: "#D8D2C4 transparent" }}
             >
                 {stages.map((stage, index) => {
