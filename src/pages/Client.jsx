@@ -139,7 +139,7 @@ export const Client = () => {
 
     return (
         <div className="h-full flex flex-col p-2 w-full">
-            <div className="flex justify-between items-center mb-2">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-2">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight text-codex-texto-primary dark:text-codex-texto-dark-primary">
                         Clients
@@ -148,7 +148,7 @@ export const Client = () => {
                         Manage your clients and view their details.
                     </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                     <button
                         onClick={handleExportExcel}
                         className="flex items-center gap-2 h-9 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
@@ -185,8 +185,8 @@ export const Client = () => {
 
             {/* Import Modal */}
             {showImportModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-                    <div className="bg-white rounded-xl shadow-2xl w-[680px] max-h-[88vh] flex flex-col">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-[680px] max-h-[88vh] flex flex-col">
 
                         {/* Modal Header */}
                         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">

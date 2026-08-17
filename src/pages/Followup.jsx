@@ -127,7 +127,7 @@ export const Followup = () => {
 
     return (
         <div className="h-full flex flex-col p-2 w-full">
-            <div className="flex justify-between items-center mb-2">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-2">
                 <div>
                     <Button variant="ghost" className="mb-2 pl-0 hover:bg-transparent hover:text-primary" onClick={() => navigate("/service")}>
                         <ArrowLeft className="mr-2 h-4 w-4" /> Back to Services
@@ -139,7 +139,7 @@ export const Followup = () => {
                         History for: <span className="font-semibold text-foreground">{serviceName}</span>
                     </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                     <Button onClick={openNewFollowupModal}>
                         <Plus className="mr-2 h-4 w-4" /> Add Follow Up
                     </Button>

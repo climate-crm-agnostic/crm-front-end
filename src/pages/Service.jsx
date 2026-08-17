@@ -177,10 +177,10 @@ export const Service = () => {
 
     return (
         <div className="h-full flex flex-col p-2 w-full">
-            <div className="flex items-center gap-2 mb-2 ml-2">
+            <div className="flex flex-wrap items-center gap-2 mb-2 ml-2">
                 <Select value={selectedClient} onValueChange={setSelectedClient}>
                     <SelectTrigger
-                        className="w-[200px]"
+                        className="w-full sm:w-[200px]"
                         style={{ backgroundColor: "#fff", border: "1px solid #D8D2C4", color: "#2E2A26", fontFamily: '"Source Sans 3", Arial, sans-serif', fontSize: "14px" }}
                     >
                         <SelectValue placeholder="Select Client" />
@@ -236,8 +236,8 @@ export const Service = () => {
 
             {/* Import Modal */}
             {showImportModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-                    <div className="bg-white rounded-xl shadow-2xl w-[680px] max-h-[88vh] flex flex-col">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-[680px] max-h-[88vh] flex flex-col">
 
                         {/* Modal Header */}
                         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">

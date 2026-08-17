@@ -84,8 +84,8 @@ export const Login = ({ className, ...props }) => {
                   Welcome back
                 </h1>
                 <p className="text-sm mt-1.5" style={{ color: "#6b6560" }}>
-                  Sign in to your{" "}
-                  <span className="font-bold" style={{ color: "#4F8071" }}>CodeX CRM</span>{" "}
+                  Sign into your{" "}
+                  <span className="font-bold" style={{ color: "#4F8071" }}>ClimateCRM</span>{" "}
                   workspace
                 </p>
               </div>

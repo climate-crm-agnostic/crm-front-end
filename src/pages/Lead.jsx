@@ -193,7 +193,7 @@ export const Lead = () => {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center flex-wrap gap-2 w-full sm:w-auto">
                     <div className="flex items-center rounded-lg p-0.5" style={{ backgroundColor: "#F2EBDD", border: "1px solid #D8D2C4" }}>
                         <button
                             onClick={() => setViewMode('kanban')}
@@ -287,8 +287,8 @@ export const Lead = () => {
 
             {/* Import Modal */}
             {showImportModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-                    <div className="bg-white rounded-xl shadow-2xl w-[680px] max-h-[88vh] flex flex-col">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-[680px] max-h-[88vh] flex flex-col">
 
                         {/* Modal Header */}
                         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">

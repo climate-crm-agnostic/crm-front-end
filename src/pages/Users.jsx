@@ -97,12 +97,12 @@ export const Users = () => {
 
     return (
         <div className="p-6 space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">Users</h1>
                     <p className="text-muted-foreground text-sm mt-1">Manage your team members and their roles.</p>
                 </div>
-                <Button onClick={() => navigate("/users/new")}>
+                <Button className="self-start sm:self-auto" onClick={() => navigate("/users/new")}>
                     <UserPlus className="h-4 w-4 mr-2" />
                     New User
                 </Button>

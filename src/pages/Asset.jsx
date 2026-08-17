@@ -99,7 +99,7 @@ export const Asset = () => {
 
     return (
         <div className="h-full flex flex-col p-2 w-full">
-            <div className="flex justify-between items-center mb-2">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-2">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight text-codex-texto-primary dark:text-codex-texto-dark-primary">
                         Assets
@@ -108,7 +108,7 @@ export const Asset = () => {
                         Manage physical company assets and supplies.
                     </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                     <Button onClick={() => navigate("/asset/new")}>
                         <Plus className="mr-2 h-4 w-4" /> Add Asset
                     </Button>
