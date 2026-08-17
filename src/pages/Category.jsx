@@ -11,21 +11,12 @@ export const Category = () => {
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [attributes, setAttributes] = useState([]);
-    const [categoriesById, setCategoriesById] = useState({});
     const navigate = useNavigate();
 
     const staticColumns = [
         { key: "name", label: "Name" },
         { key: "description", label: "Description" },
-        {
-            key: "parent",
-            label: "Parent Category",
-            render: (value, row) => {
-                if (!value) return "-";
-                if (typeof value === 'object') return value.name || "-";
-                return categoriesById[String(value)] || "-";
-            }
-        },
+        { key: "parent_name", label: "Parent Category" },
     ];
 
     const [columns, setColumns] = useState(staticColumns);
@@ -42,16 +33,22 @@ export const Category = () => {
                 getCategoryAttributes()
             ]);
 
+            const cMap = {};
+            (categoriesData || []).forEach(c => { cMap[String(c.id)] = c.name; });
+
+            const getParentName = (parent) => {
+                if (!parent) return "-";
+                if (typeof parent === 'object') return parent.name || "-";
+                return cMap[String(parent)] || "-";
+            };
+
             const processedCategories = categoriesData.map(category => ({
                 ...category,
-                ...(category.attributes || {})
+                ...(category.attributes || {}),
+                parent_name: getParentName(category.parent),
             }));
             setCategories(processedCategories);
             setAttributes(attributesData);
-
-            const cMap = {};
-            (categoriesData || []).forEach(c => { cMap[String(c.id)] = c.name; });
-            setCategoriesById(cMap);
 
             // Dynamic columns from attributes
             const dynamicColumns = attributesData.map(attr => ({

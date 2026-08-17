@@ -13,7 +13,6 @@ export const Invoice = () => {
     const [invoices, setInvoices] = useState([]);
     const [loading, setLoading] = useState(true);
     const [attributes, setAttributes] = useState([]);
-    const [clientsById, setClientsById] = useState({});
     const navigate = useNavigate();
 
     const getStatusColor = (status) => {
@@ -28,15 +27,7 @@ export const Invoice = () => {
 
     const staticColumns = [
         { key: "invoice_number", label: "Invoice #" },
-        {
-            key: "client",
-            label: "Client",
-            render: (value) => {
-                if (!value) return "";
-                if (typeof value === 'object') return value.name || "";
-                return clientsById[String(value)] || value;
-            }
-        },
+        { key: "client_name", label: "Client" },
         {
             key: "status",
             label: "Status",
@@ -76,11 +67,17 @@ export const Invoice = () => {
 
             const cMap = {};
             (clientsData || []).forEach(c => { cMap[String(c.id)] = c.name; });
-            setClientsById(cMap);
+
+            const getClientName = (client) => {
+                if (!client) return "";
+                if (typeof client === 'object') return client.name || "";
+                return cMap[String(client)] || "";
+            };
 
             const processedInvoices = invoicesData.map(invoice => ({
                 ...invoice,
-                ...(invoice.attributes || {})
+                ...(invoice.attributes || {}),
+                client_name: getClientName(invoice.client),
             }));
             setInvoices(processedInvoices);
             setAttributes(attributesData);
