@@ -15,7 +15,8 @@ import { Button } from "../components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Checkbox } from "../components/ui/checkbox";
 import { Textarea } from "../components/ui/textarea";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, MoreVertical } from "lucide-react";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "../components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/table";
 import { Switch } from "../components/ui/switch";
 import { DateInput } from "../components/ui/date-input";
@@ -537,26 +538,30 @@ export const LeadDetail = () => {
     return (
         <div className="min-h-screen bg-background flex flex-col">
             {/* Header */}
-            <div className="sticky top-0 z-10 border-b px-6 py-4 flex items-center justify-between bg-card shrink-0">
-                <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+            <div className="sticky top-0 z-10 border-b px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-card shrink-0">
+                <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                    <Button variant="ghost" size="icon" className="shrink-0" onClick={() => navigate(-1)}>
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
-                    <div>
-                        <h1 className="text-xl font-semibold">
-                            {isNew ? "New Opportunity" : "Edit Opportunity"}
-                        </h1>
-                        <p className="text-sm text-muted-foreground">
+                    <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                            <h1 className="text-xl font-semibold truncate">
+                                {isNew ? "New Opportunity" : "Edit Opportunity"}
+                            </h1>
+                            {!isNew && isArchived && (
+                                <span className="shrink-0" style={{ fontSize: "12px", backgroundColor: "#E8E3DA", color: "#6b6560", border: "1px solid #D8D2C4", borderRadius: "12px", padding: "2px 10px", fontWeight: 600, display: "flex", alignItems: "center" }}>
+                                    Archived
+                                </span>
+                            )}
+                        </div>
+                        <p className="text-sm text-muted-foreground truncate">
                             {isNew ? "Create a new sales opportunity" : `Managing details for ${name}`}
                         </p>
                     </div>
                 </div>
-                <div className="flex gap-2">
-                    {!isNew && isArchived && (
-                        <span style={{ fontSize: "12px", backgroundColor: "#E8E3DA", color: "#6b6560", border: "1px solid #D8D2C4", borderRadius: "12px", padding: "2px 10px", fontWeight: 600, display: "flex", alignItems: "center" }}>
-                            Archived
-                        </span>
-                    )}
+
+                {/* Desktop actions */}
+                <div className="hidden sm:flex items-center gap-2 shrink-0">
                     {!isNew && availableStages.length > 0 && (
                         <Select
                             value={currentStage}
@@ -597,6 +602,54 @@ export const LeadDetail = () => {
                     )}
                     <Button variant="outline" onClick={() => navigate(-1)}>Cancel</Button>
                     <Button onClick={handleSubmit} disabled={loading || uploading}>
+                        {loading ? "Saving..." : "Save Opportunity"}
+                    </Button>
+                </div>
+
+                {/* Mobile actions — compact: stage + overflow menu, then full-width Cancel/Save */}
+                {!isNew && (
+                <div className="flex sm:hidden items-center gap-2">
+                    {availableStages.length > 0 && (
+                        <Select
+                            value={currentStage}
+                            onValueChange={handleStageChange}
+                            disabled={changingStage}
+                        >
+                            <SelectTrigger className="h-9 flex-1 min-w-0" style={{ backgroundColor: "#fff", borderColor: "#D8D2C4", color: "#2E2A26" }}>
+                                <SelectValue placeholder="Stage" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {currentStage && !availableStages.some(s => s.name === currentStage) && (
+                                    <SelectItem value={currentStage}>{currentStage}</SelectItem>
+                                )}
+                                {availableStages.map(s => (
+                                    <SelectItem key={s.id || s.name} value={s.name}>
+                                        {s.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    )}
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
+                                <MoreVertical className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => { setLostReason(""); setShowLostModal(true); }} className="text-red-600 focus:text-red-600">
+                                Move to Lost
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={handleToggleArchive} disabled={archiving}>
+                                {archiving ? "Saving…" : isArchived ? "Unarchive" : "Archive"}
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+                )}
+                <div className="flex sm:hidden items-center gap-2">
+                    <Button variant="outline" className="flex-1" onClick={() => navigate(-1)}>Cancel</Button>
+                    <Button className="flex-1" onClick={handleSubmit} disabled={loading || uploading}>
                         {loading ? "Saving..." : "Save Opportunity"}
                     </Button>
                 </div>
@@ -826,7 +879,7 @@ export const LeadDetail = () => {
                         {itemsList.length === 0 ? (
                             <p className="text-sm text-muted-foreground italic">No items added.</p>
                         ) : (
-                            <div className="border rounded-md">
+                            <div className="border rounded-md overflow-x-auto">
                                 <Table>
                                     <TableHeader>
                                         <TableRow>

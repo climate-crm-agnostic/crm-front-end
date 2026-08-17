@@ -542,23 +542,23 @@ export const InvoiceDetail = () => {
 
     return (
         <div className="min-h-screen bg-background flex flex-col">
-            <div className="sticky top-0 z-10 border-b px-6 py-4 flex items-center justify-between bg-card shrink-0 shadow-sm">
-                <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+            <div className="sticky top-0 z-10 border-b px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-card shrink-0 shadow-sm">
+                <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                    <Button variant="ghost" size="icon" className="shrink-0" onClick={() => navigate(-1)}>
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
-                    <div>
+                    <div className="min-w-0">
                         <div className="flex items-center gap-3">
-                            <h1 className="text-xl font-semibold">
+                            <h1 className="text-xl font-semibold truncate">
                                 {isNew ? "New Invoice" : `Invoice ${invoiceNumber}`}
                             </h1>
                             {!isNew && (
-                                <Badge variant={getStatusColor(status)} className="capitalize px-2 py-0.5 text-xs">
+                                <Badge variant={getStatusColor(status)} className="capitalize px-2 py-0.5 text-xs shrink-0">
                                     {status}
                                 </Badge>
                             )}
                         </div>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-muted-foreground truncate">
                             {isNew ? "Create a new invoice draft" : "Manage billing and payments"}
                         </p>
                     </div>

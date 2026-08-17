@@ -101,12 +101,12 @@ export const Settings = () => {
 
     return (
         <div className="min-h-screen bg-background">
-            <div className="sticky top-0 z-10 border-b px-6 py-4 flex items-center justify-between bg-card shadow-sm">
+            <div className="sticky top-0 z-10 border-b px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-card shadow-sm">
                 <div>
                     <h1 className="text-xl font-semibold">Integrations</h1>
                     <p className="text-sm text-muted-foreground">Configure third-party services</p>
                 </div>
-                <Button onClick={handleSave} disabled={saving || !hasPending}>
+                <Button className="self-start sm:self-auto" onClick={handleSave} disabled={saving || !hasPending}>
                     {saving ? "Saving..." : "Save Changes"}
                 </Button>
             </div>
