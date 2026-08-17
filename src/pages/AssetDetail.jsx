@@ -4,13 +4,14 @@ import {
     createAsset, updateAsset, getAssetById,
     getAssetAttributes
 } from "../services/assetService";
+import { getAssetAssignments } from "../services/assetAssignmentService";
 
 // UI Components
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Button } from "../components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Plus } from "lucide-react";
 import { Switch } from "../components/ui/switch";
 import { Textarea } from "../components/ui/textarea";
 import { DateInput } from "../components/ui/date-input";
@@ -34,6 +35,31 @@ export const AssetDetail = () => {
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(!isNew);
     const [error, setError] = useState(null);
+
+    // --- Assignments tab state ---
+    const [activeTab, setActiveTab] = useState('overview');
+    const [assignments, setAssignments] = useState([]);
+    const [assignmentsLoading, setAssignmentsLoading] = useState(false);
+
+    const fetchAssignments = async () => {
+        if (isNew) return;
+        setAssignmentsLoading(true);
+        try {
+            const all = await getAssetAssignments();
+            setAssignments((all || []).filter(a => String(a.asset) === String(id)));
+        } catch (err) {
+            console.error("Error fetching assignments", err);
+        } finally {
+            setAssignmentsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (activeTab === 'assignments' && !isNew) {
+            fetchAssignments();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeTab, id]);
 
     useEffect(() => {
         const init = async () => {
@@ -174,18 +200,22 @@ export const AssetDetail = () => {
                     </Button>
                     <div>
                         <h1 className="text-xl font-semibold">
-                            {isNew ? "New Asset" : "Edit Asset"}
+                            {isNew ? "New Asset" : (name || "Asset")}
                         </h1>
                         <p className="text-sm text-muted-foreground">
-                            {isNew ? "Add physical equipment tracking" : `Managing details for ${name}`}
+                            {isNew ? "Add physical equipment tracking" : "Asset details"}
                         </p>
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" onClick={() => navigate(-1)}>Cancel</Button>
-                    <Button onClick={handleSubmit} disabled={loading}>
-                        {loading ? "Saving..." : "Save Asset"}
-                    </Button>
+                    {activeTab === 'overview' && (
+                        <>
+                            <Button variant="outline" onClick={() => navigate(-1)}>Cancel</Button>
+                            <Button onClick={handleSubmit} disabled={loading}>
+                                {loading ? "Saving..." : "Save Asset"}
+                            </Button>
+                        </>
+                    )}
                 </div>
             </div>
 
@@ -196,6 +226,70 @@ export const AssetDetail = () => {
                     </div>
                 )}
 
+                {/* Tabs — Assignments only makes sense once the asset actually exists */}
+                {!isNew && (
+                    <div className="flex items-center gap-1 mb-6 border-b">
+                        {[
+                            { key: 'overview', label: 'Overview' },
+                            { key: 'assignments', label: 'Assignments' },
+                        ].map((tab) => (
+                            <button
+                                key={tab.key}
+                                onClick={() => setActiveTab(tab.key)}
+                                className="px-4 h-10 text-sm font-semibold transition-colors cursor-pointer"
+                                style={{
+                                    color: activeTab === tab.key ? "#5E6A43" : "#9b948e",
+                                    borderBottom: activeTab === tab.key ? "2px solid #5E6A43" : "2px solid transparent",
+                                }}
+                            >
+                                {tab.label}
+                            </button>
+                        ))}
+                    </div>
+                )}
+
+                {activeTab === 'assignments' && !isNew ? (
+                    <div className="space-y-4">
+                        <div className="flex justify-end">
+                            <Button onClick={() => navigate('/assetassignment/new', { state: { assetId: id } })}>
+                                <Plus className="mr-2 h-4 w-4" /> Add Assignment
+                            </Button>
+                        </div>
+                        {assignmentsLoading ? (
+                            <div className="h-24 rounded-lg animate-pulse" style={{ backgroundColor: "#E8E3DA" }} />
+                        ) : assignments.length === 0 ? (
+                            <div
+                                className="rounded-lg p-8 text-center text-sm"
+                                style={{ color: "#9b948e", border: "1px solid #D8D2C4", backgroundColor: "#FBF7EF" }}
+                            >
+                                No assignments yet for this asset.
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                {assignments.map((a) => (
+                                    <div
+                                        key={a.id}
+                                        className="flex items-center justify-between gap-3 rounded-lg p-4 cursor-pointer"
+                                        style={{ backgroundColor: "#FBF7EF", border: "1px solid #D8D2C4" }}
+                                        onClick={() => navigate(`/assetassignment/${a.id}`)}
+                                    >
+                                        <div className="min-w-0">
+                                            <p className="text-sm font-semibold truncate" style={{ color: "#2E2A26" }}>{a.name}</p>
+                                            <p className="text-xs mt-0.5" style={{ color: "#9b948e" }}>
+                                                Borrowed {a.borrow_date}{a.return_date ? ` · Returned ${a.return_date}` : " · Active"}
+                                            </p>
+                                        </div>
+                                        {a.lending_amount != null && (
+                                            <p className="text-sm font-bold shrink-0" style={{ color: "#2E2A26" }}>{a.lending_amount}</p>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                ) : null}
+
+                <div style={{ display: activeTab === 'overview' || isNew ? 'block' : 'none' }}>
                 <div className="space-y-6">
                     {/* Main Info */}
                     <div className="bg-card p-6 rounded-lg border shadow-sm space-y-4">
@@ -249,7 +343,7 @@ export const AssetDetail = () => {
                                                 </SelectContent>
                                             </Select>
                                         ) : attr.type === 'boolean' ? (
-                                            <div className="flex items-center space-x-2 h-10">
+                                            <div className="flex items-center space-x-2 h-9">
                                                 <Switch
                                                     id={attr.name}
                                                     checked={!!dynamicData[attr.name]}
@@ -279,6 +373,7 @@ export const AssetDetail = () => {
                             </div>
                         </div>
                     )}
+                </div>
                 </div>
             </div>
         </div>

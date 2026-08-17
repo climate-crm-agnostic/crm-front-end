@@ -41,8 +41,6 @@ export function NavMain({ items }) {
                 tooltip={item.title}
                 style={isActive ? {
                   backgroundColor: "var(--sidebar-accent)",
-                  borderLeft: ACTIVE_BORDER,
-                  borderRadius: "0 4px 4px 0",
                 } : {}}
               >
                 <a

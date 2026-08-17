@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Table } from "../components/Table";
 import { Button } from "../components/ui/button";
-import { Plus, Download } from "lucide-react";
+import { Plus, Download, ChevronRight, FolderTree } from "lucide-react";
 import { getCatalogueItems, deleteCatalogueItem, getCatalogueItemAttributes, exportCatalogueItemsExcel } from "../services/catalogueService";
+import { getCategories } from "../services/categoryService";
 import { saveAs } from "file-saver";
 import Swal from "sweetalert2";
 import { Badge } from "../components/ui/badge";
@@ -12,6 +13,8 @@ export const Catalogueitem = () => {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [attributes, setAttributes] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [selectedCategory, setSelectedCategory] = useState("all");
     const navigate = useNavigate();
 
     const staticColumns = [
@@ -47,9 +50,10 @@ export const Catalogueitem = () => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [itemsData, attributesData] = await Promise.all([
+            const [itemsData, attributesData, categoriesData] = await Promise.all([
                 getCatalogueItems(),
-                getCatalogueItemAttributes()
+                getCatalogueItemAttributes(),
+                getCategories(),
             ]);
 
             const processedItems = itemsData.map(item => ({
@@ -58,6 +62,7 @@ export const Catalogueitem = () => {
             }));
             setItems(processedItems);
             setAttributes(attributesData);
+            setCategories(categoriesData || []);
 
             // Dynamic columns from attributes
             const dynamicColumns = attributesData.map(attr => ({
@@ -119,6 +124,10 @@ export const Catalogueitem = () => {
         }
     };
 
+    const filteredItems = selectedCategory === "all"
+        ? items
+        : items.filter(item => String(item.category) === String(selectedCategory));
+
     return (
         <div className="h-full flex flex-col p-2 w-full">
             <div className="flex justify-between items-center mb-2">
@@ -146,9 +155,35 @@ export const Catalogueitem = () => {
                 </div>
             </div>
 
+            <div className="flex items-center gap-2 mb-2">
+                <div className="relative">
+                    <select
+                        value={selectedCategory}
+                        onChange={(e) => setSelectedCategory(e.target.value)}
+                        className="appearance-none pl-3 pr-7 py-1.5 rounded-full text-xs font-semibold focus:outline-none cursor-pointer transition-colors"
+                        style={{ border: "1px solid #D8D2C4", backgroundColor: "#F2EBDD", color: "#2E2A26" }}
+                    >
+                        <option value="all">All Categories</option>
+                        {categories.map((c) => (
+                            <option key={c.id} value={String(c.id)}>{c.name}</option>
+                        ))}
+                    </select>
+                    <ChevronRight size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none rotate-90" style={{ color: "#9b948e" }} />
+                </div>
+                <button
+                    onClick={() => navigate("/category")}
+                    className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full cursor-pointer transition-colors"
+                    style={{ color: "#5E6A43" }}
+                    onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(94,106,67,0.08)"}
+                    onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
+                >
+                    <FolderTree size={13} /> Manage Categories
+                </button>
+            </div>
+
             <div className="bg-brand-oat p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
                 <Table
-                    data={items}
+                    data={filteredItems}
                     columns={columns}
                     onEdit={handleEdit}
                     onAskDelete={handleDelete}

@@ -303,14 +303,10 @@ export const Attributes = () => {
 
             {/* Kanban board */}
             <div className="flex-1 min-h-0 overflow-hidden p-5 relative group/board">
-                {/* Scroll fade overlays */}
-                <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-[#FBF7EF] to-transparent pointer-events-none z-10 opacity-0 group-hover/board:opacity-100 transition-opacity" />
-                <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-[#FBF7EF] to-transparent pointer-events-none z-10 opacity-0 group-hover/board:opacity-100 transition-opacity" />
-
                 {/* Scroll left */}
                 <button
                     onClick={() => document.getElementById('attr-scroll-container').scrollBy({ left: -420, behavior: 'smooth' })}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 z-20 h-9 w-9 flex items-center justify-center rounded-full opacity-0 group-hover/board:opacity-100 transition-all hover:scale-105 hidden md:flex"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 z-20 h-9 w-9 flex items-center justify-center rounded-full hidden md:flex"
                     style={{ backgroundColor: "#FBF7EF", border: "1px solid #D8D2C4", color: "#5E6A43", boxShadow: "0 2px 8px rgba(0,0,0,0.10)" }}
                 >
                     <ChevronLeft size={16} />
@@ -319,7 +315,7 @@ export const Attributes = () => {
                 {/* Scroll right */}
                 <button
                     onClick={() => document.getElementById('attr-scroll-container').scrollBy({ left: 420, behavior: 'smooth' })}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 z-20 h-9 w-9 flex items-center justify-center rounded-full opacity-0 group-hover/board:opacity-100 transition-all hover:scale-105 hidden md:flex"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 z-20 h-9 w-9 flex items-center justify-center rounded-full hidden md:flex"
                     style={{ backgroundColor: "#FBF7EF", border: "1px solid #D8D2C4", color: "#5E6A43", boxShadow: "0 2px 8px rgba(0,0,0,0.10)" }}
                 >
                     <ChevronRight size={16} />
@@ -340,7 +336,7 @@ export const Attributes = () => {
                         return (
                             <div
                                 key={entity}
-                                className="flex-shrink-0 w-[85vw] md:w-[360px] flex flex-col rounded-xl h-full"
+                                className="flex-shrink-0 w-[85vw] md:w-[360px] flex flex-col rounded-xl h-full transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
                                 style={{ border: "1px solid #D8D2C4", backgroundColor: "#FBF7EF", overflow: "hidden" }}
                             >
                                 {/* Column header */}

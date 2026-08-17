@@ -377,7 +377,7 @@ export const ServiceDetail = () => {
                                                 </SelectContent>
                                             </Select>
                                         ) : attr.type === 'boolean' ? (
-                                            <div className="flex items-center space-x-2 h-10">
+                                            <div className="flex items-center space-x-2 h-9">
                                                 <Switch
                                                     id={attr.name}
                                                     checked={!!dynamicData[attr.name]}

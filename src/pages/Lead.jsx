@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { LeadBoard } from "../components/leads/LeadBoard";
-import { Plus, TrendingUp, Upload, X, CheckCircle, AlertCircle } from "lucide-react";
+import { LeadTable } from "../components/leads/LeadTable";
+import { Plus, TrendingUp, Upload, X, CheckCircle, AlertCircle, LayoutGrid, Table as TableIcon } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { getPipelines } from "../services/pipelineService";
@@ -16,11 +17,15 @@ const LEAD_FIXED_FIELDS = [
 ];
 
 const LEAD_PIPELINE_STORAGE_KEY = 'lead_selected_pipeline_id';
+const LEAD_VIEW_STORAGE_KEY = 'lead_view_mode';
 
 export const Lead = () => {
     const [refreshBoard, setRefreshBoard] = useState(0);
     const [selectedPipelineId, setSelectedPipelineId] = useState(
         () => localStorage.getItem(LEAD_PIPELINE_STORAGE_KEY) || null
+    );
+    const [viewMode, setViewMode] = useState(
+        () => localStorage.getItem(LEAD_VIEW_STORAGE_KEY) || 'board'
     );
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -47,6 +52,10 @@ export const Lead = () => {
             localStorage.setItem(LEAD_PIPELINE_STORAGE_KEY, selectedPipelineId);
         }
     }, [selectedPipelineId]);
+
+    useEffect(() => {
+        localStorage.setItem(LEAD_VIEW_STORAGE_KEY, viewMode);
+    }, [viewMode]);
 
     const handleLeadClick = (lead) => {
         navigate(`/lead/${lead.id}`);
@@ -160,6 +169,24 @@ export const Lead = () => {
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center rounded-lg overflow-hidden shrink-0" style={{ border: "1px solid #D8D2C4" }}>
+                        <button
+                            onClick={() => setViewMode('board')}
+                            title="Board view"
+                            className="h-10 w-10 flex items-center justify-center cursor-pointer transition-colors"
+                            style={{ backgroundColor: viewMode === 'board' ? "#5E6A43" : "#F2EBDD", color: viewMode === 'board' ? "#FBF7EF" : "#6b6560" }}
+                        >
+                            <LayoutGrid className="h-4 w-4" />
+                        </button>
+                        <button
+                            onClick={() => setViewMode('table')}
+                            title="Table view"
+                            className="h-10 w-10 flex items-center justify-center cursor-pointer transition-colors"
+                            style={{ backgroundColor: viewMode === 'table' ? "#5E6A43" : "#F2EBDD", color: viewMode === 'table' ? "#FBF7EF" : "#6b6560" }}
+                        >
+                            <TableIcon className="h-4 w-4" />
+                        </button>
+                    </div>
                     <button
                         onClick={openImportModal}
                         className="flex items-center gap-2 h-10 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
@@ -183,12 +210,20 @@ export const Lead = () => {
             </div>
 
             <div className="flex-1 min-h-0">
-                <LeadBoard
-                    refreshTrigger={refreshBoard}
-                    selectedPipelineId={selectedPipelineId}
-                    setSelectedPipelineId={setSelectedPipelineId}
-                    onLeadClick={handleLeadClick}
-                />
+                {viewMode === 'board' ? (
+                    <LeadBoard
+                        refreshTrigger={refreshBoard}
+                        selectedPipelineId={selectedPipelineId}
+                        setSelectedPipelineId={setSelectedPipelineId}
+                        onLeadClick={handleLeadClick}
+                    />
+                ) : (
+                    <LeadTable
+                        refreshTrigger={refreshBoard}
+                        selectedPipelineId={selectedPipelineId}
+                        onLeadClick={handleLeadClick}
+                    />
+                )}
             </div>
 
             {/* Import Modal */}

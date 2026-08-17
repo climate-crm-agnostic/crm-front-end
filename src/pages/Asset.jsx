@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Table } from "../components/Table";
+import { TableSummary } from "../components/TableSummary";
 import { Button } from "../components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, MoreHorizontal, SquarePen, OctagonX } from "lucide-react";
 import { getAssets, deleteAsset, getAssetAttributes } from "../services/assetService";
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuItem,
+} from "../components/ui/dropdown-menu";
 import Swal from "sweetalert2";
 
 export const Asset = () => {
@@ -97,6 +103,50 @@ export const Asset = () => {
         }
     };
 
+    const totalValue = items.reduce((sum, item) => sum + (Number(item.price) || 0) * (Number(item.quantity) || 1), 0);
+    const totalQuantity = items.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
+
+    const stats = [
+        { label: "Total assets", value: items.length },
+        { label: "Total quantity", value: totalQuantity },
+        { label: "Total value", value: `$${totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}` },
+    ];
+
+    const renderAssetCard = (item) => (
+        <div
+            className="flex items-center justify-between gap-3 rounded-lg p-4 transition-colors"
+            style={{ backgroundColor: "#FBF7EF", border: "1px solid #D8D2C4" }}
+        >
+            <div className="min-w-0 cursor-pointer" onClick={() => handleEdit(item)}>
+                <p className="text-sm font-semibold truncate" style={{ color: "#2E2A26" }}>{item.name}</p>
+                <p className="text-xs mt-0.5" style={{ color: "#9b948e" }}>{item.bought_date ? `Bought ${item.bought_date}` : "—"}</p>
+            </div>
+            <div className="flex items-center gap-4 shrink-0">
+                <div className="text-right">
+                    <p className="text-sm font-bold" style={{ color: "#2E2A26" }}>
+                        {item.price ? `$${Number(item.price).toFixed(2)}` : "—"}
+                    </p>
+                    <p className="text-xs mt-0.5" style={{ color: "#9b948e" }}>Qty {item.quantity ?? "—"}</p>
+                </div>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <button className="h-8 w-8 flex items-center justify-center rounded-md cursor-pointer" style={{ color: "#6b6560" }}>
+                            <MoreHorizontal className="h-4 w-4" />
+                        </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleEdit(item)}>
+                            <SquarePen className="w-4 h-4" /> Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="hover:text-destructive focus:text-destructive" onClick={() => handleDelete(item)}>
+                            <OctagonX className="w-4 h-4" /> Delete
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
+        </div>
+    );
+
     return (
         <div className="h-full flex flex-col p-2 w-full">
             <div className="flex justify-between items-center mb-2">
@@ -116,12 +166,13 @@ export const Asset = () => {
             </div>
 
             <div className="bg-brand-oat p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
-                <Table
+                <TableSummary
                     data={items}
-                    columns={columns}
-                    onEdit={handleEdit}
-                    onAskDelete={handleDelete}
-                    searchable={true}
+                    stats={stats}
+                    renderCard={renderAssetCard}
+                    searchKeys={["name"]}
+                    loading={loading}
+                    emptyLabel="No assets yet."
                 />
             </div>
         </div>

@@ -174,7 +174,7 @@ export const FollowupModal = ({ isOpen, onClose, onFollowupSaved, followupToEdit
                                 </SelectContent>
                             </Select>
                         ) : attr.type === 'boolean' ? (
-                            <div className="flex items-center space-x-2 h-10">
+                            <div className="flex items-center space-x-2 h-9">
                                 <Switch
                                     id={attr.name}
                                     checked={!!formData[attr.name]}

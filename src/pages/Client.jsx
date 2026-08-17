@@ -1,11 +1,42 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Table } from "../components/Table";
+import { TableSummary } from "../components/TableSummary";
 import { Button } from "../components/ui/button";
-import { Plus, Download, Upload, X, CheckCircle, AlertCircle } from "lucide-react";
+import { Plus, Download, Upload, X, CheckCircle, AlertCircle, MoreHorizontal, SquarePen, OctagonX } from "lucide-react";
 import { getClients, deleteClient, getClientAttributes, importClientsFromExcel, exportClientsExcel } from "../services/clientService";
 import { saveAs } from "file-saver";
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuItem,
+} from "../components/ui/dropdown-menu";
 import Swal from "sweetalert2";
+
+const BREAKDOWN_COLORS = ["#B8C76A", "#F29B6B", "#5E6A43", "#D8D2C4", "#9b948e", "#8f9a3e"];
+
+// Groups clients by whatever dropdown-type ("list") attributes this tenant
+// actually has configured — Region/Category on one instance, Program/Status
+// on another — rather than hardcoding field names that only fit one vertical.
+const AttributeBreakdown = ({ label, counts }) => {
+    const max = Math.max(1, ...counts.map((c) => c.count));
+    return (
+        <div className="rounded-lg p-4 space-y-2.5" style={{ backgroundColor: "#F2EBDD", border: "1px solid #D8D2C4" }}>
+            <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "#9b948e" }}>By {label}</p>
+            {counts.map((c, i) => (
+                <div key={c.value}>
+                    <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm font-medium truncate" style={{ color: "#2E2A26" }}>{c.value}</span>
+                        <span className="text-sm font-semibold shrink-0 ml-2" style={{ color: "#6b6560" }}>{c.count}</span>
+                    </div>
+                    <div className="h-1.5 w-full rounded-full overflow-hidden" style={{ backgroundColor: "#E8E3DA" }}>
+                        <div className="h-full rounded-full" style={{ width: `${(c.count / max) * 100}%`, backgroundColor: BREAKDOWN_COLORS[i % BREAKDOWN_COLORS.length] }} />
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+};
 
 export const Client = () => {
     const [clients, setClients] = useState([]);
@@ -137,6 +168,58 @@ export const Client = () => {
         ...attributes.map(a => ({ name: a.name, label: a.label, required: a.is_required })),
     ];
 
+    const stats = [
+        { label: "Total clients", value: clients.length },
+    ];
+
+    // Whichever dropdown-type attributes this tenant has configured for
+    // Clients — up to 2, most-populated first.
+    const groupableAttrs = attributes.filter(a => a.type === 'list').slice(0, 2);
+    const breakdowns = groupableAttrs
+        .map(attr => {
+            const counts = {};
+            clients.forEach(c => {
+                const val = c[attr.name];
+                if (val === undefined || val === null || val === '') return;
+                counts[val] = (counts[val] || 0) + 1;
+            });
+            return {
+                label: attr.label,
+                counts: Object.entries(counts).map(([value, count]) => ({ value, count })).sort((a, b) => b.count - a.count),
+            };
+        })
+        .filter(b => b.counts.length > 0);
+
+    const renderClientCard = (client) => {
+        const subtitle = groupableAttrs.map(a => client[a.name]).filter(Boolean).join(" · ");
+        return (
+        <div
+            className="flex items-center justify-between gap-3 rounded-lg p-4 transition-colors"
+            style={{ backgroundColor: "#FBF7EF", border: "1px solid #D8D2C4" }}
+        >
+            <div className="min-w-0 cursor-pointer" onClick={() => handleEdit(client)}>
+                <p className="text-sm font-semibold truncate" style={{ color: "#2E2A26" }}>{client.name}</p>
+                {subtitle && <p className="text-xs mt-0.5 truncate" style={{ color: "#9b948e" }}>{subtitle}</p>}
+            </div>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <button className="h-8 w-8 flex items-center justify-center rounded-md cursor-pointer" style={{ color: "#6b6560" }}>
+                        <MoreHorizontal className="h-4 w-4" />
+                    </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => handleEdit(client)}>
+                        <SquarePen className="w-4 h-4" /> Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="hover:text-destructive focus:text-destructive" onClick={() => handleDelete(client)}>
+                        <OctagonX className="w-4 h-4" /> Delete
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
+        );
+    };
+
     return (
         <div className="h-full flex flex-col p-2 w-full">
             <div className="flex justify-between items-center mb-2">
@@ -173,13 +256,22 @@ export const Client = () => {
                 </div>
             </div>
 
+            {breakdowns.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2 shrink-0">
+                    {breakdowns.map((b) => (
+                        <AttributeBreakdown key={b.label} label={b.label} counts={b.counts} />
+                    ))}
+                </div>
+            )}
+
             <div className="bg-brand-oat p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
-                <Table
+                <TableSummary
                     data={clients}
-                    columns={columns}
-                    onEdit={handleEdit}
-                    onAskDelete={handleDelete}
-                    searchable={true}
+                    stats={stats}
+                    renderCard={renderClientCard}
+                    searchKeys={["name"]}
+                    loading={loading}
+                    emptyLabel="No clients yet."
                 />
             </div>
 

@@ -158,7 +158,7 @@ const PipelineColumn = ({ pipeline, attributes, onAdd, onEdit, onDelete, onDragE
 
     return (
         <div
-            className="flex-shrink-0 w-[85vw] md:w-[360px] flex flex-col rounded-2xl h-full border bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+            className="flex-shrink-0 w-[85vw] md:w-[360px] flex flex-col rounded-2xl h-full border bg-white overflow-hidden shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
             style={{ borderColor: PEBBLE }}
         >
             {/* Column header */}
@@ -404,14 +404,10 @@ export const PipelineAttributesAdmin = () => {
 
             {/* Kanban board */}
             <div className="flex-1 min-h-0 overflow-hidden p-6 relative group/board">
-                {/* Scroll fade overlays */}
-                <div className="absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-[#FBF7EF] to-transparent pointer-events-none z-10 opacity-0 group-hover/board:opacity-100 transition-opacity" />
-                <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-[#FBF7EF] to-transparent pointer-events-none z-10 opacity-0 group-hover/board:opacity-100 transition-opacity" />
-
-                {/* Scroll buttons */}
+                {/* Scroll buttons — static, not hover-triggered */}
                 <button
                     onClick={() => document.getElementById('attr-scroll-container').scrollBy({ left: -400, behavior: 'smooth' })}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 z-20 h-10 w-10 flex items-center justify-center rounded-full opacity-0 group-hover/board:opacity-100 transition-all hover:scale-110 hidden md:flex bg-white shadow-lg border"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 z-20 h-10 w-10 flex items-center justify-center rounded-full hidden md:flex bg-white border"
                     style={{ borderColor: PEBBLE, color: OLIVE }}
                 >
                     <ChevronLeft size={18} />
@@ -419,7 +415,7 @@ export const PipelineAttributesAdmin = () => {
 
                 <button
                     onClick={() => document.getElementById('attr-scroll-container').scrollBy({ left: 400, behavior: 'smooth' })}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 z-20 h-10 w-10 flex items-center justify-center rounded-full opacity-0 group-hover/board:opacity-100 transition-all hover:scale-110 hidden md:flex bg-white shadow-lg border"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 z-20 h-10 w-10 flex items-center justify-center rounded-full hidden md:flex bg-white border"
                     style={{ borderColor: PEBBLE, color: OLIVE }}
                 >
                     <ChevronRight size={18} />

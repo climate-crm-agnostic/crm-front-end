@@ -268,6 +268,7 @@ export const Table = ({
               <tr style={{ backgroundColor: "#5E6A43" }}>
                 {visibleCols.map((col) => {
                   const canSort = col.key !== "_actions";
+                  const isActions = col.key === "_actions";
                   const isSorted = sortKey === col.key ? sortDir : null;
                   return (
                     <th
@@ -283,13 +284,14 @@ export const Table = ({
                         letterSpacing: "0.06em",
                       }}
                       className={[
-                        "px-3 py-2.5 text-xs font-semibold text-center",
+                        "px-3 py-2.5 text-xs font-semibold",
+                        isActions ? "text-center" : "text-left",
                         canSort ? "cursor-pointer select-none" : "",
                       ].join(" ")}
                       onClick={canSort ? () => toggleSort(col.key) : undefined}
                       title={canSort ? "Click to sort" : undefined}
                     >
-                      <div className="flex items-center gap-1 justify-center">
+                      <div className={["flex items-center gap-1", isActions ? "justify-center" : "justify-start"].join(" ")}>
                         {col.label}
                         {isSorted === "asc" && <span className="opacity-70">▲</span>}
                         {isSorted === "desc" && <span className="opacity-70">▼</span>}

@@ -386,13 +386,16 @@
 }
 
 .dark {
-  /* Brand Manual Dark Mode — warm dark tones from Hearth Ink */
-  --background: #2a261f;
+  /* Brand Manual Dark Mode — near-black surfaces, not a muddy olive wash.
+     Accents (primary/secondary/accent below) stay at full saturation so
+     they still pop against dark, per the redesign's "one brand system,
+     two modes" direction. */
+  --background: #161512;
   --foreground: #FBF7EF;
 
-  --card: #332e26;
+  --card: #201f1b;
   --card-foreground: #FBF7EF;
-  --popover: #332e26;
+  --popover: #201f1b;
   --popover-foreground: #FBF7EF;
 
   --primary: #F29B6B;
@@ -419,7 +422,7 @@
   --chart-4: #FFDCC8;
   --chart-5: rgba(251,247,239,0.3);
 
-  --sidebar: #332e26;
+  --sidebar: #1c1b17;
   --sidebar-foreground: #FBF7EF;
   --sidebar-primary: #7a8a56;
   --sidebar-primary-foreground: #FBF7EF;

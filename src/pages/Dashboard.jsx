@@ -3,7 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { API_URL, getHeaders } from "@/services/api";
 import { getMyTasks } from "@/services/taskService";
-import { Magnet, Building2, Receipt, Laptop, ArrowUpRight, ClipboardList, ChevronLeft, ChevronRight } from "lucide-react";
+import { getLeads } from "@/services/leadService";
+import { getClients } from "@/services/clientService";
+import { getPipelines } from "@/services/pipelineService";
+import { getSales } from "@/services/salesService";
+import { Magnet, Building2, Receipt, Laptop, ArrowUpRight, ClipboardList, ChevronLeft, ChevronRight, Bot } from "lucide-react";
 
 const fetchCount = async (endpoint) => {
     const res = await fetch(`${API_URL}/${endpoint}/?page_size=1`, { headers: getHeaders() });
@@ -311,13 +315,131 @@ const TaskCalendar = ({ tasks, navigate }) => {
     );
 };
 
+const ChettPromoCard = ({ navigate }) => (
+    <div
+        className="relative overflow-hidden rounded-xl p-5 flex items-center justify-between gap-4 cursor-pointer transition-transform hover:-translate-y-0.5"
+        style={{ backgroundColor: "#2E2A26" }}
+        onClick={() => navigate("/chett-ai")}
+    >
+        <div className="flex items-center gap-4 min-w-0">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg" style={{ backgroundColor: "rgba(184,199,106,0.18)", border: "1px solid rgba(184,199,106,0.35)" }}>
+                <Bot className="h-5 w-5" style={{ color: "#B8C76A" }} />
+            </div>
+            <div className="min-w-0">
+                <p className="text-sm font-semibold italic" style={{ color: "#FBF7EF", fontFamily: '"Cormorant Garamond", Georgia, serif' }}>
+                    Meet Chett, your CRM copilot
+                </p>
+                <p className="text-xs mt-0.5 truncate" style={{ color: "#b0a89e" }}>
+                    Ask about clients, invoices, leads, and more
+                </p>
+            </div>
+        </div>
+        <button
+            className="shrink-0 h-9 px-4 rounded-lg text-sm font-semibold cursor-pointer"
+            style={{ backgroundColor: "#F29B6B", color: "#2E2A26" }}
+            onClick={(e) => { e.stopPropagation(); navigate("/chett-ai"); }}
+        >
+            Open Chett
+        </button>
+    </div>
+);
+
+const STAGE_COLORS = ["#B8C76A", "#F29B6B", "#5E6A43", "#D8D2C4", "#9b948e", "#8f9a3e"];
+
+const LeadsByPipeline = ({ pipelineName, totalLeads, stageCounts, byResponsible, loading, navigate }) => {
+    const maxCount = Math.max(1, ...stageCounts.map((s) => s.count));
+    return (
+        <div className="rounded-xl p-5" style={{ backgroundColor: "#F2EBDD", border: "1px solid #D8D2C4" }}>
+            <div className="flex items-center justify-between mb-4">
+                <p className="text-sm font-bold" style={{ color: "#2E2A26" }}>{pipelineName || "—"}</p>
+                <span
+                    className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                    style={{ backgroundColor: "#e8edde", border: "1px solid #B8C76A", color: "#5E6A43" }}
+                >
+                    {totalLeads} lead{totalLeads === 1 ? "" : "s"}
+                </span>
+            </div>
+
+            {loading ? (
+                <div className="h-24 rounded animate-pulse" style={{ backgroundColor: "#D8D2C4" }} />
+            ) : stageCounts.length === 0 ? (
+                <p className="text-sm" style={{ color: "#9b948e" }}>No leads yet.</p>
+            ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* By stage */}
+                    <div className="space-y-3">
+                        <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "#9b948e" }}>By Stage</p>
+                        {stageCounts.map((s, i) => (
+                            <div key={s.stage} className="cursor-pointer" onClick={() => navigate("/lead")}>
+                                <div className="flex items-center justify-between mb-1">
+                                    <span className="text-sm font-medium" style={{ color: "#2E2A26" }}>{s.stage}</span>
+                                    <span className="text-sm font-semibold" style={{ color: "#6b6560" }}>{s.count}</span>
+                                </div>
+                                <div className="h-2 w-full rounded-full overflow-hidden" style={{ backgroundColor: "#E8E3DA" }}>
+                                    <div
+                                        className="h-full rounded-full transition-all"
+                                        style={{ width: `${(s.count / maxCount) * 100}%`, backgroundColor: STAGE_COLORS[i % STAGE_COLORS.length] }}
+                                    />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* By responsible */}
+                    <div className="space-y-2">
+                        <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "#9b948e" }}>By Responsible</p>
+                        {byResponsible.map((r) => (
+                            <div
+                                key={r.name}
+                                className="flex items-center justify-between gap-2 py-1.5 cursor-pointer"
+                                onClick={() => navigate("/lead")}
+                            >
+                                <div className="flex items-center gap-2 min-w-0">
+                                    <div
+                                        className="h-6 w-6 shrink-0 flex items-center justify-center rounded-full text-[10px] font-bold"
+                                        style={{ backgroundColor: "#5E6A43", color: "#FBF7EF" }}
+                                    >
+                                        {r.name.charAt(0).toUpperCase()}
+                                    </div>
+                                    <span className="text-sm font-medium truncate" style={{ color: "#2E2A26" }}>{r.name}</span>
+                                    <div className="flex flex-wrap gap-1">
+                                        {r.stages.map((s, i) => (
+                                            <span
+                                                key={s.stage}
+                                                className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
+                                                style={{ backgroundColor: STAGE_COLORS[i % STAGE_COLORS.length] + "30", color: "#2E2A26" }}
+                                            >
+                                                {s.stage} · {s.count}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                                <span className="text-sm font-bold shrink-0" style={{ color: "#2E2A26" }}>{r.total}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
 export const Dashboard = () => {
-    const { user } = useAuth();
+    const { user, isFeatureEnabled } = useAuth();
     const navigate = useNavigate();
     const [counts, setCounts] = useState({ leads: null, clients: null, invoices: null, assets: null });
     const [loading, setLoading] = useState(true);
     const [taskData, setTaskData] = useState({ totals: { leads: 0, clients: 0, services: 0 }, tasks: [] });
     const [tasksLoading, setTasksLoading] = useState(true);
+    const [stagesLoading, setStagesLoading] = useState(true);
+    const [allLeads, setAllLeads] = useState([]);
+    const [students, setStudents] = useState([]);
+    const [selectedStudent, setSelectedStudent] = useState("all");
+    const [pipelines, setPipelines] = useState([]);
+    const [salesUsers, setSalesUsers] = useState([]);
+
+    const canSeeChett = isFeatureEnabled("ai") &&
+        (user?.is_superuser === true || (user?.permissions || []).includes("app.view_aiconversation"));
 
     useEffect(() => {
         const load = async () => {
@@ -348,6 +470,91 @@ export const Dashboard = () => {
         };
         loadTasks();
     }, []);
+
+    useEffect(() => {
+        const loadStages = async () => {
+            try {
+                const leads = await getLeads();
+                setAllLeads(leads || []);
+            } catch (e) {
+                console.error("Error fetching leads by stage", e);
+            } finally {
+                setStagesLoading(false);
+            }
+        };
+        loadStages();
+    }, []);
+
+    useEffect(() => {
+        const loadStudents = async () => {
+            try {
+                const clients = await getClients();
+                setStudents(clients || []);
+            } catch (e) {
+                console.error("Error fetching students", e);
+            }
+        };
+        loadStudents();
+    }, []);
+
+    useEffect(() => {
+        const loadPipelinesAndSales = async () => {
+            try {
+                const [pipelinesData, salesData] = await Promise.all([getPipelines(), getSales()]);
+                setPipelines(pipelinesData.results || pipelinesData || []);
+                setSalesUsers(salesData.results || salesData || []);
+            } catch (e) {
+                console.error("Error fetching pipelines/sales", e);
+            }
+        };
+        loadPipelinesAndSales();
+    }, []);
+
+    // "All Cohorts" has no backing data yet (the Cohort model was removed
+    // from the backend) — the dropdown stays visible per PM's ask, but only
+    // "All Clients" actually filters anything below.
+    const leadsForStudent = selectedStudent === "all"
+        ? allLeads
+        : allLeads.filter((lead) => String(lead.possible_client) === String(selectedStudent));
+
+    // Stage names only make sense within a single pipeline, so — matching
+    // the real dashboard — this scopes to whichever pipeline has the most
+    // leads, rather than mixing stages from every pipeline together.
+    const leadCountsByPipeline = {};
+    leadsForStudent.forEach((lead) => {
+        const key = lead.pipeline;
+        leadCountsByPipeline[key] = (leadCountsByPipeline[key] || 0) + 1;
+    });
+    const primaryPipelineId = Object.entries(leadCountsByPipeline).sort((a, b) => b[1] - a[1])[0]?.[0];
+    const primaryPipeline = pipelines.find((p) => String(p.id) === String(primaryPipelineId));
+    const pipelineLeads = primaryPipelineId
+        ? leadsForStudent.filter((lead) => String(lead.pipeline) === String(primaryPipelineId))
+        : [];
+
+    const stageCounts = (() => {
+        const counts = {};
+        pipelineLeads.forEach((lead) => {
+            const stage = lead.stage || "Unstaged";
+            counts[stage] = (counts[stage] || 0) + 1;
+        });
+        return Object.entries(counts).map(([stage, count]) => ({ stage, count }));
+    })();
+
+    const byResponsible = (() => {
+        const byUser = {};
+        pipelineLeads.forEach((lead) => {
+            const respId = lead.responsible && typeof lead.responsible === "object" ? lead.responsible.id : lead.responsible;
+            const salesUser = salesUsers.find((s) => String(s.id) === String(respId));
+            const name = salesUser?.username || salesUser?.name || (respId ? `User #${respId}` : "Unassigned");
+            const stage = lead.stage || "Unstaged";
+            if (!byUser[name]) byUser[name] = { name, total: 0, stages: {} };
+            byUser[name].total += 1;
+            byUser[name].stages[stage] = (byUser[name].stages[stage] || 0) + 1;
+        });
+        return Object.values(byUser)
+            .map((u) => ({ ...u, stages: Object.entries(u.stages).map(([stage, count]) => ({ stage, count })) }))
+            .sort((a, b) => b.total - a.total);
+    })();
 
     const cards = [
         { title: "Leads",    count: counts.leads,    icon: Magnet,   href: "/lead" },
@@ -411,6 +618,12 @@ export const Dashboard = () => {
             {/* Content */}
             <div className="flex-1 p-6 space-y-8 overflow-y-auto">
 
+                {canSeeChett && (
+                    <section>
+                        <ChettPromoCard navigate={navigate} />
+                    </section>
+                )}
+
                 {/* Overview */}
                 <section className="space-y-4">
                     <p
@@ -424,6 +637,51 @@ export const Dashboard = () => {
                             <StatCard key={card.title} {...card} loading={loading} navigate={navigate} />
                         ))}
                     </div>
+                </section>
+
+                {/* Leads by pipeline */}
+                <section className="space-y-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#9b948e", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+                            Leads by Pipeline{selectedStudent !== "all" && " — filtered by client"}
+                        </p>
+                        <div className="flex items-center gap-2">
+                            <div className="relative">
+                                <select
+                                    value={selectedStudent}
+                                    onChange={(e) => setSelectedStudent(e.target.value)}
+                                    className="appearance-none pl-3 pr-7 py-1.5 rounded-full text-xs font-semibold focus:outline-none cursor-pointer transition-colors"
+                                    style={{ border: "1px solid #D8D2C4", backgroundColor: "#F2EBDD", color: "#2E2A26" }}
+                                >
+                                    <option value="all">All Clients</option>
+                                    {students.map((s) => (
+                                        <option key={s.id} value={String(s.id)}>{s.name}</option>
+                                    ))}
+                                </select>
+                                <ChevronRight size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none rotate-90" style={{ color: "#9b948e" }} />
+                            </div>
+                            <div className="relative" title="Cohorts are not tracked in the system yet">
+                                <select
+                                    disabled
+                                    value="all"
+                                    onChange={() => {}}
+                                    className="appearance-none pl-3 pr-7 py-1.5 rounded-full text-xs font-semibold focus:outline-none cursor-not-allowed opacity-60"
+                                    style={{ border: "1px solid #D8D2C4", backgroundColor: "#F2EBDD", color: "#2E2A26" }}
+                                >
+                                    <option value="all">All Cohorts</option>
+                                </select>
+                                <ChevronRight size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none rotate-90" style={{ color: "#9b948e" }} />
+                            </div>
+                        </div>
+                    </div>
+                    <LeadsByPipeline
+                        pipelineName={primaryPipeline?.name}
+                        totalLeads={pipelineLeads.length}
+                        stageCounts={stageCounts}
+                        byResponsible={byResponsible}
+                        loading={stagesLoading}
+                        navigate={navigate}
+                    />
                 </section>
 
                 {/* My Pending Tasks KPIs */}

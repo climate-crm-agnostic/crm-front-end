@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { createClient, updateClient, uploadClientImage, getClientById, getClientAttributes } from "../services/clientService";
+import { getServices, getServiceAttributes } from "../services/serviceService";
 import { useAuth } from "../context/AuthContext";
 
 // UI Components
@@ -10,9 +11,12 @@ import { Button } from "../components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Checkbox } from "../components/ui/checkbox";
 import { Textarea } from "../components/ui/textarea";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Plus, MoreHorizontal, SquarePen } from "lucide-react";
 import { Switch } from "../components/ui/switch";
 import { DateInput } from "../components/ui/date-input";
+import { Badge } from "../components/ui/badge";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "../components/ui/dropdown-menu";
+import { ServiceModal } from "../components/services/ServiceModal";
 
 export const ClientDetail = () => {
     const { id } = useParams();
@@ -42,6 +46,14 @@ export const ClientDetail = () => {
     const [notes, setNotes] = useState([]);
     const [newNote, setNewNote] = useState("");
 
+    // --- Services tab state ---
+    const [activeTab, setActiveTab] = useState('overview');
+    const [services, setServices] = useState([]);
+    const [servicesLoading, setServicesLoading] = useState(false);
+    const [serviceAttributes, setServiceAttributes] = useState([]);
+    const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
+    const [editingService, setEditingService] = useState(null);
+
     useEffect(() => {
         const init = async () => {
             setFetching(true);
@@ -63,6 +75,44 @@ export const ClientDetail = () => {
         };
         init();
     }, [id, isNew]);
+
+    const fetchServices = async () => {
+        if (isNew) return;
+        setServicesLoading(true);
+        try {
+            const [servicesData, attrsData] = await Promise.all([
+                getServices({ client: id }),
+                getServiceAttributes(),
+            ]);
+            setServices(servicesData || []);
+            setServiceAttributes(attrsData || []);
+        } catch (err) {
+            console.error("Error fetching services", err);
+        } finally {
+            setServicesLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (activeTab === 'services' && !isNew) {
+            fetchServices();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeTab, id]);
+
+    const handleAddService = () => {
+        setEditingService(null);
+        setIsServiceModalOpen(true);
+    };
+
+    const handleEditService = (service) => {
+        setEditingService(service);
+        setIsServiceModalOpen(true);
+    };
+
+    const handleServiceSaved = () => {
+        fetchServices();
+    };
 
     const fetchAttributes = async () => {
         try {
@@ -281,18 +331,22 @@ export const ClientDetail = () => {
                     </Button>
                     <div>
                         <h1 className="text-xl font-semibold">
-                            {isNew ? "New Client" : "Edit Client"}
+                            {isNew ? "New Client" : (name || "Client")}
                         </h1>
                         <p className="text-sm text-muted-foreground">
-                            {isNew ? "Add a new client" : `Managing details for ${name}`}
+                            {isNew ? "Add a new client" : "Client profile"}
                         </p>
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" onClick={() => navigate(-1)}>Cancel</Button>
-                    <Button onClick={handleSubmit} disabled={loading || uploading}>
-                        {loading ? "Saving..." : "Save Client"}
-                    </Button>
+                    {activeTab === 'overview' && (
+                        <>
+                            <Button variant="outline" onClick={() => navigate(-1)}>Cancel</Button>
+                            <Button onClick={handleSubmit} disabled={loading || uploading}>
+                                {loading ? "Saving..." : "Save Client"}
+                            </Button>
+                        </>
+                    )}
                 </div>
             </div>
 
@@ -302,6 +356,86 @@ export const ClientDetail = () => {
                         {error}
                     </div>
                 )}
+
+                {/* Tabs — Services only makes sense once the client actually exists */}
+                {!isNew && (
+                    <div className="flex items-center gap-1 mb-6 border-b">
+                        {[
+                            { key: 'overview', label: 'Overview' },
+                            { key: 'services', label: 'Services' },
+                        ].map((tab) => (
+                            <button
+                                key={tab.key}
+                                onClick={() => setActiveTab(tab.key)}
+                                className="px-4 h-10 text-sm font-semibold transition-colors cursor-pointer"
+                                style={{
+                                    color: activeTab === tab.key ? "#5E6A43" : "#9b948e",
+                                    borderBottom: activeTab === tab.key ? "2px solid #5E6A43" : "2px solid transparent",
+                                }}
+                            >
+                                {tab.label}
+                            </button>
+                        ))}
+                    </div>
+                )}
+
+                {activeTab === 'services' && !isNew ? (
+                    <div className="space-y-4">
+                        <div className="flex justify-end">
+                            <Button onClick={handleAddService}>
+                                <Plus className="mr-2 h-4 w-4" /> Add Service
+                            </Button>
+                        </div>
+                        {servicesLoading ? (
+                            <div className="h-24 rounded-lg animate-pulse" style={{ backgroundColor: "#E8E3DA" }} />
+                        ) : services.length === 0 ? (
+                            <div
+                                className="rounded-lg p-8 text-center text-sm"
+                                style={{ color: "#9b948e", border: "1px solid #D8D2C4", backgroundColor: "#FBF7EF" }}
+                            >
+                                No services yet for this client.
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                {services.map((service) => (
+                                    <div
+                                        key={service.id}
+                                        className="flex items-center justify-between gap-3 rounded-lg p-4"
+                                        style={{ backgroundColor: "#FBF7EF", border: "1px solid #D8D2C4" }}
+                                    >
+                                        <div className="min-w-0 cursor-pointer" onClick={() => handleEditService(service)}>
+                                            <p className="text-sm font-semibold truncate" style={{ color: "#2E2A26" }}>{service.name}</p>
+                                        </div>
+                                        <div className="flex items-center gap-4 shrink-0">
+                                            {service.status && (
+                                                <Badge
+                                                    variant={service.status === 'active' ? 'success' : service.status === 'cancelled' ? 'destructive' : 'secondary'}
+                                                    className="capitalize"
+                                                >
+                                                    {service.status}
+                                                </Badge>
+                                            )}
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <button className="h-8 w-8 flex items-center justify-center rounded-md cursor-pointer" style={{ color: "#6b6560" }}>
+                                                        <MoreHorizontal className="h-4 w-4" />
+                                                    </button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem onClick={() => handleEditService(service)}>
+                                                        <SquarePen className="w-4 h-4" /> Edit
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                ) : null}
+
+                <div style={{ display: activeTab === 'overview' || isNew ? 'block' : 'none' }}>
 
                 <div className="space-y-6">
                     {/* Main Info */}
@@ -342,7 +476,7 @@ export const ClientDetail = () => {
                                                 </SelectContent>
                                             </Select>
                                         ) : attr.type === 'boolean' ? (
-                                            <div className="flex items-center space-x-2 h-10">
+                                            <div className="flex items-center space-x-2 h-9">
                                                 <Switch
                                                     id={attr.name}
                                                     checked={!!dynamicData[attr.name]}
@@ -472,7 +606,17 @@ export const ClientDetail = () => {
                         </div>
                     )}
                 </div>
+                </div>
             </div>
+
+            <ServiceModal
+                isOpen={isServiceModalOpen}
+                onClose={() => { setIsServiceModalOpen(false); setEditingService(null); }}
+                onServiceSaved={handleServiceSaved}
+                serviceToEdit={editingService}
+                attributes={serviceAttributes}
+                preSelectedClient={id}
+            />
         </div>
     );
 };

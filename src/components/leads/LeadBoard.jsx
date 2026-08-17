@@ -15,6 +15,7 @@ import Swal from "sweetalert2";
 
 const LEAD_MY_LEADS_STORAGE_KEY = 'lead_my_leads_only';
 const LEAD_SEARCH_STORAGE_KEY = 'lead_search_term';
+const LEADS_PAGE_SIZE = 25;
 
 export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipelineId, onLeadClick }) => {
     const [pipelines, setPipelines] = useState([]);
@@ -35,6 +36,19 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
     const [lostModalOpen, setLostModalOpen] = useState(false);
     const [lostReason, setLostReason] = useState("");
     const [pendingLostLeadId, setPendingLostLeadId] = useState(null);
+
+    // Per-stage visible-card counts — a stage with hundreds of leads only
+    // renders LEADS_PAGE_SIZE at a time instead of the whole column at once.
+    const [visibleCounts, setVisibleCounts] = useState({});
+    const showMore = (stageName) => {
+        setVisibleCounts((prev) => ({ ...prev, [stageName]: (prev[stageName] ?? LEADS_PAGE_SIZE) + LEADS_PAGE_SIZE }));
+    };
+
+    // Filters/pipeline changed — collapse columns back to the first page
+    // rather than leaving stale "expanded" counts from a different view.
+    useEffect(() => {
+        setVisibleCounts({});
+    }, [selectedPipelineId, myLeadsOnly, searchTerm]);
 
     const scrollLeft = () => scrollContainerRef.current?.scrollBy({ left: -320, behavior: 'smooth' });
     const scrollRight = () => scrollContainerRef.current?.scrollBy({ left: 320, behavior: 'smooth' });
@@ -250,14 +264,14 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
             {/* Scroll buttons */}
             <button
                 onClick={scrollLeft}
-                className="absolute left-2 top-1/2 z-20 h-9 w-9 flex items-center justify-center rounded-full opacity-0 group-hover/board:opacity-100 transition-opacity"
+                className="absolute left-2 top-1/2 z-20 h-9 w-9 flex items-center justify-center rounded-full"
                 style={{ backgroundColor: "#FBF7EF", border: "1px solid #D8D2C4", color: "#5E6A43", boxShadow: "0 2px 8px rgba(0,0,0,0.10)" }}
             >
                 <ChevronLeft size={18} />
             </button>
             <button
                 onClick={scrollRight}
-                className="absolute right-2 top-1/2 z-20 h-9 w-9 flex items-center justify-center rounded-full opacity-0 group-hover/board:opacity-100 transition-opacity"
+                className="absolute right-2 top-1/2 z-20 h-9 w-9 flex items-center justify-center rounded-full"
                 style={{ backgroundColor: "#FBF7EF", border: "1px solid #D8D2C4", color: "#5E6A43", boxShadow: "0 2px 8px rgba(0,0,0,0.10)" }}
             >
                 <ChevronRight size={18} />
@@ -276,6 +290,9 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
                         if (index === 0 && !l.stage && !l.stage_id) return true;
                         return matchesStage;
                     });
+                    const visibleCount = visibleCounts[stage.name] ?? LEADS_PAGE_SIZE;
+                    const visibleStageLeads = stageLeads.slice(0, visibleCount);
+                    const remaining = stageLeads.length - visibleStageLeads.length;
 
                     return (
                         <div
@@ -320,7 +337,7 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
 
                             {/* Cards list */}
                             <div className="flex-1 p-2.5 overflow-y-auto space-y-2.5 min-h-[80px]">
-                                {stageLeads.map((lead) => (
+                                {visibleStageLeads.map((lead) => (
                                     <LeadCard
                                         key={lead.id}
                                         lead={lead}
@@ -342,6 +359,15 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
                                             Drop cards here
                                         </p>
                                     </div>
+                                )}
+                                {remaining > 0 && (
+                                    <button
+                                        onClick={() => showMore(stage.name)}
+                                        className="w-full py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                                        style={{ border: "1px dashed #D8D2C4", color: "#5E6A43", backgroundColor: "#F2EBDD" }}
+                                    >
+                                        Load {Math.min(remaining, LEADS_PAGE_SIZE)} more ({remaining} left)
+                                    </button>
                                 )}
                             </div>
                         </div>

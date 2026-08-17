@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
     createAssetAssignment, updateAssetAssignment, getAssetAssignmentById,
     getAssetAssignmentAttributes
@@ -18,7 +18,9 @@ import { DateInput } from "../components/ui/date-input";
 export const AssetAssignmentDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const isNew = id === 'new';
+    const preSelectedAssetId = location.state?.assetId;
 
     const [attributes, setAttributes] = useState([]);
     const [dynamicData, setDynamicData] = useState({});
@@ -80,6 +82,7 @@ export const AssetAssignmentDetail = () => {
                 // Default borrow date for new
                 if (isNew) {
                     setBorrowDate(new Date().toISOString().split('T')[0]);
+                    if (preSelectedAssetId) setAssetId(String(preSelectedAssetId));
                 } else {
                     await fetchItemData(id, processedData);
                 }
@@ -342,7 +345,7 @@ export const AssetAssignmentDetail = () => {
                                                 </SelectContent>
                                             </Select>
                                         ) : attr.type === 'boolean' ? (
-                                            <div className="flex items-center space-x-2 h-10">
+                                            <div className="flex items-center space-x-2 h-9">
                                                 <Switch
                                                     id={attr.name}
                                                     checked={!!dynamicData[attr.name]}

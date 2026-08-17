@@ -3,45 +3,35 @@ import { useAuth } from "@/context/AuthContext";
 
 const MENU_CONFIG = [
     {
-        label: "CRM",
+        label: "Sales",
+        icon: "TrendingUp",
         items: [
             { title: "Leads",    url: "/lead",     icon: "Magnet",    permission: "app.add_lead" },
+            { title: "Pipeline", url: "/pipeline", icon: "GitMerge",  permission: "app.add_pipeline" },
             { title: "Clients",  url: "/client",   icon: "Building2", permission: "app.add_client" },
             { title: "Contacts", url: "/contact",  icon: "UserCircle",permission: "app.add_contact" },
-            { title: "Services", url: "/service",  icon: "Briefcase", permission: "app.add_service" },
-            { title: "Pipeline", url: "/pipeline", icon: "GitMerge",  permission: "app.add_pipeline" },
         ],
     },
     {
-        label: "Billing / Inventory",
+        label: "Finance",
+        icon: "Wallet",
         items: [
             { title: "Invoices",   url: "/invoice",   icon: "Receipt",    permission: "app.add_invoice" },
             { title: "Catalogue",  url: "/catalogue", icon: "Package",    permission: "app.add_catalogueitem" },
-            { title: "Categories", url: "/category",  icon: "FolderTree", permission: "app.add_category" },
             { title: "Inventory",  url: "/inventory", icon: "Warehouse",  permission: "app.add_inventory",  feature: "inventory" },
         ],
     },
     {
-        label: "Assets",
+        label: "Operations",
+        icon: "Wrench",
         items: [
             { title: "Assets",            url: "/asset",           icon: "Laptop",        permission: "app.add_asset",           feature: "assets" },
-            { title: "Asset Assignments", url: "/assetassignment", icon: "ClipboardList", permission: "app.add_assetassignment", feature: "assets" },
-        ],
-    },
-    {
-        label: "AI",
-        items: [
-            { title: "Chett AI", url: "/chett-ai", icon: "Bot", permission: "app.view_aiconversation", feature: "ai" },
-        ],
-    },
-    {
-        label: "Communication",
-        items: [
-            { title: "Team Chat", url: "/chat", icon: "MessageCircle", feature: "chat" },
+            { title: "Team Chat",         url: "/chat",            icon: "MessageCircle", feature: "chat" },
         ],
     },
     {
         label: "Admin",
+        icon: "ShieldCheck",
         items: [
             { title: "Attributes",  url: "/attribute",           icon: "SlidersHorizontal", permission: "app.add_attribute" },
             { title: "Lead Fields", url: "/attribute-pipeline",  icon: "SlidersHorizontal", permission: "app.add_pipeline" },
@@ -54,6 +44,7 @@ const MENU_CONFIG = [
     },
     {
         label: "Account",
+        icon: "UserCircle2",
         items: [
             { title: "My Info", url: "/my-info", icon: "UserCircle2" },
         ],

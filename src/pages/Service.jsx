@@ -1,12 +1,40 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Table } from "../components/Table";
+import { TableSummary } from "../components/TableSummary";
 import { Button } from "../components/ui/button";
-import { Plus, Search, Upload, X, CheckCircle, AlertCircle } from "lucide-react";
+import { Plus, Search, Upload, X, CheckCircle, AlertCircle, MoreHorizontal, SquarePen, OctagonX, FileInput } from "lucide-react";
 import { getServices, deleteService, getServiceAttributes, importServicesFromExcel } from "../services/serviceService";
 import { getClients } from "../services/clientService";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
+import { Badge } from "../components/ui/badge";
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuItem,
+} from "../components/ui/dropdown-menu";
 import Swal from "sweetalert2";
+
+const SERVICE_STATUS_COLORS = {
+    active: "#B8C76A",
+    paused: "#D8D2C4",
+    cancelled: "#F29B6B",
+};
+
+const SERVICE_STATUS_TABS = [
+    { value: "all", label: "All" },
+    { value: "active", label: "Active", color: SERVICE_STATUS_COLORS.active, match: (row) => row.status === "active" },
+    { value: "paused", label: "Paused", color: SERVICE_STATUS_COLORS.paused, match: (row) => row.status === "paused" },
+    { value: "cancelled", label: "Cancelled", color: SERVICE_STATUS_COLORS.cancelled, match: (row) => row.status === "cancelled" },
+];
+
+const serviceBadgeVariant = (status) => {
+    switch (status) {
+        case "active": return "success";
+        case "cancelled": return "destructive";
+        default: return "secondary";
+    }
+};
 
 const IMPORT_FIXED_FIELDS = [
     { name: 'name',   label: 'Name',   required: true },
@@ -72,10 +100,15 @@ export const Service = () => {
         try {
             const servicesData = await getServices({ client: selectedClient });
 
+            // `client` on a service is just the client's id (a plain string,
+            // not a nested object) — every result here is already scoped to
+            // selectedClient, so resolve the name from the clients list once.
+            const selectedClientName = clients.find((c) => String(c.id) === String(selectedClient))?.name || "";
+
             // Flatten data for table
             const processedServices = servicesData.map(service => ({
                 ...service,
-                client_name: service.client ? (service.client.name || service.client) : "",
+                client_name: selectedClientName,
                 // Flatten dynamic attributes
                 ...(service.attributes || {})
             }));
@@ -170,6 +203,49 @@ export const Service = () => {
         c.name.toLowerCase().includes(clientSearch.toLowerCase())
     );
 
+    const activeCount = services.filter((s) => s.status === "active").length;
+    const pausedCount = services.filter((s) => s.status === "paused").length;
+    const cancelledCount = services.filter((s) => s.status === "cancelled").length;
+
+    const stats = [
+        { label: "Total services", value: services.length },
+        { label: "Active", value: activeCount },
+        { label: "Needs attention", value: pausedCount + cancelledCount },
+    ];
+
+    const renderServiceCard = (service) => (
+        <div
+            className="flex items-center justify-between gap-3 rounded-lg p-4 transition-colors"
+            style={{ backgroundColor: "#FBF7EF", border: "1px solid #D8D2C4" }}
+        >
+            <div className="min-w-0 cursor-pointer" onClick={() => handleEdit(service)}>
+                <p className="text-sm font-semibold truncate" style={{ color: "#2E2A26" }}>{service.name}</p>
+                <p className="text-xs mt-0.5" style={{ color: "#9b948e" }}>{service.client_name || "—"}</p>
+            </div>
+            <div className="flex items-center gap-4 shrink-0">
+                <Badge variant={serviceBadgeVariant(service.status)} className="capitalize">{service.status}</Badge>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <button className="h-8 w-8 flex items-center justify-center rounded-md cursor-pointer" style={{ color: "#6b6560" }}>
+                            <MoreHorizontal className="h-4 w-4" />
+                        </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleEdit(service)}>
+                            <SquarePen className="w-4 h-4" /> Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleViewFollowup(service)}>
+                            <FileInput className="w-4 h-4" /> View Tracking
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="hover:text-destructive focus:text-destructive" onClick={() => handleDelete(service)}>
+                            <OctagonX className="w-4 h-4" /> Delete
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
+        </div>
+    );
+
     const allImportFields = [
         ...IMPORT_FIXED_FIELDS,
         ...attributes.map(a => ({ name: a.name, label: a.label, required: a.is_required })),
@@ -224,13 +300,15 @@ export const Service = () => {
             </div>
 
             <div className="bg-brand-oat p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
-                <Table
+                <TableSummary
                     data={services}
-                    columns={columns}
-                    onEdit={handleEdit}
-                    onAskDelete={handleDelete}
-                    verSeguimiento={handleViewFollowup}
-                    searchable={true}
+                    stats={stats}
+                    statusField="status"
+                    statusTabs={SERVICE_STATUS_TABS}
+                    renderCard={renderServiceCard}
+                    searchKeys={["name", "client_name", "status"]}
+                    loading={loading}
+                    emptyLabel={selectedClient ? "No services for this client." : "Select a client and search to see services."}
                 />
             </div>
 
