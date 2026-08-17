@@ -4,6 +4,7 @@ import { Table } from "../components/Table";
 import { Button } from "../components/ui/button";
 import { Plus, Download } from "lucide-react";
 import { getInvoices, deleteInvoice, getInvoiceAttributes, exportInvoicesExcel } from "../services/invoiceService";
+import { getClients } from "../services/clientService";
 import { saveAs } from "file-saver";
 import Swal from "sweetalert2";
 import { Badge } from "../components/ui/badge";
@@ -12,6 +13,7 @@ export const Invoice = () => {
     const [invoices, setInvoices] = useState([]);
     const [loading, setLoading] = useState(true);
     const [attributes, setAttributes] = useState([]);
+    const [clientsById, setClientsById] = useState({});
     const navigate = useNavigate();
 
     const getStatusColor = (status) => {
@@ -29,7 +31,11 @@ export const Invoice = () => {
         {
             key: "client",
             label: "Client",
-            render: (value) => value && typeof value === 'object' ? value.name : value
+            render: (value) => {
+                if (!value) return "";
+                if (typeof value === 'object') return value.name || "";
+                return clientsById[String(value)] || value;
+            }
         },
         {
             key: "status",
@@ -62,10 +68,15 @@ export const Invoice = () => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [invoicesData, attributesData] = await Promise.all([
+            const [invoicesData, attributesData, clientsData] = await Promise.all([
                 getInvoices(),
-                getInvoiceAttributes()
+                getInvoiceAttributes(),
+                getClients()
             ]);
+
+            const cMap = {};
+            (clientsData || []).forEach(c => { cMap[String(c.id)] = c.name; });
+            setClientsById(cMap);
 
             const processedInvoices = invoicesData.map(invoice => ({
                 ...invoice,

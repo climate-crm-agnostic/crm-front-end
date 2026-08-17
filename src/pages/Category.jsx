@@ -11,6 +11,7 @@ export const Category = () => {
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [attributes, setAttributes] = useState([]);
+    const [categoriesById, setCategoriesById] = useState({});
     const navigate = useNavigate();
 
     const staticColumns = [
@@ -21,7 +22,8 @@ export const Category = () => {
             label: "Parent Category",
             render: (value, row) => {
                 if (!value) return "-";
-                return typeof value === 'object' ? value.name : value;
+                if (typeof value === 'object') return value.name || "-";
+                return categoriesById[String(value)] || "-";
             }
         },
     ];
@@ -46,6 +48,10 @@ export const Category = () => {
             }));
             setCategories(processedCategories);
             setAttributes(attributesData);
+
+            const cMap = {};
+            (categoriesData || []).forEach(c => { cMap[String(c.id)] = c.name; });
+            setCategoriesById(cMap);
 
             // Dynamic columns from attributes
             const dynamicColumns = attributesData.map(attr => ({
