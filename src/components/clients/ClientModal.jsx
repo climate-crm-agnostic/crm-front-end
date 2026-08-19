@@ -302,6 +302,12 @@ export const ClientModal = ({ isOpen, onClose, onClientSaved, clientToEdit = nul
                                                 {dynamicData[attr.name] ? 'Yes' : 'No'}
                                             </Label>
                                         </div>
+                                    ) : attr.type === 'date' ? (
+                                        <DateInput
+                                            id={attr.name}
+                                            value={dynamicData[attr.name] || ""}
+                                            onChange={(e) => handleDynamicChange(attr.name, e.target.value)}
+                                        />
                                     ) : (
                                         <Input
                                             id={attr.name}
