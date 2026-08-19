@@ -132,6 +132,17 @@ export const LeadDetail = () => {
         }
     }, [activePipelineId]);
 
+    // Keep the list's remembered pipeline (Lead.jsx's LEAD_PIPELINE_STORAGE_KEY)
+    // in sync when creating a lead: navigate(-1) after save returns to a list
+    // that reads this key once on mount, so picking a different pipeline here
+    // (via the form's own selector) must be persisted or the list snaps back
+    // to whatever pipeline was selected before this form was opened.
+    useEffect(() => {
+        if (isNew && activePipelineId) {
+            localStorage.setItem('lead_selected_pipeline_id', activePipelineId);
+        }
+    }, [isNew, activePipelineId]);
+
     const populateForm = (leadData) => {
         setName(leadData.name || "");
         setCurrentStage(leadData.stage || "");
