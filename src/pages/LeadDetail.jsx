@@ -324,6 +324,12 @@ export const LeadDetail = () => {
     const handleItemChange = (index, field, value) => {
         const updatedList = [...itemsList];
         updatedList[index] = { ...updatedList[index], [field]: value };
+
+        if (field === "catalogue_item") {
+            const catalogueItem = catalogueOptions.find(opt => String(opt.id) === String(value));
+            updatedList[index].custom_price = catalogueItem ? catalogueItem.base_price : "";
+        }
+
         setItemsList(updatedList);
     };
 
