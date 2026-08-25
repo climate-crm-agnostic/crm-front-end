@@ -152,3 +152,17 @@ export const uploadLeadImage = async (id, file) => {
     }
     return res.json();
 };
+
+export const deleteLeadImage = async (id, path) => {
+    const res = await fetch(`${API_URL}/leads/${id}/delete-file/`, {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ path }),
+    });
+
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || "Error deleting image");
+    }
+    return res.json();
+};

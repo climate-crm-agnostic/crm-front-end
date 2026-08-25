@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { getLeadClientAttributes, createLead, updateLead, uploadLeadImage, getLead, archiveLead, unarchiveLead } from "../services/leadService";
+import { getLeadClientAttributes, createLead, updateLead, uploadLeadImage, deleteLeadImage, getLead, archiveLead, unarchiveLead } from "../services/leadService";
 import { getPipelineAttributes } from "../services/pipelineAttributeService";
 import { getPipelines } from "../services/pipelineService";
 import { getCatalogueItems } from "../services/catalogueService";
@@ -353,6 +353,16 @@ export const LeadDetail = () => {
             setError(`Failed to upload image. ${err.message}`);
         } finally {
             setUploading(false);
+        }
+    };
+
+    const handleDeleteImage = async (path) => {
+        if (isNew) return;
+        try {
+            const res = await deleteLeadImage(id, path);
+            setImages(res.list_of_images || []);
+        } catch (err) {
+            setError(`Failed to delete image. ${err.message}`);
         }
     };
 
@@ -1073,12 +1083,20 @@ export const LeadDetail = () => {
 
                             {images.length > 0 ? (
                                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                                    {images.map((imgUrl, idx) => (
-                                        <div key={idx} className="relative aspect-square bg-gray-100 rounded-md overflow-hidden border group">
-                                            <img src={imgUrl} alt={`Uploaded ${idx}`} className="w-full h-full object-cover" />
-                                            <a href={imgUrl} target="_blank" rel="noreferrer" className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-medium">
+                                    {images.map((img, idx) => (
+                                        <div key={img.path || idx} className="relative aspect-square bg-gray-100 rounded-md overflow-hidden border group">
+                                            <img src={img.url} alt={`Uploaded ${idx}`} className="w-full h-full object-cover" />
+                                            <a href={img.url} target="_blank" rel="noreferrer" className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-medium">
                                                 View
                                             </a>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleDeleteImage(img.path)}
+                                                className="absolute top-1 right-1 z-10 h-5 w-5 flex items-center justify-center rounded-full bg-black/60 text-white text-xs leading-none hover:bg-red-600"
+                                                title="Delete image"
+                                            >
+                                                &times;
+                                            </button>
                                         </div>
                                     ))}
                                 </div>
