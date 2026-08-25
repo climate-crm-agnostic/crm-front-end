@@ -16,7 +16,9 @@ const routeLabels = {
     "/pipeline": "Pipelines", "/attribute": "Attributes", "/category": "Categories",
     "/catalogue": "Catalogue", "/followup": "Follow-ups", "/webhook": "Webhooks",
     "/apidocs": "API Docs", "/faq": "FAQ", "/my-info": "My Info",
-    "/chat": "Team Chat",
+    "/chat": "Team Chat", "/team": "Teams",
+    "/period": "Periods", "/goal": "Goals", "/task": "Tasks",
+    "/email-template": "Email Templates", "/campaign": "Campaigns",
 };
 
 function getPageTitle(pathname) {
@@ -82,32 +84,35 @@ function ChatToasts() {
             display: 'flex', flexDirection: 'column-reverse', gap: 8,
             pointerEvents: 'none',
         }}>
-            {toasts.map(toast => (
-                <div
-                    key={toast.id}
-                    onClick={() => { dismissToast(toast.id); navigate('/chat'); }}
-                    style={{
-                        pointerEvents: 'auto', cursor: 'pointer',
-                        background: 'var(--card)',
-                        border: '1px solid var(--border)',
-                        borderLeft: '3px solid #5E6A43',
-                        borderRadius: 10,
-                        padding: '10px 14px',
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.14)',
-                        minWidth: 220, maxWidth: 300,
-                    }}
-                >
-                    <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: 'var(--foreground)' }}>
-                        💬 {toast.sender_username}
-                    </p>
-                    <p style={{
-                        margin: '3px 0 0', fontSize: 12, color: 'var(--muted-foreground)',
-                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                    }}>
-                        {toast.content}
-                    </p>
-                </div>
-            ))}
+            {toasts.map(toast => {
+                const isTask = toast.kind === 'task_assigned';
+                return (
+                    <div
+                        key={toast.id}
+                        onClick={() => { dismissToast(toast.id); navigate(isTask ? '/task' : '/chat'); }}
+                        style={{
+                            pointerEvents: 'auto', cursor: 'pointer',
+                            background: 'var(--card)',
+                            border: '1px solid var(--border)',
+                            borderLeft: `3px solid ${isTask ? '#c0622a' : '#5E6A43'}`,
+                            borderRadius: 10,
+                            padding: '10px 14px',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.14)',
+                            minWidth: 220, maxWidth: 300,
+                        }}
+                    >
+                        <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: 'var(--foreground)' }}>
+                            {isTask ? `📋 New task assigned` : `💬 ${toast.sender_username}`}
+                        </p>
+                        <p style={{
+                            margin: '3px 0 0', fontSize: 12, color: 'var(--muted-foreground)',
+                            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                        }}>
+                            {isTask ? toast.title : toast.content}
+                        </p>
+                    </div>
+                );
+            })}
         </div>
     );
 }

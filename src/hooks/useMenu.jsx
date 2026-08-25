@@ -38,11 +38,17 @@ const MENU_CONFIG = [
         label: "Communication",
         items: [
             { title: "Team Chat", url: "/chat", icon: "MessageCircle", feature: "chat" },
+            { title: "Tasks",     url: "/task", icon: "ListTodo",      permission: "app.view_task", feature: "tasks" },
+            { title: "Email Templates", url: "/email-template", icon: "Mail",      permission: "app.view_emailtemplate", feature: "email_campaigns" },
+            { title: "Campaigns",       url: "/campaign",       icon: "Megaphone", permission: "app.view_campaign",      feature: "email_campaigns" },
         ],
     },
     {
         label: "Admin",
         items: [
+            { title: "Teams",       url: "/team",                icon: "Users2",            permission: "app.view_team",    feature: "teams" },
+            { title: "Periods",     url: "/period",              icon: "CalendarRange",     permission: "app.view_period",  feature: "goals" },
+            { title: "Goals",       url: "/goal",                icon: "Target",            permission: "app.view_goal",    feature: "goals" },
             { title: "Attributes",  url: "/attribute",           icon: "SlidersHorizontal", permission: "app.add_attribute" },
             { title: "Lead Fields", url: "/attribute-pipeline",  icon: "SlidersHorizontal", permission: "app.add_pipeline" },
             { title: "Webhooks",    url: "/webhook",             icon: "Webhook",           permission: "app.add_webhook", feature: "webhooks" },

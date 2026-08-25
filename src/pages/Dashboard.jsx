@@ -26,9 +26,10 @@ const TASK_COLORS = {
     lead:    { dot: "#5E6A43", bg: "#e8edde", text: "#5E6A43", label: "Lead" },
     client:  { dot: "#3B82F6", bg: "#dbeafe", text: "#1d4ed8", label: "Client" },
     service: { dot: "#7C3AED", bg: "#ede9fe", text: "#5b21b6", label: "Service" },
+    task:    { dot: "#c0622a", bg: "#FFDCC8", text: "#c0622a", label: "Task" },
 };
 
-const ENTITY_PATHS = { lead: "/lead", client: "/client", service: "/service" };
+const ENTITY_PATHS = { lead: "/lead", client: "/client", service: "/service", task: "/task" };
 
 // Single source of truth for a task row — used by both the calendar's
 // "Selected day" panel and the Tasks-KPI modals, so the two never visually
@@ -36,7 +37,11 @@ const ENTITY_PATHS = { lead: "/lead", client: "/client", service: "/service" };
 // it to also close the modal.
 const TaskRow = ({ task, navigate }) => {
     const colors = TASK_COLORS[task.entity_type];
-    const path = `${ENTITY_PATHS[task.entity_type]}/${task.entity_id}`;
+    // Standalone tasks (Feature: Tasks module) don't have a per-task detail
+    // route yet — send those to the Tasks list instead of a 404.
+    const path = task.entity_type === "task"
+        ? ENTITY_PATHS.task
+        : `${ENTITY_PATHS[task.entity_type]}/${task.entity_id}`;
     return (
         <div
             onClick={() => navigate(path)}
@@ -450,7 +455,7 @@ export const Dashboard = () => {
     const navigate = useNavigate();
     const [counts, setCounts] = useState({ leads: null, clients: null, invoices: null, assets: null });
     const [loading, setLoading] = useState(true);
-    const [taskData, setTaskData] = useState({ totals: { leads: 0, clients: 0, services: 0 }, tasks: [] });
+    const [taskData, setTaskData] = useState({ totals: { leads: 0, clients: 0, services: 0, tasks: 0 }, tasks: [] });
     const [tasksLoading, setTasksLoading] = useState(true);
     const [pipelineReport, setPipelineReport] = useState([]);
     const [reportLoading, setReportLoading] = useState(true);
@@ -584,6 +589,7 @@ export const Dashboard = () => {
         { title: "Tasks in Leads",    count: taskData.totals.leads,    color: TASK_COLORS.lead,    entityKey: "lead" },
         { title: "Tasks in Clients",  count: taskData.totals.clients,  color: TASK_COLORS.client,  entityKey: "client" },
         { title: "Tasks in Services", count: taskData.totals.services, color: TASK_COLORS.service, entityKey: "service" },
+        { title: "Standalone Tasks",  count: taskData.totals.tasks,    color: TASK_COLORS.task,    entityKey: "task" },
     ];
 
     const hour = new Date().getHours();
@@ -696,7 +702,7 @@ export const Dashboard = () => {
                     <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#9b948e", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
                         My Pending Tasks
                     </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                         {taskCards.map(card => (
                             <TaskKpiCard key={card.title} {...card} loading={tasksLoading} onOpenModal={setOpenTaskModal} />
                         ))}

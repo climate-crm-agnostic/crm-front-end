@@ -4,6 +4,8 @@ import { useChatSocket } from '@/hooks/useChatSocket';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useChatNotifications } from '@/context/ChatNotificationContext';
 import { getRooms, getRoom, createDirect, createGroup, getMessages, deleteMessage, markRead } from '@/services/chatService';
+import { getMyLedMemberIds } from '@/services/teamService';
+import { createTask } from '@/services/taskService';
 
 const playNotificationSound = () => {
     try {
@@ -53,6 +55,12 @@ const TrashIcon = () => (
 const XIcon = () => (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M18 6 6 18M6 6l12 12" />
+    </svg>
+);
+const TaskIcon = () => (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="9" y="2" width="6" height="4" rx="1" /><path d="M9 4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-4" />
+        <path d="m9 14 2 2 4-4" />
     </svg>
 );
 
@@ -150,6 +158,99 @@ const NewDMModal = ({ onClose, onCreated }) => {
                             </div>
                         </div>
                     ))}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// ── New Task Modal ────────────────────────────────────────────────────────
+// Lets a team leader assign a task to the other participant of a 1:1 DM,
+// without leaving the chat. Only rendered when Chat.jsx has already
+// confirmed (via getMyLedMemberIds) that the current user leads a team the
+// other participant belongs to.
+
+const NewTaskModal = ({ assignee, onClose, onCreated }) => {
+    const [title, setTitle] = useState('');
+    const [dueDate, setDueDate] = useState('');
+    const [priority, setPriority] = useState('medium');
+    const [saving, setSaving] = useState(false);
+    const [error, setError] = useState(null);
+    const inputRef = useRef(null);
+
+    useEffect(() => { inputRef.current?.focus(); }, []);
+
+    const handleCreate = async () => {
+        if (!title.trim()) return;
+        setSaving(true);
+        setError(null);
+        try {
+            await createTask({
+                title, assignee_id: assignee.id, priority,
+                due_date: dueDate || null,
+            });
+            onCreated();
+        } catch (err) {
+            setError(err.message || 'Failed to create task.');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const fieldStyle = {
+        width: '100%', padding: '8px 12px', borderRadius: 8,
+        border: '1px solid var(--border)', background: 'var(--background)',
+        color: 'var(--foreground)', fontSize: 13, outline: 'none', boxSizing: 'border-box',
+    };
+
+    return (
+        <div style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
+        }} onClick={onClose}>
+            <div style={{
+                background: 'var(--card)', borderRadius: 12, padding: 24,
+                width: 360, boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+                border: '1px solid var(--border)',
+            }} onClick={e => e.stopPropagation()}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+                    <span style={{ fontWeight: 700, fontSize: 15 }}>New Task for {assignee.username}</span>
+                    <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted-foreground)', display: 'flex' }}><XIcon /></button>
+                </div>
+
+                {error && <p style={{ fontSize: 12, color: '#c0392b', marginBottom: 10 }}>{error}</p>}
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <input
+                        ref={inputRef}
+                        value={title}
+                        onChange={e => setTitle(e.target.value)}
+                        placeholder="Task title..."
+                        style={fieldStyle}
+                    />
+                    <input
+                        type="date"
+                        value={dueDate}
+                        onChange={e => setDueDate(e.target.value)}
+                        style={fieldStyle}
+                    />
+                    <select value={priority} onChange={e => setPriority(e.target.value)} style={fieldStyle}>
+                        <option value="low">Low priority</option>
+                        <option value="medium">Medium priority</option>
+                        <option value="high">High priority</option>
+                    </select>
+                    <button
+                        onClick={handleCreate}
+                        disabled={!title.trim() || saving}
+                        style={{
+                            marginTop: 4, padding: '10px 14px', borderRadius: 8, border: 'none',
+                            background: !title.trim() ? 'var(--muted)' : 'var(--primary)',
+                            color: !title.trim() ? 'var(--muted-foreground)' : 'var(--primary-foreground)',
+                            cursor: !title.trim() ? 'default' : 'pointer', fontSize: 13, fontWeight: 600,
+                        }}
+                    >
+                        {saving ? 'Creating...' : 'Create Task'}
+                    </button>
                 </div>
             </div>
         </div>
@@ -289,7 +390,9 @@ export const Chat = () => {
     const [input, setInput] = useState('');
     const [showDMModal, setShowDMModal] = useState(false);
     const [showGroupModal, setShowGroupModal] = useState(false);
+    const [showTaskModal, setShowTaskModal] = useState(false);
     const [unreadCounts, setUnreadCounts] = useState({});
+    const [myLedMemberIds, setMyLedMemberIds] = useState([]);
 
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
@@ -305,6 +408,11 @@ export const Chat = () => {
             })
             .catch(() => { })
             .finally(() => setRoomsLoading(false));
+
+        // Powers the "+ Task" button below — silently unavailable if the
+        // Teams feature is off or the user leads no team, which is a
+        // perfectly normal state, not an error.
+        getMyLedMemberIds().then(setMyLedMemberIds).catch(() => setMyLedMemberIds([]));
     }, []);
 
     // Scroll to bottom when messages change
@@ -391,6 +499,13 @@ export const Chat = () => {
 
     const { sendMessage: wsSend } = useChatSocket(activeRoom?.id ?? null, handleIncoming);
 
+    // The other participant of a 1:1 DM, when the current user leads a team
+    // that participant belongs to — the "+ Task" button only shows then.
+    const dmAssignee = activeRoom?.room_type === 'direct'
+        ? activeRoom.members?.find(m => m.id !== user?.id)
+        : null;
+    const canAssignTask = !!dmAssignee && myLedMemberIds.includes(dmAssignee.id);
+
     const handleSend = useCallback(() => {
         const text = input.trim();
         if (!text || !activeRoom) return;
@@ -440,6 +555,13 @@ export const Chat = () => {
         <>
             {showDMModal && <NewDMModal onClose={() => setShowDMModal(false)} onCreated={handleRoomCreated} />}
             {showGroupModal && <NewGroupModal onClose={() => setShowGroupModal(false)} onCreated={handleRoomCreated} />}
+            {showTaskModal && dmAssignee && (
+                <NewTaskModal
+                    assignee={dmAssignee}
+                    onClose={() => setShowTaskModal(false)}
+                    onCreated={() => setShowTaskModal(false)}
+                />
+            )}
 
             <div style={{
                 display: 'flex', margin: '-1rem', marginTop: 0,
@@ -630,6 +752,20 @@ export const Chat = () => {
                             background: 'var(--card)', flexShrink: 0,
                         }}>
                             <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end', maxWidth: 800, margin: '0 auto' }}>
+                                {canAssignTask && (
+                                    <button
+                                        onClick={() => setShowTaskModal(true)}
+                                        title={`Assign a task to ${dmAssignee.username}`}
+                                        style={{
+                                            width: 40, height: 40, borderRadius: 10, flexShrink: 0,
+                                            background: 'var(--muted)', color: 'var(--foreground)',
+                                            border: '1px solid var(--border)', cursor: 'pointer',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        }}
+                                    >
+                                        <TaskIcon />
+                                    </button>
+                                )}
                                 <textarea
                                     ref={inputRef}
                                     value={input}

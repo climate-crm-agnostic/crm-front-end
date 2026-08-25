@@ -40,22 +40,33 @@ export const ChatNotificationProvider = ({ children }) => {
     }, []);
 
     const handleNotification = useCallback((data) => {
-        // When on /chat the page handles notifications itself
-        if (location.pathname === '/chat') return;
+        // ws/notifications/ carries more than chat messages now (see
+        // consumers.py's task_assigned handler) — `kind` tells them apart.
+        // Missing `kind` still means chat_message, for messages sent before
+        // this field existed.
+        const kind = data.kind || 'chat_message';
 
-        setTotalUnread(n => n + 1);
+        // When on /chat the page handles chat notifications itself, but a
+        // task-assigned toast is still relevant there too.
+        if (location.pathname === '/chat' && kind === 'chat_message') return;
+
+        if (kind === 'chat_message') {
+            setTotalUnread(n => n + 1);
+        }
 
         // Native OS notification when tab is not focused
         if ('Notification' in window && Notification.permission === 'granted' && document.hidden) {
-            const notif = new Notification(`💬 ${data.sender_username}`, {
-                body: data.content,
+            const title = kind === 'task_assigned' ? `📋 New task: ${data.title}` : `💬 ${data.sender_username}`;
+            const body = kind === 'task_assigned' ? (data.assigned_by_name ? `Assigned by ${data.assigned_by_name}` : '') : data.content;
+            const notif = new Notification(title, {
+                body,
                 icon: '/favicon.png',
-                tag: 'crm-chat',         // replaces previous notif instead of stacking
+                tag: kind === 'task_assigned' ? 'crm-task' : 'crm-chat',         // replaces previous notif instead of stacking
                 renotify: true,
             });
             notif.onclick = () => {
                 window.focus();
-                navigate('/chat');
+                navigate(kind === 'task_assigned' ? '/task' : '/chat');
                 notif.close();
             };
         }
@@ -66,7 +77,7 @@ export const ChatNotificationProvider = ({ children }) => {
         }
 
         const id = Date.now() + Math.random();
-        setToasts(prev => [...prev, { id, ...data }]);
+        setToasts(prev => [...prev, { id, kind, ...data }]);
         setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 5000);
     }, [location.pathname, navigate]);
 

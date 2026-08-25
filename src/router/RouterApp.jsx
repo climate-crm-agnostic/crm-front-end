@@ -41,6 +41,14 @@ import { ChettAI } from "../pages/ChettAI";
 import { AuditLog } from "../pages/AuditLog";
 import { MyInfo } from "../pages/MyInfo";
 import { Chat } from "../pages/Chat";
+import { Teams } from "../pages/Teams";
+import { TeamDetail } from "../pages/TeamDetail";
+import { Periods } from "../pages/Periods";
+import { Goals } from "../pages/Goals";
+import { Tasks } from "../pages/Tasks";
+import { EmailTemplates } from "../pages/Campaigns/EmailTemplates";
+import { CampaignList } from "../pages/Campaigns/CampaignList";
+import { Unsubscribe } from "../pages/Unsubscribe";
 import AdminLayout from "@/layout/AdminLayout"
 import { useAuth } from "@/context/AuthContext"
 import { PermissionGuard } from "../components/PermissionGuard"
@@ -75,6 +83,7 @@ export const RouterApp = () => {
             <Route path="/login" element={<RedirectIfAuth><Login /></RedirectIfAuth>} />
             <Route path="/reset-password/:uid/:token" element={<ResetPassword />} />
             <Route path="/plan-expired" element={<PlanExpired />} />
+            <Route path="/unsubscribe/:token" element={<Unsubscribe />} />
 
             {/* private routes */}
 
@@ -113,6 +122,13 @@ export const RouterApp = () => {
                 <Route path="chett-ai" element={<PermissionGuard requiredPermission="app.view_aiconversation"><FeatureGate feature="ai"><ChettAI /></FeatureGate></PermissionGuard>} />
                 <Route path="audit-log" element={<PermissionGuard requiredPermission="auth.add_user"><FeatureGate feature="audit_trail"><AuditLog /></FeatureGate></PermissionGuard>} />
                 <Route path="chat" element={<FeatureGate feature="chat"><Chat /></FeatureGate>} />
+                <Route path="task" element={<PermissionGuard requiredPermission="app.view_task"><FeatureGate feature="tasks"><Tasks /></FeatureGate></PermissionGuard>} />
+                <Route path="email-template" element={<PermissionGuard requiredPermission="app.view_emailtemplate"><FeatureGate feature="email_campaigns"><EmailTemplates /></FeatureGate></PermissionGuard>} />
+                <Route path="campaign" element={<PermissionGuard requiredPermission="app.view_campaign"><FeatureGate feature="email_campaigns"><CampaignList /></FeatureGate></PermissionGuard>} />
+                <Route path="team" element={<PermissionGuard requiredPermission="app.view_team"><FeatureGate feature="teams"><Teams /></FeatureGate></PermissionGuard>} />
+                <Route path="team/:id" element={<PermissionGuard requiredPermission="app.view_team"><FeatureGate feature="teams"><TeamDetail /></FeatureGate></PermissionGuard>} />
+                <Route path="period" element={<PermissionGuard requiredPermission="app.view_period"><FeatureGate feature="goals"><Periods /></FeatureGate></PermissionGuard>} />
+                <Route path="goal" element={<PermissionGuard requiredPermission="app.view_goal"><FeatureGate feature="goals"><Goals /></FeatureGate></PermissionGuard>} />
                 <Route path="my-info" element={<MyInfo />} />
                 <Route path="lead-reassignment" element={<PermissionGuard requireSuperuser><LeadReassignment /></PermissionGuard>} />
             </Route>
