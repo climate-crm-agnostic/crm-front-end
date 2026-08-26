@@ -3,8 +3,9 @@ import { API_URL, getHeaders, fetchAllPages, extractErrorMessage } from "./api";
 const endPoint = "clients";
 const url = `${API_URL}/${endPoint}/`;
 
-export const getClients = async () => {
-    return fetchAllPages(url, {
+export const getClients = async (filters = {}) => {
+    const queryParams = new URLSearchParams(filters).toString();
+    return fetchAllPages(queryParams ? `${url}?${queryParams}` : url, {
         method: "GET",
         headers: getHeaders(),
     });

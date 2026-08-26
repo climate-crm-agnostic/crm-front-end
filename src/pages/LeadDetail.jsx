@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useParams, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { getLeadClientAttributes, createLead, updateLead, uploadLeadImage, deleteLeadImage, getLead, archiveLead, unarchiveLead } from "../services/leadService";
 import { getPipelineAttributes } from "../services/pipelineAttributeService";
 import { getPipelines } from "../services/pipelineService";
 import { getCatalogueItems } from "../services/catalogueService";
 import { getSales } from "../services/salesService";
 import { getClients } from "../services/clientService";
+import { getQuotations } from "../services/quotationService";
+import { getSentEmails } from "../services/communicationService";
 import { useAuth } from "../context/AuthContext";
 
 // UI Components
@@ -15,11 +17,15 @@ import { Button } from "../components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Checkbox } from "../components/ui/checkbox";
 import { Textarea } from "../components/ui/textarea";
-import { ArrowLeft, MoreVertical } from "lucide-react";
+import { ArrowLeft, MoreVertical, FileText, Plus, Mail } from "lucide-react";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "../components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/table";
-import { Switch } from "../components/ui/switch";
 import { DateInput } from "../components/ui/date-input";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs";
+import { SendEmailModal } from "../components/SendEmailModal";
+import { ViewEmailModal } from "../components/ViewEmailModal";
+import { DynamicAttributeField } from "../components/attributes/DynamicAttributeField";
+import { coerceAttributeValue, collectAttributeValuesByType } from "../utils/attributeTypes";
 import Swal from "sweetalert2";
 
 export const LeadDetail = () => {
@@ -27,6 +33,19 @@ export const LeadDetail = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { user } = useAuth();
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    // Tab state lives in the URL (not defaultValue) so that navigating away
+    // (e.g. into a Quotation) and hitting the browser Back button lands
+    // back on the same tab instead of always resetting to "Info".
+    const activeTab = searchParams.get('tab') || 'info';
+    const handleTabChange = (tab) => {
+        setSearchParams(prev => {
+            const next = new URLSearchParams(prev);
+            next.set('tab', tab);
+            return next;
+        }, { replace: true });
+    };
 
     const isNew = id === "new";
     // Check if we passed state via navigation (e.g. pipelineId for new lead)
@@ -41,6 +60,10 @@ export const LeadDetail = () => {
     const [formData, setFormData] = useState({});
     const [clientInfoData, setClientInfoData] = useState({});
     const [itemsList, setItemsList] = useState([]);
+    const [quotations, setQuotations] = useState([]);
+    const [sentEmails, setSentEmails] = useState([]);
+    const [showEmailModal, setShowEmailModal] = useState(false);
+    const [viewingEmail, setViewingEmail] = useState(null);
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(!isNew);
     const [error, setError] = useState(null);
@@ -77,6 +100,16 @@ export const LeadDetail = () => {
     const firstNameAttr = attributes.find(a => a.label?.toLowerCase() === 'first name');
     const lastNameAttr = attributes.find(a => a.label?.toLowerCase() === 'last name');
     const isAutoName = !!(firstNameAttr || lastNameAttr);
+
+    // Real email-attribute values (type === 'email', not a label-text guess)
+    // found on the lead itself and on the embedded client, for the generic
+    // "New Email" composer's recipient picker — a lead can have more than
+    // one (e.g. "Contact Email" + "Billing Email"), so this collects all of
+    // them rather than picking just one.
+    const emailOptions = [
+        ...collectAttributeValuesByType(attributes, formData, 'email'),
+        ...collectAttributeValuesByType(clientAttributes, clientInfoData, 'email'),
+    ].filter((opt, idx, arr) => arr.findIndex(o => o.value === opt.value) === idx);
 
     // Auto-populate name from first/last name dynamic attributes
     useEffect(() => {
@@ -142,6 +175,32 @@ export const LeadDetail = () => {
             localStorage.setItem('lead_selected_pipeline_id', activePipelineId);
         }
     }, [isNew, activePipelineId]);
+
+    const loadQuotations = async () => {
+        if (isNew) return;
+        try {
+            const data = await getQuotations({ lead: id });
+            setQuotations(Array.isArray(data) ? data : []);
+        } catch {
+            // non-fatal — the Quotations card just stays empty
+        }
+    };
+
+    const loadSentEmails = async () => {
+        if (isNew) return;
+        try {
+            const data = await getSentEmails({ lead: id });
+            setSentEmails(Array.isArray(data) ? data : []);
+        } catch {
+            // non-fatal — the Emails card just stays empty
+        }
+    };
+
+    useEffect(() => {
+        loadQuotations();
+        loadSentEmails();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [id]);
 
     const populateForm = (leadData) => {
         setName(leadData.name || "");
@@ -439,9 +498,7 @@ export const LeadDetail = () => {
             const formatAttributes = (data, attrs) => {
                 const formatted = { ...data };
                 attrs.forEach(attr => {
-                    if (attr.type === 'number' && formatted[attr.name]) {
-                        formatted[attr.name] = Number(formatted[attr.name]);
-                    }
+                    formatted[attr.name] = coerceAttributeValue(attr, formatted[attr.name]);
                 });
                 return formatted;
             };
@@ -690,7 +747,14 @@ export const LeadDetail = () => {
                     </div>
                 )}
 
-                <div className="space-y-6">
+                <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
+                    <TabsList>
+                        <TabsTrigger value="info">Info</TabsTrigger>
+                        <TabsTrigger value="communication">Communication</TabsTrigger>
+                        <TabsTrigger value="tasks">Tasks, Notes & Files</TabsTrigger>
+                    </TabsList>
+
+                <TabsContent value="info" className="space-y-6 mt-0">
                     {/* Main Info */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-card p-6 rounded-lg border shadow-sm">
                         {/* Responsible Field */}
@@ -791,48 +855,11 @@ export const LeadDetail = () => {
                             {attributes.map((attr) => (
                                 <div key={attr.name} className="space-y-2">
                                     <Label htmlFor={attr.name}>{attr.label}</Label>
-                                    {attr.type === 'list' ? (
-                                        <Select
-                                            onValueChange={(val) => handleAttributeChange(attr.name, val)}
-                                            value={formData[attr.name]}
-                                        >
-                                            <SelectTrigger className="w-full">
-                                                <SelectValue placeholder={`Select ${attr.label}`} />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {attr.options?.map((opt) => (
-                                                    <SelectItem key={opt.value || opt} value={opt.value || opt}>
-                                                        {opt.label || opt}
-                                                    </SelectItem>
-                                                )) || <SelectItem value="no-options">No options available</SelectItem>}
-                                            </SelectContent>
-                                        </Select>
-                                    ) : attr.type === 'boolean' ? (
-                                        <div className="flex items-center space-x-2 h-10">
-                                            <Switch
-                                                id={attr.name}
-                                                checked={!!formData[attr.name]}
-                                                onCheckedChange={(checked) => handleAttributeChange(attr.name, checked)}
-                                            />
-                                            <Label htmlFor={attr.name} className="cursor-pointer font-normal text-muted-foreground">
-                                                {formData[attr.name] ? 'Yes' : 'No'}
-                                            </Label>
-                                        </div>
-                                    ) : attr.type === 'date' ? (
-                                        <DateInput
-                                            id={attr.name}
-                                            value={formData[attr.name] || ""}
-                                            onChange={(e) => handleAttributeChange(attr.name, e.target.value)}
-                                        />
-                                    ) : (
-                                        <Input
-                                            id={attr.name}
-                                            type={attr.type === 'number' ? 'number' : 'text'}
-                                            placeholder={attr.label}
-                                            value={formData[attr.name] || ""}
-                                            onChange={(e) => handleAttributeChange(attr.name, e.target.value)}
-                                        />
-                                    )}
+                                    <DynamicAttributeField
+                                        attr={attr}
+                                        value={formData[attr.name]}
+                                        onChange={(val) => handleAttributeChange(attr.name, val)}
+                                    />
                                 </div>
                             ))}
                         </div>
@@ -846,48 +873,12 @@ export const LeadDetail = () => {
                                 {clientAttributes.map((attr) => (
                                     <div key={attr.name} className="space-y-2">
                                         <Label htmlFor={`client-${attr.name}`}>{attr.label}</Label>
-                                        {attr.type === 'list' ? (
-                                            <Select
-                                                onValueChange={(val) => handleClientAttributeChange(attr.name, val)}
-                                                value={clientInfoData[attr.name]}
-                                            >
-                                                <SelectTrigger className="w-full">
-                                                    <SelectValue placeholder={`Select ${attr.label}`} />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {attr.options?.map((opt) => (
-                                                        <SelectItem key={opt.value || opt} value={opt.value || opt}>
-                                                            {opt.label || opt}
-                                                        </SelectItem>
-                                                    )) || <SelectItem value="no-options">No options available</SelectItem>}
-                                                </SelectContent>
-                                            </Select>
-                                        ) : attr.type === 'boolean' ? (
-                                            <div className="flex items-center space-x-2 h-10">
-                                                <Switch
-                                                    id={`client-${attr.name}`}
-                                                    checked={!!clientInfoData[attr.name]}
-                                                    onCheckedChange={(checked) => handleClientAttributeChange(attr.name, checked)}
-                                                />
-                                                <Label htmlFor={`client-${attr.name}`} className="cursor-pointer font-normal text-muted-foreground">
-                                                    {clientInfoData[attr.name] ? 'Yes' : 'No'}
-                                                </Label>
-                                            </div>
-                                        ) : attr.type === 'date' ? (
-                                            <DateInput
-                                                id={`client-${attr.name}`}
-                                                value={clientInfoData[attr.name] || ""}
-                                                onChange={(e) => handleClientAttributeChange(attr.name, e.target.value)}
-                                            />
-                                        ) : (
-                                            <Input
-                                                id={`client-${attr.name}`}
-                                                type={attr.type === 'number' ? 'number' : 'text'}
-                                                placeholder={attr.label}
-                                                value={clientInfoData[attr.name] || ""}
-                                                onChange={(e) => handleClientAttributeChange(attr.name, e.target.value)}
-                                            />
-                                        )}
+                                        <DynamicAttributeField
+                                            attr={attr}
+                                            value={clientInfoData[attr.name]}
+                                            onChange={(val) => handleClientAttributeChange(attr.name, val)}
+                                            idPrefix="client"
+                                        />
                                     </div>
                                 ))}
                             </div>
@@ -972,7 +963,95 @@ export const LeadDetail = () => {
                             </div>
                         )}
                     </div>
+                </TabsContent>
 
+                <TabsContent value="communication" className="space-y-6 mt-0">
+                    {isNew ? (
+                        <p className="text-sm text-muted-foreground italic bg-card p-6 rounded-lg border shadow-sm">
+                            Save the opportunity first to create quotations or send emails.
+                        </p>
+                    ) : (
+                    <>
+                    {/* Quotations */}
+                    <div className="bg-card p-6 rounded-lg border shadow-sm space-y-4">
+                        <div className="flex items-center justify-between border-b pb-2">
+                            <h3 className="font-medium text-lg">Quotations</h3>
+                            <Button size="sm" onClick={() => navigate(`/quotation/new?lead=${id}`)}>
+                                <Plus className="h-4 w-4 mr-1" /> New Quotation
+                            </Button>
+                        </div>
+                        {quotations.length === 0 ? (
+                            <p className="text-sm text-muted-foreground italic">No quotations yet.</p>
+                        ) : (
+                            <div className="space-y-2">
+                                {quotations.map(q => (
+                                    <div
+                                        key={q.id}
+                                        onClick={() => navigate(`/quotation/${q.id}`)}
+                                        className="flex items-center justify-between p-3 bg-muted/20 border rounded-md cursor-pointer hover:bg-muted/40 transition-colors"
+                                    >
+                                        <div className="flex items-center gap-2 min-w-0">
+                                            <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+                                            <div className="min-w-0">
+                                                <p className="text-sm font-medium truncate">{q.quotation_number}</p>
+                                                <p className="text-xs text-muted-foreground">{q.issue_date} · {q.recipient_name || "No recipient"}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-3 shrink-0">
+                                            <span className="text-sm font-medium">{Number(q.total).toFixed(2)}</span>
+                                            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-muted capitalize">{q.status}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Emails */}
+                    <div className="bg-card p-6 rounded-lg border shadow-sm space-y-4">
+                        <div className="flex items-center justify-between border-b pb-2">
+                            <h3 className="font-medium text-lg">Emails</h3>
+                            <Button size="sm" onClick={() => setShowEmailModal(true)}>
+                                <Mail className="h-4 w-4 mr-1" /> New Email
+                            </Button>
+                        </div>
+                        <p className="text-xs text-muted-foreground -mt-2">
+                            Replies always go to whoever sent the email, not a shared inbox.
+                        </p>
+                        {sentEmails.length === 0 ? (
+                            <p className="text-sm text-muted-foreground italic">No emails sent yet.</p>
+                        ) : (
+                            <div className="space-y-2">
+                                {sentEmails.map(mail => (
+                                    <div
+                                        key={mail.id}
+                                        onClick={() => setViewingEmail(mail)}
+                                        className="flex items-center justify-between p-3 bg-muted/20 border rounded-md cursor-pointer hover:bg-muted/40 transition-colors"
+                                    >
+                                        <div className="flex items-center gap-2 min-w-0">
+                                            <Mail className="h-4 w-4 shrink-0 text-muted-foreground" />
+                                            <div className="min-w-0">
+                                                <p className="text-sm font-medium truncate">{mail.subject}</p>
+                                                <p className="text-xs text-muted-foreground truncate">
+                                                    To {mail.to_email} · Reply-To {mail.reply_to}
+                                                    {mail.attachment_name && <> · 📎 {mail.attachment_name}</>}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col items-end shrink-0 text-xs text-muted-foreground">
+                                            <span>{new Date(mail.created_at).toLocaleString()}</span>
+                                            {mail.sent_by?.name && <span>{mail.sent_by.name}</span>}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                    </>
+                    )}
+                </TabsContent>
+
+                <TabsContent value="tasks" className="space-y-6 mt-0">
                     {/* Tasks & Notes Row */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Tasks */}
@@ -1125,8 +1204,19 @@ export const LeadDetail = () => {
                             </div>
                         </div>
                     )}
-                </div>
+                </TabsContent>
+                </Tabs>
             </div>
+
+            <SendEmailModal
+                open={showEmailModal}
+                onClose={() => setShowEmailModal(false)}
+                emailOptions={emailOptions}
+                lead={id}
+                onSent={loadSentEmails}
+            />
+
+            <ViewEmailModal email={viewingEmail} onClose={() => setViewingEmail(null)} />
 
             {/* Move to Lost modal */}
             {showLostModal && (

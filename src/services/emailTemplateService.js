@@ -40,3 +40,26 @@ export const deleteEmailTemplate = async (id) => {
   if (!res.ok) throw new Error('Failed to delete template');
   return true;
 };
+
+// Catalog of {contact.x} / {client.x} variables — fixed fields plus
+// whatever custom Attributes this tenant has defined for Contact/Client.
+export const getMergeFields = async () => {
+  const res = await fetch(`${TEMPLATES_URL}merge-fields/`, { headers: getHeaders() });
+  if (!res.ok) throw new Error('Error fetching merge fields');
+  return res.json();
+};
+
+// Renders subject/html_body against a real Contact so the editor can show
+// what the variables actually resolve to. contactId is optional.
+export const previewEmailTemplate = async (id, contactId) => {
+  const res = await fetch(`${TEMPLATES_URL}${id}/preview/`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify(contactId ? { contact_id: contactId } : {}),
+  });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => null);
+    throw new Error(extractErrorMessage(errorData, 'Error previewing template'));
+  }
+  return res.json();
+};

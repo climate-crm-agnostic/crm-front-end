@@ -49,6 +49,7 @@ import { Tasks } from "../pages/Tasks";
 import { EmailTemplates } from "../pages/Campaigns/EmailTemplates";
 import { CampaignList } from "../pages/Campaigns/CampaignList";
 import { Unsubscribe } from "../pages/Unsubscribe";
+import { QuotationDetail } from "../pages/QuotationDetail";
 import AdminLayout from "@/layout/AdminLayout"
 import { useAuth } from "@/context/AuthContext"
 import { PermissionGuard } from "../components/PermissionGuard"
@@ -92,6 +93,7 @@ export const RouterApp = () => {
                 {/*  <Route path="rol" element={<Rol />} /> */}
                 <Route path="lead" element={<PermissionGuard requiredPermission="app.add_lead"><Lead /></PermissionGuard>} />
                 <Route path="lead/:id" element={<PermissionGuard requiredPermission="app.add_lead"><LeadDetail /></PermissionGuard>} />
+                <Route path="quotation/:id" element={<PermissionGuard requiredPermission="app.view_quotation"><QuotationDetail /></PermissionGuard>} />
                 <Route path="pipeline" element={<PermissionGuard requiredPermission="app.add_pipeline"><Pipeline /></PermissionGuard>} />
                 <Route path="attribute" element={<PermissionGuard requiredPermission="app.add_attribute"><Attributes /></PermissionGuard>} />
                 <Route path="attribute-pipeline" element={<PermissionGuard requiredPermission="app.add_pipeline"><PipelineAttributesAdmin /></PermissionGuard>} />

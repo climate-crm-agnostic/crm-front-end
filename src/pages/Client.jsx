@@ -4,6 +4,7 @@ import { Table } from "../components/Table";
 import { Button } from "../components/ui/button";
 import { Plus, Download, Upload, X, CheckCircle, AlertCircle } from "lucide-react";
 import { getClients, deleteClient, getClientAttributes, importClientsFromExcel, exportClientsExcel } from "../services/clientService";
+import { formatAttributeValue } from "../utils/attributeTypes";
 import { saveAs } from "file-saver";
 import Swal from "sweetalert2";
 
@@ -25,16 +26,22 @@ export const Client = () => {
     ];
 
     const [columns, setColumns] = useState(staticColumns);
+    const [contactFilter, setContactFilter] = useState("");
+    const availableContactTypes = React.useMemo(
+        () => Array.from(new Set(attributes.filter(a => a.type === 'email' || a.type === 'phone').map(a => a.type))),
+        [attributes]
+    );
 
     useEffect(() => {
         fetchData();
-    }, []);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [contactFilter]);
 
     const fetchData = async () => {
         setLoading(true);
         try {
             const [clientsData, attributesData] = await Promise.all([
-                getClients(),
+                getClients(contactFilter ? { has_attribute_type: contactFilter } : {}),
                 getClientAttributes()
             ]);
             const processedClients = clientsData.map(client => ({
@@ -47,7 +54,8 @@ export const Client = () => {
             // Dynamic columns from attributes
             const dynamicColumns = attributesData.map(attr => ({
                 key: attr.name, // The backend key/name for the attribute
-                label: attr.label
+                label: attr.label,
+                render: (value) => formatAttributeValue(attr, value),
             }));
 
             setColumns([...staticColumns, ...dynamicColumns]);
@@ -174,6 +182,21 @@ export const Client = () => {
             </div>
 
             <div className="bg-brand-oat p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
+                {availableContactTypes.length > 0 && (
+                    <div className="flex items-center gap-2 px-1 pb-2">
+                        <label htmlFor="client-contact-filter" className="text-xs font-medium text-muted-foreground">Filter:</label>
+                        <select
+                            id="client-contact-filter"
+                            value={contactFilter}
+                            onChange={(e) => setContactFilter(e.target.value)}
+                            className="h-8 text-sm border rounded-md px-2 bg-background"
+                        >
+                            <option value="">All clients</option>
+                            {availableContactTypes.includes('email') && <option value="email">Has Email</option>}
+                            {availableContactTypes.includes('phone') && <option value="phone">Has Phone</option>}
+                        </select>
+                    </div>
+                )}
                 <Table
                     data={clients}
                     columns={columns}

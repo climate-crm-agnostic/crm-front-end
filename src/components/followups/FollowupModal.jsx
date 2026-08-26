@@ -6,9 +6,9 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import { Switch } from "../ui/switch";
 import { DateInput } from "../ui/date-input";
+import { DynamicAttributeField } from "../attributes/DynamicAttributeField";
+import { coerceAttributeValue } from "../../utils/attributeTypes";
 
 export const FollowupModal = ({ isOpen, onClose, onFollowupSaved, followupToEdit = null, serviceId }) => {
     const { user } = useAuth();
@@ -106,9 +106,7 @@ export const FollowupModal = ({ isOpen, onClose, onFollowupSaved, followupToEdit
             const formatAttributes = (data, attrs) => {
                 const formatted = { ...data };
                 attrs.forEach(attr => {
-                    if (attr.type === 'number' && formatted[attr.name]) {
-                        formatted[attr.name] = Number(formatted[attr.name]);
-                    }
+                    formatted[attr.name] = coerceAttributeValue(attr, formatted[attr.name]);
                 });
                 return formatted;
             };
@@ -156,49 +154,11 @@ export const FollowupModal = ({ isOpen, onClose, onFollowupSaved, followupToEdit
                 {attributes.map((attr) => (
                     <div key={attr.name} className="space-y-2">
                         <Label htmlFor={attr.name}>{attr.label}</Label>
-
-                        {attr.type === 'list' ? (
-                            <Select
-                                onValueChange={(val) => handleAttributeChange(attr.name, val)}
-                                value={formData[attr.name]}
-                            >
-                                <SelectTrigger className="w-full">
-                                    <SelectValue placeholder={`Select ${attr.label}`} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {attr.options?.map((opt) => (
-                                        <SelectItem key={opt.value || opt} value={opt.value || opt}>
-                                            {opt.label || opt}
-                                        </SelectItem>
-                                    )) || <SelectItem value="no-options">No options available</SelectItem>}
-                                </SelectContent>
-                            </Select>
-                        ) : attr.type === 'boolean' ? (
-                            <div className="flex items-center space-x-2 h-10">
-                                <Switch
-                                    id={attr.name}
-                                    checked={!!formData[attr.name]}
-                                    onCheckedChange={(checked) => handleAttributeChange(attr.name, checked)}
-                                />
-                                <Label htmlFor={attr.name} className="cursor-pointer font-normal text-muted-foreground">
-                                    {formData[attr.name] ? 'Yes' : 'No'}
-                                </Label>
-                            </div>
-                        ) : attr.type === 'date' ? (
-                            <DateInput
-                                id={attr.name}
-                                value={formData[attr.name] || ""}
-                                onChange={(e) => handleAttributeChange(attr.name, e.target.value)}
-                            />
-                        ) : (
-                            <Input
-                                id={attr.name}
-                                type={attr.type === 'number' ? 'number' : 'text'}
-                                placeholder={attr.label}
-                                value={formData[attr.name] || ""}
-                                onChange={(e) => handleAttributeChange(attr.name, e.target.value)}
-                            />
-                        )}
+                        <DynamicAttributeField
+                            attr={attr}
+                            value={formData[attr.name]}
+                            onChange={(val) => handleAttributeChange(attr.name, val)}
+                        />
                     </div>
                 ))}
 

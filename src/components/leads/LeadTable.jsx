@@ -8,6 +8,7 @@ import { getSales } from "../../services/salesService";
 import { getClients } from "../../services/clientService";
 import { getPipelineAttributes } from "../../services/pipelineAttributeService";
 import { formatDate } from "../../utils/date";
+import { formatAttributeValue } from "../../utils/attributeTypes";
 
 // Table view of the leads in the active pipeline — a flat alternative to the
 // Kanban (LeadBoard). Self-contained data fetching (sales/clients/attributes)
@@ -20,6 +21,7 @@ export const LeadTable = ({ selectedPipelineId, refreshTrigger, onLeadClick }) =
     const [salesUsers, setSalesUsers] = useState([]);
     const [clientsById, setClientsById] = useState({});
     const [pipelineAttributes, setPipelineAttributes] = useState([]);
+    const [contactFilter, setContactFilter] = useState("");
 
     useEffect(() => {
         Promise.all([getSales(), getClients()]).then(([salesData, clientsData]) => {
@@ -49,7 +51,11 @@ export const LeadTable = ({ selectedPipelineId, refreshTrigger, onLeadClick }) =
         }
         let cancelled = false;
         setLoading(true);
-        getLeads({ pipeline_id: selectedPipelineId, include_archived: "true" })
+        getLeads({
+            pipeline_id: selectedPipelineId,
+            include_archived: "true",
+            ...(contactFilter ? { has_attribute_type: contactFilter } : {}),
+        })
             .then(data => { if (!cancelled) setLeads(data || []); })
             .catch(err => {
                 console.error("Failed to load leads for table view", err);
@@ -57,7 +63,15 @@ export const LeadTable = ({ selectedPipelineId, refreshTrigger, onLeadClick }) =
             })
             .finally(() => { if (!cancelled) setLoading(false); });
         return () => { cancelled = true; };
-    }, [selectedPipelineId, refreshTrigger]);
+    }, [selectedPipelineId, refreshTrigger, contactFilter]);
+
+    // Only offer the filter for contact-type attributes this pipeline
+    // actually has — showing "Has Phone" for a pipeline with no phone
+    // attribute would just always return everything.
+    const availableContactTypes = useMemo(
+        () => Array.from(new Set(pipelineAttributes.filter(a => a.type === 'email' || a.type === 'phone').map(a => a.type))),
+        [pipelineAttributes]
+    );
 
     const getResponsibleName = (resp) => {
         if (!resp) return "Unassigned";
@@ -83,6 +97,7 @@ export const LeadTable = ({ selectedPipelineId, refreshTrigger, onLeadClick }) =
     const attributeColumns = pipelineAttributes.map(attr => ({
         key: attr.name,
         label: attr.label || attr.name,
+        render: (value) => formatAttributeValue(attr, value),
     }));
 
     const columns = [
@@ -146,6 +161,21 @@ export const LeadTable = ({ selectedPipelineId, refreshTrigger, onLeadClick }) =
 
     return (
         <div className="h-full flex flex-col px-4 pb-4" style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+            {availableContactTypes.length > 0 && (
+                <div className="flex items-center gap-2 py-2">
+                    <label htmlFor="lead-contact-filter" className="text-xs font-medium text-muted-foreground">Filter:</label>
+                    <select
+                        id="lead-contact-filter"
+                        value={contactFilter}
+                        onChange={(e) => setContactFilter(e.target.value)}
+                        className="h-8 text-sm border rounded-md px-2 bg-background"
+                    >
+                        <option value="">All leads</option>
+                        {availableContactTypes.includes('email') && <option value="email">Has Email</option>}
+                        {availableContactTypes.includes('phone') && <option value="phone">Has Phone</option>}
+                    </select>
+                </div>
+            )}
             <Table
                 data={rows}
                 columns={columns}

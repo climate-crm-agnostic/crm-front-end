@@ -5,6 +5,8 @@ import { getStageValidationRules, createStageValidationRule, updateStageValidati
 import { PipelineForm } from "../components/pipelines/PipelineForm";
 import { PipelineModal } from "../components/pipelines/PipelineModal";
 import { Plus, Edit2, Columns, ChevronDown, ChevronUp, Trash2, SlidersHorizontal, ShieldCheck } from "lucide-react";
+import { ATTRIBUTE_TYPES } from "../utils/attributeTypes";
+import { COUNTRY_LIST, guessDefaultCountry } from "../utils/phoneCountries";
 
 const FONT = '"Source Sans 3", Arial, sans-serif';
 const INK = "#2E2A26";
@@ -16,10 +18,7 @@ const PEBBLE = "#D8D2C4";
 const OLIVE = "#5E6A43";
 const APRICOT = "#F29B6B";
 
-const TYPE_LABELS = {
-    text: "Text", number: "Number", date: "Date",
-    list: "Select List", boolean: "Boolean", textarea: "Text Area",
-};
+const TYPE_LABELS = Object.fromEntries(ATTRIBUTE_TYPES.map(t => [t.value, t.label]));
 
 const textColorForBg = (hex) => {
     if (!hex) return INK;
@@ -31,7 +30,10 @@ const textColorForBg = (hex) => {
     return lum > 0.55 ? INK : LINEN;
 };
 
-const EMPTY_FORM = { label: "", name: "", type: "text", is_required: false, is_unique: false, order: 0, list_values: [], description: "" };
+const EMPTY_FORM = {
+    label: "", name: "", type: "text", is_required: false, is_unique: false, order: 0,
+    list_values: [], description: "", format_symbol: "$", format_decimals: 2, format_default_country: "",
+};
 
 function AttributeManager({ pipeline }) {
     const [attrs, setAttrs] = useState([]);
@@ -70,6 +72,7 @@ function AttributeManager({ pipeline }) {
 
     const startEdit = (attr) => {
         setEditingId(attr.id);
+        const formatConfig = attr.format_config || {};
         setForm({
             label: attr.label,
             name: attr.name,
@@ -79,6 +82,9 @@ function AttributeManager({ pipeline }) {
             order: attr.order,
             list_values: attr.list_values || [],
             description: attr.description || "",
+            format_symbol: formatConfig.symbol ?? "$",
+            format_decimals: formatConfig.decimals ?? 2,
+            format_default_country: formatConfig.default_country ?? "",
         });
         setListInput((attr.list_values || []).join(", "));
         setError(null);
@@ -104,7 +110,15 @@ function AttributeManager({ pipeline }) {
                 list_values: form.type === "list"
                     ? listInput.split(",").map(s => s.trim()).filter(Boolean)
                     : [],
+                format_config: form.type === "currency"
+                    ? { symbol: form.format_symbol || "$", decimals: Number(form.format_decimals) || 0 }
+                    : form.type === "phone"
+                        ? (form.format_default_country ? { default_country: form.format_default_country } : {})
+                        : {},
             };
+            delete payload.format_symbol;
+            delete payload.format_decimals;
+            delete payload.format_default_country;
             if (editingId) {
                 await updatePipelineAttribute(pipeline.id, editingId, payload);
             } else {
@@ -203,7 +217,7 @@ function AttributeManager({ pipeline }) {
                             <div>
                                 <p style={{ fontSize: "11px", fontWeight: 600, color: INK, marginBottom: "3px", fontFamily: FONT }}>Type *</p>
                                 <select style={inputStyle} value={form.type} onChange={e => setForm(p => ({ ...p, type: e.target.value }))}>
-                                    {Object.entries(TYPE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                                    {ATTRIBUTE_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                                 </select>
                             </div>
                             <div>
@@ -216,6 +230,34 @@ function AttributeManager({ pipeline }) {
                             <div style={{ marginBottom: "8px" }}>
                                 <p style={{ fontSize: "11px", fontWeight: 600, color: INK, marginBottom: "3px", fontFamily: FONT }}>Options (comma-separated)</p>
                                 <input style={inputStyle} value={listInput} onChange={e => setListInput(e.target.value)} placeholder="Option A, Option B, Option C" />
+                            </div>
+                        )}
+
+                        {form.type === "currency" && (
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: "8px" }}>
+                                <div>
+                                    <p style={{ fontSize: "11px", fontWeight: 600, color: INK, marginBottom: "3px", fontFamily: FONT }}>Symbol</p>
+                                    <input style={inputStyle} value={form.format_symbol} onChange={e => setForm(p => ({ ...p, format_symbol: e.target.value }))} placeholder="$" />
+                                </div>
+                                <div>
+                                    <p style={{ fontSize: "11px", fontWeight: 600, color: INK, marginBottom: "3px", fontFamily: FONT }}>Decimals</p>
+                                    <input style={inputStyle} type="number" min="0" max="4" value={form.format_decimals} onChange={e => setForm(p => ({ ...p, format_decimals: e.target.value }))} />
+                                </div>
+                            </div>
+                        )}
+
+                        {form.type === "phone" && (
+                            <div style={{ marginBottom: "8px" }}>
+                                <p style={{ fontSize: "11px", fontWeight: 600, color: INK, marginBottom: "3px", fontFamily: FONT }}>Default Country</p>
+                                <select style={inputStyle} value={form.format_default_country} onChange={e => setForm(p => ({ ...p, format_default_country: e.target.value }))}>
+                                    <option value="">Guess from browser ({guessDefaultCountry()})</option>
+                                    {COUNTRY_LIST.map(c => (
+                                        <option key={c.code} value={c.code}>{c.flag} {c.name} (+{c.callingCode})</option>
+                                    ))}
+                                </select>
+                                <p style={{ fontSize: "10px", color: HINT, marginTop: "3px", fontFamily: FONT }}>
+                                    Starting country for the phone input — the mask is applied automatically per country, nothing to type.
+                                </p>
                             </div>
                         )}
 

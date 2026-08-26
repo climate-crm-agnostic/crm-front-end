@@ -6,6 +6,7 @@ import { Plus, Search, Upload, X, CheckCircle, AlertCircle } from "lucide-react"
 import { getServices, deleteService, getServiceAttributes, importServicesFromExcel } from "../services/serviceService";
 import { getClients } from "../services/clientService";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
+import { formatAttributeValue } from "../utils/attributeTypes";
 import Swal from "sweetalert2";
 
 const IMPORT_FIXED_FIELDS = [
@@ -19,7 +20,13 @@ export const Service = () => {
     const [attributes, setAttributes] = useState([]);
     const [clients, setClients] = useState([]);
     const [selectedClient, setSelectedClient] = useState("");
+    const [contactFilter, setContactFilter] = useState("");
     const navigate = useNavigate();
+
+    const availableContactTypes = React.useMemo(
+        () => Array.from(new Set(attributes.filter(a => a.type === 'email' || a.type === 'phone').map(a => a.type))),
+        [attributes]
+    );
 
     // Import modal state
     const [showImportModal, setShowImportModal] = useState(false);
@@ -53,7 +60,8 @@ export const Service = () => {
             // Dynamic columns from attributes
             const dynamicColumns = attributesData.map(attr => ({
                 key: attr.name,
-                label: attr.label
+                label: attr.label,
+                render: (value) => formatAttributeValue(attr, value),
             }));
 
             setColumns([...staticColumns, ...dynamicColumns]);
@@ -70,7 +78,10 @@ export const Service = () => {
 
         setLoading(true);
         try {
-            const servicesData = await getServices({ client: selectedClient });
+            const servicesData = await getServices({
+                client: selectedClient,
+                ...(contactFilter ? { has_attribute_type: contactFilter } : {}),
+            });
 
             // Flatten data for table
             const processedServices = servicesData.map(service => ({
@@ -193,6 +204,18 @@ export const Service = () => {
                         ))}
                     </SelectContent>
                 </Select>
+                {availableContactTypes.length > 0 && (
+                    <select
+                        value={contactFilter}
+                        onChange={(e) => setContactFilter(e.target.value)}
+                        className="h-9 text-sm border rounded-md px-2 bg-background"
+                        style={{ border: "1px solid #D8D2C4", color: "#2E2A26", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+                    >
+                        <option value="">All services</option>
+                        {availableContactTypes.includes('email') && <option value="email">Has Email</option>}
+                        {availableContactTypes.includes('phone') && <option value="phone">Has Phone</option>}
+                    </select>
+                )}
                 <button
                     onClick={handleSearch}
                     disabled={!selectedClient || loading}

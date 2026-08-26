@@ -1,6 +1,8 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { X } from 'lucide-react';
+import { ATTRIBUTE_TYPES } from '../../utils/attributeTypes';
+import { COUNTRY_LIST, guessDefaultCountry } from '../../utils/phoneCountries';
 
 const inputClass = {
     backgroundColor: "#fff",
@@ -29,12 +31,16 @@ export const AttributeForm = ({ entity, onSubmit, onCancel, isLoading, initialDa
     const isEdit = !!initialData;
 
     const getDefaultValues = () => {
-        if (!initialData) return { order: defaultOrder };
+        if (!initialData) return { order: defaultOrder, format_symbol: '$', format_decimals: 2, format_default_country: '' };
+        const formatConfig = initialData.format_config || {};
         return {
             ...initialData,
             list_values: Array.isArray(initialData.list_values)
                 ? initialData.list_values.join(', ')
-                : initialData.list_values
+                : initialData.list_values,
+            format_symbol: formatConfig.symbol ?? '$',
+            format_decimals: formatConfig.decimals ?? 2,
+            format_default_country: formatConfig.default_country ?? '',
         };
     };
 
@@ -56,6 +62,16 @@ export const AttributeForm = ({ entity, onSubmit, onCancel, isLoading, initialDa
         } else {
             payload.list_values = [];
         }
+        if (data.type === 'currency') {
+            payload.format_config = { symbol: data.format_symbol || '$', decimals: Number(data.format_decimals) || 0 };
+        } else if (data.type === 'phone') {
+            payload.format_config = data.format_default_country ? { default_country: data.format_default_country } : {};
+        } else {
+            payload.format_config = {};
+        }
+        delete payload.format_symbol;
+        delete payload.format_decimals;
+        delete payload.format_default_country;
         onSubmit(payload);
     };
 
@@ -137,13 +153,9 @@ export const AttributeForm = ({ entity, onSubmit, onCancel, isLoading, initialDa
                     style={{ ...inputClass, opacity: isEdit ? 0.6 : 1, cursor: isEdit ? "not-allowed" : "pointer", appearance: "auto" }}
                     disabled={isEdit}
                 >
-                    <option value="text">Text</option>
-                    <option value="number">Number</option>
-                    <option value="date">Date</option>
-                    <option value="boolean">Boolean</option>
-                    <option value="list">Select List</option>
-                    <option value="textarea">Text Area</option>
-                    <option value="file">File</option>
+                    {ATTRIBUTE_TYPES.map(t => (
+                        <option key={t.value} value={t.value}>{t.label}</option>
+                    ))}
                 </select>
             </div>
 
@@ -159,6 +171,53 @@ export const AttributeForm = ({ entity, onSubmit, onCancel, isLoading, initialDa
                         onBlur={e => e.target.style.borderColor = "#D8D2C4"}
                     />
                     {errors.list_values && <span style={{ color: "#c0392b", fontSize: "11px" }}>{errors.list_values.message}</span>}
+                </div>
+            )}
+
+            {/* Currency format */}
+            {selectedType === 'currency' && (
+                <div className="grid grid-cols-2 gap-3">
+                    <div>
+                        <label style={labelClass}>Symbol</label>
+                        <input
+                            {...register("format_symbol")}
+                            style={inputClass}
+                            placeholder="$"
+                            onFocus={e => e.target.style.borderColor = "#5E6A43"}
+                            onBlur={e => e.target.style.borderColor = "#D8D2C4"}
+                        />
+                    </div>
+                    <div>
+                        <label style={labelClass}>Decimals</label>
+                        <input
+                            type="number"
+                            min="0"
+                            max="4"
+                            {...register("format_decimals", { valueAsNumber: true })}
+                            style={inputClass}
+                            onFocus={e => e.target.style.borderColor = "#5E6A43"}
+                            onBlur={e => e.target.style.borderColor = "#D8D2C4"}
+                        />
+                    </div>
+                </div>
+            )}
+
+            {/* Phone default country */}
+            {selectedType === 'phone' && (
+                <div>
+                    <label style={labelClass}>Default Country</label>
+                    <select
+                        {...register("format_default_country")}
+                        style={{ ...inputClass, appearance: "auto" }}
+                    >
+                        <option value="">Guess from browser ({guessDefaultCountry()})</option>
+                        {COUNTRY_LIST.map(c => (
+                            <option key={c.code} value={c.code}>{c.flag} {c.name} (+{c.callingCode})</option>
+                        ))}
+                    </select>
+                    <p style={{ fontSize: "11px", color: "#9b948e", marginTop: "3px" }}>
+                        The country the phone input starts on. The person filling in a value can always switch it — the mask is applied automatically per country, no pattern to configure.
+                    </p>
                 </div>
             )}
 

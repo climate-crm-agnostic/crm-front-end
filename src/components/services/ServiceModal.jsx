@@ -11,6 +11,8 @@ import { Button } from "../ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Checkbox } from "../ui/checkbox";
 import { DateInput } from "../ui/date-input";
+import { DynamicAttributeField } from "../attributes/DynamicAttributeField";
+import { coerceAttributeValue } from "../../utils/attributeTypes";
 import { Textarea } from "../ui/textarea";
 
 export const ServiceModal = ({ isOpen, onClose, onServiceSaved, serviceToEdit = null, attributes = [], preSelectedClient = null }) => {
@@ -193,10 +195,14 @@ export const ServiceModal = ({ isOpen, onClose, onServiceSaved, serviceToEdit = 
         setLoading(true);
         setError(null);
         try {
+            const formattedAttributes = { ...dynamicData };
+            attributes.forEach(attr => {
+                formattedAttributes[attr.name] = coerceAttributeValue(attr, formattedAttributes[attr.name]);
+            });
             const payload = {
                 name,
                 client: clientId,
-                attributes: dynamicData
+                attributes: formattedAttributes
             };
 
             // If editing, include tasks and notes
@@ -274,37 +280,11 @@ export const ServiceModal = ({ isOpen, onClose, onServiceSaved, serviceToEdit = 
                             {attributes.map((attr) => (
                                 <div key={attr.name} className="space-y-2">
                                     <Label htmlFor={attr.name}>{attr.label}</Label>
-                                    {attr.type === 'list' ? (
-                                        <Select
-                                            onValueChange={(val) => handleDynamicChange(attr.name, val)}
-                                            value={dynamicData[attr.name] || ""}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder={`Select ${attr.label}`} />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {attr.options?.map((opt) => (
-                                                    <SelectItem key={opt.value || opt} value={opt.value || opt}>
-                                                        {opt.label || opt}
-                                                    </SelectItem>
-                                                )) || <SelectItem value="no-options">No options available</SelectItem>}
-                                            </SelectContent>
-                                        </Select>
-                                    ) : attr.type === 'date' ? (
-                                        <DateInput
-                                            id={attr.name}
-                                            value={dynamicData[attr.name] || ""}
-                                            onChange={(e) => handleDynamicChange(attr.name, e.target.value)}
-                                        />
-                                    ) : (
-                                        <Input
-                                            id={attr.name}
-                                            type={attr.type === 'number' ? 'number' : 'text'}
-                                            placeholder={attr.label}
-                                            value={dynamicData[attr.name] || ""}
-                                            onChange={(e) => handleDynamicChange(attr.name, e.target.value)}
-                                        />
-                                    )}
+                                    <DynamicAttributeField
+                                        attr={attr}
+                                        value={dynamicData[attr.name]}
+                                        onChange={(val) => handleDynamicChange(attr.name, val)}
+                                    />
                                 </div>
                             ))}
                         </div>

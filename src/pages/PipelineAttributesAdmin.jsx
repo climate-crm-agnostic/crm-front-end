@@ -25,12 +25,17 @@ const PEBBLE = "#D8D2C4";
 const OLIVE = "#5E6A43";
 
 const TYPE_COLORS = {
-    text:     { bg: "rgba(94,106,67,0.10)",  border: "rgba(94,106,67,0.35)",  color: "#4a5535" },
-    boolean:  { bg: "rgba(242,155,107,0.12)", border: "rgba(242,155,107,0.4)", color: "#c0622a" },
-    list:     { bg: "rgba(184,199,106,0.12)", border: "rgba(184,199,106,0.4)", color: "#697a28" },
-    number:   { bg: "rgba(216,210,196,0.4)",  border: "#D8D2C4",               color: "#6b6560" },
-    date:     { bg: "rgba(216,210,196,0.4)",  border: "#D8D2C4",               color: "#6b6560" },
-    textarea: { bg: "rgba(216,210,196,0.4)",  border: "#D8D2C4",               color: "#6b6560" },
+    text:       { bg: "rgba(94,106,67,0.10)",  border: "rgba(94,106,67,0.35)",  color: "#4a5535" },
+    boolean:    { bg: "rgba(242,155,107,0.12)", border: "rgba(242,155,107,0.4)", color: "#c0622a" },
+    list:       { bg: "rgba(184,199,106,0.12)", border: "rgba(184,199,106,0.4)", color: "#697a28" },
+    number:     { bg: "rgba(216,210,196,0.4)",  border: "#D8D2C4",               color: "#6b6560" },
+    date:       { bg: "rgba(216,210,196,0.4)",  border: "#D8D2C4",               color: "#6b6560" },
+    textarea:   { bg: "rgba(216,210,196,0.4)",  border: "#D8D2C4",               color: "#6b6560" },
+    email:      { bg: "rgba(94,142,166,0.12)",  border: "rgba(94,142,166,0.4)",  color: "#356a80" },
+    currency:   { bg: "rgba(184,199,106,0.12)", border: "rgba(184,199,106,0.4)", color: "#4a7a28" },
+    phone:      { bg: "rgba(94,142,166,0.12)",  border: "rgba(94,142,166,0.4)",  color: "#356a80" },
+    percentage: { bg: "rgba(242,155,107,0.12)", border: "rgba(242,155,107,0.4)", color: "#c0622a" },
+    url:        { bg: "rgba(151,107,197,0.12)", border: "rgba(151,107,197,0.4)", color: "#6b3fa0" },
 };
 
 const TypePill = ({ type }) => {

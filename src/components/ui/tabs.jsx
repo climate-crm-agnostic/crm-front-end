@@ -3,11 +3,13 @@ import { cn } from "@/lib/utils"
 
 const TabsContext = React.createContext({})
 
-const Tabs = React.forwardRef(({ className, defaultValue, onValueChange, children, ...props }, ref) => {
-    const [activeTab, setActiveTab] = React.useState(defaultValue)
+const Tabs = React.forwardRef(({ className, defaultValue, value: controlledValue, onValueChange, children, ...props }, ref) => {
+    const [internalValue, setInternalValue] = React.useState(defaultValue)
+    const isControlled = controlledValue !== undefined
+    const activeTab = isControlled ? controlledValue : internalValue
 
     const handleTabChange = (value) => {
-        setActiveTab(value);
+        if (!isControlled) setInternalValue(value);
         if (onValueChange) onValueChange(value);
     }
 

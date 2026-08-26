@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react";
-import { Mail, Trash2, Edit } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Mail, Trash2, Edit, Eye } from "lucide-react";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { Button } from "../../components/ui/button";
-import { Textarea } from "../../components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
-import { getEmailTemplates, createEmailTemplate, updateEmailTemplate, deleteEmailTemplate } from "../../services/emailTemplateService";
+import { RichTextEditor } from "../../components/RichTextEditor";
+import { MergeFieldPicker } from "../../components/MergeFieldPicker";
+import { getEmailTemplates, createEmailTemplate, updateEmailTemplate, deleteEmailTemplate, previewEmailTemplate } from "../../services/emailTemplateService";
 import Swal from 'sweetalert2';
 
 const emptyForm = { name: "", subject: "", campaign_type: "one_time", html_body: "" };
@@ -16,6 +17,12 @@ export const EmailTemplates = () => {
     const [form, setForm] = useState(emptyForm);
     const [editingId, setEditingId] = useState(null);
     const [saving, setSaving] = useState(false);
+    const [subjectCursor, setSubjectCursor] = useState(0);
+    const [preview, setPreview] = useState(null);
+    const [previewing, setPreviewing] = useState(false);
+
+    const subjectRef = useRef(null);
+    const bodyEditorRef = useRef(null);
 
     useEffect(() => {
         loadTemplates();
@@ -35,11 +42,13 @@ export const EmailTemplates = () => {
     const handleEdit = (t) => {
         setEditingId(t.id);
         setForm({ name: t.name, subject: t.subject, campaign_type: t.campaign_type, html_body: t.html_body });
+        setPreview(null);
     };
 
     const handleCancel = () => {
         setEditingId(null);
         setForm(emptyForm);
+        setPreview(null);
     };
 
     const handleSave = async () => {
@@ -71,6 +80,38 @@ export const EmailTemplates = () => {
             loadTemplates();
         } catch {
             Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to delete template — it may still be used by a campaign.', toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
+        }
+    };
+
+    // Inserts {contact.x} / {client.x} into whichever field the picker sits
+    // next to — the subject line (plain input, tracked cursor position
+    // since shadcn's Input doesn't forward a ref) or the rich text body
+    // (via RichTextEditor's own insertText, which restores its own cursor).
+    const insertIntoSubject = (token) => {
+        setForm(f => {
+            const before = f.subject.slice(0, subjectCursor);
+            const after = f.subject.slice(subjectCursor);
+            const next = `${before}${token}${after}`;
+            setSubjectCursor(before.length + token.length);
+            return { ...f, subject: next };
+        });
+        subjectRef.current?.focus();
+    };
+
+    const insertIntoBody = (token) => {
+        bodyEditorRef.current?.insertText(token);
+    };
+
+    const handlePreview = async () => {
+        if (!editingId) return;
+        setPreviewing(true);
+        try {
+            const data = await previewEmailTemplate(editingId);
+            setPreview(data);
+        } catch (err) {
+            Swal.fire({ icon: 'error', title: 'Error', text: err.message, toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
+        } finally {
+            setPreviewing(false);
         }
     };
 
@@ -108,33 +149,53 @@ export const EmailTemplates = () => {
                         </Select>
                     </div>
                     <div className="space-y-2 md:col-span-2">
-                        <Label>Subject Line</Label>
-                        <Input value={form.subject} onChange={e => setForm(f => ({ ...f, subject: e.target.value }))} placeholder="e.g. 20% off everything this week" />
+                        <div className="flex items-center justify-between">
+                            <Label>Subject Line</Label>
+                            <MergeFieldPicker onInsert={insertIntoSubject} label="Insert Variable" />
+                        </div>
+                        <Input
+                            ref={subjectRef}
+                            value={form.subject}
+                            onChange={e => { setForm(f => ({ ...f, subject: e.target.value })); setSubjectCursor(e.target.selectionStart); }}
+                            onSelect={e => setSubjectCursor(e.target.selectionStart)}
+                            placeholder="e.g. Happy Birthday {contact.first_name}!"
+                        />
                     </div>
                     <div className="space-y-2 md:col-span-2">
-                        <Label>HTML Body</Label>
-                        <Textarea
+                        <div className="flex items-center justify-between">
+                            <Label>Body</Label>
+                            <MergeFieldPicker onInsert={insertIntoBody} label="Insert Variable" />
+                        </div>
+                        <RichTextEditor
+                            key={editingId || 'new'}
+                            ref={bodyEditorRef}
                             value={form.html_body}
-                            onChange={e => setForm(f => ({ ...f, html_body: e.target.value }))}
-                            rows={8}
-                            placeholder="<p>Write the email content as HTML...</p>"
-                            className="font-mono text-xs"
+                            onChange={html => setForm(f => ({ ...f, html_body: html }))}
+                            placeholder="Write the email content — click Insert Variable to add {contact.x} or {client.x} fields..."
                         />
                         <p className="text-xs text-muted-foreground">An unsubscribe link is appended automatically — no need to add one.</p>
                     </div>
-                    {form.html_body && (
-                        <div className="space-y-2 md:col-span-2">
-                            <Label className="text-xs">Preview</Label>
-                            <div className="border rounded-md p-4 bg-white max-h-64 overflow-auto" dangerouslySetInnerHTML={{ __html: form.html_body }} />
-                        </div>
-                    )}
                 </div>
-                <div className="flex gap-2">
+
+                <div className="flex gap-2 items-center flex-wrap">
                     <Button type="button" onClick={handleSave} disabled={saving || !form.name.trim() || !form.subject.trim() || !form.html_body.trim()}>
                         {saving ? "Saving..." : editingId ? "Save Changes" : "Create Template"}
                     </Button>
                     {editingId && <Button type="button" variant="outline" onClick={handleCancel}>Cancel</Button>}
+                    {editingId && (
+                        <Button type="button" variant="outline" onClick={handlePreview} disabled={previewing}>
+                            <Eye className="h-4 w-4 mr-1.5" /> {previewing ? "Rendering..." : "Preview with Real Contact"}
+                        </Button>
+                    )}
                 </div>
+
+                {preview && (
+                    <div className="space-y-2 pt-2 border-t">
+                        <Label className="text-xs">Rendered Preview</Label>
+                        <p className="text-sm font-medium">{preview.subject}</p>
+                        <div className="border rounded-md p-4 bg-white max-h-64 overflow-auto" dangerouslySetInnerHTML={{ __html: preview.html_body }} />
+                    </div>
+                )}
             </div>
 
             <div className="bg-card p-6 rounded-lg border shadow-sm space-y-2">

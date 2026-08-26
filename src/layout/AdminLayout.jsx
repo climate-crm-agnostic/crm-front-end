@@ -19,6 +19,7 @@ const routeLabels = {
     "/chat": "Team Chat", "/team": "Teams",
     "/period": "Periods", "/goal": "Goals", "/task": "Tasks",
     "/email-template": "Email Templates", "/campaign": "Campaigns",
+    "/quotation": "Quotations",
 };
 
 function getPageTitle(pathname) {
