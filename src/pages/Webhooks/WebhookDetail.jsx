@@ -329,7 +329,7 @@ export const WebhookDetail = () => {
             text: "Changing the model will clear existing conditions. Are you sure?",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#3085d6',
+            confirmButtonColor: '#1A3A30',
             cancelButtonColor: '#d33',
             confirmButtonText: 'Yes, change it!'
         });
@@ -479,7 +479,7 @@ export const WebhookDetail = () => {
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
+            cancelButtonColor: '#1A3A30',
             confirmButtonText: 'Yes, delete it!'
         });
 

@@ -6,10 +6,10 @@ import { Copy, Terminal, Shield, Database, Layout, Webhook, ArrowLeft, Network }
 import { useNavigate } from 'react-router-dom';
 
 const METHOD_PILL = {
-    GET:    { bg: "rgba(94,106,67,0.10)",  border: "rgba(94,106,67,0.35)",  color: "#4a5535" },
+    GET:    { bg: "rgba(94,106,67,0.10)",  border: "rgba(94,106,67,0.35)",  color: "#14302A" },
     POST:   { bg: "rgba(242,155,107,0.12)", border: "rgba(242,155,107,0.4)", color: "#c0622a" },
     PUT:    { bg: "rgba(184,199,106,0.12)", border: "rgba(184,199,106,0.4)", color: "#697a28" },
-    PATCH:  { bg: "rgba(94,106,67,0.10)",  border: "rgba(94,106,67,0.35)",  color: "#4a5535" },
+    PATCH:  { bg: "rgba(94,106,67,0.10)",  border: "rgba(94,106,67,0.35)",  color: "#14302A" },
     DELETE: { bg: "rgba(192,57,43,0.10)",  border: "rgba(192,57,43,0.35)",  color: "#c0392b" },
 };
 
@@ -27,14 +27,14 @@ const EndpointBlock = ({ method, path, description, children }) => (
     <div className="p-4 rounded-lg" style={{ backgroundColor: "var(--background)", border: "1px solid var(--border)" }}>
         <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
             <MethodBadge method={method} />
-            <code className="text-sm font-mono" style={{ color: "#5E6A43" }}>{path}</code>
+            <code className="text-sm font-mono" style={{ color: "#1A3A30" }}>{path}</code>
         </div>
         {description && <p className="text-sm mb-3" style={{ color: "var(--muted-foreground)" }}>{description}</p>}
         {children}
     </div>
 );
 
-const InfoBlock = ({ title, color = "#5E6A43", items }) => (
+const InfoBlock = ({ title, color = "#1A3A30", items }) => (
     <div className="p-4 rounded-lg" style={{ backgroundColor: "var(--card)", borderLeft: `4px solid ${color}`, border: "1px solid var(--border)" }}>
         <p className="text-sm font-semibold mb-2" style={{ color: "var(--foreground)" }}>{title}</p>
         <ul className="list-disc list-inside text-sm space-y-1" style={{ color: "var(--muted-foreground)" }}>
@@ -78,7 +78,7 @@ export const ApiGuide = () => {
                     <div className="flex items-center gap-3">
                         <div className="flex h-12 w-12 items-center justify-center rounded-xl"
                             style={{ backgroundColor: "rgba(94,106,67,0.12)", border: "1px solid rgba(94,106,67,0.3)" }}>
-                            <Terminal className="h-6 w-6" style={{ color: "#5E6A43" }} />
+                            <Terminal className="h-6 w-6" style={{ color: "#1A3A30" }} />
                         </div>
                         <div>
                             <p className="text-2xl font-bold tracking-tight" style={{ color: "var(--foreground)" }}>API Integration Guide</p>
@@ -98,7 +98,7 @@ export const ApiGuide = () => {
                 <Card>
                     <CardHeader>
                         <div className="flex items-center gap-2">
-                            <Shield className="h-5 w-5" style={{ color: "#5E6A43" }} />
+                            <Shield className="h-5 w-5" style={{ color: "#1A3A30" }} />
                             <CardTitle>Authentication</CardTitle>
                         </div>
                         <CardDescription>All API requests must be authenticated using a Token-based mechanism.</CardDescription>
@@ -123,7 +123,7 @@ export const ApiGuide = () => {
                 <Card>
                     <CardHeader>
                         <div className="flex items-center gap-2">
-                            <Database className="h-5 w-5" style={{ color: "#5E6A43" }} />
+                            <Database className="h-5 w-5" style={{ color: "#1A3A30" }} />
                             <CardTitle>Resources Directory</CardTitle>
                         </div>
                         <CardDescription>Browse detailed documentation for each resource.</CardDescription>
@@ -137,7 +137,7 @@ export const ApiGuide = () => {
                                         className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium capitalize transition-colors cursor-pointer"
                                         style={{
                                             backgroundColor: activeTab === tab ? "rgba(94,106,67,0.12)" : "transparent",
-                                            color: activeTab === tab ? "#5E6A43" : "var(--muted-foreground)",
+                                            color: activeTab === tab ? "#1A3A30" : "var(--muted-foreground)",
                                             fontWeight: activeTab === tab ? 600 : 400,
                                         }}
                                         onMouseEnter={e => activeTab !== tab && (e.currentTarget.style.backgroundColor = "var(--card)")}
@@ -265,12 +265,12 @@ export const ApiGuide = () => {
                                         <CopyBlock text={`curl -X DELETE https://climatebycodex.com/api/catalogue/{uuid}/ \\\n-H "Authorization: Token YOUR_TOKEN"`} />
                                     </EndpointBlock>
                                     <p className="text-sm font-semibold mt-4" style={{ color: "var(--foreground)" }}>Base Fields Guide</p>
-                                    <InfoBlock title="Category Fields" color="#5E6A43" items={[
+                                    <InfoBlock title="Category Fields" color="#1A3A30" items={[
                                         <><code>name</code>: The name of the category.</>,
                                         <><code>description</code>: Details about the category's purpose.</>,
                                         <><code>parent</code>: UUID of a parent category to create subcategories.</>,
                                     ]} />
-                                    <InfoBlock title="Catalogue Item Fields" color="#B8C76A" items={[
+                                    <InfoBlock title="Catalogue Item Fields" color="#5ED331" items={[
                                         <><code>name</code>: The name of the product or service.</>,
                                         <><code>type</code>: product, service, or subscription.</>,
                                         <><code>base_price</code> &amp; <code>currency</code>: Standard pricing.</>,
@@ -278,7 +278,7 @@ export const ApiGuide = () => {
                                         <><code>tax_rate</code>: Default tax percentage.</>,
                                         <><code>inventory</code>: Optional link to physical stock.</>,
                                     ]} />
-                                    <InfoBlock title="Inventory Fields" color="#F29B6B" items={[
+                                    <InfoBlock title="Inventory Fields" color="#5ED331" items={[
                                         <><code>sku</code>: Unique Stock Keeping Unit for tracking.</>,
                                         <><code>quantity_on_hand</code>: Current available stock.</>,
                                         <><code>reorder_level</code>: Threshold for low stock warnings.</>,
@@ -303,14 +303,14 @@ export const ApiGuide = () => {
                                         <CopyBlock text={`{ "amount": "2300.00", "method": "bank_transfer", "paid_at": "2026-03-01T10:00:00Z", "reference": "WIRE-2026-001" }`} />
                                     </EndpointBlock>
                                     <p className="text-sm font-semibold mt-4" style={{ color: "var(--foreground)" }}>Base Fields Guide</p>
-                                    <InfoBlock title="Invoice Fields" color="#5E6A43" items={[
+                                    <InfoBlock title="Invoice Fields" color="#1A3A30" items={[
                                         <><code>client</code> &amp; <code>contact</code>: Entities responsible for the invoice.</>,
                                         <><code>status</code>: draft, sent, paid, overdue, void.</>,
                                         <><code>issue_date</code> &amp; <code>due_date</code>: Billing timelines.</>,
                                         <><code>subtotal</code>, <code>tax_amount</code>, <code>discount</code>, <code>total</code>: Auto-calculated.</>,
                                         <><code>amount_paid</code>: Total covered by registered payments.</>,
                                     ]} />
-                                    <InfoBlock title="Invoice Line Item Fields" color="#B8C76A" items={[
+                                    <InfoBlock title="Invoice Line Item Fields" color="#5ED331" items={[
                                         <><code>catalogue_item</code>: Optional reference to a predefined product/service.</>,
                                         <><code>description</code>: Specific details of what is being charged.</>,
                                         <><code>quantity</code> &amp; <code>unit_price</code>: Used to calculate line subtotal.</>,

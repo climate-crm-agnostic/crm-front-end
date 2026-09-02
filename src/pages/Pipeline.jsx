@@ -13,8 +13,8 @@ const HINT = "var(--muted-foreground)";
 const LINEN = "var(--background)";
 const OAT = "var(--card)";
 const PEBBLE = "var(--border)";
-const OLIVE = "#5E6A43";
-const APRICOT = "#F29B6B";
+const OLIVE = "#1A3A30";
+const APRICOT = "#5ED331";
 
 const TYPE_LABELS = {
     text: "Text", number: "Number", date: "Date",
@@ -624,7 +624,7 @@ export const Pipeline = () => {
                     onClick={handleCreateClick}
                     className="flex items-center gap-2 h-10 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
                     style={{ backgroundColor: OLIVE, color: LINEN }}
-                    onMouseEnter={e => e.currentTarget.style.backgroundColor = "#4a5535"}
+                    onMouseEnter={e => e.currentTarget.style.backgroundColor = "#14302A"}
                     onMouseLeave={e => e.currentTarget.style.backgroundColor = OLIVE}
                 >
                     <Plus size={16} /> New Pipeline

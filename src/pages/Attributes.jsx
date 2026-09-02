@@ -12,7 +12,7 @@ import { Plus, Trash, Edit, ChevronLeft, ChevronRight, SlidersHorizontal, GripVe
 import Swal from 'sweetalert2';
 
 const TYPE_COLORS = {
-    text:     { bg: "rgba(94,106,67,0.10)",  border: "rgba(94,106,67,0.35)",  color: "#4a5535" },
+    text:     { bg: "rgba(94,106,67,0.10)",  border: "rgba(94,106,67,0.35)",  color: "#14302A" },
     boolean:  { bg: "rgba(242,155,107,0.12)", border: "rgba(242,155,107,0.4)", color: "#c0622a" },
     list:     { bg: "rgba(184,199,106,0.12)", border: "rgba(184,199,106,0.4)", color: "#697a28" },
     number:   { bg: "rgba(216,210,196,0.4)",  border: "var(--border)",               color: "var(--muted-foreground)" },
@@ -67,7 +67,7 @@ const SortableAttrCard = ({ attr, onEdit, onDelete }) => {
             className="group/item flex items-center justify-between p-3 rounded-lg transition-all"
             onMouseEnter={e => {
                 if (!isDragging) {
-                    e.currentTarget.style.borderColor = "#5E6A43";
+                    e.currentTarget.style.borderColor = "#1A3A30";
                     e.currentTarget.style.backgroundColor = "#ede7d9";
                 }
             }}
@@ -94,7 +94,7 @@ const SortableAttrCard = ({ attr, onEdit, onDelete }) => {
                     minWidth: "18px", height: "18px",
                     backgroundColor: "rgba(94,106,67,0.12)",
                     border: "1px solid rgba(94,106,67,0.25)",
-                    color: "#5E6A43",
+                    color: "#1A3A30",
                     padding: "0 3px",
                 }}
             >
@@ -120,7 +120,7 @@ const SortableAttrCard = ({ attr, onEdit, onDelete }) => {
                 <button
                     onClick={() => onEdit(attr)}
                     className="flex h-7 w-7 items-center justify-center rounded-md transition-colors cursor-pointer"
-                    style={{ color: "#5E6A43" }}
+                    style={{ color: "#1A3A30" }}
                     onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(94,106,67,0.1)"}
                     onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
                     title="Edit"
@@ -212,7 +212,7 @@ export const Attributes = () => {
             text: "You won't be able to revert this!",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#5E6A43',
+            confirmButtonColor: '#1A3A30',
             cancelButtonColor: 'var(--muted-foreground)',
             confirmButtonText: 'Yes, delete it!'
         });
@@ -281,21 +281,21 @@ export const Attributes = () => {
                         className="flex h-10 w-10 items-center justify-center rounded-lg"
                         style={{ backgroundColor: "rgba(94,106,67,0.12)", border: "1px solid rgba(94,106,67,0.3)" }}
                     >
-                        <SlidersHorizontal className="h-5 w-5" style={{ color: "#5E6A43" }} />
+                        <SlidersHorizontal className="h-5 w-5" style={{ color: "#1A3A30" }} />
                     </div>
                     <div>
                         <p className="text-base font-semibold uppercase tracking-wide" style={{ color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
                             Core Attributes Management
                         </p>
                         <p className="text-xs flex items-center gap-1.5 mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-                            <span className="h-1.5 w-1.5 rounded-full animate-pulse inline-block" style={{ backgroundColor: "#5E6A43" }} />
+                            <span className="h-1.5 w-1.5 rounded-full animate-pulse inline-block" style={{ backgroundColor: "#1A3A30" }} />
                             Define and customize fields for your core system entities. Drag cards to reorder.
                         </p>
                     </div>
                 </div>
                 <span
                     className="text-xs font-semibold uppercase tracking-widest px-3 py-1 rounded-full"
-                    style={{ backgroundColor: "rgba(94,106,67,0.10)", border: "1px solid rgba(94,106,67,0.3)", color: "#5E6A43" }}
+                    style={{ backgroundColor: "rgba(94,106,67,0.10)", border: "1px solid rgba(94,106,67,0.3)", color: "#1A3A30" }}
                 >
                     {entities.length} Modules
                 </span>
@@ -307,7 +307,7 @@ export const Attributes = () => {
                 <button
                     onClick={() => document.getElementById('attr-scroll-container').scrollBy({ left: -420, behavior: 'smooth' })}
                     className="absolute left-3 top-1/2 -translate-y-1/2 z-20 h-9 w-9 flex items-center justify-center rounded-full hidden md:flex"
-                    style={{ backgroundColor: "var(--background)", border: "1px solid var(--border)", color: "#5E6A43", boxShadow: "0 2px 8px rgba(0,0,0,0.10)" }}
+                    style={{ backgroundColor: "var(--background)", border: "1px solid var(--border)", color: "#1A3A30", boxShadow: "0 2px 8px rgba(0,0,0,0.10)" }}
                 >
                     <ChevronLeft size={16} />
                 </button>
@@ -316,7 +316,7 @@ export const Attributes = () => {
                 <button
                     onClick={() => document.getElementById('attr-scroll-container').scrollBy({ left: 420, behavior: 'smooth' })}
                     className="absolute right-3 top-1/2 -translate-y-1/2 z-20 h-9 w-9 flex items-center justify-center rounded-full hidden md:flex"
-                    style={{ backgroundColor: "var(--background)", border: "1px solid var(--border)", color: "#5E6A43", boxShadow: "0 2px 8px rgba(0,0,0,0.10)" }}
+                    style={{ backgroundColor: "var(--background)", border: "1px solid var(--border)", color: "#1A3A30", boxShadow: "0 2px 8px rgba(0,0,0,0.10)" }}
                 >
                     <ChevronRight size={16} />
                 </button>
@@ -342,7 +342,7 @@ export const Attributes = () => {
                                 {/* Column header */}
                                 <div
                                     className="px-4 py-3 flex justify-between items-center shrink-0"
-                                    style={{ backgroundColor: "#5E6A43", borderBottom: "1px solid #4a5535" }}
+                                    style={{ backgroundColor: "#1A3A30", borderBottom: "1px solid #14302A" }}
                                 >
                                     <div className="flex items-center gap-2.5">
                                         <div

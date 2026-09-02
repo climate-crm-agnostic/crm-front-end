@@ -27,7 +27,7 @@ export const FeatureGate = ({ feature, children }) => {
         className="flex h-16 w-16 items-center justify-center rounded-2xl shadow-md"
         style={{ backgroundColor: "#F5F0E8", border: "1px solid var(--border)" }}
       >
-        <Lock className="h-7 w-7" style={{ color: "#5E6A43" }} />
+        <Lock className="h-7 w-7" style={{ color: "#1A3A30" }} />
       </div>
 
       <div className="space-y-2 max-w-sm">
@@ -51,12 +51,12 @@ export const FeatureGate = ({ feature, children }) => {
         href="mailto:support@codexacademy.co?subject=Plan Upgrade Request"
         className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200"
         style={{
-          backgroundColor: "#5E6A43",
+          backgroundColor: "#1A3A30",
           color: "var(--background)",
           textDecoration: "none",
         }}
-        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#4a5535")}
-        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#5E6A43")}
+        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#14302A")}
+        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#1A3A30")}
       >
         Contact us to upgrade
       </a>

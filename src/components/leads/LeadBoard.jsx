@@ -185,7 +185,7 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
                     <Link
                         to="/pipeline"
                         className="px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
-                        style={{ backgroundColor: "#5E6A43", color: "var(--background)" }}
+                        style={{ backgroundColor: "#1A3A30", color: "var(--background)" }}
                     >
                         Manage Pipelines
                     </Link>
@@ -239,7 +239,7 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
                         checked={myLeadsOnly}
                         onChange={(e) => setMyLeadsOnly(e.target.checked)}
                         className="h-3.5 w-3.5 rounded cursor-pointer"
-                        style={{ accentColor: "#5E6A43" }}
+                        style={{ accentColor: "#1A3A30" }}
                     />
                     <span className="text-xs font-semibold" style={{ color: "var(--foreground)" }}>My Leads</span>
                 </label>
@@ -265,14 +265,14 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
             <button
                 onClick={scrollLeft}
                 className="absolute left-2 top-1/2 z-20 h-9 w-9 flex items-center justify-center rounded-full"
-                style={{ backgroundColor: "var(--background)", border: "1px solid var(--border)", color: "#5E6A43", boxShadow: "0 2px 8px rgba(0,0,0,0.10)" }}
+                style={{ backgroundColor: "var(--background)", border: "1px solid var(--border)", color: "#1A3A30", boxShadow: "0 2px 8px rgba(0,0,0,0.10)" }}
             >
                 <ChevronLeft size={18} />
             </button>
             <button
                 onClick={scrollRight}
                 className="absolute right-2 top-1/2 z-20 h-9 w-9 flex items-center justify-center rounded-full"
-                style={{ backgroundColor: "var(--background)", border: "1px solid var(--border)", color: "#5E6A43", boxShadow: "0 2px 8px rgba(0,0,0,0.10)" }}
+                style={{ backgroundColor: "var(--background)", border: "1px solid var(--border)", color: "#1A3A30", boxShadow: "0 2px 8px rgba(0,0,0,0.10)" }}
             >
                 <ChevronRight size={18} />
             </button>
@@ -284,7 +284,7 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
                 style={{ scrollbarWidth: "thin", scrollbarColor: "var(--border) transparent" }}
             >
                 {stages.map((stage, index) => {
-                    const stageColor = stage.color || "#5E6A43";
+                    const stageColor = stage.color || "#1A3A30";
                     const stageLeads = filteredLeads.filter(l => {
                         const matchesStage = l.stage === stage.name || l.stage_id === stage.id;
                         if (index === 0 && !l.stage && !l.stage_id) return true;
@@ -328,7 +328,7 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
                                     style={{
                                         backgroundColor: "rgba(94,106,67,0.12)",
                                         border: "1px solid rgba(94,106,67,0.25)",
-                                        color: "#5E6A43",
+                                        color: "#1A3A30",
                                     }}
                                 >
                                     {stageLeads.length}
@@ -364,7 +364,7 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
                                     <button
                                         onClick={() => showMore(stage.name)}
                                         className="w-full py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
-                                        style={{ border: "1px dashed var(--border)", color: "#5E6A43", backgroundColor: "var(--card)" }}
+                                        style={{ border: "1px dashed var(--border)", color: "#1A3A30", backgroundColor: "var(--card)" }}
                                     >
                                         Load {Math.min(remaining, LEADS_PAGE_SIZE)} more ({remaining} left)
                                     </button>

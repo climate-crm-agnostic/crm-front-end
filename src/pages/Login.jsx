@@ -85,7 +85,7 @@ export const Login = ({ className, ...props }) => {
                 </h1>
                 <p className="text-sm mt-1.5 text-muted-foreground">
                   Sign in to your{" "}
-                  <span className="font-bold" style={{ color: "#4F8071" }}>CodeX CRM</span>{" "}
+                  <span className="font-bold" style={{ color: "#5ED331" }}>CodeX CRM</span>{" "}
                   workspace
                 </p>
               </div>
@@ -158,13 +158,13 @@ export const Login = ({ className, ...props }) => {
                   disabled={loading}
                   className="w-full mt-1 h-11 rounded-md font-semibold text-sm transition-all duration-200 active:scale-[0.99] flex items-center justify-center gap-2 shadow-sm"
                   style={{
-                    backgroundColor: loading ? "#d97c4a" : "var(--primary)",
+                    backgroundColor: loading ? "#34741B" : "var(--primary)",
                     color: "var(--primary-foreground)",
                     fontFamily: '"Source Sans 3", Arial, sans-serif',
                     letterSpacing: "0.02em",
                     cursor: loading ? "not-allowed" : "pointer",
                   }}
-                  onMouseEnter={e => !loading && (e.currentTarget.style.backgroundColor = "#d97c4a")}
+                  onMouseEnter={e => !loading && (e.currentTarget.style.backgroundColor = "#34741B")}
                   onMouseLeave={e => !loading && (e.currentTarget.style.backgroundColor = "var(--primary)")}
                 >
                   {loading ? (
@@ -225,13 +225,13 @@ export const Login = ({ className, ...props }) => {
                   disabled={loading}
                   className="w-full mt-1 h-11 rounded-md font-semibold text-sm transition-all duration-200 active:scale-[0.99] flex items-center justify-center gap-2 shadow-sm"
                   style={{
-                    backgroundColor: loading ? "#d97c4a" : "var(--primary)",
+                    backgroundColor: loading ? "#34741B" : "var(--primary)",
                     color: "var(--primary-foreground)",
                     fontFamily: '"Source Sans 3", Arial, sans-serif',
                     letterSpacing: "0.02em",
                     cursor: loading ? "not-allowed" : "pointer",
                   }}
-                  onMouseEnter={e => !loading && (e.currentTarget.style.backgroundColor = "#d97c4a")}
+                  onMouseEnter={e => !loading && (e.currentTarget.style.backgroundColor = "#34741B")}
                   onMouseLeave={e => !loading && (e.currentTarget.style.backgroundColor = "var(--primary)")}
                 >
                   {loading ? (

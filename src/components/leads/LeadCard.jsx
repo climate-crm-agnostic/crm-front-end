@@ -38,7 +38,7 @@ export const LeadCard = ({ lead, salesUsers = [], clientsById = {}, onDragStart,
                     fontFamily: '"Source Sans 3", Arial, sans-serif',
                 }}
                 onMouseEnter={e => {
-                    e.currentTarget.style.borderColor = "#5E6A43";
+                    e.currentTarget.style.borderColor = "#1A3A30";
                     e.currentTarget.style.boxShadow = "0 4px 12px rgba(94,106,67,0.10)";
                     e.currentTarget.style.transform = "translateY(-1px)";
                 }}
@@ -63,7 +63,7 @@ export const LeadCard = ({ lead, salesUsers = [], clientsById = {}, onDragStart,
                 >
                     <div
                         className="h-4 w-4 rounded-full flex items-center justify-center text-[7px] font-black shrink-0"
-                        style={{ backgroundColor: "#5E6A43", color: "var(--background)" }}
+                        style={{ backgroundColor: "#1A3A30", color: "var(--background)" }}
                     >
                         {responsibleName.charAt(0).toUpperCase()}
                     </div>

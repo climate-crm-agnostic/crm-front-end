@@ -90,7 +90,7 @@ export const AttributeForm = ({ entity, onSubmit, onCancel, isLoading, initialDa
                     style={{ ...inputClass, opacity: isEdit ? 0.6 : 1, cursor: isEdit ? "not-allowed" : "text" }}
                     placeholder="e.g. industry_sector"
                     disabled={isEdit}
-                    onFocus={e => !isEdit && (e.target.style.borderColor = "#5E6A43")}
+                    onFocus={e => !isEdit && (e.target.style.borderColor = "#1A3A30")}
                     onBlur={e => e.target.style.borderColor = "var(--border)"}
                 />
                 {errors.name && <span style={{ color: "#c0392b", fontSize: "11px" }}>{errors.name.message}</span>}
@@ -106,7 +106,7 @@ export const AttributeForm = ({ entity, onSubmit, onCancel, isLoading, initialDa
                     {...register("label", { required: "Label is required" })}
                     style={inputClass}
                     placeholder="e.g. Industry Sector"
-                    onFocus={e => e.target.style.borderColor = "#5E6A43"}
+                    onFocus={e => e.target.style.borderColor = "#1A3A30"}
                     onBlur={e => e.target.style.borderColor = "var(--border)"}
                 />
                 {errors.label && <span style={{ color: "#c0392b", fontSize: "11px" }}>{errors.label.message}</span>}
@@ -120,7 +120,7 @@ export const AttributeForm = ({ entity, onSubmit, onCancel, isLoading, initialDa
                     min="1"
                     {...register("order", { required: "Order is required", valueAsNumber: true, min: { value: 1, message: "Minimum value is 1" } })}
                     style={inputClass}
-                    onFocus={e => e.target.style.borderColor = "#5E6A43"}
+                    onFocus={e => e.target.style.borderColor = "#1A3A30"}
                     onBlur={e => e.target.style.borderColor = "var(--border)"}
                 />
                 {errors.order && <span style={{ color: "#c0392b", fontSize: "11px" }}>{errors.order.message}</span>}
@@ -155,7 +155,7 @@ export const AttributeForm = ({ entity, onSubmit, onCancel, isLoading, initialDa
                         {...register("list_values", { required: "List options are required" })}
                         style={{ ...inputClass, height: "80px", resize: "vertical" }}
                         placeholder="Option 1, Option 2, Option 3"
-                        onFocus={e => e.target.style.borderColor = "#5E6A43"}
+                        onFocus={e => e.target.style.borderColor = "#1A3A30"}
                         onBlur={e => e.target.style.borderColor = "var(--border)"}
                     />
                     {errors.list_values && <span style={{ color: "#c0392b", fontSize: "11px" }}>{errors.list_values.message}</span>}
@@ -169,7 +169,7 @@ export const AttributeForm = ({ entity, onSubmit, onCancel, isLoading, initialDa
                     {...register("description")}
                     style={{ ...inputClass, height: "72px", resize: "vertical" }}
                     placeholder="Describe what this attribute is for..."
-                    onFocus={e => e.target.style.borderColor = "#5E6A43"}
+                    onFocus={e => e.target.style.borderColor = "#1A3A30"}
                     onBlur={e => e.target.style.borderColor = "var(--border)"}
                 />
             </div>
@@ -180,7 +180,7 @@ export const AttributeForm = ({ entity, onSubmit, onCancel, isLoading, initialDa
                     type="checkbox"
                     id="is_required"
                     {...register("is_required")}
-                    style={{ accentColor: "#5E6A43", width: "14px", height: "14px", cursor: "pointer" }}
+                    style={{ accentColor: "#1A3A30", width: "14px", height: "14px", cursor: "pointer" }}
                 />
                 <label htmlFor="is_required" style={{ fontSize: "13px", fontWeight: 500, color: "var(--foreground)", cursor: "pointer" }}>
                     Required Field
@@ -194,7 +194,7 @@ export const AttributeForm = ({ entity, onSubmit, onCancel, isLoading, initialDa
                         type="checkbox"
                         id="is_unique"
                         {...register("is_unique")}
-                        style={{ accentColor: "#5E6A43", width: "14px", height: "14px", cursor: "pointer" }}
+                        style={{ accentColor: "#1A3A30", width: "14px", height: "14px", cursor: "pointer" }}
                     />
                     <label htmlFor="is_unique" style={{ fontSize: "13px", fontWeight: 500, color: "var(--foreground)", cursor: "pointer" }}>
                         Unique — no two leads can share this value
@@ -219,9 +219,9 @@ export const AttributeForm = ({ entity, onSubmit, onCancel, isLoading, initialDa
                     type="submit"
                     disabled={isLoading}
                     className="h-9 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
-                    style={{ backgroundColor: isLoading ? "#4a5535" : "#5E6A43", color: "var(--background)", opacity: isLoading ? 0.7 : 1 }}
-                    onMouseEnter={e => !isLoading && (e.currentTarget.style.backgroundColor = "#4a5535")}
-                    onMouseLeave={e => !isLoading && (e.currentTarget.style.backgroundColor = "#5E6A43")}
+                    style={{ backgroundColor: isLoading ? "#14302A" : "#1A3A30", color: "var(--background)", opacity: isLoading ? 0.7 : 1 }}
+                    onMouseEnter={e => !isLoading && (e.currentTarget.style.backgroundColor = "#14302A")}
+                    onMouseLeave={e => !isLoading && (e.currentTarget.style.backgroundColor = "#1A3A30")}
                 >
                     {isLoading ? 'Saving...' : 'Save Attribute'}
                 </button>

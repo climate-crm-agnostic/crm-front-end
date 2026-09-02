@@ -18,14 +18,14 @@ const fetchCount = async (endpoint) => {
 
 // Brand Manual accent configs per card
 const CARD_ACCENTS = {
-    Leads:    { bar: "#F29B6B", badge: { bg: "#FFDCC8", text: "var(--foreground)" }, link: "#F29B6B", icon: { bg: "#F29B6B" } },
-    Clients:  { bar: "#5E6A43", badge: { bg: "#e8edde", text: "#5E6A43" }, link: "#5E6A43", icon: { bg: "#5E6A43" } },
-    Invoices: { bar: "#B8C76A", badge: { bg: "#f0f4dc", text: "#5E6A43" }, link: "#8f9a3e", icon: { bg: "#B8C76A" } },
+    Leads:    { bar: "#5ED331", badge: { bg: "#E8F7E0", text: "var(--foreground)" }, link: "#5ED331", icon: { bg: "#5ED331" } },
+    Clients:  { bar: "#1A3A30", badge: { bg: "#E7F8E0", text: "#1A3A30" }, link: "#1A3A30", icon: { bg: "#1A3A30" } },
+    Invoices: { bar: "#4CC02A", badge: { bg: "#E7F8E0", text: "#1A3A30" }, link: "#34741B", icon: { bg: "#4CC02A" } },
     Assets:   { bar: "var(--border)", badge: { bg: "var(--card)", text: "var(--muted-foreground)" }, link: "var(--muted-foreground)", icon: { bg: "var(--muted-foreground)" } },
 };
 
 const TASK_COLORS = {
-    lead:    { dot: "#5E6A43", bg: "#e8edde", text: "#5E6A43", label: "Lead" },
+    lead:    { dot: "#1A3A30", bg: "#E7F8E0", text: "#1A3A30", label: "Lead" },
     client:  { dot: "#3B82F6", bg: "#dbeafe", text: "#1d4ed8", label: "Client" },
     service: { dot: "#7C3AED", bg: "#ede9fe", text: "#5b21b6", label: "Service" },
 };
@@ -314,7 +314,7 @@ const ChettPromoCard = ({ navigate }) => (
     >
         <div className="flex items-center gap-4 min-w-0">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg" style={{ backgroundColor: "rgba(184,199,106,0.18)", border: "1px solid rgba(184,199,106,0.35)" }}>
-                <Bot className="h-5 w-5" style={{ color: "#B8C76A" }} />
+                <Bot className="h-5 w-5" style={{ color: "#5ED331" }} />
             </div>
             <div className="min-w-0">
                 <p className="text-sm font-semibold italic" style={{ color: "var(--background)", fontFamily: '"Cormorant Garamond", Georgia, serif' }}>
@@ -327,7 +327,7 @@ const ChettPromoCard = ({ navigate }) => (
         </div>
         <button
             className="shrink-0 h-9 px-4 rounded-lg text-sm font-semibold cursor-pointer"
-            style={{ backgroundColor: "#F29B6B", color: "var(--foreground)" }}
+            style={{ backgroundColor: "#5ED331", color: "var(--foreground)" }}
             onClick={(e) => { e.stopPropagation(); navigate("/chett-ai"); }}
         >
             Open Chett
@@ -335,7 +335,7 @@ const ChettPromoCard = ({ navigate }) => (
     </div>
 );
 
-const STAGE_COLORS = ["#B8C76A", "#F29B6B", "#5E6A43", "var(--border)", "var(--muted-foreground)", "#8f9a3e"];
+const STAGE_COLORS = ["#5ED331", "#4CC02A", "#1A3A30", "var(--border)", "var(--muted-foreground)", "#34741B"];
 
 const LeadsByPipeline = ({ pipelineName, totalLeads, stageCounts, byResponsible, loading, navigate }) => {
     const maxCount = Math.max(1, ...stageCounts.map((s) => s.count));
@@ -345,7 +345,7 @@ const LeadsByPipeline = ({ pipelineName, totalLeads, stageCounts, byResponsible,
                 <p className="text-sm font-bold text-foreground">{pipelineName || "—"}</p>
                 <span
                     className="text-xs font-semibold px-2 py-0.5 rounded-full"
-                    style={{ backgroundColor: "#e8edde", border: "1px solid #B8C76A", color: "#5E6A43" }}
+                    style={{ backgroundColor: "#E7F8E0", border: "1px solid #5ED331", color: "#1A3A30" }}
                 >
                     {totalLeads} lead{totalLeads === 1 ? "" : "s"}
                 </span>
@@ -585,9 +585,9 @@ export const Dashboard = () => {
                         </h1>
                         <span
                             className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-widest rounded-full px-2 py-0.5"
-                            style={{ backgroundColor: "#e8edde", border: "1px solid #B8C76A", color: "#5E6A43" }}
+                            style={{ backgroundColor: "#E7F8E0", border: "1px solid #5ED331", color: "#1A3A30" }}
                         >
-                            <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ backgroundColor: "#B8C76A" }} />
+                            <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ backgroundColor: "#5ED331" }} />
                             Live
                         </span>
                     </div>

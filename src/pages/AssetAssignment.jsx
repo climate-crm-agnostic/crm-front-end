@@ -67,7 +67,7 @@ export const AssetAssignment = () => {
             text: "You won't be able to revert this!",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#3085d6',
+            confirmButtonColor: '#1A3A30',
             cancelButtonColor: '#d33',
             confirmButtonText: 'Yes, delete it!'
         });

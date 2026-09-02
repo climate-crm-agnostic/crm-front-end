@@ -16,9 +16,9 @@ import {
 } from "../components/ui/dropdown-menu";
 
 const STATUS_COLORS = {
-    paid: "#B8C76A",
+    paid: "#5ED331",
     pending: "var(--border)",
-    overdue: "#F29B6B",
+    overdue: "#c0392b",
 };
 
 const STATUS_TABS = [
@@ -130,7 +130,7 @@ export const Invoice = () => {
             text: "You won't be able to revert this!",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#3085d6',
+            confirmButtonColor: '#1A3A30',
             cancelButtonColor: '#d33',
             confirmButtonText: 'Yes, delete it!'
         });

@@ -60,8 +60,8 @@ const XIcon = () => (
 
 const Avatar = ({ username, size = 28 }) => {
     const initials = username?.slice(0, 2).toUpperCase() || '?';
-    const colors = ['#5E6A43', '#8B7355', '#4A6741', '#7B6652', '#3D5C3A'];
-    const color = colors[username?.charCodeAt(0) % colors.length] || '#5E6A43';
+    const colors = ['#1A3A30', '#8B7355', '#4A6741', '#7B6652', '#3D5C3A'];
+    const color = colors[username?.charCodeAt(0) % colors.length] || '#1A3A30';
     return (
         <div style={{
             width: size, height: size, borderRadius: '50%',

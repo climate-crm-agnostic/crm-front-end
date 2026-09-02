@@ -22,10 +22,10 @@ const HINT = "var(--muted-foreground)";
 const LINEN = "var(--background)";
 const OAT = "var(--card)";
 const PEBBLE = "var(--border)";
-const OLIVE = "#5E6A43";
+const OLIVE = "#1A3A30";
 
 const TYPE_COLORS = {
-    text:     { bg: "rgba(94,106,67,0.10)",  border: "rgba(94,106,67,0.35)",  color: "#4a5535" },
+    text:     { bg: "rgba(94,106,67,0.10)",  border: "rgba(94,106,67,0.35)",  color: "#14302A" },
     boolean:  { bg: "rgba(242,155,107,0.12)", border: "rgba(242,155,107,0.4)", color: "#c0622a" },
     list:     { bg: "rgba(184,199,106,0.12)", border: "rgba(184,199,106,0.4)", color: "#697a28" },
     number:   { bg: "rgba(216,210,196,0.4)",  border: "var(--border)",               color: "var(--muted-foreground)" },

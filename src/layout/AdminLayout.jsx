@@ -89,7 +89,7 @@ function ChatToasts() {
                         pointerEvents: 'auto', cursor: 'pointer',
                         background: 'var(--card)',
                         border: '1px solid var(--border)',
-                        borderLeft: '3px solid #5E6A43',
+                        borderLeft: '3px solid #1A3A30',
                         borderRadius: 10,
                         padding: '10px 14px',
                         boxShadow: '0 4px 20px rgba(0,0,0,0.14)',

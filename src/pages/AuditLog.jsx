@@ -5,7 +5,7 @@ import { getAuditLogs } from "@/services/auditLogService";
 import { DateInput } from "@/components/ui/date-input";
 
 const ACTION_STYLE = {
-    CREATE: { bg: "rgba(94,106,67,0.12)",   border: "rgba(94,106,67,0.4)",   text: "#4a5535" },
+    CREATE: { bg: "rgba(94,106,67,0.12)",   border: "rgba(94,106,67,0.4)",   text: "#14302A" },
     UPDATE: { bg: "rgba(242,155,107,0.12)", border: "rgba(242,155,107,0.4)", text: "#c0622a" },
     DELETE: { bg: "rgba(192,98,42,0.10)",   border: "rgba(192,98,42,0.4)",   text: "#9b3a10" },
 };
@@ -43,7 +43,7 @@ const ChangesCell = ({ changes }) => {
             <button
                 onClick={() => setOpen(v => !v)}
                 className="flex items-center gap-1 text-xs font-medium transition-colors"
-                style={{ color: "#5E6A43" }}
+                style={{ color: "#1A3A30" }}
             >
                 {keys.length} field{keys.length > 1 ? "s" : ""}
                 {open ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
@@ -63,7 +63,7 @@ const ChangesCell = ({ changes }) => {
                                     <span style={{ color: "#9b3a10", textDecoration: "line-through" }}>{String(before).slice(0, 60)}</span>
                                 )}
                                 {before !== null && <span style={{ color: "var(--muted-foreground)" }}> → </span>}
-                                <span style={{ color: "#4a5535" }}>{String(after ?? "").slice(0, 80)}</span>
+                                <span style={{ color: "#14302A" }}>{String(after ?? "").slice(0, 80)}</span>
                             </div>
                         );
                     })}
@@ -114,7 +114,7 @@ export const AuditLog = () => {
                         className="flex h-10 w-10 items-center justify-center rounded-lg"
                         style={{ backgroundColor: "rgba(94,106,67,0.12)", border: "1px solid rgba(94,106,67,0.3)" }}
                     >
-                        <ClipboardList className="h-5 w-5" style={{ color: "#5E6A43" }} />
+                        <ClipboardList className="h-5 w-5" style={{ color: "#1A3A30" }} />
                     </div>
                     <div>
                         <p className="text-base font-semibold" style={{ color: "var(--foreground)" }}>Audit Log</p>
@@ -158,9 +158,9 @@ export const AuditLog = () => {
                 <button
                     type="submit"
                     className="h-9 px-4 rounded-md text-sm font-semibold transition-colors"
-                    style={{ backgroundColor: "#5E6A43", color: "var(--background)" }}
-                    onMouseEnter={e => e.currentTarget.style.backgroundColor = "#4a5535"}
-                    onMouseLeave={e => e.currentTarget.style.backgroundColor = "#5E6A43"}
+                    style={{ backgroundColor: "#1A3A30", color: "var(--background)" }}
+                    onMouseEnter={e => e.currentTarget.style.backgroundColor = "#14302A"}
+                    onMouseLeave={e => e.currentTarget.style.backgroundColor = "#1A3A30"}
                 >
                     Filter
                 </button>

@@ -89,7 +89,7 @@ export const Catalogueitem = () => {
             text: "You won't be able to revert this!",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#3085d6',
+            confirmButtonColor: '#1A3A30',
             cancelButtonColor: '#d33',
             confirmButtonText: 'Yes, delete it!'
         });
@@ -143,7 +143,7 @@ export const Catalogueitem = () => {
                     <button
                         onClick={handleExportExcel}
                         className="flex items-center gap-2 h-9 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
-                        style={{ backgroundColor: "var(--card)", border: "1px solid #5E6A43", color: "#5E6A43" }}
+                        style={{ backgroundColor: "var(--card)", border: "1px solid #1A3A30", color: "#1A3A30" }}
                         onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(94,106,67,0.15)"}
                         onMouseLeave={e => e.currentTarget.style.backgroundColor = "var(--card)"}
                     >
@@ -173,7 +173,7 @@ export const Catalogueitem = () => {
                 <button
                     onClick={() => navigate("/category")}
                     className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full cursor-pointer transition-colors"
-                    style={{ color: "#5E6A43" }}
+                    style={{ color: "#1A3A30" }}
                     onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(94,106,67,0.08)"}
                     onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
                 >

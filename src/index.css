@@ -7,31 +7,31 @@
   /* --------- Brand Manual Tokens -------------- */
 
   /* Surfaces */
-  --color-brand-linen: #FBF7EF;
-  --color-brand-oat: #F2EBDD;
+  --color-brand-linen: #FFFFFF;
+  --color-brand-oat: #F5F8F6;
 
   /* Structure */
-  --color-brand-pebble: #D8D2C4;
+  --color-brand-pebble: #DCE5DF;
 
   /* Active States */
-  --color-brand-citron: #B8C76A;
-  --color-brand-citron-dark: #8f9a3e;
+  --color-brand-citron: #5ED331;
+  --color-brand-citron-dark: #34741B;
 
   /* Primary CTA */
-  --color-brand-apricot: #F29B6B;
-  --color-brand-apricot-dark: #d97c4a;
+  --color-brand-apricot: #5ED331;
+  --color-brand-apricot-dark: #34741B;
 
   /* Soft Callouts */
-  --color-brand-peach-wash: #FFDCC8;
+  --color-brand-peach-wash: #E7F8E0;
 
   /* Secondary CTA / Nav */
-  --color-brand-olive: #5E6A43;
-  --color-brand-olive-light: #7a8a56;
-  --color-brand-olive-pale: #e8edde;
+  --color-brand-olive: #1A3A30;
+  --color-brand-olive-light: #2C5C4C;
+  --color-brand-olive-pale: #E7F8E0;
 
   /* Text */
-  --color-brand-ink: #2E2A26;
-  --color-brand-ink-muted: #6b6560;
+  --color-brand-ink: #1A3A30;
+  --color-brand-ink-muted: #5B6B63;
 
   /* Font families */
   --font-heading: "Cormorant Garamond", Georgia, serif;
@@ -40,219 +40,219 @@
 
   /* --------- Colors Codex -------------- */
 
-  --color-codex-primary: #4F8071;
+  --color-codex-primary: #5ED331;
 
-  --color-codex-secondary: #1E242A;
+  --color-codex-secondary: #1A3A30;
 
-  --color-codex-terciario: #396bc2;
+  --color-codex-terciario: #4CC02A;
 
-  --color-codex-cuaternario: #F6F4EF;
+  --color-codex-cuaternario: #FFFFFF;
 
 
-  --color-codex-fondo-primary: #4F8071;
+  --color-codex-fondo-primary: #5ED331;
 
-  --color-codex-fondo-primary-variante1: #ddeae4;
-  --color-codex-fondo-primary-variante2: #bad5cb;
-  --color-codex-fondo-primary-variante3: #3d6459;
-  --color-codex-fondo-primary-variante4: #335249;
-  --color-codex-fondo-secondary: #1E242A;
+  --color-codex-fondo-primary-variante1: #E7F8E0;
+  --color-codex-fondo-primary-variante2: #B8EBA2;
+  --color-codex-fondo-primary-variante3: #429422;
+  --color-codex-fondo-primary-variante4: #34741B;
+  --color-codex-fondo-secondary: #1A3A30;
   /* Black */
-  --color-codex-fondo-secondary-variante1: #e2e9eb;
-  --color-codex-fondo-secondary-variante2: #c7d4da;
-  --color-codex-fondo-secondary-variante3: #577283;
-  --color-codex-fondo-secondary-variante4: #4b606f;
-  --color-codex-fondo-secondary-variante5: #343c45;
-  --color-codex-fondo-terciario: #396bc2;
+  --color-codex-fondo-secondary-variante1: #E8EBEA;
+  --color-codex-fondo-secondary-variante2: #BAC4C1;
+  --color-codex-fondo-secondary-variante3: #6A7B78;
+  --color-codex-fondo-secondary-variante4: #536B64;
+  --color-codex-fondo-secondary-variante5: #314E45;
+  --color-codex-fondo-terciario: #4CC02A;
   /* Blue */
-  --color-codex-fondo-terciario-variante1: #e0eef9;
-  --color-codex-fondo-terciario-variante2: #c8e1f5;
-  --color-codex-fondo-terciario-variante3: #417dcf;
-  --color-codex-fondo-terciario-variante4: #33569a;
-  --color-codex-fondo-terciario-variante5: #2d497b;
-  --color-codex-fondo-terciario-variante6: #202e4b;
-  --color-codex-fondo-cuaternario: #F6F4EF;
+  --color-codex-fondo-terciario-variante1: #E4F6DF;
+  --color-codex-fondo-terciario-variante2: #C0E9B4;
+  --color-codex-fondo-terciario-variante3: #41A324;
+  --color-codex-fondo-terciario-variante4: #317D1B;
+  --color-codex-fondo-terciario-variante5: #266015;
+  --color-codex-fondo-terciario-variante6: #1B430F;
+  --color-codex-fondo-cuaternario: #FFFFFF;
   /* Gray Coffee */
-  --color-codex-fondo-cuaternario-variante1: #f0ede4;
-  --color-codex-fondo-cuaternario-variante2: #e0d9c8;
-  --color-codex-fondo-cuaternario-variante3: #a78c68;
-  --color-codex-fondo-cuaternario-variante4: #9a7b5c;
+  --color-codex-fondo-cuaternario-variante1: #F2F5F3;
+  --color-codex-fondo-cuaternario-variante2: #D9E0DC;
+  --color-codex-fondo-cuaternario-variante3: #8A9A93;
+  --color-codex-fondo-cuaternario-variante4: #6B7A74;
 
-  --color-codex-cards-primary: #4F8071;
+  --color-codex-cards-primary: #5ED331;
   /* Green */
-  --color-codex-cards-primary-variante1: #ddeae4;
-  --color-codex-cards-primary-variante2: #bad5cb;
-  --color-codex-cards-primary-variante3: #3d6459;
-  --color-codex-cards-primary-variante4: #335249;
-  --color-codex-cards-secondary: #1E242A;
+  --color-codex-cards-primary-variante1: #E7F8E0;
+  --color-codex-cards-primary-variante2: #B8EBA2;
+  --color-codex-cards-primary-variante3: #429422;
+  --color-codex-cards-primary-variante4: #34741B;
+  --color-codex-cards-secondary: #1A3A30;
   /* Black */
-  --color-codex-cards-secondary-variante1: #e2e9eb;
-  --color-codex-cards-secondary-variante2: #c7d4da;
-  --color-codex-cards-secondary-variante3: #577283;
-  --color-codex-cards-secondary-variante4: #4b606f;
-  --color-codex-cards-secondary-variante5: #343c45;
-  --color-codex-cards-terciario: #396bc2;
+  --color-codex-cards-secondary-variante1: #E8EBEA;
+  --color-codex-cards-secondary-variante2: #BAC4C1;
+  --color-codex-cards-secondary-variante3: #6A7B78;
+  --color-codex-cards-secondary-variante4: #536B64;
+  --color-codex-cards-secondary-variante5: #314E45;
+  --color-codex-cards-terciario: #4CC02A;
   /* Blue */
-  --color-codex-cards-terciario-variante1: #e0eef9;
-  --color-codex-cards-terciario-variante2: #c8e1f5;
-  --color-codex-cards-terciario-variante3: #417dcf;
-  --color-codex-cards-terciario-variante4: #33569a;
-  --color-codex-cards-terciario-variante5: #2d497b;
-  --color-codex-cards-terciario-variante6: #202e4b;
-  --color-codex-cards-cuaternario: #F6F4EF;
+  --color-codex-cards-terciario-variante1: #E4F6DF;
+  --color-codex-cards-terciario-variante2: #C0E9B4;
+  --color-codex-cards-terciario-variante3: #41A324;
+  --color-codex-cards-terciario-variante4: #317D1B;
+  --color-codex-cards-terciario-variante5: #266015;
+  --color-codex-cards-terciario-variante6: #1B430F;
+  --color-codex-cards-cuaternario: #FFFFFF;
   /* Gray Coffee */
-  --color-codex-cards-cuaternario-variante1: #f0ede4;
-  --color-codex-cards-cuaternario-variante2: #e0d9c8;
-  --color-codex-cards-cuaternario-variante3: #a78c68;
-  --color-codex-cards-cuaternario-variante4: #9a7b5c;
+  --color-codex-cards-cuaternario-variante1: #F2F5F3;
+  --color-codex-cards-cuaternario-variante2: #D9E0DC;
+  --color-codex-cards-cuaternario-variante3: #8A9A93;
+  --color-codex-cards-cuaternario-variante4: #6B7A74;
 
-  --color-codex-botones-primary: #4F8071;
+  --color-codex-botones-primary: #5ED331;
   /* Green */
-  --color-codex-botones-primary-variante1: #ddeae4;
-  --color-codex-botones-primary-variante2: #bad5cb;
-  --color-codex-botones-primary-variante3: #3d6459;
-  --color-codex-botones-primary-variante4: #335249;
-  --color-codex-botones-secondary: #1E242A;
+  --color-codex-botones-primary-variante1: #E7F8E0;
+  --color-codex-botones-primary-variante2: #B8EBA2;
+  --color-codex-botones-primary-variante3: #429422;
+  --color-codex-botones-primary-variante4: #34741B;
+  --color-codex-botones-secondary: #1A3A30;
   /* Black */
-  --color-codex-botones-secondary-variante1: #e2e9eb;
-  --color-codex-botones-secondary-variante2: #c7d4da;
-  --color-codex-botones-secondary-variante3: #577283;
-  --color-codex-botones-secondary-variante4: #4b606f;
-  --color-codex-botones-secondary-variante5: #343c45;
-  --color-codex-botones-terciario: #396bc2;
+  --color-codex-botones-secondary-variante1: #E8EBEA;
+  --color-codex-botones-secondary-variante2: #BAC4C1;
+  --color-codex-botones-secondary-variante3: #6A7B78;
+  --color-codex-botones-secondary-variante4: #536B64;
+  --color-codex-botones-secondary-variante5: #314E45;
+  --color-codex-botones-terciario: #4CC02A;
   /* Blue */
-  --color-codex-botones-terciario-variante1: #e0eef9;
-  --color-codex-botones-terciario-variante2: #c8e1f5;
-  --color-codex-botones-terciario-variante3: #417dcf;
-  --color-codex-botones-terciario-variante4: #33569a;
-  --color-codex-botones-terciario-variante5: #2d497b;
-  --color-codex-botones-terciario-variante6: #202e4b;
-  --color-codex-botones-cuaternario: #F6F4EF;
+  --color-codex-botones-terciario-variante1: #E4F6DF;
+  --color-codex-botones-terciario-variante2: #C0E9B4;
+  --color-codex-botones-terciario-variante3: #41A324;
+  --color-codex-botones-terciario-variante4: #317D1B;
+  --color-codex-botones-terciario-variante5: #266015;
+  --color-codex-botones-terciario-variante6: #1B430F;
+  --color-codex-botones-cuaternario: #FFFFFF;
   /* Gray Coffee */
-  --color-codex-botones-cuaternario-variante1: #f0ede4;
-  --color-codex-botones-cuaternario-variante2: #e0d9c8;
-  --color-codex-botones-cuaternario-variante3: #a78c68;
-  --color-codex-botones-cuaternario-variante4: #9a7b5c;
+  --color-codex-botones-cuaternario-variante1: #F2F5F3;
+  --color-codex-botones-cuaternario-variante2: #D9E0DC;
+  --color-codex-botones-cuaternario-variante3: #8A9A93;
+  --color-codex-botones-cuaternario-variante4: #6B7A74;
 
-  --color-codex-bordes-primary: #4F8071;
+  --color-codex-bordes-primary: #5ED331;
   /* Green */
-  --color-codex-bordes-primary-variante1: #ddeae4;
-  --color-codex-bordes-primary-variante2: #bad5cb;
-  --color-codex-bordes-primary-variante3: #3d6459;
-  --color-codex-bordes-primary-variante4: #335249;
-  --color-codex-bordes-secondary: #1E242A;
+  --color-codex-bordes-primary-variante1: #E7F8E0;
+  --color-codex-bordes-primary-variante2: #B8EBA2;
+  --color-codex-bordes-primary-variante3: #429422;
+  --color-codex-bordes-primary-variante4: #34741B;
+  --color-codex-bordes-secondary: #1A3A30;
   /* Black */
-  --color-codex-bordes-secondary-variante1: #e2e9eb;
-  --color-codex-bordes-secondary-variante2: #c7d4da;
-  --color-codex-bordes-secondary-variante3: #577283;
-  --color-codex-bordes-secondary-variante4: #4b606f;
-  --color-codex-bordes-secondary-variante5: #343c45;
-  --color-codex-bordes-terciario: #396bc2;
+  --color-codex-bordes-secondary-variante1: #E8EBEA;
+  --color-codex-bordes-secondary-variante2: #BAC4C1;
+  --color-codex-bordes-secondary-variante3: #6A7B78;
+  --color-codex-bordes-secondary-variante4: #536B64;
+  --color-codex-bordes-secondary-variante5: #314E45;
+  --color-codex-bordes-terciario: #4CC02A;
   /* Blue */
-  --color-codex-bordes-terciario-variante1: #e0eef9;
-  --color-codex-bordes-terciario-variante2: #c8e1f5;
-  --color-codex-bordes-terciario-variante3: #417dcf;
-  --color-codex-bordes-terciario-variante4: #33569a;
-  --color-codex-bordes-terciario-variante5: #2d497b;
-  --color-codex-bordes-terciario-variante6: #202e4b;
-  --color-codex-bordes-cuaternario: #F6F4EF;
+  --color-codex-bordes-terciario-variante1: #E4F6DF;
+  --color-codex-bordes-terciario-variante2: #C0E9B4;
+  --color-codex-bordes-terciario-variante3: #41A324;
+  --color-codex-bordes-terciario-variante4: #317D1B;
+  --color-codex-bordes-terciario-variante5: #266015;
+  --color-codex-bordes-terciario-variante6: #1B430F;
+  --color-codex-bordes-cuaternario: #FFFFFF;
   /* Gray Coffee */
-  --color-codex-bordes-cuaternario-variante1: #f0ede4;
-  --color-codex-bordes-cuaternario-variante2: #e0d9c8;
-  --color-codex-bordes-cuaternario-variante3: #a78c68;
-  --color-codex-bordes-cuaternario-variante4: #9a7b5c;
+  --color-codex-bordes-cuaternario-variante1: #F2F5F3;
+  --color-codex-bordes-cuaternario-variante2: #D9E0DC;
+  --color-codex-bordes-cuaternario-variante3: #8A9A93;
+  --color-codex-bordes-cuaternario-variante4: #6B7A74;
 
-  --color-codex-texto-primary: #4F8071;
+  --color-codex-texto-primary: #5ED331;
   /* Green */
-  --color-codex-texto-primary-variante1: #ddeae4;
-  --color-codex-texto-primary-variante2: #bad5cb;
-  --color-codex-texto-primary-variante3: #3d6459;
-  --color-codex-texto-primary-variante4: #335249;
-  --color-codex-texto-secondary: #1E242A;
+  --color-codex-texto-primary-variante1: #E7F8E0;
+  --color-codex-texto-primary-variante2: #B8EBA2;
+  --color-codex-texto-primary-variante3: #429422;
+  --color-codex-texto-primary-variante4: #34741B;
+  --color-codex-texto-secondary: #1A3A30;
   /* Black */
-  --color-codex-texto-secondary-variante1: #e2e9eb;
-  --color-codex-texto-secondary-variante2: #c7d4da;
-  --color-codex-texto-secondary-variante3: #577283;
-  --color-codex-texto-secondary-variante4: #4b606f;
-  --color-codex-texto-secondary-variante5: #343c45;
-  --color-codex-texto-terciario: #396bc2;
+  --color-codex-texto-secondary-variante1: #E8EBEA;
+  --color-codex-texto-secondary-variante2: #BAC4C1;
+  --color-codex-texto-secondary-variante3: #6A7B78;
+  --color-codex-texto-secondary-variante4: #536B64;
+  --color-codex-texto-secondary-variante5: #314E45;
+  --color-codex-texto-terciario: #4CC02A;
   /* Blue */
-  --color-codex-texto-terciario-variante1: #e0eef9;
-  --color-codex-texto-terciario-variante2: #c8e1f5;
-  --color-codex-texto-terciario-variante3: #417dcf;
-  --color-codex-texto-terciario-variante4: #33569a;
-  --color-codex-texto-terciario-variante5: #2d497b;
-  --color-codex-texto-terciario-variante6: #202e4b;
-  --color-codex-texto-cuaternario: #F6F4EF;
+  --color-codex-texto-terciario-variante1: #E4F6DF;
+  --color-codex-texto-terciario-variante2: #C0E9B4;
+  --color-codex-texto-terciario-variante3: #41A324;
+  --color-codex-texto-terciario-variante4: #317D1B;
+  --color-codex-texto-terciario-variante5: #266015;
+  --color-codex-texto-terciario-variante6: #1B430F;
+  --color-codex-texto-cuaternario: #FFFFFF;
   /* Gray Coffee */
-  --color-codex-texto-cuaternario-variante1: #f0ede4;
-  --color-codex-texto-cuaternario-variante2: #e0d9c8;
-  --color-codex-texto-cuaternario-variante3: #a78c68;
-  --color-codex-texto-cuaternario-variante4: #9a7b5c;
+  --color-codex-texto-cuaternario-variante1: #F2F5F3;
+  --color-codex-texto-cuaternario-variante2: #D9E0DC;
+  --color-codex-texto-cuaternario-variante3: #8A9A93;
+  --color-codex-texto-cuaternario-variante4: #6B7A74;
 
-  --color-codex-titulos-primary: #4F8071;
+  --color-codex-titulos-primary: #5ED331;
   /* Green */
-  --color-codex-titulos-secondary: #1E242A;
+  --color-codex-titulos-secondary: #1A3A30;
   /* Black */
-  --color-codex-titulos-terciario: #396bc2;
+  --color-codex-titulos-terciario: #4CC02A;
   /* Blue */
-  --color-codex-titulos-cuaternario: #F6F4EF;
+  --color-codex-titulos-cuaternario: #FFFFFF;
   /* Gray Coffee */
 
-  --color-codex-iconos-primary: #4F8071;
+  --color-codex-iconos-primary: #5ED331;
   /* Green */
-  --color-codex-iconos-primary-variante1: #ddeae4;
-  --color-codex-iconos-primary-variante2: #bad5cb;
-  --color-codex-iconos-primary-variante3: #3d6459;
-  --color-codex-iconos-primary-variante4: #335249;
-  --color-codex-iconos-secondary: #1E242A;
+  --color-codex-iconos-primary-variante1: #E7F8E0;
+  --color-codex-iconos-primary-variante2: #B8EBA2;
+  --color-codex-iconos-primary-variante3: #429422;
+  --color-codex-iconos-primary-variante4: #34741B;
+  --color-codex-iconos-secondary: #1A3A30;
   /* Black */
-  --color-codex-iconos-secondary-variante1: #e2e9eb;
-  --color-codex-iconos-secondary-variante2: #c7d4da;
-  --color-codex-iconos-secondary-variante3: #577283;
-  --color-codex-iconos-secondary-variante4: #4b606f;
-  --color-codex-iconos-secondary-variante5: #343c45;
-  --color-codex-iconos-terciario: #396bc2;
+  --color-codex-iconos-secondary-variante1: #E8EBEA;
+  --color-codex-iconos-secondary-variante2: #BAC4C1;
+  --color-codex-iconos-secondary-variante3: #6A7B78;
+  --color-codex-iconos-secondary-variante4: #536B64;
+  --color-codex-iconos-secondary-variante5: #314E45;
+  --color-codex-iconos-terciario: #4CC02A;
   /* Blue */
-  --color-codex-iconos-terciario-variante1: #e0eef9;
-  --color-codex-iconos-terciario-variante2: #c8e1f5;
-  --color-codex-iconos-terciario-variante3: #417dcf;
-  --color-codex-iconos-terciario-variante4: #33569a;
-  --color-codex-iconos-terciario-variante5: #2d497b;
-  --color-codex-iconos-terciario-variante6: #202e4b;
-  --color-codex-iconos-cuaternario: #F6F4EF;
+  --color-codex-iconos-terciario-variante1: #E4F6DF;
+  --color-codex-iconos-terciario-variante2: #C0E9B4;
+  --color-codex-iconos-terciario-variante3: #41A324;
+  --color-codex-iconos-terciario-variante4: #317D1B;
+  --color-codex-iconos-terciario-variante5: #266015;
+  --color-codex-iconos-terciario-variante6: #1B430F;
+  --color-codex-iconos-cuaternario: #FFFFFF;
   /* Gray Coffee */
-  --color-codex-iconos-cuaternario-variante1: #f0ede4;
-  --color-codex-iconos-cuaternario-variante2: #e0d9c8;
-  --color-codex-iconos-cuaternario-variante3: #a78c68;
-  --color-codex-iconos-cuaternario-variante4: #9a7b5c;
+  --color-codex-iconos-cuaternario-variante1: #F2F5F3;
+  --color-codex-iconos-cuaternario-variante2: #D9E0DC;
+  --color-codex-iconos-cuaternario-variante3: #8A9A93;
+  --color-codex-iconos-cuaternario-variante4: #6B7A74;
 
-  --color-codex-hover-primary: #4F8071;
+  --color-codex-hover-primary: #5ED331;
   /* Green */
-  --color-codex-hover-primary-variante1: #ddeae4;
-  --color-codex-hover-primary-variante2: #bad5cb;
-  --color-codex-hover-primary-variante3: #3d6459;
-  --color-codex-hover-primary-variante4: #335249;
-  --color-codex-hover-secondary: #1E242A;
+  --color-codex-hover-primary-variante1: #E7F8E0;
+  --color-codex-hover-primary-variante2: #B8EBA2;
+  --color-codex-hover-primary-variante3: #429422;
+  --color-codex-hover-primary-variante4: #34741B;
+  --color-codex-hover-secondary: #1A3A30;
   /* Black */
-  --color-codex-hover-secondary-variante1: #e2e9eb;
-  --color-codex-hover-secondary-variante2: #c7d4da;
-  --color-codex-hover-secondary-variante3: #577283;
-  --color-codex-hover-secondary-variante4: #4b606f;
-  --color-codex-hover-secondary-variante5: #343c45;
-  --color-codex-hover-terciario: #396bc2;
+  --color-codex-hover-secondary-variante1: #E8EBEA;
+  --color-codex-hover-secondary-variante2: #BAC4C1;
+  --color-codex-hover-secondary-variante3: #6A7B78;
+  --color-codex-hover-secondary-variante4: #536B64;
+  --color-codex-hover-secondary-variante5: #314E45;
+  --color-codex-hover-terciario: #4CC02A;
   /*    Blue */
-  --color-codex-hover-terciario-variante1: #e0eef9;
-  --color-codex-hover-terciario-variante2: #c8e1f5;
-  --color-codex-hover-terciario-variante3: #417dcf;
-  --color-codex-hover-terciario-variante4: #33569a;
-  --color-codex-hover-terciario-variante5: #2d497b;
-  --color-codex-hover-terciario-variante6: #202e4b;
-  --color-codex-hover-cuaternario: #F6F4EF;
+  --color-codex-hover-terciario-variante1: #E4F6DF;
+  --color-codex-hover-terciario-variante2: #C0E9B4;
+  --color-codex-hover-terciario-variante3: #41A324;
+  --color-codex-hover-terciario-variante4: #317D1B;
+  --color-codex-hover-terciario-variante5: #266015;
+  --color-codex-hover-terciario-variante6: #1B430F;
+  --color-codex-hover-cuaternario: #FFFFFF;
   /* Gray Coffee */
-  --color-codex-hover-cuaternario-variante1: #f0ede4;
-  --color-codex-hover-cuaternario-variante2: #e0d9c8;
-  --color-codex-hover-cuaternario-variante3: #a78c68;
-  --color-codex-hover-cuaternario-variante4: #9a7b5c;
+  --color-codex-hover-cuaternario-variante1: #F2F5F3;
+  --color-codex-hover-cuaternario-variante2: #D9E0DC;
+  --color-codex-hover-cuaternario-variante3: #8A9A93;
+  --color-codex-hover-cuaternario-variante4: #6B7A74;
 
 
   /* --------- Fin estandarización paleta de colores -------------- */
@@ -310,13 +310,13 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: var(--codex-primary, #4F8071);
+  background-color: var(--codex-primary, #5ED331);
   border-radius: 999px;
   opacity: 0.5;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #3d6459;
+  background-color: #429422;
 }
 
 ::-webkit-scrollbar-track {

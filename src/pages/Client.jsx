@@ -13,7 +13,7 @@ import {
 } from "../components/ui/dropdown-menu";
 import Swal from "sweetalert2";
 
-const BREAKDOWN_COLORS = ["#B8C76A", "#F29B6B", "#5E6A43", "var(--border)", "var(--muted-foreground)", "#8f9a3e"];
+const BREAKDOWN_COLORS = ["#5ED331", "#4CC02A", "#1A3A30", "var(--border)", "var(--muted-foreground)", "#34741B"];
 
 // Groups clients by whatever dropdown-type ("list") attributes this tenant
 // actually has configured — Region/Category on one instance, Program/Status
@@ -100,7 +100,7 @@ export const Client = () => {
             text: "You won't be able to revert this!",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#3085d6',
+            confirmButtonColor: '#1A3A30',
             cancelButtonColor: '#d33',
             confirmButtonText: 'Yes, delete it!'
         });
@@ -232,7 +232,7 @@ export const Client = () => {
                     <button
                         onClick={handleExportExcel}
                         className="flex items-center gap-2 h-9 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
-                        style={{ backgroundColor: "var(--card)", border: "1px solid #5E6A43", color: "#5E6A43" }}
+                        style={{ backgroundColor: "var(--card)", border: "1px solid #1A3A30", color: "#1A3A30" }}
                         onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(94,106,67,0.15)"}
                         onMouseLeave={e => e.currentTarget.style.backgroundColor = "var(--card)"}
                     >
@@ -241,7 +241,7 @@ export const Client = () => {
                     <button
                         onClick={openImportModal}
                         className="flex items-center gap-2 h-9 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
-                        style={{ backgroundColor: "var(--card)", border: "1px solid #5E6A43", color: "#5E6A43" }}
+                        style={{ backgroundColor: "var(--card)", border: "1px solid #1A3A30", color: "#1A3A30" }}
                         onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(94,106,67,0.15)"}
                         onMouseLeave={e => e.currentTarget.style.backgroundColor = "var(--card)"}
                     >
@@ -280,7 +280,7 @@ export const Client = () => {
                         {/* Modal Header */}
                         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
                             <div>
-                                <h2 className="text-lg font-bold text-[#5E6A43]">Import Clients from Excel</h2>
+                                <h2 className="text-lg font-bold text-[#1A3A30]">Import Clients from Excel</h2>
                                 <p className="text-xs text-gray-500 mt-0.5">Upload your .xlsx file to bulk import clients</p>
                             </div>
                             <button onClick={closeImportModal} className="text-gray-400 hover:text-gray-600 cursor-pointer">
@@ -321,10 +321,10 @@ export const Client = () => {
                                 />
                                 <div
                                     onClick={() => fileInputRef.current.click()}
-                                    className="border-2 border-dashed border-gray-300 rounded-lg p-5 text-center cursor-pointer hover:border-[#5E6A43] transition-colors"
+                                    className="border-2 border-dashed border-gray-300 rounded-lg p-5 text-center cursor-pointer hover:border-[#1A3A30] transition-colors"
                                 >
                                     {selectedFile ? (
-                                        <p className="text-sm text-[#5E6A43] font-medium">{selectedFile.name}</p>
+                                        <p className="text-sm text-[#1A3A30] font-medium">{selectedFile.name}</p>
                                     ) : (
                                         <p className="text-sm text-gray-400">Click to select a file</p>
                                     )}
@@ -379,7 +379,7 @@ export const Client = () => {
                                 onClick={handleImport}
                                 disabled={!selectedFile || importing}
                                 className="h-9 px-5 rounded-lg text-sm font-semibold text-white transition-colors cursor-pointer disabled:opacity-50"
-                                style={{ backgroundColor: "#5E6A43" }}
+                                style={{ backgroundColor: "#1A3A30" }}
                             >
                                 {importing ? 'Importing...' : 'Import'}
                             </button>

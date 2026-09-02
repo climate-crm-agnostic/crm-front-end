@@ -74,7 +74,7 @@ export const LeadReassignment = () => {
                     className="flex h-10 w-10 items-center justify-center rounded-lg"
                     style={{ backgroundColor: "rgba(94,106,67,0.12)", border: "1px solid rgba(94,106,67,0.3)" }}
                 >
-                    <Users className="h-5 w-5" style={{ color: "#5E6A43" }} />
+                    <Users className="h-5 w-5" style={{ color: "#1A3A30" }} />
                 </div>
                 <div>
                     <p className="text-base font-semibold" style={{ color: "var(--foreground)" }}>Lead Reassignment</p>
@@ -124,7 +124,7 @@ export const LeadReassignment = () => {
                     onClick={handleReassign}
                     disabled={!fromUserId || !toUserId || reassigning || previewCount === 0}
                     className="w-full h-10 rounded-md text-sm font-semibold transition-colors disabled:opacity-50 cursor-pointer"
-                    style={{ backgroundColor: "#5E6A43", color: "var(--background)" }}
+                    style={{ backgroundColor: "#1A3A30", color: "var(--background)" }}
                 >
                     {reassigning ? "Reassigning..." : "Reassign Leads"}
                 </button>

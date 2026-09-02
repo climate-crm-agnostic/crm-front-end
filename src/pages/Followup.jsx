@@ -83,7 +83,7 @@ export const Followup = () => {
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
+            cancelButtonColor: '#1A3A30',
             confirmButtonText: 'Yes, delete it!'
         });
 

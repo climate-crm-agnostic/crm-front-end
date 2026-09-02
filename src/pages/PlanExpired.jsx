@@ -9,16 +9,16 @@ export const PlanExpired = () => {
       {/* Top accent bar */}
       <div
         className="fixed top-0 left-0 w-full h-1"
-        style={{ backgroundColor: "#F29B6B" }}
+        style={{ backgroundColor: "#5ED331" }}
       />
 
       <div className="flex flex-col items-center gap-8 text-center max-w-md">
         {/* Icon */}
         <div
           className="flex h-20 w-20 items-center justify-center rounded-2xl shadow-md"
-          style={{ backgroundColor: "#FFDCC8", border: "1px solid #F29B6B" }}
+          style={{ backgroundColor: "#E8F7E0", border: "1px solid #5ED331" }}
         >
-          <AlertTriangle className="h-9 w-9" style={{ color: "#d97c4a" }} />
+          <AlertTriangle className="h-9 w-9" style={{ color: "#34741B" }} />
         </div>
 
         {/* Copy */}
@@ -46,12 +46,12 @@ export const PlanExpired = () => {
           href="mailto:support@codexacademy.co?subject=CRM Account Reactivation"
           className="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-200 shadow-sm"
           style={{
-            backgroundColor: "#F29B6B",
+            backgroundColor: "#5ED331",
             color: "var(--background)",
             textDecoration: "none",
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#d97c4a")}
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#F29B6B")}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#34741B")}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#5ED331")}
         >
           Contact support
         </a>

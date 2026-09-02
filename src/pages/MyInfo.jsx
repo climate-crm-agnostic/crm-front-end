@@ -6,10 +6,10 @@ import { User, Building2, Bot, CheckCircle2, XCircle, Infinity } from "lucide-re
 const TIER_COLORS = {
     free_trial: { bg: "var(--card)", text: "var(--muted-foreground)", border: "var(--border)" },
     basic:      { bg: "var(--card)", text: "var(--muted-foreground)", border: "var(--border)" },
-    full:       { bg: "#e8edde", text: "#5E6A43", border: "#B8C76A" },
-    full_plus:  { bg: "#e8edde", text: "#5E6A43", border: "#5E6A43" },
-    business:   { bg: "#FFDCC8", text: "#c04a00", border: "#F29B6B" },
-    enterprise: { bg: "#f0f4dc", text: "#3a4a20", border: "#5E6A43" },
+    full:       { bg: "#E7F8E0", text: "#1A3A30", border: "#5ED331" },
+    full_plus:  { bg: "#E7F8E0", text: "#1A3A30", border: "#1A3A30" },
+    business:   { bg: "#E8F7E0", text: "#c04a00", border: "#5ED331" },
+    enterprise: { bg: "#E7F8E0", text: "#3a4a20", border: "#1A3A30" },
 };
 
 const FEATURE_LABELS = {
@@ -39,7 +39,7 @@ function Card({ children, style }) {
     );
 }
 
-function CardHeader({ icon: Icon, title, accentColor = "#5E6A43" }) {
+function CardHeader({ icon: Icon, title, accentColor = "#1A3A30" }) {
     return (
         <div
             className="flex items-center gap-3 px-6 py-4 border-b"
@@ -63,7 +63,7 @@ function CardHeader({ icon: Icon, title, accentColor = "#5E6A43" }) {
 
 function QuotaBar({ used, limit }) {
     const pct = limit > 0 ? Math.min((used / limit) * 100, 100) : 0;
-    const barColor = pct >= 90 ? "#c04a00" : pct >= 70 ? "#F29B6B" : "#5E6A43";
+    const barColor = pct >= 90 ? "#c04a00" : pct >= 70 ? "#5ED331" : "#1A3A30";
 
     return (
         <div className="space-y-2">
@@ -118,7 +118,7 @@ export const MyInfo = () => {
                 <div className="px-6 py-5 flex items-center gap-5">
                     <div
                         className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-lg font-bold"
-                        style={{ backgroundColor: "#5E6A43", color: "var(--background)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+                        style={{ backgroundColor: "#1A3A30", color: "var(--background)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
                     >
                         {initials}
                     </div>
@@ -135,7 +135,7 @@ export const MyInfo = () => {
                                     <span
                                         key={g}
                                         className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full"
-                                        style={{ backgroundColor: "#e8edde", color: "#5E6A43", border: "1px solid #B8C76A" }}
+                                        style={{ backgroundColor: "#E7F8E0", color: "#1A3A30", border: "1px solid #5ED331" }}
                                     >
                                         <Building2 className="h-3 w-3" />
                                         {g}
@@ -149,7 +149,7 @@ export const MyInfo = () => {
 
             {/* ── Plan / Tier ── */}
             <Card>
-                <CardHeader icon={Building2} title="Current Plan" accentColor="#B8C76A" />
+                <CardHeader icon={Building2} title="Current Plan" accentColor="#5ED331" />
                 <div className="px-6 py-5 space-y-4">
                     <div className="flex items-center gap-3">
                         <span
@@ -162,9 +162,9 @@ export const MyInfo = () => {
                             <span
                                 className="text-xs px-2 py-0.5 rounded-full font-medium"
                                 style={{
-                                    backgroundColor: plan.is_active ? "#e8edde" : "#FFDCC8",
-                                    color: plan.is_active ? "#5E6A43" : "#c04a00",
-                                    border: `1px solid ${plan.is_active ? "#B8C76A" : "#F29B6B"}`,
+                                    backgroundColor: plan.is_active ? "#E7F8E0" : "#E8F7E0",
+                                    color: plan.is_active ? "#1A3A30" : "#c04a00",
+                                    border: `1px solid ${plan.is_active ? "#5ED331" : "#5ED331"}`,
                                 }}
                             >
                                 {plan.is_active ? "Active" : "Inactive"}
@@ -196,7 +196,7 @@ export const MyInfo = () => {
                                     return (
                                         <div key={key} className="flex items-center gap-2">
                                             {enabled
-                                                ? <CheckCircle2 className="h-3.5 w-3.5 shrink-0" style={{ color: "#5E6A43" }} />
+                                                ? <CheckCircle2 className="h-3.5 w-3.5 shrink-0" style={{ color: "#1A3A30" }} />
                                                 : <XCircle className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--border)" }} />
                                             }
                                             <span className="text-xs" style={{ color: enabled ? "var(--foreground)" : "var(--muted-foreground)" }}>
@@ -215,7 +215,7 @@ export const MyInfo = () => {
             {/* ── AI Usage ── */}
             {isFeatureEnabled("ai") && (
                 <Card>
-                    <CardHeader icon={Bot} title="Chett AI — Daily Quota" accentColor="#F29B6B" />
+                    <CardHeader icon={Bot} title="Chett AI — Daily Quota" accentColor="#5ED331" />
                     <div className="px-6 py-5">
                         {usageLoading ? (
                             <div className="h-12 animate-pulse rounded" style={{ backgroundColor: "var(--border)" }} />
@@ -223,7 +223,7 @@ export const MyInfo = () => {
                             <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>Usage data unavailable.</p>
                         ) : aiUsage.unlimited ? (
                             <div className="flex items-center gap-3">
-                                <Infinity className="h-6 w-6" style={{ color: "#5E6A43" }} />
+                                <Infinity className="h-6 w-6" style={{ color: "#1A3A30" }} />
                                 <div>
                                     <p className="font-semibold" style={{ color: "var(--foreground)" }}>Unlimited queries</p>
                                     <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
