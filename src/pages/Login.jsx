@@ -59,16 +59,16 @@ export const Login = ({ className, ...props }) => {
       <div className="w-full h-screen lg:grid lg:grid-cols-2" style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
 
         {/* Left — Form */}
-        <div className="flex items-center justify-center py-12 px-8" style={{ backgroundColor: "#FBF7EF" }}>
+        <div className="flex items-center justify-center py-12 px-8 bg-background">
           {/* Green top accent bar */}
-          <div className="absolute top-0 left-0 w-1/2 h-1 lg:block hidden" style={{ backgroundColor: "#5E6A43" }} />
+          <div className="absolute top-0 left-0 w-1/2 h-1 lg:block hidden" style={{ backgroundColor: "var(--secondary)" }} />
           <div className="mx-auto grid w-full max-w-sm gap-8">
 
             {/* Brand mark */}
             <div className="flex flex-col items-center gap-4">
               <div
                 className="flex h-14 w-14 items-center justify-center rounded-lg shadow-md"
-                style={{ backgroundColor: "#5E6A43" }}
+                style={{ backgroundColor: "var(--secondary)" }}
               >
                 <svg viewBox="0 0 24 24" fill="none" className="h-7 w-7 text-white" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 2L2 7l10 5 10-5-10-5z" />
@@ -78,12 +78,12 @@ export const Login = ({ className, ...props }) => {
               </div>
               <div className="text-center">
                 <h1
-                  className="text-3xl font-semibold"
-                  style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', fontStyle: "italic", color: "#2E2A26", letterSpacing: "-0.015em", lineHeight: 1.1 }}
+                  className="text-3xl font-semibold text-foreground"
+                  style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', fontStyle: "italic", letterSpacing: "-0.015em", lineHeight: 1.1 }}
                 >
                   Welcome back
                 </h1>
-                <p className="text-sm mt-1.5" style={{ color: "#6b6560" }}>
+                <p className="text-sm mt-1.5 text-muted-foreground">
                   Sign in to your{" "}
                   <span className="font-bold" style={{ color: "#4F8071" }}>CodeX CRM</span>{" "}
                   workspace
@@ -96,19 +96,19 @@ export const Login = ({ className, ...props }) => {
               <form onSubmit={handleSubmit} className="grid gap-4">
                 {error && (
                   <div
-                    className="flex items-start gap-2.5 rounded-lg p-3 text-sm"
-                    style={{ backgroundColor: "#FFDCC8", border: "1px solid #F29B6B", color: "#2E2A26" }}
+                    className="flex items-start gap-2.5 rounded-lg p-3 text-sm bg-muted text-foreground"
+                    style={{ border: "1px solid var(--primary)" }}
                   >
                     <span
                       className="mt-0.5 shrink-0 flex h-4 w-4 items-center justify-center rounded-full text-white text-xs font-bold"
-                      style={{ backgroundColor: "#F29B6B" }}
+                      style={{ backgroundColor: "var(--primary)" }}
                     >!</span>
                     <span>{error}</span>
                   </div>
                 )}
 
                 <div className="grid gap-1.5">
-                  <Label htmlFor="usuario" className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#6b6560" }}>
+                  <Label htmlFor="usuario" className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                     Username
                   </Label>
                   <Input
@@ -119,26 +119,21 @@ export const Login = ({ className, ...props }) => {
                     value={user}
                     onChange={(e) => setUser(e.target.value)}
                     disabled={loading}
-                    className="h-11 rounded-md transition-all"
-                    style={{
-                      backgroundColor: "#fff",
-                      border: "1px solid #D8D2C4",
-                      color: "#2E2A26",
-                      fontFamily: '"Source Sans 3", Arial, sans-serif',
-                    }}
+                    className="h-11 rounded-md transition-all bg-background border-border text-foreground"
+                    style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}
                   />
                 </div>
 
                 <div className="grid gap-1.5">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="password" className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#6b6560" }}>
+                    <Label htmlFor="password" className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                       Password
                     </Label>
                     <button
                       type="button"
                       onClick={() => setShowPass((s) => !s)}
                       className="text-xs font-medium transition-colors"
-                      style={{ color: "#F29B6B" }}
+                      style={{ color: "var(--primary)" }}
                       tabIndex={-1}
                     >
                       {showPass ? "Hide" : "Show"}
@@ -153,13 +148,8 @@ export const Login = ({ className, ...props }) => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={loading}
-                    className="h-11 rounded-md transition-all"
-                    style={{
-                      backgroundColor: "#fff",
-                      border: "1px solid #D8D2C4",
-                      color: "#2E2A26",
-                      fontFamily: '"Source Sans 3", Arial, sans-serif',
-                    }}
+                    className="h-11 rounded-md transition-all bg-background border-border text-foreground"
+                    style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}
                   />
                 </div>
 
@@ -168,14 +158,14 @@ export const Login = ({ className, ...props }) => {
                   disabled={loading}
                   className="w-full mt-1 h-11 rounded-md font-semibold text-sm transition-all duration-200 active:scale-[0.99] flex items-center justify-center gap-2 shadow-sm"
                   style={{
-                    backgroundColor: loading ? "#d97c4a" : "#F29B6B",
-                    color: "#FBF7EF",
+                    backgroundColor: loading ? "#d97c4a" : "var(--primary)",
+                    color: "var(--primary-foreground)",
                     fontFamily: '"Source Sans 3", Arial, sans-serif',
                     letterSpacing: "0.02em",
                     cursor: loading ? "not-allowed" : "pointer",
                   }}
                   onMouseEnter={e => !loading && (e.currentTarget.style.backgroundColor = "#d97c4a")}
-                  onMouseLeave={e => !loading && (e.currentTarget.style.backgroundColor = "#F29B6B")}
+                  onMouseLeave={e => !loading && (e.currentTarget.style.backgroundColor = "var(--primary)")}
                 >
                   {loading ? (
                     <>
@@ -194,24 +184,24 @@ export const Login = ({ className, ...props }) => {
               <form onSubmit={handleVerifyCode} className="grid gap-4">
                 {error && (
                   <div
-                    className="flex items-start gap-2.5 rounded-lg p-3 text-sm"
-                    style={{ backgroundColor: "#FFDCC8", border: "1px solid #F29B6B", color: "#2E2A26" }}
+                    className="flex items-start gap-2.5 rounded-lg p-3 text-sm bg-muted text-foreground"
+                    style={{ border: "1px solid var(--primary)" }}
                   >
                     <span
                       className="mt-0.5 shrink-0 flex h-4 w-4 items-center justify-center rounded-full text-white text-xs font-bold"
-                      style={{ backgroundColor: "#F29B6B" }}
+                      style={{ backgroundColor: "var(--primary)" }}
                     >!</span>
                     <span>{error}</span>
                   </div>
                 )}
 
-                <div className="text-sm" style={{ color: "#6b6560" }}>
-                  We emailed a verification code to <strong style={{ color: "#2E2A26" }}>{user}</strong>'s address.
-                  It expires in <strong style={{ color: "#2E2A26" }}>1 minute</strong>.
+                <div className="text-sm text-muted-foreground">
+                  We emailed a verification code to <strong className="text-foreground">{user}</strong>'s address.
+                  It expires in <strong className="text-foreground">1 minute</strong>.
                 </div>
 
                 <div className="grid gap-1.5">
-                  <Label htmlFor="code" className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#6b6560" }}>
+                  <Label htmlFor="code" className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                     Verification code
                   </Label>
                   <Input
@@ -225,13 +215,8 @@ export const Login = ({ className, ...props }) => {
                     value={code}
                     onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
                     disabled={loading}
-                    className="h-11 rounded-md transition-all text-center tracking-[0.5em] text-lg"
-                    style={{
-                      backgroundColor: "#fff",
-                      border: "1px solid #D8D2C4",
-                      color: "#2E2A26",
-                      fontFamily: '"Source Sans 3", Arial, sans-serif',
-                    }}
+                    className="h-11 rounded-md transition-all text-center tracking-[0.5em] text-lg bg-background border-border text-foreground"
+                    style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}
                   />
                 </div>
 
@@ -240,14 +225,14 @@ export const Login = ({ className, ...props }) => {
                   disabled={loading}
                   className="w-full mt-1 h-11 rounded-md font-semibold text-sm transition-all duration-200 active:scale-[0.99] flex items-center justify-center gap-2 shadow-sm"
                   style={{
-                    backgroundColor: loading ? "#d97c4a" : "#F29B6B",
-                    color: "#FBF7EF",
+                    backgroundColor: loading ? "#d97c4a" : "var(--primary)",
+                    color: "var(--primary-foreground)",
                     fontFamily: '"Source Sans 3", Arial, sans-serif',
                     letterSpacing: "0.02em",
                     cursor: loading ? "not-allowed" : "pointer",
                   }}
                   onMouseEnter={e => !loading && (e.currentTarget.style.backgroundColor = "#d97c4a")}
-                  onMouseLeave={e => !loading && (e.currentTarget.style.backgroundColor = "#F29B6B")}
+                  onMouseLeave={e => !loading && (e.currentTarget.style.backgroundColor = "var(--primary)")}
                 >
                   {loading ? (
                     <>
@@ -266,15 +251,14 @@ export const Login = ({ className, ...props }) => {
                   type="button"
                   onClick={resetToCredentials}
                   disabled={loading}
-                  className="text-xs font-medium text-center"
-                  style={{ color: "#6b6560" }}
+                  className="text-xs font-medium text-center text-muted-foreground"
                 >
                   Back to login
                 </button>
               </form>
             )}
 
-            <p className="text-center text-xs" style={{ color: "#D8D2C4" }}>
+            <p className="text-center text-xs text-muted-foreground">
               © {new Date().getFullYear()} Codex Technologies
             </p>
           </div>
@@ -283,10 +267,10 @@ export const Login = ({ className, ...props }) => {
         {/* Right — Branding */}
         <div
           className="hidden lg:flex flex-col relative justify-center p-14 overflow-hidden"
-          style={{ backgroundColor: "#2E2A26" }}
+          style={{ backgroundColor: "var(--foreground)" }}
         >
           {/* Decorative elements */}
-          <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, #2E2A26 0%, #3d3830 50%, #2a2620 100%)" }} />
+          <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, var(--foreground) 0%, #3d3830 50%, #2a2620 100%)" }} />
           <div className="absolute top-[-60px] right-[-60px] h-72 w-72 rounded-full blur-3xl" style={{ backgroundColor: "rgba(94,106,67,0.15)" }} />
           <div className="absolute bottom-[-40px] left-[-30px] h-56 w-56 rounded-full blur-3xl" style={{ backgroundColor: "rgba(242,155,107,0.08)" }} />
 
@@ -311,7 +295,7 @@ export const Login = ({ className, ...props }) => {
             <div className="space-y-3">
               <h2
                 className="text-5xl font-semibold leading-tight"
-                style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', fontStyle: "italic", color: "#FBF7EF", letterSpacing: "-0.015em", lineHeight: 1.1 }}
+                style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', fontStyle: "italic", color: "var(--background)", letterSpacing: "-0.015em", lineHeight: 1.1 }}
               >
                 Manage smarter.<br />
                 <span style={{ color: "#B8C76A" }}>Grow faster.</span>
@@ -336,7 +320,7 @@ export const Login = ({ className, ...props }) => {
                     <Icon className="h-5 w-5" style={{ color: iconColor }} />
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold" style={{ color: "#FBF7EF", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>{title}</h3>
+                    <h3 className="text-sm font-semibold" style={{ color: "var(--background)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>{title}</h3>
                     <p className="text-sm mt-0.5 leading-relaxed" style={{ color: "#b0a89e", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>{desc}</p>
                   </div>
                 </div>

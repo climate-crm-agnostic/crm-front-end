@@ -44,7 +44,7 @@ export function NavUser({ user }) {
               <button
                 className="flex h-9 w-9 items-center justify-center rounded-lg mx-auto transition-colors cursor-pointer"
                 style={{ backgroundColor: "transparent" }}
-                onMouseEnter={e => e.currentTarget.style.backgroundColor = "#e8edde"}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--secondary) 15%, transparent)"}
                 onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
               >
                 <AvatarIcon />
@@ -54,23 +54,23 @@ export function NavUser({ user }) {
                 size="lg"
                 className="cursor-pointer my-1 rounded-lg transition-colors"
                 style={{ backgroundColor: "transparent" }}
-                onMouseEnter={e => e.currentTarget.style.backgroundColor = "#e8edde"}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--secondary) 15%, transparent)"}
                 onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
               >
                 <AvatarIcon />
                 <div className="grid flex-1 text-left text-sm leading-tight min-w-0">
-                  <span className="truncate font-semibold" style={{ color: "#2E2A26" }}>{user.name}</span>
-                  <span className="truncate text-xs" style={{ color: "#6b6560" }}>{user.email}</span>
-                  <span className="text-xs font-semibold" style={{ color: "#5E6A43" }}>CodeX</span>
+                  <span className="truncate font-semibold" style={{ color: "var(--foreground)" }}>{user.name}</span>
+                  <span className="truncate text-xs" style={{ color: "var(--muted-foreground)" }}>{user.email}</span>
+                  <span className="text-xs font-semibold" style={{ color: "var(--secondary)" }}>CodeX</span>
                 </div>
-                <Settings className="shrink-0 size-4" style={{ color: "#9b948e" }} />
+                <Settings className="shrink-0 size-4" style={{ color: "var(--muted-foreground)" }} />
               </SidebarMenuButton>
             )}
           </DropdownMenuTrigger>
 
           <DropdownMenuContent
             className="min-w-56 rounded-lg"
-            style={{ backgroundColor: "#FBF7EF", border: "1px solid #D8D2C4" }}
+            style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)" }}
             side={isMobile ? "bottom" : "right"}
             align="end"
             sideOffset={4}
@@ -79,30 +79,30 @@ export function NavUser({ user }) {
               <div className="flex items-center gap-2 px-2 py-2">
                 <AvatarIcon size={8} />
                 <div className="grid flex-1 text-left leading-tight">
-                  <span className="truncate font-semibold text-sm" style={{ color: "#2E2A26" }}>{user.profile_name}</span>
-                  <span className="truncate text-xs" style={{ color: "#5E6A43" }}>{user.rol}</span>
+                  <span className="truncate font-semibold text-sm" style={{ color: "var(--foreground)" }}>{user.profile_name}</span>
+                  <span className="truncate text-xs" style={{ color: "var(--secondary)" }}>{user.rol}</span>
                 </div>
               </div>
             </DropdownMenuLabel>
 
-            <DropdownMenuSeparator style={{ backgroundColor: "#D8D2C4" }} />
+            <DropdownMenuSeparator style={{ backgroundColor: "var(--border)" }} />
 
             <DropdownMenuGroup>
-              <DropdownMenuItem className="cursor-pointer" style={{ color: "#2E2A26" }}>
+              <DropdownMenuItem className="cursor-pointer" style={{ color: "var(--foreground)" }}>
                 <a href="/faq" className="w-full flex items-center gap-2">
-                  <Sparkles className="size-4" style={{ color: "#5E6A43" }} />
+                  <Sparkles className="size-4" style={{ color: "var(--secondary)" }} />
                   FAQ
                 </a>
               </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer" style={{ color: "#2E2A26" }}>
+              <DropdownMenuItem className="cursor-pointer" style={{ color: "var(--foreground)" }}>
                 <a href="/apidocs" className="w-full flex items-center gap-2">
-                  <Settings className="size-4" style={{ color: "#5E6A43" }} />
+                  <Settings className="size-4" style={{ color: "var(--secondary)" }} />
                   API Docs
                 </a>
               </DropdownMenuItem>
             </DropdownMenuGroup>
 
-            <DropdownMenuSeparator style={{ backgroundColor: "#D8D2C4" }} />
+            <DropdownMenuSeparator style={{ backgroundColor: "var(--border)" }} />
 
             <DropdownMenuItem
               onSelect={handleLogout}

@@ -173,7 +173,7 @@ export const Contact = () => {
         <div className="h-full flex flex-col p-2 w-full">
             <div className="flex justify-between items-center mb-2">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-codex-texto-primary dark:text-codex-texto-dark-primary">
+                    <h1 className="text-3xl font-bold tracking-tight text-codex-texto-primary dark:text-codex-texto-dark-primary">
                         Contacts
                     </h1>
                     <p className="text-sm text-muted-foreground">
@@ -184,18 +184,18 @@ export const Contact = () => {
                     <button
                         onClick={handleExportExcel}
                         className="flex items-center gap-2 h-9 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
-                        style={{ backgroundColor: "#F2EBDD", border: "1px solid #5E6A43", color: "#5E6A43" }}
+                        style={{ backgroundColor: "var(--card)", border: "1px solid #5E6A43", color: "#5E6A43" }}
                         onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(94,106,67,0.15)"}
-                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "#F2EBDD"}
+                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "var(--card)"}
                     >
                         <Download className="h-4 w-4" /> Export Excel
                     </button>
                     <button
                         onClick={openImportModal}
                         className="flex items-center gap-2 h-9 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
-                        style={{ backgroundColor: "#F2EBDD", border: "1px solid #5E6A43", color: "#5E6A43" }}
+                        style={{ backgroundColor: "var(--card)", border: "1px solid #5E6A43", color: "#5E6A43" }}
                         onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(94,106,67,0.15)"}
-                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "#F2EBDD"}
+                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "var(--card)"}
                     >
                         <Upload className="h-4 w-4" /> Import Excel
                     </button>

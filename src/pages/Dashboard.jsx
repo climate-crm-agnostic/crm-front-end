@@ -18,10 +18,10 @@ const fetchCount = async (endpoint) => {
 
 // Brand Manual accent configs per card
 const CARD_ACCENTS = {
-    Leads:    { bar: "#F29B6B", badge: { bg: "#FFDCC8", text: "#2E2A26" }, link: "#F29B6B", icon: { bg: "#F29B6B" } },
+    Leads:    { bar: "#F29B6B", badge: { bg: "#FFDCC8", text: "var(--foreground)" }, link: "#F29B6B", icon: { bg: "#F29B6B" } },
     Clients:  { bar: "#5E6A43", badge: { bg: "#e8edde", text: "#5E6A43" }, link: "#5E6A43", icon: { bg: "#5E6A43" } },
     Invoices: { bar: "#B8C76A", badge: { bg: "#f0f4dc", text: "#5E6A43" }, link: "#8f9a3e", icon: { bg: "#B8C76A" } },
-    Assets:   { bar: "#D8D2C4", badge: { bg: "#F2EBDD", text: "#6b6560" }, link: "#6b6560", icon: { bg: "#6b6560" } },
+    Assets:   { bar: "var(--border)", badge: { bg: "var(--card)", text: "var(--muted-foreground)" }, link: "var(--muted-foreground)", icon: { bg: "var(--muted-foreground)" } },
 };
 
 const TASK_COLORS = {
@@ -37,10 +37,8 @@ const StatCard = ({ title, count, icon: Icon, href, loading, navigate }) => {
 
     return (
         <div
-            className="group relative overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-0.5"
+            className="group relative overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-0.5 bg-card border border-border"
             style={{
-                backgroundColor: "#F2EBDD",
-                border: "1px solid #D8D2C4",
                 borderRadius: "8px",
                 boxShadow: "0 1px 3px rgba(46,42,38,0.06)",
             }}
@@ -58,7 +56,7 @@ const StatCard = ({ title, count, icon: Icon, href, loading, navigate }) => {
                         className="flex h-10 w-10 items-center justify-center rounded-lg"
                         style={{ backgroundColor: accent.icon.bg }}
                     >
-                        <Icon className="h-5 w-5" style={{ color: "#FBF7EF" }} />
+                        <Icon className="h-5 w-5" style={{ color: "var(--background)" }} />
                     </div>
                     <span
                         className="text-xs font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full"
@@ -71,17 +69,17 @@ const StatCard = ({ title, count, icon: Icon, href, loading, navigate }) => {
                 {/* Count */}
                 <div>
                     <p
-                        className="text-xs font-semibold uppercase tracking-widest mb-1.5"
-                        style={{ color: "#6b6560", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+                        className="text-xs font-semibold uppercase tracking-widest mb-1.5 text-muted-foreground"
+                        style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}
                     >
                         {title}
                     </p>
                     {loading ? (
-                        <div className="h-10 w-24 rounded animate-pulse" style={{ backgroundColor: "#D8D2C4" }} />
+                        <div className="h-10 w-24 rounded animate-pulse bg-border" />
                     ) : (
                         <span
-                            className="text-4xl font-bold"
-                            style={{ color: "#2E2A26", fontFamily: '"Source Sans 3", Arial, sans-serif', letterSpacing: "-0.02em" }}
+                            className="text-4xl font-bold text-foreground"
+                            style={{ fontFamily: '"Source Sans 3", Arial, sans-serif', letterSpacing: "-0.02em" }}
                         >
                             {count ?? "—"}
                         </span>
@@ -90,10 +88,9 @@ const StatCard = ({ title, count, icon: Icon, href, loading, navigate }) => {
 
                 {/* View all */}
                 <div
-                    className="flex items-center gap-1.5 text-xs font-semibold pt-3 group-hover:gap-2.5 transition-all"
+                    className="flex items-center gap-1.5 text-xs font-semibold pt-3 group-hover:gap-2.5 transition-all border-t border-border"
                     style={{
                         color: accent.link,
-                        borderTop: "1px solid #D8D2C4",
                         fontFamily: '"Source Sans 3", Arial, sans-serif',
                     }}
                 >
@@ -107,8 +104,8 @@ const StatCard = ({ title, count, icon: Icon, href, loading, navigate }) => {
 
 const TaskKpiCard = ({ title, count, color, href, loading, navigate }) => (
     <div
-        className="group relative overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-0.5"
-        style={{ backgroundColor: "#F2EBDD", border: "1px solid #D8D2C4", borderRadius: "8px", boxShadow: "0 1px 3px rgba(46,42,38,0.06)" }}
+        className="group relative overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-0.5 bg-card border border-border"
+        style={{ borderRadius: "8px", boxShadow: "0 1px 3px rgba(46,42,38,0.06)" }}
         onMouseEnter={e => e.currentTarget.style.boxShadow = "0 8px 24px rgba(46,42,38,0.12)"}
         onMouseLeave={e => e.currentTarget.style.boxShadow = "0 1px 3px rgba(46,42,38,0.06)"}
         onClick={() => navigate(href)}
@@ -117,7 +114,7 @@ const TaskKpiCard = ({ title, count, color, href, loading, navigate }) => (
         <div className="relative p-5 flex flex-col gap-4 pt-6">
             <div className="flex items-start justify-between">
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg" style={{ backgroundColor: color.dot }}>
-                    <ClipboardList className="h-4 w-4" style={{ color: "#FBF7EF" }} />
+                    <ClipboardList className="h-4 w-4" style={{ color: "var(--background)" }} />
                 </div>
                 <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
                     style={{ backgroundColor: color.bg, color: color.text }}>
@@ -125,13 +122,13 @@ const TaskKpiCard = ({ title, count, color, href, loading, navigate }) => (
                 </span>
             </div>
             <div>
-                <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: "#6b6560", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+                <p className="text-xs font-semibold uppercase tracking-widest mb-1 text-muted-foreground" style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
                     {title}
                 </p>
                 {loading ? (
-                    <div className="h-9 w-16 rounded animate-pulse" style={{ backgroundColor: "#D8D2C4" }} />
+                    <div className="h-9 w-16 rounded animate-pulse bg-border" />
                 ) : (
-                    <span className="text-3xl font-bold" style={{ color: "#2E2A26", fontFamily: '"Source Sans 3", Arial, sans-serif', letterSpacing: "-0.02em" }}>
+                    <span className="text-3xl font-bold text-foreground" style={{ fontFamily: '"Source Sans 3", Arial, sans-serif', letterSpacing: "-0.02em" }}>
                         {count}
                     </span>
                 )}
@@ -186,19 +183,19 @@ const TaskCalendar = ({ tasks, navigate }) => {
     const selectedTasks = selectedDay ? tasks.filter(t => normalizeDate(t.date) === selectedDay) : [];
 
     return (
-        <div className="rounded-xl p-5" style={{ backgroundColor: "#F2EBDD", border: "1px solid #D8D2C4" }}>
+        <div className="rounded-xl p-5 bg-card border border-border">
 
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-bold" style={{ color: "#2E2A26", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+                <h3 className="text-sm font-bold text-foreground" style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
                     {MONTHS[current.month]} {current.year}
                 </h3>
                 <div className="flex gap-1">
-                    <button onClick={prevMonth} className="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-[#D8D2C4] transition-colors cursor-pointer">
-                        <ChevronLeft className="h-4 w-4" style={{ color: "#6b6560" }} />
+                    <button onClick={prevMonth} className="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-border transition-colors cursor-pointer">
+                        <ChevronLeft className="h-4 w-4 text-muted-foreground" />
                     </button>
-                    <button onClick={nextMonth} className="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-[#D8D2C4] transition-colors cursor-pointer">
-                        <ChevronRight className="h-4 w-4" style={{ color: "#6b6560" }} />
+                    <button onClick={nextMonth} className="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-border transition-colors cursor-pointer">
+                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
                     </button>
                 </div>
             </div>
@@ -206,17 +203,17 @@ const TaskCalendar = ({ tasks, navigate }) => {
             {/* Day headers */}
             <div className="grid grid-cols-7 mb-1">
                 {DAYS.map(d => (
-                    <div key={d} className="text-center text-xs font-semibold uppercase tracking-widest py-1" style={{ color: "#9b948e" }}>
+                    <div key={d} className="text-center text-xs font-semibold uppercase tracking-widest py-1 text-muted-foreground">
                         {d}
                     </div>
                 ))}
             </div>
 
             {/* Calendar grid */}
-            <div className="grid grid-cols-7 gap-px" style={{ backgroundColor: "#D8D2C4", borderRadius: "8px", overflow: "hidden" }}>
+            <div className="grid grid-cols-7 gap-px bg-border" style={{ borderRadius: "8px", overflow: "hidden" }}>
                 {cells.map((cell, i) => {
                     if (!cell) return (
-                        <div key={i} className="py-2 px-1 min-h-[52px]" style={{ backgroundColor: "#F2EBDD", opacity: 0.4 }} />
+                        <div key={i} className="py-2 px-1 min-h-[52px] bg-card" style={{ opacity: 0.4 }} />
                     );
 
                     const isToday = cell.dateStr === todayStr;
@@ -229,19 +226,14 @@ const TaskCalendar = ({ tasks, navigate }) => {
                         <div
                             key={i}
                             onClick={() => hasTasks && setSelectedDay(isSelected ? null : cell.dateStr)}
-                            className="py-2 px-1 min-h-[52px] flex flex-col items-center gap-1 transition-colors"
-                            style={{
-                                backgroundColor: isSelected ? "#e8edde" : "#F2EBDD",
-                                cursor: hasTasks ? "pointer" : "default",
-                            }}
-                            onMouseEnter={e => hasTasks && !isSelected && (e.currentTarget.style.backgroundColor = "#EDE8DC")}
-                            onMouseLeave={e => hasTasks && !isSelected && (e.currentTarget.style.backgroundColor = "#F2EBDD")}
+                            className={["py-2 px-1 min-h-[52px] flex flex-col items-center gap-1 transition-colors", isSelected ? "bg-secondary/15" : "bg-card hover:bg-border/40"].join(" ")}
+                            style={{ cursor: hasTasks ? "pointer" : "default" }}
                         >
                             <span
                                 className="text-xs font-semibold h-6 w-6 flex items-center justify-center rounded-full"
                                 style={{
-                                    color: isToday ? "#FBF7EF" : "#2E2A26",
-                                    backgroundColor: isToday ? "#5E6A43" : "transparent",
+                                    color: isToday ? "var(--background)" : "var(--foreground)",
+                                    backgroundColor: isToday ? "var(--secondary)" : "transparent",
                                     fontFamily: '"Source Sans 3", Arial, sans-serif',
                                 }}
                             >
@@ -266,14 +258,14 @@ const TaskCalendar = ({ tasks, navigate }) => {
 
             {/* Selected day task panel */}
             {selectedDay && selectedTasks.length > 0 && (
-                <div className="mt-4 rounded-lg overflow-hidden" style={{ border: "1px solid #D8D2C4" }}>
-                    <div className="px-4 py-2.5 flex items-center justify-between" style={{ backgroundColor: "#EDE8DC", borderBottom: "1px solid #D8D2C4" }}>
-                        <span className="text-xs font-semibold" style={{ color: "#2E2A26" }}>
+                <div className="mt-4 rounded-lg overflow-hidden border border-border">
+                    <div className="px-4 py-2.5 flex items-center justify-between bg-border/40 border-b border-border">
+                        <span className="text-xs font-semibold text-foreground">
                             Tasks for {new Date(selectedDay + 'T00:00:00').toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
                         </span>
-                        <button onClick={() => setSelectedDay(null)} className="text-xs text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
+                        <button onClick={() => setSelectedDay(null)} className="text-xs text-muted-foreground hover:text-foreground cursor-pointer">✕</button>
                     </div>
-                    <div className="divide-y divide-gray-100">
+                    <div className="divide-y divide-border">
                         {selectedTasks.map(task => {
                             const colors = TASK_COLORS[task.entity_type];
                             const path = `${ENTITY_PATHS[task.entity_type]}/${task.entity_id}`;
@@ -281,8 +273,7 @@ const TaskCalendar = ({ tasks, navigate }) => {
                                 <div
                                     key={task.id}
                                     onClick={() => navigate(path)}
-                                    className="px-4 py-3 flex items-start gap-3 cursor-pointer hover:bg-gray-50 transition-colors"
-                                    style={{ backgroundColor: "#FAFAF8" }}
+                                    className="px-4 py-3 flex items-start gap-3 cursor-pointer hover:bg-border/30 transition-colors bg-card"
                                 >
                                     <span
                                         className="mt-0.5 shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full"
@@ -291,10 +282,10 @@ const TaskCalendar = ({ tasks, navigate }) => {
                                         {colors.label}
                                     </span>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-medium truncate" style={{ color: "#2E2A26" }}>{task.task}</p>
-                                        <p className="text-xs mt-0.5" style={{ color: "#9b948e" }}>{task.entity_name}</p>
+                                        <p className="text-sm font-medium truncate text-foreground">{task.task}</p>
+                                        <p className="text-xs mt-0.5 text-muted-foreground">{task.entity_name}</p>
                                     </div>
-                                    <ArrowUpRight className="h-3.5 w-3.5 shrink-0 mt-0.5" style={{ color: "#9b948e" }} />
+                                    <ArrowUpRight className="h-3.5 w-3.5 shrink-0 mt-0.5 text-muted-foreground" />
                                 </div>
                             );
                         })}
@@ -307,7 +298,7 @@ const TaskCalendar = ({ tasks, navigate }) => {
                 {Object.entries(TASK_COLORS).map(([type, colors]) => (
                     <div key={type} className="flex items-center gap-1.5">
                         <span className="h-2 w-2 rounded-full" style={{ backgroundColor: colors.dot }} />
-                        <span className="text-xs" style={{ color: "#9b948e" }}>{colors.label}</span>
+                        <span className="text-xs text-muted-foreground">{colors.label}</span>
                     </div>
                 ))}
             </div>
@@ -318,7 +309,7 @@ const TaskCalendar = ({ tasks, navigate }) => {
 const ChettPromoCard = ({ navigate }) => (
     <div
         className="relative overflow-hidden rounded-xl p-5 flex items-center justify-between gap-4 cursor-pointer transition-transform hover:-translate-y-0.5"
-        style={{ backgroundColor: "#2E2A26" }}
+        style={{ backgroundColor: "var(--foreground)" }}
         onClick={() => navigate("/chett-ai")}
     >
         <div className="flex items-center gap-4 min-w-0">
@@ -326,7 +317,7 @@ const ChettPromoCard = ({ navigate }) => (
                 <Bot className="h-5 w-5" style={{ color: "#B8C76A" }} />
             </div>
             <div className="min-w-0">
-                <p className="text-sm font-semibold italic" style={{ color: "#FBF7EF", fontFamily: '"Cormorant Garamond", Georgia, serif' }}>
+                <p className="text-sm font-semibold italic" style={{ color: "var(--background)", fontFamily: '"Cormorant Garamond", Georgia, serif' }}>
                     Meet Chett, your CRM copilot
                 </p>
                 <p className="text-xs mt-0.5 truncate" style={{ color: "#b0a89e" }}>
@@ -336,7 +327,7 @@ const ChettPromoCard = ({ navigate }) => (
         </div>
         <button
             className="shrink-0 h-9 px-4 rounded-lg text-sm font-semibold cursor-pointer"
-            style={{ backgroundColor: "#F29B6B", color: "#2E2A26" }}
+            style={{ backgroundColor: "#F29B6B", color: "var(--foreground)" }}
             onClick={(e) => { e.stopPropagation(); navigate("/chett-ai"); }}
         >
             Open Chett
@@ -344,14 +335,14 @@ const ChettPromoCard = ({ navigate }) => (
     </div>
 );
 
-const STAGE_COLORS = ["#B8C76A", "#F29B6B", "#5E6A43", "#D8D2C4", "#9b948e", "#8f9a3e"];
+const STAGE_COLORS = ["#B8C76A", "#F29B6B", "#5E6A43", "var(--border)", "var(--muted-foreground)", "#8f9a3e"];
 
 const LeadsByPipeline = ({ pipelineName, totalLeads, stageCounts, byResponsible, loading, navigate }) => {
     const maxCount = Math.max(1, ...stageCounts.map((s) => s.count));
     return (
-        <div className="rounded-xl p-5" style={{ backgroundColor: "#F2EBDD", border: "1px solid #D8D2C4" }}>
+        <div className="rounded-xl p-5 bg-card border border-border">
             <div className="flex items-center justify-between mb-4">
-                <p className="text-sm font-bold" style={{ color: "#2E2A26" }}>{pipelineName || "—"}</p>
+                <p className="text-sm font-bold text-foreground">{pipelineName || "—"}</p>
                 <span
                     className="text-xs font-semibold px-2 py-0.5 rounded-full"
                     style={{ backgroundColor: "#e8edde", border: "1px solid #B8C76A", color: "#5E6A43" }}
@@ -361,21 +352,21 @@ const LeadsByPipeline = ({ pipelineName, totalLeads, stageCounts, byResponsible,
             </div>
 
             {loading ? (
-                <div className="h-24 rounded animate-pulse" style={{ backgroundColor: "#D8D2C4" }} />
+                <div className="h-24 rounded animate-pulse bg-border" />
             ) : stageCounts.length === 0 ? (
-                <p className="text-sm" style={{ color: "#9b948e" }}>No leads yet.</p>
+                <p className="text-sm text-muted-foreground">No leads yet.</p>
             ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* By stage */}
                     <div className="space-y-3">
-                        <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "#9b948e" }}>By Stage</p>
+                        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">By Stage</p>
                         {stageCounts.map((s, i) => (
                             <div key={s.stage} className="cursor-pointer" onClick={() => navigate("/lead")}>
                                 <div className="flex items-center justify-between mb-1">
-                                    <span className="text-sm font-medium" style={{ color: "#2E2A26" }}>{s.stage}</span>
-                                    <span className="text-sm font-semibold" style={{ color: "#6b6560" }}>{s.count}</span>
+                                    <span className="text-sm font-medium text-foreground">{s.stage}</span>
+                                    <span className="text-sm font-semibold text-muted-foreground">{s.count}</span>
                                 </div>
-                                <div className="h-2 w-full rounded-full overflow-hidden" style={{ backgroundColor: "#E8E3DA" }}>
+                                <div className="h-2 w-full rounded-full overflow-hidden bg-border">
                                     <div
                                         className="h-full rounded-full transition-all"
                                         style={{ width: `${(s.count / maxCount) * 100}%`, backgroundColor: STAGE_COLORS[i % STAGE_COLORS.length] }}
@@ -387,7 +378,7 @@ const LeadsByPipeline = ({ pipelineName, totalLeads, stageCounts, byResponsible,
 
                     {/* By responsible */}
                     <div className="space-y-2">
-                        <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "#9b948e" }}>By Responsible</p>
+                        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">By Responsible</p>
                         {byResponsible.map((r) => (
                             <div
                                 key={r.name}
@@ -397,24 +388,24 @@ const LeadsByPipeline = ({ pipelineName, totalLeads, stageCounts, byResponsible,
                                 <div className="flex items-center gap-2 min-w-0">
                                     <div
                                         className="h-6 w-6 shrink-0 flex items-center justify-center rounded-full text-[10px] font-bold"
-                                        style={{ backgroundColor: "#5E6A43", color: "#FBF7EF" }}
+                                        style={{ backgroundColor: "var(--secondary)", color: "var(--background)" }}
                                     >
                                         {r.name.charAt(0).toUpperCase()}
                                     </div>
-                                    <span className="text-sm font-medium truncate" style={{ color: "#2E2A26" }}>{r.name}</span>
+                                    <span className="text-sm font-medium truncate text-foreground">{r.name}</span>
                                     <div className="flex flex-wrap gap-1">
                                         {r.stages.map((s, i) => (
                                             <span
                                                 key={s.stage}
                                                 className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
-                                                style={{ backgroundColor: STAGE_COLORS[i % STAGE_COLORS.length] + "30", color: "#2E2A26" }}
+                                                style={{ backgroundColor: STAGE_COLORS[i % STAGE_COLORS.length] + "30", color: "var(--foreground)" }}
                                             >
                                                 {s.stage} · {s.count}
                                             </span>
                                         ))}
                                     </div>
                                 </div>
-                                <span className="text-sm font-bold shrink-0" style={{ color: "#2E2A26" }}>{r.total}</span>
+                                <span className="text-sm font-bold shrink-0 text-foreground">{r.total}</span>
                             </div>
                         ))}
                     </div>
@@ -573,14 +564,13 @@ export const Dashboard = () => {
     const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
 
     return (
-        <div className="h-full flex flex-col w-full transition-colors duration-300" style={{ backgroundColor: "#FBF7EF" }}>
+        <div className="h-full flex flex-col w-full transition-colors duration-300 bg-background">
 
             {/* Page header */}
             <header
-                className="sticky top-0 z-30 w-full px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                className="sticky top-0 z-30 w-full px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border"
                 style={{
-                    backgroundColor: "rgba(251,247,239,0.85)",
-                    borderBottom: "1px solid #D8D2C4",
+                    backgroundColor: "color-mix(in srgb, var(--background) 85%, transparent)",
                     backdropFilter: "blur(12px)",
                     WebkitBackdropFilter: "blur(12px)",
                 }}
@@ -588,8 +578,8 @@ export const Dashboard = () => {
                 <div>
                     <div className="flex items-center gap-2.5">
                         <h1
-                            className="text-2xl font-semibold"
-                            style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', fontStyle: "italic", color: "#2E2A26", letterSpacing: "-0.01em" }}
+                            className="text-3xl font-semibold text-foreground"
+                            style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', fontStyle: "italic", letterSpacing: "-0.01em" }}
                         >
                             Dashboard
                         </h1>
@@ -601,15 +591,15 @@ export const Dashboard = () => {
                             Live
                         </span>
                     </div>
-                    <p className="text-sm mt-0.5" style={{ color: "#6b6560", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+                    <p className="text-sm mt-0.5 text-muted-foreground" style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
                         {greeting},{" "}
-                        <span className="font-semibold" style={{ color: "#2E2A26" }}>{user?.username || "User"}</span>
-                        {user?.groups?.[0] && <span style={{ color: "#9b948e" }}> · {user.groups[0]}</span>}
+                        <span className="font-semibold text-foreground">{user?.username || "User"}</span>
+                        {user?.groups?.[0] && <span> · {user.groups[0]}</span>}
                     </p>
                 </div>
                 <p
-                    className="text-xs hidden sm:block"
-                    style={{ color: "#6b6560", fontFamily: '"Source Sans 3", Arial, sans-serif', letterSpacing: "0.04em" }}
+                    className="text-xs hidden sm:block text-muted-foreground"
+                    style={{ fontFamily: '"Source Sans 3", Arial, sans-serif', letterSpacing: "0.04em" }}
                 >
                     {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
                 </p>
@@ -627,8 +617,8 @@ export const Dashboard = () => {
                 {/* Overview */}
                 <section className="space-y-4">
                     <p
-                        className="text-xs font-semibold uppercase tracking-widest"
-                        style={{ color: "#9b948e", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+                        className="text-xs font-semibold uppercase tracking-widest text-muted-foreground"
+                        style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}
                     >
                         Overview
                     </p>
@@ -642,7 +632,7 @@ export const Dashboard = () => {
                 {/* Leads by pipeline */}
                 <section className="space-y-4">
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                        <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#9b948e", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+                        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground" style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
                             Leads by Pipeline{selectedStudent !== "all" && " — filtered by client"}
                         </p>
                         <div className="flex items-center gap-2">
@@ -650,27 +640,25 @@ export const Dashboard = () => {
                                 <select
                                     value={selectedStudent}
                                     onChange={(e) => setSelectedStudent(e.target.value)}
-                                    className="appearance-none pl-3 pr-7 py-1.5 rounded-full text-xs font-semibold focus:outline-none cursor-pointer transition-colors"
-                                    style={{ border: "1px solid #D8D2C4", backgroundColor: "#F2EBDD", color: "#2E2A26" }}
+                                    className="appearance-none pl-3 pr-7 py-1.5 rounded-full text-xs font-semibold focus:outline-none cursor-pointer transition-colors border border-border bg-card text-foreground"
                                 >
                                     <option value="all">All Clients</option>
                                     {students.map((s) => (
                                         <option key={s.id} value={String(s.id)}>{s.name}</option>
                                     ))}
                                 </select>
-                                <ChevronRight size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none rotate-90" style={{ color: "#9b948e" }} />
+                                <ChevronRight size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none rotate-90 text-muted-foreground" />
                             </div>
                             <div className="relative" title="Cohorts are not tracked in the system yet">
                                 <select
                                     disabled
                                     value="all"
                                     onChange={() => {}}
-                                    className="appearance-none pl-3 pr-7 py-1.5 rounded-full text-xs font-semibold focus:outline-none cursor-not-allowed opacity-60"
-                                    style={{ border: "1px solid #D8D2C4", backgroundColor: "#F2EBDD", color: "#2E2A26" }}
+                                    className="appearance-none pl-3 pr-7 py-1.5 rounded-full text-xs font-semibold focus:outline-none cursor-not-allowed opacity-60 border border-border bg-card text-foreground"
                                 >
                                     <option value="all">All Cohorts</option>
                                 </select>
-                                <ChevronRight size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none rotate-90" style={{ color: "#9b948e" }} />
+                                <ChevronRight size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none rotate-90 text-muted-foreground" />
                             </div>
                         </div>
                     </div>
@@ -686,7 +674,7 @@ export const Dashboard = () => {
 
                 {/* My Pending Tasks KPIs */}
                 <section className="space-y-4">
-                    <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#9b948e", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+                    <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground" style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
                         My Pending Tasks
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
@@ -698,11 +686,11 @@ export const Dashboard = () => {
 
                 {/* Calendar */}
                 <section className="space-y-4">
-                    <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#9b948e", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+                    <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground" style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
                         Task Calendar
                     </p>
                     {tasksLoading ? (
-                        <div className="h-64 rounded-xl animate-pulse" style={{ backgroundColor: "#E8E3DA" }} />
+                        <div className="h-64 rounded-xl animate-pulse bg-border" />
                     ) : (
                         <TaskCalendar tasks={taskData.tasks} navigate={navigate} />
                     )}

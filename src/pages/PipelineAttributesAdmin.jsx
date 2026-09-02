@@ -16,21 +16,21 @@ import {
 import Swal from "sweetalert2";
 
 const FONT = '"Source Sans 3", Arial, sans-serif';
-const INK = "#2E2A26";
-const MUTED = "#6b6560";
-const HINT = "#9b948e";
-const LINEN = "#FBF7EF";
-const OAT = "#F2EBDD";
-const PEBBLE = "#D8D2C4";
+const INK = "var(--foreground)";
+const MUTED = "var(--muted-foreground)";
+const HINT = "var(--muted-foreground)";
+const LINEN = "var(--background)";
+const OAT = "var(--card)";
+const PEBBLE = "var(--border)";
 const OLIVE = "#5E6A43";
 
 const TYPE_COLORS = {
     text:     { bg: "rgba(94,106,67,0.10)",  border: "rgba(94,106,67,0.35)",  color: "#4a5535" },
     boolean:  { bg: "rgba(242,155,107,0.12)", border: "rgba(242,155,107,0.4)", color: "#c0622a" },
     list:     { bg: "rgba(184,199,106,0.12)", border: "rgba(184,199,106,0.4)", color: "#697a28" },
-    number:   { bg: "rgba(216,210,196,0.4)",  border: "#D8D2C4",               color: "#6b6560" },
-    date:     { bg: "rgba(216,210,196,0.4)",  border: "#D8D2C4",               color: "#6b6560" },
-    textarea: { bg: "rgba(216,210,196,0.4)",  border: "#D8D2C4",               color: "#6b6560" },
+    number:   { bg: "rgba(216,210,196,0.4)",  border: "var(--border)",               color: "var(--muted-foreground)" },
+    date:     { bg: "rgba(216,210,196,0.4)",  border: "var(--border)",               color: "var(--muted-foreground)" },
+    textarea: { bg: "rgba(216,210,196,0.4)",  border: "var(--border)",               color: "var(--muted-foreground)" },
 };
 
 const TypePill = ({ type }) => {
@@ -54,7 +54,7 @@ const Modal = ({ isOpen, children, onClose }) => {
         >
             <div
                 className="w-full max-w-md rounded-xl shadow-2xl p-6 relative animate-in zoom-in-95 duration-200"
-                style={{ backgroundColor: "#FBF7EF", border: "1px solid #D8D2C4" }}
+                style={{ backgroundColor: "var(--background)", border: "1px solid var(--border)" }}
                 onClick={e => e.stopPropagation()}
             >
                 {children}
@@ -82,7 +82,7 @@ const SortableAttrCard = ({ attr, onEdit, onDelete }) => {
             onMouseEnter={e => {
                 if (!isDragging) {
                     e.currentTarget.style.borderColor = OLIVE;
-                    e.currentTarget.style.backgroundColor = "#FBF7EF";
+                    e.currentTarget.style.backgroundColor = "var(--background)";
                 }
             }}
             onMouseLeave={e => {
@@ -373,7 +373,7 @@ export const PipelineAttributesAdmin = () => {
             {/* Page header */}
             <div
                 className="shrink-0 px-8 py-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
-                style={{ borderBottom: `1px solid ${PEBBLE}`, backgroundColor: "#F2EBDD" }}
+                style={{ borderBottom: `1px solid ${PEBBLE}`, backgroundColor: "var(--card)" }}
             >
                 <div className="flex items-center gap-4">
                     <div
@@ -383,7 +383,7 @@ export const PipelineAttributesAdmin = () => {
                         <SlidersHorizontal className="h-6 w-6" style={{ color: OLIVE }} />
                     </div>
                     <div>
-                        <h1 className="text-xl font-black tracking-tight" style={{ color: INK }}>
+                        <h1 className="text-2xl font-black tracking-tight" style={{ color: INK }}>
                             Pipeline Attributes
                         </h1>
                         <p className="text-xs flex items-center gap-2 mt-1" style={{ color: HINT }}>

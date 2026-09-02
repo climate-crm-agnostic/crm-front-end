@@ -113,24 +113,21 @@ export const Asset = () => {
     ];
 
     const renderAssetCard = (item) => (
-        <div
-            className="flex items-center justify-between gap-3 rounded-lg p-4 transition-colors"
-            style={{ backgroundColor: "#FBF7EF", border: "1px solid #D8D2C4" }}
-        >
+        <div className="flex items-center justify-between gap-3 rounded-lg p-4 transition-colors bg-background border border-border">
             <div className="min-w-0 cursor-pointer" onClick={() => handleEdit(item)}>
-                <p className="text-sm font-semibold truncate" style={{ color: "#2E2A26" }}>{item.name}</p>
-                <p className="text-xs mt-0.5" style={{ color: "#9b948e" }}>{item.bought_date ? `Bought ${item.bought_date}` : "—"}</p>
+                <p className="text-sm font-semibold truncate text-foreground">{item.name}</p>
+                <p className="text-xs mt-0.5 text-muted-foreground">{item.bought_date ? `Bought ${item.bought_date}` : "—"}</p>
             </div>
             <div className="flex items-center gap-4 shrink-0">
                 <div className="text-right">
-                    <p className="text-sm font-bold" style={{ color: "#2E2A26" }}>
+                    <p className="text-sm font-bold text-foreground">
                         {item.price ? `$${Number(item.price).toFixed(2)}` : "—"}
                     </p>
-                    <p className="text-xs mt-0.5" style={{ color: "#9b948e" }}>Qty {item.quantity ?? "—"}</p>
+                    <p className="text-xs mt-0.5 text-muted-foreground">Qty {item.quantity ?? "—"}</p>
                 </div>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <button className="h-8 w-8 flex items-center justify-center rounded-md cursor-pointer" style={{ color: "#6b6560" }}>
+                        <button className="h-8 w-8 flex items-center justify-center rounded-md cursor-pointer text-muted-foreground">
                             <MoreHorizontal className="h-4 w-4" />
                         </button>
                     </DropdownMenuTrigger>
@@ -151,7 +148,7 @@ export const Asset = () => {
         <div className="h-full flex flex-col p-2 w-full">
             <div className="flex justify-between items-center mb-2">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-codex-texto-primary dark:text-codex-texto-dark-primary">
+                    <h1 className="text-3xl font-bold tracking-tight text-codex-texto-primary dark:text-codex-texto-dark-primary">
                         Assets
                     </h1>
                     <p className="text-sm text-muted-foreground">

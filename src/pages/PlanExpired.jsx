@@ -4,7 +4,7 @@ export const PlanExpired = () => {
   return (
     <div
       className="w-full min-h-screen flex items-center justify-center px-6"
-      style={{ backgroundColor: "#FBF7EF", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+      style={{ backgroundColor: "var(--background)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
     >
       {/* Top accent bar */}
       <div
@@ -28,14 +28,14 @@ export const PlanExpired = () => {
             style={{
               fontFamily: '"Cormorant Garamond", Georgia, serif',
               fontStyle: "italic",
-              color: "#2E2A26",
+              color: "var(--foreground)",
               letterSpacing: "-0.015em",
               lineHeight: 1.1,
             }}
           >
             Access suspended
           </h1>
-          <p className="text-base leading-relaxed" style={{ color: "#6b6560" }}>
+          <p className="text-base leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
             Your CodeX CRM subscription has expired or been suspended.
             Please contact support to reactivate your account.
           </p>
@@ -47,7 +47,7 @@ export const PlanExpired = () => {
           className="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-200 shadow-sm"
           style={{
             backgroundColor: "#F29B6B",
-            color: "#FBF7EF",
+            color: "var(--background)",
             textDecoration: "none",
           }}
           onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#d97c4a")}
@@ -56,7 +56,7 @@ export const PlanExpired = () => {
           Contact support
         </a>
 
-        <p className="text-xs" style={{ color: "#D8D2C4" }}>
+        <p className="text-xs" style={{ color: "var(--border)" }}>
           © {new Date().getFullYear()} Codex Technologies
         </p>
       </div>

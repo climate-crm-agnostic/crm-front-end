@@ -103,7 +103,7 @@ export const Settings = () => {
         <div className="min-h-screen bg-background">
             <div className="sticky top-0 z-10 border-b px-6 py-4 flex items-center justify-between bg-card shadow-sm">
                 <div>
-                    <h1 className="text-xl font-semibold">Integrations</h1>
+                    <h1 className="text-3xl font-semibold">Integrations</h1>
                     <p className="text-sm text-muted-foreground">Configure third-party services</p>
                 </div>
                 <Button onClick={handleSave} disabled={saving || !hasPending}>

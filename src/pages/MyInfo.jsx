@@ -4,8 +4,8 @@ import { getMyAIUsage } from "@/services/aiService";
 import { User, Building2, Bot, CheckCircle2, XCircle, Infinity } from "lucide-react";
 
 const TIER_COLORS = {
-    free_trial: { bg: "#F2EBDD", text: "#6b6560", border: "#D8D2C4" },
-    basic:      { bg: "#F2EBDD", text: "#6b6560", border: "#D8D2C4" },
+    free_trial: { bg: "var(--card)", text: "var(--muted-foreground)", border: "var(--border)" },
+    basic:      { bg: "var(--card)", text: "var(--muted-foreground)", border: "var(--border)" },
     full:       { bg: "#e8edde", text: "#5E6A43", border: "#B8C76A" },
     full_plus:  { bg: "#e8edde", text: "#5E6A43", border: "#5E6A43" },
     business:   { bg: "#FFDCC8", text: "#c04a00", border: "#F29B6B" },
@@ -27,8 +27,8 @@ function Card({ children, style }) {
     return (
         <div
             style={{
-                backgroundColor: "#F2EBDD",
-                border: "1px solid #D8D2C4",
+                backgroundColor: "var(--card)",
+                border: "1px solid var(--border)",
                 borderRadius: "8px",
                 boxShadow: "0 1px 3px rgba(46,42,38,0.06)",
                 ...style,
@@ -43,7 +43,7 @@ function CardHeader({ icon: Icon, title, accentColor = "#5E6A43" }) {
     return (
         <div
             className="flex items-center gap-3 px-6 py-4 border-b"
-            style={{ borderColor: "#D8D2C4" }}
+            style={{ borderColor: "var(--border)" }}
         >
             <div
                 className="flex h-8 w-8 items-center justify-center rounded-lg"
@@ -53,7 +53,7 @@ function CardHeader({ icon: Icon, title, accentColor = "#5E6A43" }) {
             </div>
             <h2
                 className="text-sm font-semibold"
-                style={{ color: "#2E2A26", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+                style={{ color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
             >
                 {title}
             </h2>
@@ -68,7 +68,7 @@ function QuotaBar({ used, limit }) {
     return (
         <div className="space-y-2">
             <div className="flex justify-between items-baseline">
-                <span className="text-2xl font-bold" style={{ color: "#2E2A26", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+                <span className="text-2xl font-bold" style={{ color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
                     {used}
                     <span className="text-sm font-normal text-muted-foreground ml-1">/ {limit} today</span>
                 </span>
@@ -76,13 +76,13 @@ function QuotaBar({ used, limit }) {
                     {pct.toFixed(0)}% used
                 </span>
             </div>
-            <div className="w-full h-2 rounded-full" style={{ backgroundColor: "#D8D2C4" }}>
+            <div className="w-full h-2 rounded-full" style={{ backgroundColor: "var(--border)" }}>
                 <div
                     className="h-2 rounded-full transition-all duration-500"
                     style={{ width: `${pct}%`, backgroundColor: barColor }}
                 />
             </div>
-            <p className="text-xs" style={{ color: "#9b948e" }}>
+            <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
                 Resets daily at midnight UTC
             </p>
         </div>
@@ -118,15 +118,15 @@ export const MyInfo = () => {
                 <div className="px-6 py-5 flex items-center gap-5">
                     <div
                         className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-lg font-bold"
-                        style={{ backgroundColor: "#5E6A43", color: "#FBF7EF", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+                        style={{ backgroundColor: "#5E6A43", color: "var(--background)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
                     >
                         {initials}
                     </div>
                     <div className="space-y-1 min-w-0">
-                        <p className="font-semibold text-base truncate" style={{ color: "#2E2A26", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+                        <p className="font-semibold text-base truncate" style={{ color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
                             {user?.username}
                         </p>
-                        <p className="text-sm truncate" style={{ color: "#6b6560" }}>
+                        <p className="text-sm truncate" style={{ color: "var(--muted-foreground)" }}>
                             {user?.email || <span className="italic text-muted-foreground">No email on file</span>}
                         </p>
                         {user?.groups?.length > 0 && (
@@ -175,19 +175,19 @@ export const MyInfo = () => {
                     {plan && (
                         <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-sm">
                             <div>
-                                <span style={{ color: "#9b948e" }}>Start date</span>
-                                <p className="font-medium" style={{ color: "#2E2A26" }}>{plan.start_date ?? "—"}</p>
+                                <span style={{ color: "var(--muted-foreground)" }}>Start date</span>
+                                <p className="font-medium" style={{ color: "var(--foreground)" }}>{plan.start_date ?? "—"}</p>
                             </div>
                             <div>
-                                <span style={{ color: "#9b948e" }}>End date</span>
-                                <p className="font-medium" style={{ color: "#2E2A26" }}>{plan.end_date ?? "No expiry"}</p>
+                                <span style={{ color: "var(--muted-foreground)" }}>End date</span>
+                                <p className="font-medium" style={{ color: "var(--foreground)" }}>{plan.end_date ?? "No expiry"}</p>
                             </div>
                         </div>
                     )}
 
                     {plan?.features && (
                         <div>
-                            <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: "#9b948e" }}>Features</p>
+                            <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--muted-foreground)" }}>Features</p>
                             <div className="grid grid-cols-2 gap-y-1.5 gap-x-4">
                                 {Object.entries(FEATURE_LABELS).map(([key, label]) => {
                                     const val = plan.features[key];
@@ -197,9 +197,9 @@ export const MyInfo = () => {
                                         <div key={key} className="flex items-center gap-2">
                                             {enabled
                                                 ? <CheckCircle2 className="h-3.5 w-3.5 shrink-0" style={{ color: "#5E6A43" }} />
-                                                : <XCircle className="h-3.5 w-3.5 shrink-0" style={{ color: "#D8D2C4" }} />
+                                                : <XCircle className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--border)" }} />
                                             }
-                                            <span className="text-xs" style={{ color: enabled ? "#2E2A26" : "#9b948e" }}>
+                                            <span className="text-xs" style={{ color: enabled ? "var(--foreground)" : "var(--muted-foreground)" }}>
                                                 {label}
                                                 {isLimit ? ` (${val === true ? "∞" : val})` : ""}
                                             </span>
@@ -218,15 +218,15 @@ export const MyInfo = () => {
                     <CardHeader icon={Bot} title="Chett AI — Daily Quota" accentColor="#F29B6B" />
                     <div className="px-6 py-5">
                         {usageLoading ? (
-                            <div className="h-12 animate-pulse rounded" style={{ backgroundColor: "#D8D2C4" }} />
+                            <div className="h-12 animate-pulse rounded" style={{ backgroundColor: "var(--border)" }} />
                         ) : !aiUsage ? (
-                            <p className="text-sm" style={{ color: "#9b948e" }}>Usage data unavailable.</p>
+                            <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>Usage data unavailable.</p>
                         ) : aiUsage.unlimited ? (
                             <div className="flex items-center gap-3">
                                 <Infinity className="h-6 w-6" style={{ color: "#5E6A43" }} />
                                 <div>
-                                    <p className="font-semibold" style={{ color: "#2E2A26" }}>Unlimited queries</p>
-                                    <p className="text-xs" style={{ color: "#9b948e" }}>
+                                    <p className="font-semibold" style={{ color: "var(--foreground)" }}>Unlimited queries</p>
+                                    <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
                                         {aiUsage.question_count} sent today
                                     </p>
                                 </div>
@@ -235,8 +235,8 @@ export const MyInfo = () => {
                             <QuotaBar used={aiUsage.question_count} limit={aiUsage.daily_limit} />
                         )}
                         {aiUsage && !aiUsage.unlimited && aiUsage.ai_tier && (
-                            <p className="text-xs mt-3" style={{ color: "#9b948e" }}>
-                                Tier: <span className="font-medium" style={{ color: "#6b6560" }}>{aiUsage.ai_tier}</span>
+                            <p className="text-xs mt-3" style={{ color: "var(--muted-foreground)" }}>
+                                Tier: <span className="font-medium" style={{ color: "var(--muted-foreground)" }}>{aiUsage.ai_tier}</span>
                             </p>
                         )}
                     </div>

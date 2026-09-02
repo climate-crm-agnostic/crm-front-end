@@ -2,13 +2,6 @@ import React, { useMemo, useState } from "react";
 import { FileInput, MoreHorizontal, OctagonX, RefreshCcw, RotateCcwKey, SquarePen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
@@ -17,6 +10,8 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { usePagination } from "@/hooks/usePagination";
+import { PageSizeSelect, PaginationFooter } from "@/components/PaginationControls";
 
 export const Table = ({
   data = [],
@@ -31,8 +26,6 @@ export const Table = ({
   pageSizeOptions = [10, 20, 50],
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(pageSizeOptions[0] || 10);
   const [sortKey, setSortKey] = useState(null);
   const [sortDir, setSortDir] = useState("asc");
 
@@ -162,17 +155,16 @@ export const Table = ({
     return copy;
   }, [filtered, sortKey, sortDir]);
 
-  const totalRecords = sorted.length;
-  const totalPages = Math.max(1, Math.ceil(totalRecords / pageSize));
-  const currentData = useMemo(() => {
-    const start = (currentPage - 1) * pageSize;
-    return sorted.slice(start, start + pageSize);
-  }, [sorted, currentPage, pageSize]);
-
-  const startRecord = totalRecords ? (currentPage - 1) * pageSize + 1 : 0;
-  const endRecord = totalRecords
-    ? Math.min(currentPage * pageSize, totalRecords)
-    : 0;
+  const {
+    pageItems: currentData,
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    totalPages,
+    startRecord,
+    endRecord,
+  } = usePagination(sorted, { pageSizeOptions });
 
   const toggleSort = (key) => {
     if (key === "_actions") return;
@@ -205,22 +197,22 @@ export const Table = ({
                   maxWidth: "320px",
                   paddingLeft: "12px",
                   paddingRight: "36px",
-                  backgroundColor: "#fff",
-                  border: "1px solid #D8D2C4",
+                  backgroundColor: "var(--background)",
+                  border: "1px solid var(--border)",
                   borderRadius: "6px",
-                  color: "#2E2A26",
+                  color: "var(--foreground)",
                   fontSize: "14px",
                   fontFamily: '"Source Sans 3", Arial, sans-serif',
                   outline: "none",
                 }}
-                onFocus={e => e.target.style.borderColor = "#5E6A43"}
-                onBlur={e => e.target.style.borderColor = "#D8D2C4"}
+                onFocus={e => e.target.style.borderColor = "var(--secondary)"}
+                onBlur={e => e.target.style.borderColor = "var(--border)"}
               />
               {searchTerm ? (
                 <button
                   onClick={() => setSearchTerm("")}
                   className="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer"
-                  style={{ color: "#9b948e" }}
+                  style={{ color: "var(--muted-foreground)" }}
                   title="Clear"
                 >
                   <RefreshCcw className="w-4 h-4" />
@@ -230,42 +222,18 @@ export const Table = ({
           )}
         </div>
 
-        {/* Select de shadcn */}
-        <div className="flex items-center gap-2 sm:justify-end">
-          <span className="text-sm" style={{ color: "#6b6560", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>Rows per page</span>
-          <Select
-            value={String(pageSize)}
-            onValueChange={(v) => {
-              setPageSize(Number(v));
-              setCurrentPage(1);
-            }}
-          >
-            <SelectTrigger
-              className="w-[88px] h-9"
-              style={{ backgroundColor: "#fff", border: "1px solid #D8D2C4", color: "#2E2A26", fontFamily: '"Source Sans 3", Arial, sans-serif', fontSize: "14px" }}
-            >
-              <SelectValue placeholder={pageSize} />
-            </SelectTrigger>
-            <SelectContent align="end" sideOffset={4}>
-              {pageSizeOptions.map((n) => (
-                <SelectItem key={n} value={String(n)}>
-                  {n}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <PageSizeSelect pageSize={pageSize} setPageSize={setPageSize} pageSizeOptions={pageSizeOptions} />
       </div>
 
       {/* Tabla */}
       <div
         className="flex-1 overflow-auto mt-4 relative"
-        style={{ borderRadius: "8px", border: "1px solid #D8D2C4", backgroundColor: "#FBF7EF" }}
+        style={{ borderRadius: "8px", border: "1px solid var(--border)", backgroundColor: "var(--background)" }}
       >
         <div className="min-w-full inline-block align-middle">
           <table className="w-full text-sm">
             <thead>
-              <tr style={{ backgroundColor: "#5E6A43" }}>
+              <tr style={{ backgroundColor: "var(--secondary)" }}>
                 {visibleCols.map((col) => {
                   const canSort = col.key !== "_actions";
                   const isActions = col.key === "_actions";
@@ -275,8 +243,8 @@ export const Table = ({
                       key={col.key}
                       style={{
                         ...(col.width ? { width: col.width } : {}),
-                        backgroundColor: "#5E6A43",
-                        color: "#FBF7EF",
+                        backgroundColor: "var(--secondary)",
+                        color: "var(--secondary-foreground)",
                         position: "sticky",
                         top: 0,
                         zIndex: 10,
@@ -301,14 +269,14 @@ export const Table = ({
                 })}
               </tr>
             </thead>
-            <tbody style={{ color: "#2E2A26" }}>
+            <tbody style={{ color: "var(--foreground)" }}>
               {currentData.length ? (
                 currentData.map((row, idx) => (
                   <tr
                     key={row.id_rol ?? row.id ?? idx}
-                    style={{ borderBottom: "1px solid #D8D2C4" }}
+                    style={{ borderBottom: "1px solid var(--border)" }}
                     className="transition-colors"
-                    onMouseEnter={e => e.currentTarget.style.backgroundColor = "#F2EBDD"}
+                    onMouseEnter={e => e.currentTarget.style.backgroundColor = "var(--card)"}
                     onMouseLeave={e => e.currentTarget.style.backgroundColor = ""}
                   >
                     {visibleCols.map((col) => (
@@ -332,7 +300,7 @@ export const Table = ({
                   <td
                     colSpan={visibleCols.length}
                     className="px-4 py-10 text-center"
-                    style={{ color: "#9b948e", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+                    style={{ color: "var(--muted-foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
                   >
                     No results.
                   </td>
@@ -343,48 +311,13 @@ export const Table = ({
         </div>
       </div>
 
-      {/* Paginación */}
-      <div className="mt-auto px-4 py-2 text-xs" style={{ borderTop: "1px solid #D8D2C4" }}>
-        <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
-          <div className="text-center sm:text-left" style={{ color: "#6b6560", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
-            <span className="font-semibold" style={{ color: "#2E2A26" }}>{startRecord}</span> -{" "}
-            <span className="font-semibold" style={{ color: "#2E2A26" }}>{endRecord}</span>{" "}
-            (Page {currentPage} of {totalPages})
-          </div>
-          <div className="flex items-center justify-center gap-1">
-            <Button
-              variant="terciary"
-              className="h-9 px-3"
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-            >
-              ← Previous
-            </Button>
-            {Array.from({ length: totalPages }).map((_, idx) => {
-              const page = idx + 1;
-              const isActive = page === currentPage;
-              return (
-                <Button
-                  key={page}
-                  variant={isActive ? "terciary" : "paginacionNoActive"}
-                  className={isActive ? "text-codex-cards-secondary-variante1 h-9 px-3" : "h-9 px-3"}
-                  onClick={() => setCurrentPage(page)}
-                >
-                  {page}
-                </Button>
-              );
-            })}
-            <Button
-              variant="terciary"
-              className="h-9 px-3"
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-            >
-              Next →
-            </Button>
-          </div>
-        </div>
-      </div>
+      <PaginationFooter
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+        totalPages={totalPages}
+        startRecord={startRecord}
+        endRecord={endRecord}
+      />
     </div>
   );
 };

@@ -132,7 +132,7 @@ export const Followup = () => {
                     <Button variant="ghost" className="mb-2 pl-0 hover:bg-transparent hover:text-primary" onClick={() => navigate("/service")}>
                         <ArrowLeft className="mr-2 h-4 w-4" /> Back to Services
                     </Button>
-                    <h1 className="text-2xl font-bold tracking-tight text-codex-texto-primary dark:text-codex-texto-dark-primary">
+                    <h1 className="text-3xl font-bold tracking-tight text-codex-texto-primary dark:text-codex-texto-dark-primary">
                         Follow Ups
                     </h1>
                     <p className="text-sm text-muted-foreground">

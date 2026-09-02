@@ -7,12 +7,12 @@ import { PipelineModal } from "../components/pipelines/PipelineModal";
 import { Plus, Edit2, Columns, ChevronDown, ChevronUp, Trash2, SlidersHorizontal, ShieldCheck } from "lucide-react";
 
 const FONT = '"Source Sans 3", Arial, sans-serif';
-const INK = "#2E2A26";
-const MUTED = "#6b6560";
-const HINT = "#9b948e";
-const LINEN = "#FBF7EF";
-const OAT = "#F2EBDD";
-const PEBBLE = "#D8D2C4";
+const INK = "var(--foreground)";
+const MUTED = "var(--muted-foreground)";
+const HINT = "var(--muted-foreground)";
+const LINEN = "var(--background)";
+const OAT = "var(--card)";
+const PEBBLE = "var(--border)";
 const OLIVE = "#5E6A43";
 const APRICOT = "#F29B6B";
 
@@ -640,7 +640,7 @@ export const Pipeline = () => {
                     {pipelines.length === 0 ? (
                         <div
                             className="col-span-full text-center py-20 rounded-xl"
-                            style={{ border: "1.5px dashed #D8D2C4", color: HINT }}
+                            style={{ border: "1.5px dashed var(--border)", color: HINT }}
                         >
                             <Columns className="h-10 w-10 mx-auto mb-3 opacity-25" />
                             <p className="text-sm">No pipelines found.</p>

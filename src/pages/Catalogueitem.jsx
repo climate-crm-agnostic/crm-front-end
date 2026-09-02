@@ -132,7 +132,7 @@ export const Catalogueitem = () => {
         <div className="h-full flex flex-col p-2 w-full">
             <div className="flex justify-between items-center mb-2">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-codex-texto-primary dark:text-codex-texto-dark-primary">
+                    <h1 className="text-3xl font-bold tracking-tight text-codex-texto-primary dark:text-codex-texto-dark-primary">
                         Catalogue
                     </h1>
                     <p className="text-sm text-muted-foreground">
@@ -143,9 +143,9 @@ export const Catalogueitem = () => {
                     <button
                         onClick={handleExportExcel}
                         className="flex items-center gap-2 h-9 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
-                        style={{ backgroundColor: "#F2EBDD", border: "1px solid #5E6A43", color: "#5E6A43" }}
+                        style={{ backgroundColor: "var(--card)", border: "1px solid #5E6A43", color: "#5E6A43" }}
                         onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(94,106,67,0.15)"}
-                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "#F2EBDD"}
+                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "var(--card)"}
                     >
                         <Download className="h-4 w-4" /> Export Excel
                     </button>
@@ -161,14 +161,14 @@ export const Catalogueitem = () => {
                         value={selectedCategory}
                         onChange={(e) => setSelectedCategory(e.target.value)}
                         className="appearance-none pl-3 pr-7 py-1.5 rounded-full text-xs font-semibold focus:outline-none cursor-pointer transition-colors"
-                        style={{ border: "1px solid #D8D2C4", backgroundColor: "#F2EBDD", color: "#2E2A26" }}
+                        style={{ border: "1px solid var(--border)", backgroundColor: "var(--card)", color: "var(--foreground)" }}
                     >
                         <option value="all">All Categories</option>
                         {categories.map((c) => (
                             <option key={c.id} value={String(c.id)}>{c.name}</option>
                         ))}
                     </select>
-                    <ChevronRight size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none rotate-90" style={{ color: "#9b948e" }} />
+                    <ChevronRight size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none rotate-90" style={{ color: "var(--muted-foreground)" }} />
                 </div>
                 <button
                     onClick={() => navigate("/category")}

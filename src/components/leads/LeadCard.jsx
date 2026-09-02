@@ -33,8 +33,8 @@ export const LeadCard = ({ lead, salesUsers = [], clientsById = {}, onDragStart,
             <div
                 className="rounded-lg p-3 transition-all"
                 style={{
-                    backgroundColor: "#FBF7EF",
-                    border: "1px solid #D8D2C4",
+                    backgroundColor: "var(--background)",
+                    border: "1px solid var(--border)",
                     fontFamily: '"Source Sans 3", Arial, sans-serif',
                 }}
                 onMouseEnter={e => {
@@ -43,7 +43,7 @@ export const LeadCard = ({ lead, salesUsers = [], clientsById = {}, onDragStart,
                     e.currentTarget.style.transform = "translateY(-1px)";
                 }}
                 onMouseLeave={e => {
-                    e.currentTarget.style.borderColor = "#D8D2C4";
+                    e.currentTarget.style.borderColor = "var(--border)";
                     e.currentTarget.style.boxShadow = "none";
                     e.currentTarget.style.transform = "none";
                 }}
@@ -51,7 +51,7 @@ export const LeadCard = ({ lead, salesUsers = [], clientsById = {}, onDragStart,
                 {/* Lead name */}
                 <p
                     className="text-[11px] font-bold uppercase tracking-tight leading-tight line-clamp-2 mb-2.5"
-                    style={{ color: "#2E2A26" }}
+                    style={{ color: "var(--foreground)" }}
                 >
                     {lead.name}
                 </p>
@@ -59,29 +59,29 @@ export const LeadCard = ({ lead, salesUsers = [], clientsById = {}, onDragStart,
                 {/* Responsible */}
                 <div
                     className="flex items-center gap-1.5 px-2 py-1 rounded-md mb-2"
-                    style={{ backgroundColor: "#F2EBDD", border: "1px solid #D8D2C4" }}
+                    style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)" }}
                 >
                     <div
                         className="h-4 w-4 rounded-full flex items-center justify-center text-[7px] font-black shrink-0"
-                        style={{ backgroundColor: "#5E6A43", color: "#FBF7EF" }}
+                        style={{ backgroundColor: "#5E6A43", color: "var(--background)" }}
                     >
                         {responsibleName.charAt(0).toUpperCase()}
                     </div>
-                    <span className="text-[9px] font-semibold truncate" style={{ color: "#2E2A26" }}>
+                    <span className="text-[9px] font-semibold truncate" style={{ color: "var(--foreground)" }}>
                         {responsibleName}
                     </span>
                 </div>
 
                 {/* Date + client */}
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1" style={{ color: "#9b948e" }}>
+                    <div className="flex items-center gap-1" style={{ color: "var(--muted-foreground)" }}>
                         <Calendar className="w-2.5 h-2.5" />
                         <span className="text-[9px] font-medium">
                             {formatDate(lead.created_at || lead.date) || "No date"}
                         </span>
                     </div>
                     {clientName && (
-                        <div className="flex items-center gap-1 max-w-[55%]" style={{ color: "#9b948e" }}>
+                        <div className="flex items-center gap-1 max-w-[55%]" style={{ color: "var(--muted-foreground)" }}>
                             <Building className="w-2.5 h-2.5 shrink-0" />
                             <span className="text-[9px] truncate">{clientName}</span>
                         </div>

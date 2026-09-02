@@ -169,7 +169,7 @@ export const InventoryDetail = () => {
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
                     <div>
-                        <h1 className="text-xl font-semibold">
+                        <h1 className="text-2xl font-semibold">
                             {isNew ? "New Inventory Item" : "Edit Inventory"}
                         </h1>
                         <p className="text-sm text-muted-foreground">

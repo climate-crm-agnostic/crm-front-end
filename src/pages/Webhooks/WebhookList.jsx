@@ -11,12 +11,14 @@ import {
 } from "@/components/ui/select";
 import { getWebhooks, deleteWebhook } from "@/services/webhookService";
 import Swal from 'sweetalert2';
+import { usePagination } from "@/hooks/usePagination";
+import { PaginationFooter } from "@/components/PaginationControls";
 
 const MODEL_COLORS = {
     Lead: { bg: "rgba(242,155,107,0.12)", border: "rgba(242,155,107,0.4)", text: "#c0622a" },
     Client: { bg: "rgba(94,106,67,0.12)", border: "rgba(94,106,67,0.4)", text: "#4a5535" },
     Service: { bg: "rgba(184,199,106,0.12)", border: "rgba(184,199,106,0.4)", text: "#697a28" },
-    FollowUp: { bg: "rgba(216,210,196,0.3)", border: "#D8D2C4", text: "#6b6560" },
+    FollowUp: { bg: "rgba(216,210,196,0.3)", border: "var(--border)", text: "var(--muted-foreground)" },
 };
 
 const METHOD_COLORS = {
@@ -24,11 +26,11 @@ const METHOD_COLORS = {
     PUT: { bg: "rgba(184,199,106,0.12)", border: "rgba(184,199,106,0.35)", text: "#697a28" },
     PATCH: { bg: "rgba(242,155,107,0.12)", border: "rgba(242,155,107,0.35)", text: "#c0622a" },
     DELETE: { bg: "rgba(192,98,42,0.10)", border: "rgba(192,98,42,0.35)", text: "#c0622a" },
-    GET: { bg: "rgba(216,210,196,0.3)", border: "#D8D2C4", text: "#6b6560" },
+    GET: { bg: "rgba(216,210,196,0.3)", border: "var(--border)", text: "var(--muted-foreground)" },
 };
 
 const Pill = ({ label, colors }) => {
-    const c = colors || { bg: "rgba(216,210,196,0.3)", border: "#D8D2C4", text: "#6b6560" };
+    const c = colors || { bg: "rgba(216,210,196,0.3)", border: "var(--border)", text: "var(--muted-foreground)" };
     return (
         <span
             className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold"
@@ -43,6 +45,14 @@ export const WebhookList = () => {
     const [webhooks, setWebhooks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedModel, setSelectedModel] = useState("Lead");
+    const {
+        pageItems,
+        currentPage,
+        setCurrentPage,
+        totalPages,
+        startRecord,
+        endRecord,
+    } = usePagination(webhooks, { pageSizeOptions: [10, 20, 50] });
 
     useEffect(() => {
         loadWebhooks();
@@ -75,7 +85,7 @@ export const WebhookList = () => {
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#5E6A43',
-            cancelButtonColor: '#9b948e',
+            cancelButtonColor: 'var(--muted-foreground)',
             confirmButtonText: 'Yes, delete it!'
         });
 
@@ -108,7 +118,7 @@ export const WebhookList = () => {
 
     if (loading) {
         return (
-            <div className="p-8 text-center" style={{ color: "#6b6560", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+            <div className="p-8 text-center" style={{ color: "var(--muted-foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
                 Loading webhooks...
             </div>
         );
@@ -129,11 +139,11 @@ export const WebhookList = () => {
                     <div>
                         <p
                             className="text-base font-semibold"
-                            style={{ color: "#2E2A26", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+                            style={{ color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
                         >
                             Webhooks
                         </p>
-                        <p className="text-sm" style={{ color: "#9b948e" }}>
+                        <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
                             Manage your system webhooks and event listeners.
                         </p>
                     </div>
@@ -154,7 +164,7 @@ export const WebhookList = () => {
                     <Link to={`/webhook/new?model=${selectedModel}`}>
                         <button
                             className="flex items-center gap-2 h-10 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
-                            style={{ backgroundColor: "#5E6A43", color: "#FBF7EF" }}
+                            style={{ backgroundColor: "#5E6A43", color: "var(--background)" }}
                             onMouseEnter={e => e.currentTarget.style.backgroundColor = "#4a5535"}
                             onMouseLeave={e => e.currentTarget.style.backgroundColor = "#5E6A43"}
                         >
@@ -168,14 +178,14 @@ export const WebhookList = () => {
             {/* Table card */}
             <div
                 className="overflow-hidden"
-                style={{ borderRadius: "10px", border: "1px solid #D8D2C4", backgroundColor: "#FBF7EF" }}
+                style={{ borderRadius: "10px", border: "1px solid var(--border)", backgroundColor: "var(--background)" }}
             >
                 {/* Card header */}
                 <div
                     className="px-5 py-3"
-                    style={{ borderBottom: "1px solid #D8D2C4", backgroundColor: "#F2EBDD" }}
+                    style={{ borderBottom: "1px solid var(--border)", backgroundColor: "var(--card)" }}
                 >
-                    <span className="text-sm font-semibold" style={{ color: "#2E2A26" }}>
+                    <span className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
                         Configured Webhooks
                     </span>
                     <span
@@ -187,7 +197,7 @@ export const WebhookList = () => {
                 </div>
 
                 {webhooks.length === 0 ? (
-                    <div className="py-16 text-center" style={{ color: "#9b948e" }}>
+                    <div className="py-16 text-center" style={{ color: "var(--muted-foreground)" }}>
                         <Webhook className="h-10 w-10 mx-auto mb-3 opacity-30" />
                         <p className="text-sm">No webhooks configured.</p>
                         <p className="text-xs mt-1">Click "Add Webhook" to create one.</p>
@@ -202,7 +212,7 @@ export const WebhookList = () => {
                                             key={h}
                                             className="px-4 py-2.5 text-xs font-semibold text-left"
                                             style={{
-                                                color: "#FBF7EF",
+                                                color: "var(--background)",
                                                 letterSpacing: "0.06em",
                                                 fontFamily: '"Source Sans 3", Arial, sans-serif',
                                                 textAlign: i === 4 ? "right" : "left",
@@ -213,12 +223,12 @@ export const WebhookList = () => {
                                     ))}
                                 </tr>
                             </thead>
-                            <tbody style={{ color: "#2E2A26" }}>
-                                {webhooks.map((webhook, idx) => (
+                            <tbody style={{ color: "var(--foreground)" }}>
+                                {pageItems.map((webhook, idx) => (
                                     <tr
                                         key={webhook.id}
-                                        style={{ borderBottom: "1px solid #D8D2C4" }}
-                                        onMouseEnter={e => e.currentTarget.style.backgroundColor = "#F2EBDD"}
+                                        style={{ borderBottom: "1px solid var(--border)" }}
+                                        onMouseEnter={e => e.currentTarget.style.backgroundColor = "var(--card)"}
                                         onMouseLeave={e => e.currentTarget.style.backgroundColor = ""}
                                     >
                                         <td className="px-4 py-2.5">
@@ -235,7 +245,7 @@ export const WebhookList = () => {
                                                 />
                                                 <Pill
                                                     label={webhook.event || "UPDATE"}
-                                                    colors={{ bg: "rgba(216,210,196,0.3)", border: "#D8D2C4", text: "#6b6560" }}
+                                                    colors={{ bg: "rgba(216,210,196,0.3)", border: "var(--border)", text: "var(--muted-foreground)" }}
                                                 />
                                             </div>
                                         </td>
@@ -246,10 +256,10 @@ export const WebhookList = () => {
                                                     colors={METHOD_COLORS[webhook.method] || METHOD_COLORS.POST}
                                                 />
                                                 <div className="flex items-center gap-1 min-w-0">
-                                                    <Globe className="h-3 w-3 shrink-0" style={{ color: "#9b948e" }} />
+                                                    <Globe className="h-3 w-3 shrink-0" style={{ color: "var(--muted-foreground)" }} />
                                                     <span
                                                         className="truncate text-xs"
-                                                        style={{ color: "#6b6560" }}
+                                                        style={{ color: "var(--muted-foreground)" }}
                                                         title={webhook.url}
                                                     >
                                                         {webhook.url}
@@ -262,7 +272,7 @@ export const WebhookList = () => {
                                                 label={webhook.is_active ? "Active" : "Inactive"}
                                                 colors={webhook.is_active
                                                     ? { bg: "rgba(94,106,67,0.12)", border: "rgba(94,106,67,0.4)", text: "#4a5535" }
-                                                    : { bg: "rgba(216,210,196,0.3)", border: "#D8D2C4", text: "#9b948e" }
+                                                    : { bg: "rgba(216,210,196,0.3)", border: "var(--border)", text: "var(--muted-foreground)" }
                                                 }
                                             />
                                         </td>
@@ -296,6 +306,15 @@ export const WebhookList = () => {
                             </tbody>
                         </table>
                     </div>
+                )}
+                {webhooks.length > 0 && (
+                    <PaginationFooter
+                        currentPage={currentPage}
+                        setCurrentPage={setCurrentPage}
+                        totalPages={totalPages}
+                        startRecord={startRecord}
+                        endRecord={endRecord}
+                    />
                 )}
             </div>
         </div>

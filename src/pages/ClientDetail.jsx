@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { createClient, updateClient, uploadClientImage, getClientById, getClientAttributes } from "../services/clientService";
 import { getServices, getServiceAttributes } from "../services/serviceService";
+import { getContacts, getContactAttributes } from "../services/contactService";
 import { useAuth } from "../context/AuthContext";
 
 // UI Components
@@ -17,6 +18,7 @@ import { DateInput } from "../components/ui/date-input";
 import { Badge } from "../components/ui/badge";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "../components/ui/dropdown-menu";
 import { ServiceModal } from "../components/services/ServiceModal";
+import { ContactModal } from "../components/contacts/ContactModal";
 
 export const ClientDetail = () => {
     const { id } = useParams();
@@ -53,6 +55,13 @@ export const ClientDetail = () => {
     const [serviceAttributes, setServiceAttributes] = useState([]);
     const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
     const [editingService, setEditingService] = useState(null);
+
+    // --- Contacts tab state ---
+    const [contacts, setContacts] = useState([]);
+    const [contactsLoading, setContactsLoading] = useState(false);
+    const [contactAttributes, setContactAttributes] = useState([]);
+    const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+    const [editingContact, setEditingContact] = useState(null);
 
     useEffect(() => {
         const init = async () => {
@@ -112,6 +121,44 @@ export const ClientDetail = () => {
 
     const handleServiceSaved = () => {
         fetchServices();
+    };
+
+    const fetchContacts = async () => {
+        if (isNew) return;
+        setContactsLoading(true);
+        try {
+            const [contactsData, attrsData] = await Promise.all([
+                getContacts({ client: id }),
+                getContactAttributes(),
+            ]);
+            setContacts(contactsData || []);
+            setContactAttributes(attrsData || []);
+        } catch (err) {
+            console.error("Error fetching contacts", err);
+        } finally {
+            setContactsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (activeTab === 'contacts' && !isNew) {
+            fetchContacts();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeTab, id]);
+
+    const handleAddContact = () => {
+        setEditingContact(null);
+        setIsContactModalOpen(true);
+    };
+
+    const handleEditContact = (contact) => {
+        setEditingContact(contact);
+        setIsContactModalOpen(true);
+    };
+
+    const handleContactSaved = () => {
+        fetchContacts();
     };
 
     const fetchAttributes = async () => {
@@ -330,7 +377,7 @@ export const ClientDetail = () => {
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
                     <div>
-                        <h1 className="text-xl font-semibold">
+                        <h1 className="text-2xl font-semibold">
                             {isNew ? "New Client" : (name || "Client")}
                         </h1>
                         <p className="text-sm text-muted-foreground">
@@ -363,14 +410,15 @@ export const ClientDetail = () => {
                         {[
                             { key: 'overview', label: 'Overview' },
                             { key: 'services', label: 'Services' },
+                            { key: 'contacts', label: 'Contacts' },
                         ].map((tab) => (
                             <button
                                 key={tab.key}
                                 onClick={() => setActiveTab(tab.key)}
                                 className="px-4 h-10 text-sm font-semibold transition-colors cursor-pointer"
                                 style={{
-                                    color: activeTab === tab.key ? "#5E6A43" : "#9b948e",
-                                    borderBottom: activeTab === tab.key ? "2px solid #5E6A43" : "2px solid transparent",
+                                    color: activeTab === tab.key ? "var(--secondary)" : "var(--muted-foreground)",
+                                    borderBottom: activeTab === tab.key ? "2px solid var(--secondary)" : "2px solid transparent",
                                 }}
                             >
                                 {tab.label}
@@ -387,12 +435,9 @@ export const ClientDetail = () => {
                             </Button>
                         </div>
                         {servicesLoading ? (
-                            <div className="h-24 rounded-lg animate-pulse" style={{ backgroundColor: "#E8E3DA" }} />
+                            <div className="h-24 rounded-lg animate-pulse bg-muted" />
                         ) : services.length === 0 ? (
-                            <div
-                                className="rounded-lg p-8 text-center text-sm"
-                                style={{ color: "#9b948e", border: "1px solid #D8D2C4", backgroundColor: "#FBF7EF" }}
-                            >
+                            <div className="rounded-lg p-8 text-center text-sm text-muted-foreground border border-border bg-background">
                                 No services yet for this client.
                             </div>
                         ) : (
@@ -400,11 +445,10 @@ export const ClientDetail = () => {
                                 {services.map((service) => (
                                     <div
                                         key={service.id}
-                                        className="flex items-center justify-between gap-3 rounded-lg p-4"
-                                        style={{ backgroundColor: "#FBF7EF", border: "1px solid #D8D2C4" }}
+                                        className="flex items-center justify-between gap-3 rounded-lg p-4 bg-background border border-border"
                                     >
                                         <div className="min-w-0 cursor-pointer" onClick={() => handleEditService(service)}>
-                                            <p className="text-sm font-semibold truncate" style={{ color: "#2E2A26" }}>{service.name}</p>
+                                            <p className="text-sm font-semibold truncate text-foreground">{service.name}</p>
                                         </div>
                                         <div className="flex items-center gap-4 shrink-0">
                                             {service.status && (
@@ -417,12 +461,62 @@ export const ClientDetail = () => {
                                             )}
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
-                                                    <button className="h-8 w-8 flex items-center justify-center rounded-md cursor-pointer" style={{ color: "#6b6560" }}>
+                                                    <button className="h-8 w-8 flex items-center justify-center rounded-md cursor-pointer text-muted-foreground">
                                                         <MoreHorizontal className="h-4 w-4" />
                                                     </button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
                                                     <DropdownMenuItem onClick={() => handleEditService(service)}>
+                                                        <SquarePen className="w-4 h-4" /> Edit
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                ) : null}
+
+                {activeTab === 'contacts' && !isNew ? (
+                    <div className="space-y-4">
+                        <div className="flex justify-end">
+                            <Button onClick={handleAddContact}>
+                                <Plus className="mr-2 h-4 w-4" /> Add Contact
+                            </Button>
+                        </div>
+                        {contactsLoading ? (
+                            <div className="h-24 rounded-lg animate-pulse bg-muted" />
+                        ) : contacts.length === 0 ? (
+                            <div className="rounded-lg p-8 text-center text-sm text-muted-foreground border border-border bg-background">
+                                No contacts yet for this client.
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                {contacts.map((contact) => (
+                                    <div
+                                        key={contact.id}
+                                        className="flex items-center justify-between gap-3 rounded-lg p-4 bg-background border border-border"
+                                    >
+                                        <div className="min-w-0 cursor-pointer" onClick={() => handleEditContact(contact)}>
+                                            <p className="text-sm font-semibold truncate text-foreground">{contact.first_name} {contact.last_name}</p>
+                                            <p className="text-xs mt-0.5 text-muted-foreground">
+                                                {[contact.email, contact.phone].filter(Boolean).join(" · ")}
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center gap-4 shrink-0">
+                                            {contact.is_primary && (
+                                                <Badge variant="secondary">Primary</Badge>
+                                            )}
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <button className="h-8 w-8 flex items-center justify-center rounded-md cursor-pointer text-muted-foreground">
+                                                        <MoreHorizontal className="h-4 w-4" />
+                                                    </button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem onClick={() => handleEditContact(contact)}>
                                                         <SquarePen className="w-4 h-4" /> Edit
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>
@@ -615,6 +709,15 @@ export const ClientDetail = () => {
                 onServiceSaved={handleServiceSaved}
                 serviceToEdit={editingService}
                 attributes={serviceAttributes}
+                preSelectedClient={id}
+            />
+
+            <ContactModal
+                isOpen={isContactModalOpen}
+                onClose={() => { setIsContactModalOpen(false); setEditingContact(null); }}
+                onContactSaved={handleContactSaved}
+                contactToEdit={editingContact}
+                attributes={contactAttributes}
                 preSelectedClient={id}
             />
         </div>

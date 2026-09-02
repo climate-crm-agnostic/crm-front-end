@@ -22,7 +22,7 @@ export const Modal = ({
       aria-labelledby="modal-title"
     >
       <div
-        className={`bg-white dark:bg-codex-fondo-secondary 
+        className={`bg-card text-foreground
           rounded-lg shadow-xl w-full mx-4 max-h-[90vh] overflow-y-auto animate-in fade-in-0 zoom-in-95 ${widthClass}
           `}
       >

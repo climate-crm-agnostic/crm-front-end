@@ -549,7 +549,7 @@ export const InvoiceDetail = () => {
                     </Button>
                     <div>
                         <div className="flex items-center gap-3">
-                            <h1 className="text-xl font-semibold">
+                            <h1 className="text-2xl font-semibold">
                                 {isNew ? "New Invoice" : `Invoice ${invoiceNumber}`}
                             </h1>
                             {!isNew && (

@@ -35,7 +35,7 @@ const ActionBadge = ({ action }) => {
 const ChangesCell = ({ changes }) => {
     const [open, setOpen] = useState(false);
     if (!changes || Object.keys(changes).length === 0) {
-        return <span className="text-xs" style={{ color: "#9b948e" }}>—</span>;
+        return <span className="text-xs" style={{ color: "var(--muted-foreground)" }}>—</span>;
     }
     const keys = Object.keys(changes);
     return (
@@ -51,18 +51,18 @@ const ChangesCell = ({ changes }) => {
             {open && (
                 <div
                     className="mt-1.5 rounded p-2 text-xs font-mono space-y-0.5 max-h-40 overflow-y-auto"
-                    style={{ backgroundColor: "rgba(216,210,196,0.2)", border: "1px solid #D8D2C4", color: "#2E2A26" }}
+                    style={{ backgroundColor: "rgba(216,210,196,0.2)", border: "1px solid var(--border)", color: "var(--foreground)" }}
                 >
                     {keys.map(k => {
                         const val = changes[k];
                         const [before, after] = Array.isArray(val) ? val : [null, val];
                         return (
                             <div key={k}>
-                                <span style={{ color: "#9b948e" }}>{k}:</span>{" "}
+                                <span style={{ color: "var(--muted-foreground)" }}>{k}:</span>{" "}
                                 {before !== null && (
                                     <span style={{ color: "#9b3a10", textDecoration: "line-through" }}>{String(before).slice(0, 60)}</span>
                                 )}
-                                {before !== null && <span style={{ color: "#9b948e" }}> → </span>}
+                                {before !== null && <span style={{ color: "var(--muted-foreground)" }}> → </span>}
                                 <span style={{ color: "#4a5535" }}>{String(after ?? "").slice(0, 80)}</span>
                             </div>
                         );
@@ -117,8 +117,8 @@ export const AuditLog = () => {
                         <ClipboardList className="h-5 w-5" style={{ color: "#5E6A43" }} />
                     </div>
                     <div>
-                        <p className="text-base font-semibold" style={{ color: "#2E2A26" }}>Audit Log</p>
-                        <p className="text-sm" style={{ color: "#9b948e" }}>
+                        <p className="text-base font-semibold" style={{ color: "var(--foreground)" }}>Audit Log</p>
+                        <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
                             All changes made to CRM records, indexed by actor and model.
                         </p>
                     </div>
@@ -128,12 +128,12 @@ export const AuditLog = () => {
             {/* Filters */}
             <form onSubmit={handleFilter} className="flex flex-wrap gap-3 items-end">
                 <div className="flex flex-col gap-1">
-                    <label className="text-xs font-medium" style={{ color: "#9b948e" }}>Model</label>
+                    <label className="text-xs font-medium" style={{ color: "var(--muted-foreground)" }}>Model</label>
                     <select
                         value={model}
                         onChange={e => { setModel(e.target.value); setPage(1); }}
                         className="h-9 rounded-md border px-2.5 text-sm bg-white focus:outline-none"
-                        style={{ borderColor: "#D8D2C4", color: "#2E2A26", minWidth: 160 }}
+                        style={{ borderColor: "var(--border)", color: "var(--foreground)", minWidth: 160 }}
                     >
                         <option value="">All models</option>
                         {availableModels.map(m => (
@@ -142,14 +142,14 @@ export const AuditLog = () => {
                     </select>
                 </div>
                 <div className="flex flex-col gap-1" style={{ width: 160 }}>
-                    <label className="text-xs font-medium" style={{ color: "#9b948e" }}>From</label>
+                    <label className="text-xs font-medium" style={{ color: "var(--muted-foreground)" }}>From</label>
                     <DateInput
                         value={dateFrom}
                         onChange={e => { setDateFrom(e.target.value); setPage(1); }}
                     />
                 </div>
                 <div className="flex flex-col gap-1" style={{ width: 160 }}>
-                    <label className="text-xs font-medium" style={{ color: "#9b948e" }}>To</label>
+                    <label className="text-xs font-medium" style={{ color: "var(--muted-foreground)" }}>To</label>
                     <DateInput
                         value={dateTo}
                         onChange={e => { setDateTo(e.target.value); setPage(1); }}
@@ -158,7 +158,7 @@ export const AuditLog = () => {
                 <button
                     type="submit"
                     className="h-9 px-4 rounded-md text-sm font-semibold transition-colors"
-                    style={{ backgroundColor: "#5E6A43", color: "#FBF7EF" }}
+                    style={{ backgroundColor: "#5E6A43", color: "var(--background)" }}
                     onMouseEnter={e => e.currentTarget.style.backgroundColor = "#4a5535"}
                     onMouseLeave={e => e.currentTarget.style.backgroundColor = "#5E6A43"}
                 >
@@ -169,7 +169,7 @@ export const AuditLog = () => {
                         type="button"
                         onClick={() => { setModel(""); setDateFrom(""); setDateTo(""); setPage(1); }}
                         className="h-9 px-3 rounded-md text-sm transition-colors"
-                        style={{ color: "#9b948e" }}
+                        style={{ color: "var(--muted-foreground)" }}
                     >
                         Clear
                     </button>
@@ -177,12 +177,12 @@ export const AuditLog = () => {
             </form>
 
             {/* Table */}
-            <div className="rounded-xl overflow-hidden" style={{ border: "1px solid #D8D2C4" }}>
+            <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
                 <table className="w-full text-sm border-collapse">
                     <thead>
-                        <tr style={{ backgroundColor: "rgba(216,210,196,0.3)", borderBottom: "1px solid #D8D2C4" }}>
+                        <tr style={{ backgroundColor: "rgba(216,210,196,0.3)", borderBottom: "1px solid var(--border)" }}>
                             {["Timestamp", "Model", "Action", "Object", "Actor", "Changes"].map(h => (
-                                <th key={h} className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wide" style={{ color: "#9b948e" }}>
+                                <th key={h} className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--muted-foreground)" }}>
                                     {h}
                                 </th>
                             ))}
@@ -191,13 +191,13 @@ export const AuditLog = () => {
                     <tbody>
                         {loading ? (
                             <tr>
-                                <td colSpan={6} className="px-4 py-10 text-center text-sm" style={{ color: "#9b948e" }}>
+                                <td colSpan={6} className="px-4 py-10 text-center text-sm" style={{ color: "var(--muted-foreground)" }}>
                                     Loading...
                                 </td>
                             </tr>
                         ) : !data?.results?.length ? (
                             <tr>
-                                <td colSpan={6} className="px-4 py-10 text-center text-sm" style={{ color: "#9b948e" }}>
+                                <td colSpan={6} className="px-4 py-10 text-center text-sm" style={{ color: "var(--muted-foreground)" }}>
                                     No audit entries found.
                                 </td>
                             </tr>
@@ -205,24 +205,24 @@ export const AuditLog = () => {
                             <tr
                                 key={entry.id}
                                 style={{
-                                    borderBottom: i < data.results.length - 1 ? "1px solid #D8D2C4" : "none",
+                                    borderBottom: i < data.results.length - 1 ? "1px solid var(--border)" : "none",
                                     backgroundColor: i % 2 === 0 ? "#fff" : "rgba(251,247,239,0.5)",
                                 }}
                             >
-                                <td className="px-4 py-3 text-xs whitespace-nowrap" style={{ color: "#6b6560" }}>
+                                <td className="px-4 py-3 text-xs whitespace-nowrap" style={{ color: "var(--muted-foreground)" }}>
                                     {new Date(entry.timestamp).toLocaleString()}
                                 </td>
-                                <td className="px-4 py-3 text-xs font-medium" style={{ color: "#2E2A26" }}>
+                                <td className="px-4 py-3 text-xs font-medium" style={{ color: "var(--foreground)" }}>
                                     {MODEL_LABELS[entry.model] || entry.model}
                                 </td>
                                 <td className="px-4 py-3">
                                     <ActionBadge action={entry.action} />
                                 </td>
-                                <td className="px-4 py-3 text-xs max-w-[180px] truncate" style={{ color: "#2E2A26" }} title={entry.object_repr}>
+                                <td className="px-4 py-3 text-xs max-w-[180px] truncate" style={{ color: "var(--foreground)" }} title={entry.object_repr}>
                                     {entry.object_repr}
                                 </td>
-                                <td className="px-4 py-3 text-xs" style={{ color: "#6b6560" }}>
-                                    {entry.actor || <span style={{ color: "#9b948e" }}>System</span>}
+                                <td className="px-4 py-3 text-xs" style={{ color: "var(--muted-foreground)" }}>
+                                    {entry.actor || <span style={{ color: "var(--muted-foreground)" }}>System</span>}
                                 </td>
                                 <td className="px-4 py-3">
                                     <ChangesCell changes={entry.changes} />
@@ -236,7 +236,7 @@ export const AuditLog = () => {
             {/* Pagination */}
             {data && data.total_pages > 1 && (
                 <div className="flex items-center justify-between">
-                    <p className="text-xs" style={{ color: "#9b948e" }}>
+                    <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
                         {data.count} entries — page {data.page} of {data.total_pages}
                     </p>
                     <div className="flex gap-2">
@@ -244,7 +244,7 @@ export const AuditLog = () => {
                             disabled={page <= 1}
                             onClick={() => setPage(p => p - 1)}
                             className="flex items-center gap-1 h-8 px-3 rounded-md text-sm font-medium disabled:opacity-40 transition-colors"
-                            style={{ border: "1px solid #D8D2C4", color: "#2E2A26", backgroundColor: "#fff" }}
+                            style={{ border: "1px solid var(--border)", color: "var(--foreground)", backgroundColor: "#fff" }}
                         >
                             <ChevronLeft className="h-4 w-4" /> Prev
                         </button>
@@ -252,7 +252,7 @@ export const AuditLog = () => {
                             disabled={page >= data.total_pages}
                             onClick={() => setPage(p => p + 1)}
                             className="flex items-center gap-1 h-8 px-3 rounded-md text-sm font-medium disabled:opacity-40 transition-colors"
-                            style={{ border: "1px solid #D8D2C4", color: "#2E2A26", backgroundColor: "#fff" }}
+                            style={{ border: "1px solid var(--border)", color: "var(--foreground)", backgroundColor: "#fff" }}
                         >
                             Next <ChevronRight className="h-4 w-4" />
                         </button>

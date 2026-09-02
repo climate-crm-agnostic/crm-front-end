@@ -15,6 +15,8 @@ import { ArrowLeft, Plus } from "lucide-react";
 import { Switch } from "../components/ui/switch";
 import { Textarea } from "../components/ui/textarea";
 import { DateInput } from "../components/ui/date-input";
+import { usePagination } from "../hooks/usePagination";
+import { PaginationFooter } from "../components/PaginationControls";
 
 export const AssetDetail = () => {
     const { id } = useParams();
@@ -40,6 +42,14 @@ export const AssetDetail = () => {
     const [activeTab, setActiveTab] = useState('overview');
     const [assignments, setAssignments] = useState([]);
     const [assignmentsLoading, setAssignmentsLoading] = useState(false);
+    const {
+        pageItems: assignmentsPage,
+        currentPage: assignmentsPageNum,
+        setCurrentPage: setAssignmentsPageNum,
+        totalPages: assignmentsTotalPages,
+        startRecord: assignmentsStartRecord,
+        endRecord: assignmentsEndRecord,
+    } = usePagination(assignments, { pageSizeOptions: [10, 20, 50] });
 
     const fetchAssignments = async () => {
         if (isNew) return;
@@ -199,7 +209,7 @@ export const AssetDetail = () => {
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
                     <div>
-                        <h1 className="text-xl font-semibold">
+                        <h1 className="text-2xl font-semibold">
                             {isNew ? "New Asset" : (name || "Asset")}
                         </h1>
                         <p className="text-sm text-muted-foreground">
@@ -238,8 +248,8 @@ export const AssetDetail = () => {
                                 onClick={() => setActiveTab(tab.key)}
                                 className="px-4 h-10 text-sm font-semibold transition-colors cursor-pointer"
                                 style={{
-                                    color: activeTab === tab.key ? "#5E6A43" : "#9b948e",
-                                    borderBottom: activeTab === tab.key ? "2px solid #5E6A43" : "2px solid transparent",
+                                    color: activeTab === tab.key ? "var(--secondary)" : "var(--muted-foreground)",
+                                    borderBottom: activeTab === tab.key ? "2px solid var(--secondary)" : "2px solid transparent",
                                 }}
                             >
                                 {tab.label}
@@ -256,34 +266,40 @@ export const AssetDetail = () => {
                             </Button>
                         </div>
                         {assignmentsLoading ? (
-                            <div className="h-24 rounded-lg animate-pulse" style={{ backgroundColor: "#E8E3DA" }} />
+                            <div className="h-24 rounded-lg animate-pulse bg-muted" />
                         ) : assignments.length === 0 ? (
-                            <div
-                                className="rounded-lg p-8 text-center text-sm"
-                                style={{ color: "#9b948e", border: "1px solid #D8D2C4", backgroundColor: "#FBF7EF" }}
-                            >
+                            <div className="rounded-lg p-8 text-center text-sm text-muted-foreground border border-border bg-background">
                                 No assignments yet for this asset.
                             </div>
                         ) : (
                             <div className="space-y-2">
-                                {assignments.map((a) => (
+                                {assignmentsPage.map((a) => (
                                     <div
                                         key={a.id}
-                                        className="flex items-center justify-between gap-3 rounded-lg p-4 cursor-pointer"
-                                        style={{ backgroundColor: "#FBF7EF", border: "1px solid #D8D2C4" }}
+                                        className="flex items-center justify-between gap-3 rounded-lg p-4 cursor-pointer bg-background border border-border"
                                         onClick={() => navigate(`/assetassignment/${a.id}`)}
                                     >
                                         <div className="min-w-0">
-                                            <p className="text-sm font-semibold truncate" style={{ color: "#2E2A26" }}>{a.name}</p>
-                                            <p className="text-xs mt-0.5" style={{ color: "#9b948e" }}>
+                                            <p className="text-sm font-semibold truncate text-foreground">{a.name}</p>
+                                            <p className="text-xs mt-0.5 text-muted-foreground">
                                                 Borrowed {a.borrow_date}{a.return_date ? ` · Returned ${a.return_date}` : " · Active"}
                                             </p>
                                         </div>
                                         {a.lending_amount != null && (
-                                            <p className="text-sm font-bold shrink-0" style={{ color: "#2E2A26" }}>{a.lending_amount}</p>
+                                            <p className="text-sm font-bold shrink-0 text-foreground">{a.lending_amount}</p>
                                         )}
                                     </div>
                                 ))}
+                                {assignmentsTotalPages > 1 && (
+                                    <PaginationFooter
+                                        currentPage={assignmentsPageNum}
+                                        setCurrentPage={setAssignmentsPageNum}
+                                        totalPages={assignmentsTotalPages}
+                                        startRecord={assignmentsStartRecord}
+                                        endRecord={assignmentsEndRecord}
+                                        bordered={false}
+                                    />
+                                )}
                             </div>
                         )}
                     </div>

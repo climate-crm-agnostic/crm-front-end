@@ -1,4 +1,6 @@
 import React, { useMemo, useState } from "react";
+import { usePagination } from "@/hooks/usePagination";
+import { PageSizeSelect, PaginationFooter } from "@/components/PaginationControls";
 
 // Reusable "stat tiles + status tabs + progress bar + card list" pattern —
 // replaces a raw data table with a readable-at-a-glance view. See the
@@ -19,6 +21,7 @@ export const TableSummary = ({
     loading = false,
     emptyLabel = "No results.",
     headerActions = null,
+    pageSizeOptions = [10, 20, 50],
 }) => {
     const [searchTerm, setSearchTerm] = useState("");
     const [activeTab, setActiveTab] = useState(statusTabs[0]?.value ?? "all");
@@ -36,6 +39,17 @@ export const TableSummary = ({
         ? filteredBySearch.filter(activeTabConfig.match)
         : filteredBySearch;
 
+    const {
+        pageItems,
+        currentPage,
+        setCurrentPage,
+        pageSize,
+        setPageSize,
+        totalPages,
+        startRecord,
+        endRecord,
+    } = usePagination(visibleRows, { pageSizeOptions });
+
     // Segment counts for the progress bar — based on the full (unsearched)
     // dataset so the bar reflects the whole collection, not just a filtered view.
     const segments = statusTabs
@@ -51,18 +65,17 @@ export const TableSummary = ({
                     {stats.map((s) => (
                         <div
                             key={s.label}
-                            className="rounded-lg p-4"
-                            style={{ backgroundColor: "#F2EBDD", border: "1px solid #D8D2C4" }}
+                            className="rounded-lg p-4 bg-card border border-border"
                         >
                             <p
-                                className="text-xs font-semibold uppercase tracking-widest mb-1"
-                                style={{ color: "#6b6560", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+                                className="text-xs font-semibold uppercase tracking-widest mb-1 text-muted-foreground"
+                                style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}
                             >
                                 {s.label}
                             </p>
                             <p
-                                className="text-2xl font-bold"
-                                style={{ color: "#2E2A26", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+                                className="text-2xl font-bold text-foreground"
+                                style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}
                             >
                                 {s.value}
                             </p>
@@ -80,12 +93,11 @@ export const TableSummary = ({
                             <button
                                 key={t.value}
                                 onClick={() => setActiveTab(t.value)}
-                                className="h-8 px-3 rounded-md text-sm font-medium transition-colors cursor-pointer"
-                                style={{
-                                    backgroundColor: isActive ? "#5E6A43" : "transparent",
-                                    color: isActive ? "#FBF7EF" : "#6b6560",
-                                    fontFamily: '"Source Sans 3", Arial, sans-serif',
-                                }}
+                                className={[
+                                    "h-8 px-3 rounded-md text-sm font-medium transition-colors cursor-pointer",
+                                    isActive ? "bg-secondary text-secondary-foreground" : "bg-transparent text-muted-foreground",
+                                ].join(" ")}
+                                style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}
                             >
                                 {t.label}
                             </button>
@@ -98,16 +110,14 @@ export const TableSummary = ({
                             placeholder="Search..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
+                            className="bg-card border border-border text-foreground"
                             style={{
                                 height: "36px",
                                 width: "100%",
                                 maxWidth: "260px",
                                 paddingLeft: "12px",
                                 paddingRight: "12px",
-                                backgroundColor: "#fff",
-                                border: "1px solid #D8D2C4",
                                 borderRadius: "6px",
-                                color: "#2E2A26",
                                 fontSize: "14px",
                                 fontFamily: '"Source Sans 3", Arial, sans-serif',
                                 outline: "none",
@@ -115,12 +125,13 @@ export const TableSummary = ({
                         />
                     )}
                     {headerActions}
+                    <PageSizeSelect pageSize={pageSize} setPageSize={setPageSize} pageSizeOptions={pageSizeOptions} />
                 </div>
             </div>
 
             {/* Progress bar */}
             {segments.length > 0 && (
-                <div className="flex h-2 w-full rounded-full overflow-hidden" style={{ backgroundColor: "#E8E3DA" }}>
+                <div className="flex h-2 w-full rounded-full overflow-hidden bg-muted">
                     {segments.map((s) => (
                         <div
                             key={s.value}
@@ -137,20 +148,28 @@ export const TableSummary = ({
             {/* Card list */}
             <div className="flex-1 overflow-auto min-h-0 space-y-2">
                 {loading ? (
-                    <div className="h-24 rounded-lg animate-pulse" style={{ backgroundColor: "#E8E3DA" }} />
-                ) : visibleRows.length ? (
-                    visibleRows.map((row, idx) => (
+                    <div className="h-24 rounded-lg animate-pulse bg-muted" />
+                ) : pageItems.length ? (
+                    pageItems.map((row, idx) => (
                         <div key={row.id ?? idx}>{renderCard(row)}</div>
                     ))
                 ) : (
                     <div
-                        className="rounded-lg p-8 text-center text-sm"
-                        style={{ color: "#9b948e", border: "1px solid #D8D2C4", backgroundColor: "#FBF7EF" }}
+                        className="rounded-lg p-8 text-center text-sm text-muted-foreground border border-border bg-background"
                     >
                         {emptyLabel}
                     </div>
                 )}
             </div>
+
+            <PaginationFooter
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                totalPages={totalPages}
+                startRecord={startRecord}
+                endRecord={endRecord}
+                bordered={false}
+            />
         </div>
     );
 };

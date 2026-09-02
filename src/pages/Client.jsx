@@ -13,7 +13,7 @@ import {
 } from "../components/ui/dropdown-menu";
 import Swal from "sweetalert2";
 
-const BREAKDOWN_COLORS = ["#B8C76A", "#F29B6B", "#5E6A43", "#D8D2C4", "#9b948e", "#8f9a3e"];
+const BREAKDOWN_COLORS = ["#B8C76A", "#F29B6B", "#5E6A43", "var(--border)", "var(--muted-foreground)", "#8f9a3e"];
 
 // Groups clients by whatever dropdown-type ("list") attributes this tenant
 // actually has configured — Region/Category on one instance, Program/Status
@@ -21,15 +21,15 @@ const BREAKDOWN_COLORS = ["#B8C76A", "#F29B6B", "#5E6A43", "#D8D2C4", "#9b948e",
 const AttributeBreakdown = ({ label, counts }) => {
     const max = Math.max(1, ...counts.map((c) => c.count));
     return (
-        <div className="rounded-lg p-4 space-y-2.5" style={{ backgroundColor: "#F2EBDD", border: "1px solid #D8D2C4" }}>
-            <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "#9b948e" }}>By {label}</p>
+        <div className="rounded-lg p-4 space-y-2.5 bg-card border border-border">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">By {label}</p>
             {counts.map((c, i) => (
                 <div key={c.value}>
                     <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm font-medium truncate" style={{ color: "#2E2A26" }}>{c.value}</span>
-                        <span className="text-sm font-semibold shrink-0 ml-2" style={{ color: "#6b6560" }}>{c.count}</span>
+                        <span className="text-sm font-medium truncate text-foreground">{c.value}</span>
+                        <span className="text-sm font-semibold shrink-0 ml-2 text-muted-foreground">{c.count}</span>
                     </div>
-                    <div className="h-1.5 w-full rounded-full overflow-hidden" style={{ backgroundColor: "#E8E3DA" }}>
+                    <div className="h-1.5 w-full rounded-full overflow-hidden bg-border">
                         <div className="h-full rounded-full" style={{ width: `${(c.count / max) * 100}%`, backgroundColor: BREAKDOWN_COLORS[i % BREAKDOWN_COLORS.length] }} />
                     </div>
                 </div>
@@ -193,17 +193,14 @@ export const Client = () => {
     const renderClientCard = (client) => {
         const subtitle = groupableAttrs.map(a => client[a.name]).filter(Boolean).join(" · ");
         return (
-        <div
-            className="flex items-center justify-between gap-3 rounded-lg p-4 transition-colors"
-            style={{ backgroundColor: "#FBF7EF", border: "1px solid #D8D2C4" }}
-        >
+        <div className="flex items-center justify-between gap-3 rounded-lg p-4 transition-colors bg-background border border-border">
             <div className="min-w-0 cursor-pointer" onClick={() => handleEdit(client)}>
-                <p className="text-sm font-semibold truncate" style={{ color: "#2E2A26" }}>{client.name}</p>
-                {subtitle && <p className="text-xs mt-0.5 truncate" style={{ color: "#9b948e" }}>{subtitle}</p>}
+                <p className="text-sm font-semibold truncate text-foreground">{client.name}</p>
+                {subtitle && <p className="text-xs mt-0.5 truncate text-muted-foreground">{subtitle}</p>}
             </div>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <button className="h-8 w-8 flex items-center justify-center rounded-md cursor-pointer" style={{ color: "#6b6560" }}>
+                    <button className="h-8 w-8 flex items-center justify-center rounded-md cursor-pointer text-muted-foreground">
                         <MoreHorizontal className="h-4 w-4" />
                     </button>
                 </DropdownMenuTrigger>
@@ -224,7 +221,7 @@ export const Client = () => {
         <div className="h-full flex flex-col p-2 w-full">
             <div className="flex justify-between items-center mb-2">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-codex-texto-primary dark:text-codex-texto-dark-primary">
+                    <h1 className="text-3xl font-bold tracking-tight text-codex-texto-primary dark:text-codex-texto-dark-primary">
                         Clients
                     </h1>
                     <p className="text-sm text-muted-foreground">
@@ -235,18 +232,18 @@ export const Client = () => {
                     <button
                         onClick={handleExportExcel}
                         className="flex items-center gap-2 h-9 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
-                        style={{ backgroundColor: "#F2EBDD", border: "1px solid #5E6A43", color: "#5E6A43" }}
+                        style={{ backgroundColor: "var(--card)", border: "1px solid #5E6A43", color: "#5E6A43" }}
                         onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(94,106,67,0.15)"}
-                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "#F2EBDD"}
+                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "var(--card)"}
                     >
                         <Download className="h-4 w-4" /> Export Excel
                     </button>
                     <button
                         onClick={openImportModal}
                         className="flex items-center gap-2 h-9 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
-                        style={{ backgroundColor: "#F2EBDD", border: "1px solid #5E6A43", color: "#5E6A43" }}
+                        style={{ backgroundColor: "var(--card)", border: "1px solid #5E6A43", color: "#5E6A43" }}
                         onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(94,106,67,0.15)"}
-                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "#F2EBDD"}
+                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "var(--card)"}
                     >
                         <Upload className="h-4 w-4" /> Import Excel
                     </button>

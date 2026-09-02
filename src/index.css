@@ -497,6 +497,32 @@ body {
   to   { opacity: 1; transform: translateY(0);   }
 }
 
+/* SweetAlert2 renders outside React and ships its own light-only default
+   theme — without this it stays a white popup regardless of app theme. */
+.swal2-popup {
+  background: var(--card) !important;
+  color: var(--foreground) !important;
+}
+.swal2-title,
+.swal2-html-container {
+  color: var(--foreground) !important;
+}
+.swal2-actions .swal2-styled {
+  color: var(--foreground);
+}
+.swal2-input,
+.swal2-textarea,
+.swal2-select {
+  background: var(--background) !important;
+  color: var(--foreground) !important;
+  border: 1px solid var(--border) !important;
+}
+.swal2-icon.swal2-warning { border-color: var(--primary); color: var(--primary); }
+.swal2-icon.swal2-error { border-color: #c0392b; color: #c0392b; }
+.swal2-icon.swal2-success [class^='swal2-success-line'] { background-color: var(--secondary); }
+.swal2-icon.swal2-success .swal2-success-ring { border-color: color-mix(in srgb, var(--secondary) 30%, transparent); }
+.swal2-timer-progress-bar { background: var(--secondary); }
+
 /* Focus visible — more refined ring */
 :focus-visible {
   outline: 2px solid var(--color-codex-primary);

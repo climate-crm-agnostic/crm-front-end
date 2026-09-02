@@ -17,7 +17,7 @@ import Swal from "sweetalert2";
 
 const SERVICE_STATUS_COLORS = {
     active: "#B8C76A",
-    paused: "#D8D2C4",
+    paused: "var(--border)",
     cancelled: "#F29B6B",
 };
 
@@ -214,19 +214,16 @@ export const Service = () => {
     ];
 
     const renderServiceCard = (service) => (
-        <div
-            className="flex items-center justify-between gap-3 rounded-lg p-4 transition-colors"
-            style={{ backgroundColor: "#FBF7EF", border: "1px solid #D8D2C4" }}
-        >
+        <div className="flex items-center justify-between gap-3 rounded-lg p-4 transition-colors bg-background border border-border">
             <div className="min-w-0 cursor-pointer" onClick={() => handleEdit(service)}>
-                <p className="text-sm font-semibold truncate" style={{ color: "#2E2A26" }}>{service.name}</p>
-                <p className="text-xs mt-0.5" style={{ color: "#9b948e" }}>{service.client_name || "—"}</p>
+                <p className="text-sm font-semibold truncate text-foreground">{service.name}</p>
+                <p className="text-xs mt-0.5 text-muted-foreground">{service.client_name || "—"}</p>
             </div>
             <div className="flex items-center gap-4 shrink-0">
                 <Badge variant={serviceBadgeVariant(service.status)} className="capitalize">{service.status}</Badge>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <button className="h-8 w-8 flex items-center justify-center rounded-md cursor-pointer" style={{ color: "#6b6560" }}>
+                        <button className="h-8 w-8 flex items-center justify-center rounded-md cursor-pointer text-muted-foreground">
                             <MoreHorizontal className="h-4 w-4" />
                         </button>
                     </DropdownMenuTrigger>
@@ -256,8 +253,8 @@ export const Service = () => {
             <div className="flex items-center gap-2 mb-2 ml-2">
                 <Select value={selectedClient} onValueChange={setSelectedClient}>
                     <SelectTrigger
-                        className="w-[200px]"
-                        style={{ backgroundColor: "#fff", border: "1px solid #D8D2C4", color: "#2E2A26", fontFamily: '"Source Sans 3", Arial, sans-serif', fontSize: "14px" }}
+                        className="w-[200px] bg-background border-border text-foreground"
+                        style={{ fontFamily: '"Source Sans 3", Arial, sans-serif', fontSize: "14px" }}
                     >
                         <SelectValue placeholder="Select Client" />
                     </SelectTrigger>
@@ -273,27 +270,27 @@ export const Service = () => {
                     onClick={handleSearch}
                     disabled={!selectedClient || loading}
                     className="flex items-center gap-2 h-9 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
-                    style={{ backgroundColor: "#5E6A43", color: "#FBF7EF", opacity: (!selectedClient || loading) ? 0.5 : 1 }}
+                    style={{ backgroundColor: "var(--secondary)", color: "var(--secondary-foreground)", opacity: (!selectedClient || loading) ? 0.5 : 1 }}
                     onMouseEnter={e => (!selectedClient && !loading) && (e.currentTarget.style.backgroundColor = "#4a5535")}
-                    onMouseLeave={e => (e.currentTarget.style.backgroundColor = "#5E6A43")}
+                    onMouseLeave={e => (e.currentTarget.style.backgroundColor = "var(--secondary)")}
                 >
                     <Search className="h-4 w-4" /> Search
                 </button>
                 <button
                     onClick={openImportModal}
-                    className="flex items-center gap-2 h-9 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
-                    style={{ backgroundColor: "#F2EBDD", border: "1px solid #5E6A43", color: "#5E6A43" }}
+                    className="flex items-center gap-2 h-9 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer bg-card"
+                    style={{ border: "1px solid var(--secondary)", color: "var(--secondary)" }}
                     onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(94,106,67,0.15)"}
-                    onMouseLeave={e => e.currentTarget.style.backgroundColor = "#F2EBDD"}
+                    onMouseLeave={e => e.currentTarget.style.backgroundColor = ""}
                 >
                     <Upload className="h-4 w-4" /> Import Excel
                 </button>
                 <button
                     onClick={() => navigate("/service/new", { state: { clientId: selectedClient } })}
                     className="flex items-center gap-2 h-9 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
-                    style={{ backgroundColor: "#5E6A43", color: "#FBF7EF" }}
+                    style={{ backgroundColor: "var(--secondary)", color: "var(--secondary-foreground)" }}
                     onMouseEnter={e => e.currentTarget.style.backgroundColor = "#4a5535"}
-                    onMouseLeave={e => e.currentTarget.style.backgroundColor = "#5E6A43"}
+                    onMouseLeave={e => e.currentTarget.style.backgroundColor = "var(--secondary)"}
                 >
                     <Plus className="h-4 w-4" /> Add Service
                 </button>

@@ -300,7 +300,7 @@ export const ServiceDetail = () => {
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
                     <div>
-                        <h1 className="text-xl font-semibold">
+                        <h1 className="text-2xl font-semibold">
                             {isNew ? "New Service" : "Edit Service"}
                         </h1>
                         <p className="text-sm text-muted-foreground">

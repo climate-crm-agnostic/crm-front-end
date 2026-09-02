@@ -143,12 +143,12 @@ export const Lead = () => {
     return (
         <div
             className="h-full flex flex-col w-full overflow-hidden"
-            style={{ backgroundColor: "#FBF7EF", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+            style={{ backgroundColor: "var(--background)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
         >
             {/* Page header — same pattern as Attributes */}
             <div
                 className="shrink-0 px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3"
-                style={{ borderBottom: "1px solid #D8D2C4", backgroundColor: "#F2EBDD" }}
+                style={{ borderBottom: "1px solid var(--border)", backgroundColor: "var(--card)" }}
             >
                 <div className="flex items-center gap-3 min-w-0">
                     <div
@@ -158,10 +158,10 @@ export const Lead = () => {
                         <TrendingUp className="h-5 w-5" style={{ color: "#5E6A43" }} />
                     </div>
                     <div className="min-w-0">
-                        <p className="text-base font-semibold truncate" style={{ color: "#2E2A26", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+                        <p className="text-base font-semibold truncate" style={{ color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
                             Sales Pipeline
                         </p>
-                        <p className="text-xs flex items-center gap-1.5 mt-0.5" style={{ color: "#9b948e" }}>
+                        <p className="text-xs flex items-center gap-1.5 mt-0.5" style={{ color: "var(--muted-foreground)" }}>
                             <span className="h-1.5 w-1.5 rounded-full animate-pulse inline-block shrink-0" style={{ backgroundColor: "#5E6A43" }} />
                             Manage your opportunities and move them through stages.
                         </p>
@@ -169,12 +169,12 @@ export const Lead = () => {
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                    <div className="flex items-center rounded-lg overflow-hidden shrink-0" style={{ border: "1px solid #D8D2C4" }}>
+                    <div className="flex items-center rounded-lg overflow-hidden shrink-0" style={{ border: "1px solid var(--border)" }}>
                         <button
                             onClick={() => setViewMode('board')}
                             title="Board view"
                             className="h-10 w-10 flex items-center justify-center cursor-pointer transition-colors"
-                            style={{ backgroundColor: viewMode === 'board' ? "#5E6A43" : "#F2EBDD", color: viewMode === 'board' ? "#FBF7EF" : "#6b6560" }}
+                            style={{ backgroundColor: viewMode === 'board' ? "#5E6A43" : "var(--card)", color: viewMode === 'board' ? "var(--background)" : "var(--muted-foreground)" }}
                         >
                             <LayoutGrid className="h-4 w-4" />
                         </button>
@@ -182,7 +182,7 @@ export const Lead = () => {
                             onClick={() => setViewMode('table')}
                             title="Table view"
                             className="h-10 w-10 flex items-center justify-center cursor-pointer transition-colors"
-                            style={{ backgroundColor: viewMode === 'table' ? "#5E6A43" : "#F2EBDD", color: viewMode === 'table' ? "#FBF7EF" : "#6b6560" }}
+                            style={{ backgroundColor: viewMode === 'table' ? "#5E6A43" : "var(--card)", color: viewMode === 'table' ? "var(--background)" : "var(--muted-foreground)" }}
                         >
                             <TableIcon className="h-4 w-4" />
                         </button>
@@ -190,16 +190,16 @@ export const Lead = () => {
                     <button
                         onClick={openImportModal}
                         className="flex items-center gap-2 h-10 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
-                        style={{ backgroundColor: "#F2EBDD", border: "1px solid #5E6A43", color: "#5E6A43" }}
+                        style={{ backgroundColor: "var(--card)", border: "1px solid #5E6A43", color: "#5E6A43" }}
                         onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(94,106,67,0.15)"}
-                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "#F2EBDD"}
+                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "var(--card)"}
                     >
                         <Upload className="h-4 w-4" /> Import Excel
                     </button>
                     <button
                         onClick={() => navigate("/lead/new", { state: { pipelineId: selectedPipelineId } })}
                         className="flex items-center gap-2 h-10 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer shrink-0"
-                        style={{ backgroundColor: "#5E6A43", color: "#FBF7EF" }}
+                        style={{ backgroundColor: "#5E6A43", color: "var(--background)" }}
                         onMouseEnter={e => e.currentTarget.style.backgroundColor = "#4a5535"}
                         onMouseLeave={e => e.currentTarget.style.backgroundColor = "#5E6A43"}
                     >

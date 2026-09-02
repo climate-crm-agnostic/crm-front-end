@@ -20,6 +20,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { Switch } from "../components/ui/switch";
 import { DateInput } from "../components/ui/date-input";
 import Swal from "sweetalert2";
+import { usePagination } from "../hooks/usePagination";
+import { PaginationFooter } from "../components/PaginationControls";
 
 export const LeadDetail = () => {
     const { id } = useParams();
@@ -40,6 +42,15 @@ export const LeadDetail = () => {
     const [formData, setFormData] = useState({});
     const [clientInfoData, setClientInfoData] = useState({});
     const [itemsList, setItemsList] = useState([]);
+    const {
+        pageItems: itemsPage,
+        currentPage: itemsPageNum,
+        setCurrentPage: setItemsPageNum,
+        pageSize: itemsPageSize,
+        totalPages: itemsTotalPages,
+        startRecord: itemsStartRecord,
+        endRecord: itemsEndRecord,
+    } = usePagination(itemsList, { pageSizeOptions: [5, 10, 25] });
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(!isNew);
     const [error, setError] = useState(null);
@@ -515,7 +526,7 @@ export const LeadDetail = () => {
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
                     <div>
-                        <h1 className="text-xl font-semibold">
+                        <h1 className="text-2xl font-semibold">
                             {isNew ? "New Opportunity" : "Edit Opportunity"}
                         </h1>
                         <p className="text-sm text-muted-foreground">
@@ -530,7 +541,7 @@ export const LeadDetail = () => {
                             onValueChange={handleStageChange}
                             disabled={changingStage}
                         >
-                            <SelectTrigger className="h-9 w-[180px]" style={{ backgroundColor: "#fff", borderColor: "#D8D2C4", color: "#2E2A26" }}>
+                            <SelectTrigger className="h-9 w-[180px]" style={{ backgroundColor: "#fff", borderColor: "var(--border)", color: "var(--foreground)" }}>
                                 <SelectValue placeholder="Stage" />
                             </SelectTrigger>
                             <SelectContent>
@@ -617,7 +628,7 @@ export const LeadDetail = () => {
                             <Label htmlFor="lead-name" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                                 Opportunity Name
                                 {isAutoName && (
-                                    <span style={{ fontSize: "11px", color: "#9b948e", fontWeight: 400 }}>
+                                    <span style={{ fontSize: "11px", color: "var(--muted-foreground)", fontWeight: 400 }}>
                                         (auto from First / Last Name)
                                     </span>
                                 )}
@@ -630,9 +641,9 @@ export const LeadDetail = () => {
                                 readOnly={isAutoName}
                                 style={{
                                     width: "100%", height: "36px", padding: "0 12px",
-                                    borderRadius: "6px", border: "1px solid #D8D2C4",
-                                    backgroundColor: isAutoName ? "#F2EBDD" : "#fff",
-                                    color: isAutoName ? "#9b948e" : "#2E2A26",
+                                    borderRadius: "6px", border: "1px solid var(--border)",
+                                    backgroundColor: isAutoName ? "var(--card)" : "#fff",
+                                    color: isAutoName ? "var(--muted-foreground)" : "var(--foreground)",
                                     fontSize: "14px", cursor: isAutoName ? "default" : "text",
                                     outline: "none", boxSizing: "border-box",
                                 }}
@@ -795,7 +806,9 @@ export const LeadDetail = () => {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {itemsList.map((item, index) => (
+                                        {itemsPage.map((item, localIndex) => {
+                                        const index = (itemsPageNum - 1) * itemsPageSize + localIndex;
+                                        return (
                                             <TableRow key={index}>
                                                 <TableCell className="p-2">
                                                     <Select
@@ -844,9 +857,19 @@ export const LeadDetail = () => {
                                                     </Button>
                                                 </TableCell>
                                             </TableRow>
-                                        ))}
+                                        );
+                                        })}
                                     </TableBody>
                                 </Table>
+                                {itemsTotalPages > 1 && (
+                                    <PaginationFooter
+                                        currentPage={itemsPageNum}
+                                        setCurrentPage={setItemsPageNum}
+                                        totalPages={itemsTotalPages}
+                                        startRecord={itemsStartRecord}
+                                        endRecord={itemsEndRecord}
+                                    />
+                                )}
                             </div>
                         )}
                     </div>
@@ -1003,7 +1026,7 @@ export const LeadDetail = () => {
                 <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.45)", zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
                     <div style={{ backgroundColor: "#fff", borderRadius: 8, padding: 32, width: "100%", maxWidth: 440, boxShadow: "0 8px 32px rgba(0,0,0,0.18)" }}>
                         <p style={{ fontSize: 18, fontWeight: 700, color: "#1a1a1a", marginBottom: 8 }}>Move to Lost</p>
-                        <p style={{ fontSize: 13, color: "#6b6560", marginBottom: 20 }}>
+                        <p style={{ fontSize: 13, color: "var(--muted-foreground)", marginBottom: 20 }}>
                             Please provide a reason for marking <strong>{name}</strong> as lost.
                         </p>
                         <textarea
@@ -1012,13 +1035,13 @@ export const LeadDetail = () => {
                             placeholder="e.g. Not interested, budget constraints, chose a competitor…"
                             value={lostReason}
                             onChange={(e) => setLostReason(e.target.value)}
-                            style={{ width: "100%", padding: "8px 10px", border: "1px solid #D8D2C4", borderRadius: 4, fontSize: 14, fontFamily: "inherit", resize: "vertical", boxSizing: "border-box", outline: "none" }}
+                            style={{ width: "100%", padding: "8px 10px", border: "1px solid var(--border)", borderRadius: 4, fontSize: 14, fontFamily: "inherit", resize: "vertical", boxSizing: "border-box", outline: "none" }}
                         />
                         <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 20 }}>
                             <button
                                 type="button"
                                 onClick={() => setShowLostModal(false)}
-                                style={{ height: 36, padding: "0 16px", borderRadius: 6, border: "1px solid #D8D2C4", background: "transparent", color: "#6b6560", fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
+                                style={{ height: 36, padding: "0 16px", borderRadius: 6, border: "1px solid var(--border)", background: "transparent", color: "var(--muted-foreground)", fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
                                 Cancel
                             </button>
                             <button

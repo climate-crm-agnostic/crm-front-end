@@ -15,8 +15,8 @@ const TYPE_COLORS = {
     text:     { bg: "rgba(94,106,67,0.10)",  border: "rgba(94,106,67,0.35)",  color: "#4a5535" },
     boolean:  { bg: "rgba(242,155,107,0.12)", border: "rgba(242,155,107,0.4)", color: "#c0622a" },
     list:     { bg: "rgba(184,199,106,0.12)", border: "rgba(184,199,106,0.4)", color: "#697a28" },
-    number:   { bg: "rgba(216,210,196,0.4)",  border: "#D8D2C4",               color: "#6b6560" },
-    date:     { bg: "rgba(216,210,196,0.4)",  border: "#D8D2C4",               color: "#6b6560" },
+    number:   { bg: "rgba(216,210,196,0.4)",  border: "var(--border)",               color: "var(--muted-foreground)" },
+    date:     { bg: "rgba(216,210,196,0.4)",  border: "var(--border)",               color: "var(--muted-foreground)" },
 };
 
 const TypePill = ({ type }) => {
@@ -40,7 +40,7 @@ const Modal = ({ isOpen, children, onClose }) => {
         >
             <div
                 className="w-full max-w-md rounded-xl shadow-2xl p-6 relative"
-                style={{ backgroundColor: "#FBF7EF", border: "1px solid #D8D2C4" }}
+                style={{ backgroundColor: "var(--background)", border: "1px solid var(--border)" }}
                 onClick={e => e.stopPropagation()}
             >
                 {children}
@@ -72,8 +72,8 @@ const SortableAttrCard = ({ attr, onEdit, onDelete }) => {
                 }
             }}
             onMouseLeave={e => {
-                e.currentTarget.style.borderColor = "#D8D2C4";
-                e.currentTarget.style.backgroundColor = "#F2EBDD";
+                e.currentTarget.style.borderColor = "var(--border)";
+                e.currentTarget.style.backgroundColor = "var(--card)";
             }}
         >
             {/* Drag handle */}
@@ -81,7 +81,7 @@ const SortableAttrCard = ({ attr, onEdit, onDelete }) => {
                 {...attributes}
                 {...listeners}
                 className="flex items-center justify-center mr-2 shrink-0 cursor-grab active:cursor-grabbing"
-                style={{ color: "#D8D2C4", touchAction: "none" }}
+                style={{ color: "var(--border)", touchAction: "none" }}
                 title="Drag to reorder"
             >
                 <GripVertical size={14} />
@@ -103,7 +103,7 @@ const SortableAttrCard = ({ attr, onEdit, onDelete }) => {
 
             <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
-                    <p className="font-bold text-xs uppercase tracking-tight truncate" style={{ color: "#2E2A26" }}>
+                    <p className="font-bold text-xs uppercase tracking-tight truncate" style={{ color: "var(--foreground)" }}>
                         {attr.label}
                     </p>
                     {attr.is_required && (
@@ -112,7 +112,7 @@ const SortableAttrCard = ({ attr, onEdit, onDelete }) => {
                 </div>
                 <div className="flex items-center gap-2 mt-1">
                     <TypePill type={attr.type} />
-                    <span className="font-mono text-[9px] truncate opacity-60" style={{ color: "#6b6560" }}>#{attr.name}</span>
+                    <span className="font-mono text-[9px] truncate opacity-60" style={{ color: "var(--muted-foreground)" }}>#{attr.name}</span>
                 </div>
             </div>
 
@@ -213,7 +213,7 @@ export const Attributes = () => {
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#5E6A43',
-            cancelButtonColor: '#9b948e',
+            cancelButtonColor: 'var(--muted-foreground)',
             confirmButtonText: 'Yes, delete it!'
         });
         if (!result.isConfirmed) return;
@@ -260,7 +260,7 @@ export const Attributes = () => {
 
     if (loading) {
         return (
-            <div className="p-8 text-center" style={{ color: "#6b6560", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+            <div className="p-8 text-center" style={{ color: "var(--muted-foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
                 Loading Attributes...
             </div>
         );
@@ -269,12 +269,12 @@ export const Attributes = () => {
     return (
         <div
             className="flex-1 flex flex-col min-h-0 overflow-hidden w-full"
-            style={{ backgroundColor: "#FBF7EF", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+            style={{ backgroundColor: "var(--background)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
         >
             {/* Page header */}
             <div
                 className="shrink-0 px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3"
-                style={{ borderBottom: "1px solid #D8D2C4", backgroundColor: "#F2EBDD" }}
+                style={{ borderBottom: "1px solid var(--border)", backgroundColor: "var(--card)" }}
             >
                 <div className="flex items-center gap-3">
                     <div
@@ -284,10 +284,10 @@ export const Attributes = () => {
                         <SlidersHorizontal className="h-5 w-5" style={{ color: "#5E6A43" }} />
                     </div>
                     <div>
-                        <p className="text-base font-semibold uppercase tracking-wide" style={{ color: "#2E2A26", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+                        <p className="text-base font-semibold uppercase tracking-wide" style={{ color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
                             Core Attributes Management
                         </p>
-                        <p className="text-xs flex items-center gap-1.5 mt-0.5" style={{ color: "#9b948e" }}>
+                        <p className="text-xs flex items-center gap-1.5 mt-0.5" style={{ color: "var(--muted-foreground)" }}>
                             <span className="h-1.5 w-1.5 rounded-full animate-pulse inline-block" style={{ backgroundColor: "#5E6A43" }} />
                             Define and customize fields for your core system entities. Drag cards to reorder.
                         </p>
@@ -307,7 +307,7 @@ export const Attributes = () => {
                 <button
                     onClick={() => document.getElementById('attr-scroll-container').scrollBy({ left: -420, behavior: 'smooth' })}
                     className="absolute left-3 top-1/2 -translate-y-1/2 z-20 h-9 w-9 flex items-center justify-center rounded-full hidden md:flex"
-                    style={{ backgroundColor: "#FBF7EF", border: "1px solid #D8D2C4", color: "#5E6A43", boxShadow: "0 2px 8px rgba(0,0,0,0.10)" }}
+                    style={{ backgroundColor: "var(--background)", border: "1px solid var(--border)", color: "#5E6A43", boxShadow: "0 2px 8px rgba(0,0,0,0.10)" }}
                 >
                     <ChevronLeft size={16} />
                 </button>
@@ -316,7 +316,7 @@ export const Attributes = () => {
                 <button
                     onClick={() => document.getElementById('attr-scroll-container').scrollBy({ left: 420, behavior: 'smooth' })}
                     className="absolute right-3 top-1/2 -translate-y-1/2 z-20 h-9 w-9 flex items-center justify-center rounded-full hidden md:flex"
-                    style={{ backgroundColor: "#FBF7EF", border: "1px solid #D8D2C4", color: "#5E6A43", boxShadow: "0 2px 8px rgba(0,0,0,0.10)" }}
+                    style={{ backgroundColor: "var(--background)", border: "1px solid var(--border)", color: "#5E6A43", boxShadow: "0 2px 8px rgba(0,0,0,0.10)" }}
                 >
                     <ChevronRight size={16} />
                 </button>
@@ -324,7 +324,7 @@ export const Attributes = () => {
                 <div
                     id="attr-scroll-container"
                     className="flex gap-5 overflow-x-auto pb-4 h-full scroll-smooth"
-                    style={{ scrollbarWidth: "thin", scrollbarColor: "#D8D2C4 transparent" }}
+                    style={{ scrollbarWidth: "thin", scrollbarColor: "var(--border) transparent" }}
                 >
                     {entities.map(entity => {
                         const label = entity === 'catalogue_item' ? 'Catalogue Item'
@@ -337,7 +337,7 @@ export const Attributes = () => {
                             <div
                                 key={entity}
                                 className="flex-shrink-0 w-[85vw] md:w-[360px] flex flex-col rounded-xl h-full transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
-                                style={{ border: "1px solid #D8D2C4", backgroundColor: "#FBF7EF", overflow: "hidden" }}
+                                style={{ border: "1px solid var(--border)", backgroundColor: "var(--background)", overflow: "hidden" }}
                             >
                                 {/* Column header */}
                                 <div
@@ -347,12 +347,12 @@ export const Attributes = () => {
                                     <div className="flex items-center gap-2.5">
                                         <div
                                             className="flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold uppercase"
-                                            style={{ backgroundColor: "rgba(251,247,239,0.15)", color: "#FBF7EF" }}
+                                            style={{ backgroundColor: "rgba(251,247,239,0.15)", color: "var(--background)" }}
                                         >
                                             {entity.charAt(0).toUpperCase()}
                                         </div>
                                         <div>
-                                            <p className="text-xs font-black uppercase tracking-widest leading-none" style={{ color: "#FBF7EF" }}>
+                                            <p className="text-xs font-black uppercase tracking-widest leading-none" style={{ color: "var(--background)" }}>
                                                 {label}
                                             </p>
                                             <span className="text-[9px] font-medium" style={{ color: "rgba(251,247,239,0.6)" }}>
@@ -363,7 +363,7 @@ export const Attributes = () => {
                                     <button
                                         onClick={() => handleAddClick(entity)}
                                         className="flex items-center gap-1 px-3 h-7 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer"
-                                        style={{ backgroundColor: "rgba(251,247,239,0.15)", color: "#FBF7EF", border: "1px solid rgba(251,247,239,0.25)" }}
+                                        style={{ backgroundColor: "rgba(251,247,239,0.15)", color: "var(--background)", border: "1px solid rgba(251,247,239,0.25)" }}
                                         onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(251,247,239,0.25)"}
                                         onMouseLeave={e => e.currentTarget.style.backgroundColor = "rgba(251,247,239,0.15)"}
                                     >
@@ -376,7 +376,7 @@ export const Attributes = () => {
                                     {attrs.length === 0 ? (
                                         <div
                                             className="h-24 flex flex-col items-center justify-center rounded-lg m-1"
-                                            style={{ border: "1.5px dashed #D8D2C4", color: "#9b948e" }}
+                                            style={{ border: "1.5px dashed var(--border)", color: "var(--muted-foreground)" }}
                                         >
                                             <p className="text-[10px] uppercase tracking-widest font-bold">No Attributes</p>
                                             <p className="text-[9px] mt-0.5 opacity-60 italic">Start by adding one</p>

@@ -101,12 +101,12 @@ export const UserDetail = () => {
     if (loading) return <p className="p-6 text-muted-foreground">Loading...</p>;
 
     return (
-        <div className="p-6 max-w-xl space-y-6">
+        <div className="p-6 max-w-xl mx-auto w-full space-y-6">
             <div className="flex items-center gap-3">
                 <Button variant="ghost" size="sm" onClick={() => navigate("/users")}>
                     <ArrowLeft className="h-4 w-4 mr-1" /> Users
                 </Button>
-                <h1 className="text-xl font-bold tracking-tight">
+                <h1 className="text-2xl font-bold tracking-tight">
                     {isNew ? "New User" : `Edit — ${form.username}`}
                 </h1>
                 {!isNew && (

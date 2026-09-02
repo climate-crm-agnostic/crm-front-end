@@ -17,7 +17,7 @@ import {
 
 const STATUS_COLORS = {
     paid: "#B8C76A",
-    pending: "#D8D2C4",
+    pending: "var(--border)",
     overdue: "#F29B6B",
 };
 
@@ -178,25 +178,22 @@ export const Invoice = () => {
     const renderInvoiceCard = (invoice) => {
         const clientName = invoice.client_name;
         return (
-            <div
-                className="flex items-center justify-between gap-3 rounded-lg p-4 transition-colors"
-                style={{ backgroundColor: "#FBF7EF", border: "1px solid #D8D2C4" }}
-            >
+            <div className="flex items-center justify-between gap-3 rounded-lg p-4 transition-colors bg-background border border-border">
                 <div className="min-w-0 cursor-pointer" onClick={() => handleEdit(invoice)}>
-                    <p className="text-sm font-semibold truncate" style={{ color: "#2E2A26" }}>{clientName || "—"}</p>
-                    <p className="text-xs mt-0.5" style={{ color: "#9b948e" }}>{invoice.invoice_number}</p>
+                    <p className="text-sm font-semibold truncate text-foreground">{clientName || "—"}</p>
+                    <p className="text-xs mt-0.5 text-muted-foreground">{invoice.invoice_number}</p>
                 </div>
                 <div className="flex items-center gap-4 shrink-0">
                     <Badge variant={getStatusColor(invoice.status)} className="capitalize">{invoice.status}</Badge>
                     <div className="text-right">
-                        <p className="text-sm font-bold" style={{ color: "#2E2A26" }}>
+                        <p className="text-sm font-bold text-foreground">
                             {invoice.currency || "USD"} {Number(invoice.total).toFixed(2)}
                         </p>
-                        <p className="text-xs mt-0.5" style={{ color: "#9b948e" }}>Due {invoice.due_date}</p>
+                        <p className="text-xs mt-0.5 text-muted-foreground">Due {invoice.due_date}</p>
                     </div>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <button className="h-8 w-8 flex items-center justify-center rounded-md cursor-pointer" style={{ color: "#6b6560" }}>
+                            <button className="h-8 w-8 flex items-center justify-center rounded-md cursor-pointer text-muted-foreground">
                                 <MoreHorizontal className="h-4 w-4" />
                             </button>
                         </DropdownMenuTrigger>
@@ -218,7 +215,7 @@ export const Invoice = () => {
         <div className="h-full flex flex-col p-2 w-full">
             <div className="flex justify-between items-center mb-2">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-codex-texto-primary dark:text-codex-texto-dark-primary">
+                    <h1 className="text-3xl font-bold tracking-tight text-codex-texto-primary dark:text-codex-texto-dark-primary">
                         Invoices
                     </h1>
                     <p className="text-sm text-muted-foreground">
@@ -228,10 +225,10 @@ export const Invoice = () => {
                 <div className="flex gap-2">
                     <button
                         onClick={handleExportExcel}
-                        className="flex items-center gap-2 h-9 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
-                        style={{ backgroundColor: "#F2EBDD", border: "1px solid #5E6A43", color: "#5E6A43" }}
+                        className="flex items-center gap-2 h-9 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer bg-card"
+                        style={{ border: "1px solid var(--secondary)", color: "var(--secondary)" }}
                         onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(94,106,67,0.15)"}
-                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "#F2EBDD"}
+                        onMouseLeave={e => e.currentTarget.style.backgroundColor = ""}
                     >
                         <Download className="h-4 w-4" /> Export Excel
                     </button>
