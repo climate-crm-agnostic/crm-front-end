@@ -164,7 +164,7 @@ export const WebhookList = () => {
                     <Link to={`/webhook/new?model=${selectedModel}`}>
                         <button
                             className="flex items-center gap-2 h-10 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
-                            style={{ backgroundColor: "#1A3A30", color: "var(--background)" }}
+                            style={{ backgroundColor: "var(--secondary)", color: "var(--secondary-foreground)" }}
                             onMouseEnter={e => e.currentTarget.style.backgroundColor = "#14302A"}
                             onMouseLeave={e => e.currentTarget.style.backgroundColor = "#1A3A30"}
                         >
@@ -206,13 +206,13 @@ export const WebhookList = () => {
                     <div className="overflow-auto">
                         <table className="w-full text-sm">
                             <thead>
-                                <tr style={{ backgroundColor: "#1A3A30" }}>
+                                <tr style={{ backgroundColor: "var(--secondary)" }}>
                                     {["Name", "Model / Event", "Method & URL", "Status", "Actions"].map((h, i) => (
                                         <th
                                             key={h}
                                             className="px-4 py-2.5 text-xs font-semibold text-left"
                                             style={{
-                                                color: "var(--background)",
+                                                color: "var(--secondary-foreground)",
                                                 letterSpacing: "0.06em",
                                                 fontFamily: '"Source Sans 3", Arial, sans-serif',
                                                 textAlign: i === 4 ? "right" : "left",

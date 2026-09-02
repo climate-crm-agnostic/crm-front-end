@@ -18,8 +18,8 @@ const fetchCount = async (endpoint) => {
 
 // Brand Manual accent configs per card
 const CARD_ACCENTS = {
-    Leads:    { bar: "#5ED331", badge: { bg: "#E8F7E0", text: "var(--foreground)" }, link: "#5ED331", icon: { bg: "#5ED331" } },
-    Clients:  { bar: "#1A3A30", badge: { bg: "#E7F8E0", text: "#1A3A30" }, link: "#1A3A30", icon: { bg: "#1A3A30" } },
+    Leads:    { bar: "#5ED331", badge: { bg: "#E8F7E0", text: "#1A3A30" }, link: "#5ED331", icon: { bg: "#5ED331" } },
+    Clients:  { bar: "#2C5C4C", badge: { bg: "#E7F8E0", text: "#1A3A30" }, link: "#2C5C4C", icon: { bg: "#2C5C4C" } },
     Invoices: { bar: "#4CC02A", badge: { bg: "#E7F8E0", text: "#1A3A30" }, link: "#34741B", icon: { bg: "#4CC02A" } },
     Assets:   { bar: "var(--border)", badge: { bg: "var(--card)", text: "var(--muted-foreground)" }, link: "var(--muted-foreground)", icon: { bg: "var(--muted-foreground)" } },
 };
@@ -56,7 +56,7 @@ const StatCard = ({ title, count, icon: Icon, href, loading, navigate }) => {
                         className="flex h-10 w-10 items-center justify-center rounded-lg"
                         style={{ backgroundColor: accent.icon.bg }}
                     >
-                        <Icon className="h-5 w-5" style={{ color: "var(--background)" }} />
+                        <Icon className="h-5 w-5" style={{ color: "#FFFFFF" }} />
                     </div>
                     <span
                         className="text-xs font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full"
@@ -114,7 +114,7 @@ const TaskKpiCard = ({ title, count, color, href, loading, navigate }) => (
         <div className="relative p-5 flex flex-col gap-4 pt-6">
             <div className="flex items-start justify-between">
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg" style={{ backgroundColor: color.dot }}>
-                    <ClipboardList className="h-4 w-4" style={{ color: "var(--background)" }} />
+                    <ClipboardList className="h-4 w-4" style={{ color: "#FFFFFF" }} />
                 </div>
                 <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
                     style={{ backgroundColor: color.bg, color: color.text }}>
@@ -309,15 +309,15 @@ const TaskCalendar = ({ tasks, navigate }) => {
 const ChettPromoCard = ({ navigate }) => (
     <div
         className="relative overflow-hidden rounded-xl p-5 flex items-center justify-between gap-4 cursor-pointer transition-transform hover:-translate-y-0.5"
-        style={{ backgroundColor: "var(--foreground)" }}
+        style={{ backgroundColor: "#1A3A30" }}
         onClick={() => navigate("/chett-ai")}
     >
         <div className="flex items-center gap-4 min-w-0">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg" style={{ backgroundColor: "rgba(184,199,106,0.18)", border: "1px solid rgba(184,199,106,0.35)" }}>
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg" style={{ backgroundColor: "rgba(94,211,49,0.18)", border: "1px solid rgba(94,211,49,0.35)" }}>
                 <Bot className="h-5 w-5" style={{ color: "#5ED331" }} />
             </div>
             <div className="min-w-0">
-                <p className="text-sm font-semibold italic" style={{ color: "var(--background)", fontFamily: '"Cormorant Garamond", Georgia, serif' }}>
+                <p className="text-sm font-semibold italic" style={{ color: "#FFFFFF", fontFamily: '"Cormorant Garamond", Georgia, serif' }}>
                     Meet Chett, your CRM copilot
                 </p>
                 <p className="text-xs mt-0.5 truncate" style={{ color: "#b0a89e" }}>
@@ -327,7 +327,7 @@ const ChettPromoCard = ({ navigate }) => (
         </div>
         <button
             className="shrink-0 h-9 px-4 rounded-lg text-sm font-semibold cursor-pointer"
-            style={{ backgroundColor: "#5ED331", color: "var(--foreground)" }}
+            style={{ backgroundColor: "#5ED331", color: "var(--primary-foreground)" }}
             onClick={(e) => { e.stopPropagation(); navigate("/chett-ai"); }}
         >
             Open Chett
@@ -388,7 +388,7 @@ const LeadsByPipeline = ({ pipelineName, totalLeads, stageCounts, byResponsible,
                                 <div className="flex items-center gap-2 min-w-0">
                                     <div
                                         className="h-6 w-6 shrink-0 flex items-center justify-center rounded-full text-[10px] font-bold"
-                                        style={{ backgroundColor: "var(--secondary)", color: "var(--background)" }}
+                                        style={{ backgroundColor: "var(--secondary)", color: "var(--secondary-foreground)" }}
                                     >
                                         {r.name.charAt(0).toUpperCase()}
                                     </div>

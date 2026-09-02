@@ -47,7 +47,7 @@ export const PlanExpired = () => {
           className="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-200 shadow-sm"
           style={{
             backgroundColor: "#5ED331",
-            color: "var(--background)",
+            color: "var(--primary-foreground)",
             textDecoration: "none",
           }}
           onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#34741B")}

@@ -347,15 +347,15 @@ export const Attributes = () => {
                                     <div className="flex items-center gap-2.5">
                                         <div
                                             className="flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold uppercase"
-                                            style={{ backgroundColor: "rgba(251,247,239,0.15)", color: "var(--background)" }}
+                                            style={{ backgroundColor: "rgba(255,255,255,0.15)", color: "#FFFFFF" }}
                                         >
                                             {entity.charAt(0).toUpperCase()}
                                         </div>
                                         <div>
-                                            <p className="text-xs font-black uppercase tracking-widest leading-none" style={{ color: "var(--background)" }}>
+                                            <p className="text-xs font-black uppercase tracking-widest leading-none" style={{ color: "#FFFFFF" }}>
                                                 {label}
                                             </p>
-                                            <span className="text-[9px] font-medium" style={{ color: "rgba(251,247,239,0.6)" }}>
+                                            <span className="text-[9px] font-medium" style={{ color: "rgba(255,255,255,0.6)" }}>
                                                 {attrs.length} {attrs.length === 1 ? 'attribute' : 'attributes'}
                                             </span>
                                         </div>
@@ -363,9 +363,9 @@ export const Attributes = () => {
                                     <button
                                         onClick={() => handleAddClick(entity)}
                                         className="flex items-center gap-1 px-3 h-7 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer"
-                                        style={{ backgroundColor: "rgba(251,247,239,0.15)", color: "var(--background)", border: "1px solid rgba(251,247,239,0.25)" }}
-                                        onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(251,247,239,0.25)"}
-                                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "rgba(251,247,239,0.15)"}
+                                        style={{ backgroundColor: "rgba(255,255,255,0.15)", color: "#FFFFFF", border: "1px solid rgba(255,255,255,0.25)" }}
+                                        onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.25)"}
+                                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.15)"}
                                     >
                                         <Plus size={11} /> New
                                     </button>

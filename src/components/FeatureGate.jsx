@@ -51,12 +51,12 @@ export const FeatureGate = ({ feature, children }) => {
         href="mailto:support@codexacademy.co?subject=Plan Upgrade Request"
         className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200"
         style={{
-          backgroundColor: "#1A3A30",
-          color: "var(--background)",
+          backgroundColor: "var(--secondary)",
+          color: "var(--secondary-foreground)",
           textDecoration: "none",
         }}
         onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#14302A")}
-        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#1A3A30")}
+        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "var(--secondary)")}
       >
         Contact us to upgrade
       </a>

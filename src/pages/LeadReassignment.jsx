@@ -124,7 +124,7 @@ export const LeadReassignment = () => {
                     onClick={handleReassign}
                     disabled={!fromUserId || !toUserId || reassigning || previewCount === 0}
                     className="w-full h-10 rounded-md text-sm font-semibold transition-colors disabled:opacity-50 cursor-pointer"
-                    style={{ backgroundColor: "#1A3A30", color: "var(--background)" }}
+                    style={{ backgroundColor: "var(--secondary)", color: "var(--secondary-foreground)" }}
                 >
                     {reassigning ? "Reassigning..." : "Reassign Leads"}
                 </button>

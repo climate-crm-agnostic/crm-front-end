@@ -158,7 +158,7 @@ export const AuditLog = () => {
                 <button
                     type="submit"
                     className="h-9 px-4 rounded-md text-sm font-semibold transition-colors"
-                    style={{ backgroundColor: "#1A3A30", color: "var(--background)" }}
+                    style={{ backgroundColor: "var(--secondary)", color: "var(--secondary-foreground)" }}
                     onMouseEnter={e => e.currentTarget.style.backgroundColor = "#14302A"}
                     onMouseLeave={e => e.currentTarget.style.backgroundColor = "#1A3A30"}
                 >

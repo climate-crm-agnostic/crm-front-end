@@ -219,9 +219,9 @@ export const AttributeForm = ({ entity, onSubmit, onCancel, isLoading, initialDa
                     type="submit"
                     disabled={isLoading}
                     className="h-9 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
-                    style={{ backgroundColor: isLoading ? "#14302A" : "#1A3A30", color: "var(--background)", opacity: isLoading ? 0.7 : 1 }}
+                    style={{ backgroundColor: isLoading ? "#14302A" : "var(--secondary)", color: "var(--secondary-foreground)", opacity: isLoading ? 0.7 : 1 }}
                     onMouseEnter={e => !isLoading && (e.currentTarget.style.backgroundColor = "#14302A")}
-                    onMouseLeave={e => !isLoading && (e.currentTarget.style.backgroundColor = "#1A3A30")}
+                    onMouseLeave={e => !isLoading && (e.currentTarget.style.backgroundColor = "var(--secondary)")}
                 >
                     {isLoading ? 'Saving...' : 'Save Attribute'}
                 </button>

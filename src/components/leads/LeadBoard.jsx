@@ -185,7 +185,7 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
                     <Link
                         to="/pipeline"
                         className="px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
-                        style={{ backgroundColor: "#1A3A30", color: "var(--background)" }}
+                        style={{ backgroundColor: "var(--secondary)", color: "var(--secondary-foreground)" }}
                     >
                         Manage Pipelines
                     </Link>

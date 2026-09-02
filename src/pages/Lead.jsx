@@ -199,7 +199,7 @@ export const Lead = () => {
                     <button
                         onClick={() => navigate("/lead/new", { state: { pipelineId: selectedPipelineId } })}
                         className="flex items-center gap-2 h-10 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer shrink-0"
-                        style={{ backgroundColor: "#1A3A30", color: "var(--background)" }}
+                        style={{ backgroundColor: "var(--secondary)", color: "var(--secondary-foreground)" }}
                         onMouseEnter={e => e.currentTarget.style.backgroundColor = "#14302A"}
                         onMouseLeave={e => e.currentTarget.style.backgroundColor = "#1A3A30"}
                     >

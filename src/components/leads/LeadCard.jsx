@@ -63,7 +63,7 @@ export const LeadCard = ({ lead, salesUsers = [], clientsById = {}, onDragStart,
                 >
                     <div
                         className="h-4 w-4 rounded-full flex items-center justify-center text-[7px] font-black shrink-0"
-                        style={{ backgroundColor: "#1A3A30", color: "var(--background)" }}
+                        style={{ backgroundColor: "var(--secondary)", color: "var(--secondary-foreground)" }}
                     >
                         {responsibleName.charAt(0).toUpperCase()}
                     </div>
