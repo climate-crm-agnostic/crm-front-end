@@ -326,110 +326,114 @@
 :root {
   --radius: 0.125rem; /* 2px — Brand Manual default */
 
-  /* ---- Brand Manual Light Theme ---- */
+  /* ---- Climate Rebrand — Light Theme ----
+     Sourced from Phil's commercial stills (screenshots, not exact brand
+     spec): deep Forest Green, bright Lime Green, and white. "Black" in the
+     3-color brief reads as Forest Green standing in for near-black text,
+     not a literal #000 — no true black appears anywhere in the reference
+     stills. Revisit if exact hex values ever come from the design team. */
 
   /* Surfaces */
-  --background: #FBF7EF;   /* Linen — main page background */
-  --foreground: #2E2A26;   /* Hearth Ink — all text */
+  --background: #FFFFFF;   /* White — main page background */
+  --foreground: #1A3A30;   /* Forest Green — all text */
 
-  --card: #F2EBDD;         /* Oat — cards, sidebars */
-  --card-foreground: #2E2A26;
-  --popover: #F2EBDD;
-  --popover-foreground: #2E2A26;
+  --card: #F5F8F6;         /* faint green-white — cards, sidebars */
+  --card-foreground: #1A3A30;
+  --popover: #F5F8F6;
+  --popover-foreground: #1A3A30;
 
-  /* Primary CTA — Apricot */
-  --primary: #F29B6B;
-  --primary-foreground: #FBF7EF;
+  /* Primary CTA — Lime Green */
+  --primary: #5ED331;
+  --primary-foreground: #1A3A30;
 
-  /* Secondary CTA — Olive Branch */
-  --secondary: #5E6A43;
-  --secondary-foreground: #FBF7EF;
+  /* Secondary CTA — Forest Green */
+  --secondary: #1A3A30;
+  --secondary-foreground: #FFFFFF;
 
-  /* Active states — Citron */
-  --accent: #B8C76A;
-  --accent-foreground: #2E2A26;
+  /* Active states — Lime Green */
+  --accent: #5ED331;
+  --accent-foreground: #1A3A30;
 
-  /* Soft callouts — Peach Wash */
-  --muted: #FFDCC8;
-  --muted-foreground: #6b6560;
+  /* Soft callouts — pale Lime wash */
+  --muted: #E8F7E0;
+  --muted-foreground: #5B6B63;
 
   /* Destructive */
   --destructive: #c0392b;
 
-  /* Structure — Pebble */
-  --border: #D8D2C4;
-  --input: #D8D2C4;
-  --ring: #F29B6B; /* Apricot focus ring */
+  /* Structure */
+  --border: #DCE5DF;
+  --input: #DCE5DF;
+  --ring: #5ED331; /* Lime focus ring */
 
   /* Charts — brand palette */
-  --chart-1: #F29B6B;   /* Apricot */
-  --chart-2: #B8C76A;   /* Citron */
-  --chart-3: #5E6A43;   /* Olive Branch */
-  --chart-4: #FFDCC8;   /* Peach Wash */
-  --chart-5: #D8D2C4;   /* Pebble */
+  --chart-1: #5ED331;   /* Lime Green */
+  --chart-2: #1A3A30;   /* Forest Green */
+  --chart-3: #8FE070;   /* light Lime */
+  --chart-4: #0D251E;   /* dark Forest */
+  --chart-5: #DCE5DF;   /* neutral */
 
-  --chartcodex-1: #F29B6B;
-  --chartcodex-2: #B8C76A;
-  --chartcodex-3: #5E6A43;
-  --chartcodex-4: #2E2A26;
-  --chartcodex-5: #FFDCC8;
+  --chartcodex-1: #5ED331;
+  --chartcodex-2: #1A3A30;
+  --chartcodex-3: #8FE070;
+  --chartcodex-4: #0D251E;
+  --chartcodex-5: #DCE5DF;
 
   /* Sidebar */
-  --sidebar: #F2EBDD;
-  --sidebar-foreground: #2E2A26;
-  --sidebar-primary: #5E6A43;
-  --sidebar-primary-foreground: #FBF7EF;
-  --sidebar-accent: #e8edde;
-  --sidebar-accent-foreground: #2E2A26;
-  --sidebar-border: #D8D2C4;
-  --sidebar-ring: #F29B6B;
+  --sidebar: #F5F8F6;
+  --sidebar-foreground: #1A3A30;
+  --sidebar-primary: #1A3A30;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #E8F7E0;
+  --sidebar-accent-foreground: #1A3A30;
+  --sidebar-border: #DCE5DF;
+  --sidebar-ring: #5ED331;
 }
 
 .dark {
-  /* Brand Manual Dark Mode — near-black surfaces, not a muddy olive wash.
-     Accents (primary/secondary/accent below) stay at full saturation so
-     they still pop against dark, per the redesign's "one brand system,
-     two modes" direction. */
-  --background: #161512;
-  --foreground: #FBF7EF;
+  /* Climate Rebrand — Dark Mode. Near-black-green surfaces rather than a
+     generic black, so dark mode still reads as this brand, not a default
+     theme — same "one brand system, two modes" approach as before. */
+  --background: #0E1F1A;
+  --foreground: #F4F7F5;
 
-  --card: #201f1b;
-  --card-foreground: #FBF7EF;
-  --popover: #201f1b;
-  --popover-foreground: #FBF7EF;
+  --card: #16302A;
+  --card-foreground: #F4F7F5;
+  --popover: #16302A;
+  --popover-foreground: #F4F7F5;
 
-  --primary: #F29B6B;
-  --primary-foreground: #2E2A26;
+  --primary: #5ED331;
+  --primary-foreground: #0E1F1A;
 
-  --secondary: #7a8a56;
-  --secondary-foreground: #FBF7EF;
+  --secondary: #2C5C4C;
+  --secondary-foreground: #FFFFFF;
 
-  --accent: #B8C76A;
-  --accent-foreground: #2E2A26;
+  --accent: #5ED331;
+  --accent-foreground: #0E1F1A;
 
-  --muted: rgba(242,155,107,0.12);
-  --muted-foreground: #b8b0a8;
+  --muted: rgba(94,211,49,0.12);
+  --muted-foreground: #9FB3AA;
 
   --destructive: #e05252;
 
-  --border: rgba(251,247,239,0.12);
-  --input: rgba(251,247,239,0.10);
-  --ring: #F29B6B;
+  --border: rgba(244,247,245,0.12);
+  --input: rgba(244,247,245,0.10);
+  --ring: #5ED331;
 
-  --chart-1: #F29B6B;
-  --chart-2: #B8C76A;
-  --chart-3: #7a8a56;
-  --chart-4: #FFDCC8;
-  --chart-5: rgba(251,247,239,0.3);
+  --chart-1: #5ED331;
+  --chart-2: #2C5C4C;
+  --chart-3: #8FE070;
+  --chart-4: #F4F7F5;
+  --chart-5: rgba(244,247,245,0.3);
 
-  --sidebar: #1c1b17;
-  --sidebar-foreground: #FBF7EF;
-  --sidebar-primary: #7a8a56;
-  --sidebar-primary-foreground: #FBF7EF;
-  --sidebar-accent: rgba(184,199,106,0.15);
-  --sidebar-accent-foreground: #FBF7EF;
-  --sidebar-border: rgba(251,247,239,0.10);
-  --sidebar-ring: #F29B6B;
+  --sidebar: #0B1815;
+  --sidebar-foreground: #F4F7F5;
+  --sidebar-primary: #2C5C4C;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: rgba(94,211,49,0.15);
+  --sidebar-accent-foreground: #F4F7F5;
+  --sidebar-border: rgba(244,247,245,0.10);
+  --sidebar-ring: #5ED331;
 }
 
 @layer base {
