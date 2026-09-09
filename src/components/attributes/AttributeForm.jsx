@@ -177,6 +177,13 @@ export const AttributeForm = ({
         [draft, typeMeta, canBeUnique]
     );
 
+    // Option values that already exist server-side. Editing one of these may
+    // only change its label; a value is the key stored records point at.
+    const savedOptionValues = useMemo(
+        () => new Set(normalizeOptions(initialData?.list_values).map((o) => o.value)),
+        [initialData]
+    );
+
     const grouped = useMemo(() => {
         const list = types.length ? types : [];
         return ATTRIBUTE_TYPE_GROUPS
@@ -334,6 +341,7 @@ export const AttributeForm = ({
                                     <OptionsEditor
                                         value={draft.list_values}
                                         onChange={(list_values) => set({ list_values })}
+                                        lockedValues={savedOptionValues}
                                         error={errors.list_values}
                                     />
                                 </div>

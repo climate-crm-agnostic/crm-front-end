@@ -16,7 +16,12 @@ export const SearchableSelect = ({
     const [open, setOpen] = useState(false);
     const [query, setQuery] = useState("");
 
-    const selectable = useMemo(() => options.filter((o) => o.is_active !== false), [options]);
+    // Active *and* actually selectable: an option with no value cannot be
+    // picked, and offering it would let the caller clear the field by accident.
+    const selectable = useMemo(
+        () => options.filter((o) => o.is_active !== false && String(o.value ?? "").trim() !== ""),
+        [options],
+    );
     const filtered = useMemo(() => {
         const q = query.trim().toLowerCase();
         if (!q) return selectable;

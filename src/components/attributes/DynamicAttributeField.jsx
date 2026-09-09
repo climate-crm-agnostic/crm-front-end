@@ -12,7 +12,7 @@ import { SearchableSelect } from "../ui/searchable-select";
 import { MultiSelect } from "../ui/multi-select";
 import { MaskedInput } from "../ui/masked-input";
 import { FunctionSquare } from "lucide-react";
-import { formatAttributeValue, normalizeOptions } from "../../utils/attributeTypes";
+import { formatAttributeValue, normalizeOptions, selectableOptions } from "../../utils/attributeTypes";
 
 /**
  * Single renderer for a dynamic Attribute/PipelineAttribute value, covering
@@ -41,7 +41,7 @@ export const DynamicAttributeField = ({ attr, value, onChange, idPrefix, disable
 
     if (attr.type === "list") {
         const options = normalizeOptions(attr.options || attr.list_values);
-        const selectable = options.filter((o) => o.is_active !== false);
+        const selectable = selectableOptions(attr.options || attr.list_values);
         // Auto-enable search past the point a plain dropdown gets unwieldy;
         // an explicit `searchable` in the config always wins.
         const searchable = config.searchable ?? selectable.length > 8;
@@ -90,7 +90,7 @@ export const DynamicAttributeField = ({ attr, value, onChange, idPrefix, disable
         return (
             <MultiSelect
                 id={id}
-                options={normalizeOptions(attr.options || attr.list_values)}
+                options={selectableOptions(attr.options || attr.list_values)}
                 value={value}
                 onChange={onChange}
                 disabled={disabled}

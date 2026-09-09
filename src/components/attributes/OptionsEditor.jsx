@@ -21,8 +21,13 @@ const labelStyle = {
  * (`is_active: false`) keeps existing records valid while removing the option
  * from new entries; deleting outright would orphan them.
  */
-export const OptionsEditor = ({ value, onChange, error }) => {
+export const OptionsEditor = ({ value, onChange, error, lockedValues }) => {
     const options = normalizeOptions(value);
+    // Values already saved on the server. Those are what stored records point
+    // at, so renaming one must only change its label. A value not in this set
+    // belongs to an option being typed right now, and tracks the label until it
+    // is saved for the first time.
+    const isLocked = (option) => !!lockedValues?.has(option.value);
 
     const update = (index, patch) => {
         const next = options.map((o, i) => (i === index ? { ...o, ...patch } : o));
@@ -79,10 +84,12 @@ export const OptionsEditor = ({ value, onChange, error }) => {
                             value={option.label}
                             onChange={(e) => {
                                 const label = e.target.value;
-                                // The value is only derived from the label while the
-                                // option is new. Once saved, renaming must not move
-                                // the value out from under existing records.
-                                update(index, option.value
+                                // Keyed off "has this been saved", not "does it
+                                // already have a value": the previous check made
+                                // the value stop following the label after the
+                                // first keystroke, so typing "Alto" into a new
+                                // option stored the value as "A".
+                                update(index, isLocked(option)
                                     ? { label }
                                     : { label, value: label });
                             }}
@@ -144,8 +151,9 @@ export const OptionsEditor = ({ value, onChange, error }) => {
             {error && <span style={{ color: "#c0392b", fontSize: 11 }}>{error}</span>}
 
             <p style={{ fontSize: 11, color: "#9b948e" }}>
-                Renaming an option changes only what people see — records keep pointing at it.
-                Retire instead of deleting to stop it being chosen without breaking existing records.
+                A new option's key follows what you type. Once saved, renaming changes only
+                what people see — records keep pointing at it. Retire instead of deleting to
+                stop an option being chosen without breaking the records that already use it.
             </p>
         </div>
     );

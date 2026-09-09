@@ -86,6 +86,15 @@ export const normalizeOptions = (listValues) => {
 export const activeOptions = (listValues) =>
     normalizeOptions(listValues).filter((o) => o.is_active);
 
+// Options safe to hand to a picker: active, and with a value that can actually
+// be selected. An option with an empty value cannot be chosen — Radix reserves
+// the empty string for "clear the selection" and throws outright when given one
+// as an item — and the backend rejects it on save anyway. The attribute modal
+// creates exactly such an option the moment "Add option" is pressed, before a
+// label has been typed, and its live preview renders it.
+export const selectableOptions = (listValues) =>
+    activeOptions(listValues).filter((o) => String(o.value ?? "").trim() !== "");
+
 export const findOption = (listValues, value) =>
     normalizeOptions(listValues).find((o) => o.value === value) || null;
 
