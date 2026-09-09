@@ -10,10 +10,53 @@ import {
     getPipelineFields, createEvent, previewAttendeesExcel,
     approveAttendees, downloadAttendeeTemplate,
 } from "@/services/eventService";
+import { PhoneInput } from "@/components/ui/phone-input";
 
 const GREEN = "#5E6A43";
 const LINK_MIN_DAYS = 1;
 const LINK_MAX_DAYS = 30;
+const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
+// Formats a Date into the value a <input type="datetime-local"> expects
+// (local time, no timezone suffix): "YYYY-MM-DDTHH:mm".
+const toLocalInput = (d) => {
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
+
+// Today's date (YYYY-MM-DD) — min for the event-date picker (no past dates).
+const todayDate = () => {
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};
+
+// Human-readable 24-hour display of a datetime-local value (US style, no
+// am/pm): "Sep 13, 2026 · 08:00". Empty string when there's no value.
+const fmt24 = (localStr) => {
+    if (!localStr) return "";
+    const d = new Date(localStr);
+    if (isNaN(d)) return "";
+    return d.toLocaleString("en-US", {
+        month: "short", day: "2-digit", year: "numeric",
+        hour: "2-digit", minute: "2-digit", hour12: false,
+    });
+};
+
+// Splits a "YYYY-MM-DDTHH:mm" value into its date and time parts, and
+// rebuilds it — used by the custom 24-hour schedule editor (native
+// datetime-local renders am/pm depending on the browser locale, so we drive
+// the time with our own 24h selects instead).
+const splitLocal = (localStr) => {
+    if (!localStr || !localStr.includes("T")) return { date: "", time: "" };
+    const [date, time] = localStr.split("T");
+    return { date, time: (time || "").slice(0, 5) };
+};
+const joinLocal = (date, time) => (date && time ? `${date}T${time}` : "");
+
+// 24-hour options for the hour/minute selects.
+const HOURS_24 = Array.from({ length: 24 }, (_, h) => String(h).padStart(2, "0"));
+const MINUTES_60 = Array.from({ length: 60 }, (_, m) => String(m).padStart(2, "0"));
 
 const STEPS = [
     "Pipeline",
@@ -43,9 +86,72 @@ export const EventCreate = () => {
     const [form, setForm] = useState({
         name: "", description: "", modality: "in_person",
         location: "", virtual_url: "",
-        start_at: "", end_at: "",
-        link_duration_days: 1,
+        event_date: "",                // YYYY-MM-DD — first cascade control
+        duration_days: "",             // event length in days (also the link validity)
+        start_at: "", end_at: "",      // computed (or manually customized)
+        customize_schedule: false,     // when true, start/end are edited manually
     });
+    const [attendeeErrors, setAttendeeErrors] = useState({}); // { idx: {email} }
+
+    // Business rule: an event that lasts N days occupies WHOLE calendar days.
+    //   start = event_date @ 08:00
+    //   end   = (event_date + (N-1) days) @ 23:59
+    // So a 1-day event on the 13th runs 13 08:00 → 13 23:59 (never spills into
+    // the 14th). Returns { start_at, end_at } as datetime-local strings, or
+    // empty strings when inputs are incomplete.
+    const computeSchedule = (dateStr, days) => {
+        const n = Number(days);
+        if (!dateStr || !n || n < 1) return { start_at: "", end_at: "" };
+        const [y, m, d] = dateStr.split("-").map(Number);
+        if (!y || !m || !d) return { start_at: "", end_at: "" };
+        const start = new Date(y, m - 1, d, 8, 0, 0);
+        const end = new Date(y, m - 1, d, 23, 59, 0);
+        end.setDate(end.getDate() + (n - 1));
+        return { start_at: toLocalInput(start), end_at: toLocalInput(end) };
+    };
+
+    // Cascade control 1 — event date. Changing it recomputes start/end
+    // (unless the user has taken manual control via Customize).
+    const setEventDate = (dateStr) => {
+        setForm((f) => {
+            const next = { ...f, event_date: dateStr };
+            if (!f.customize_schedule) {
+                const sched = computeSchedule(dateStr, f.duration_days);
+                next.start_at = sched.start_at;
+                next.end_at = sched.end_at;
+            }
+            return next;
+        });
+    };
+
+    // Cascade control 2 — duration in days (enabled only once a date exists).
+    const setDurationDays = (daysVal) => {
+        setForm((f) => {
+            const next = { ...f, duration_days: daysVal };
+            if (!f.customize_schedule) {
+                const sched = computeSchedule(f.event_date, daysVal);
+                next.start_at = sched.start_at;
+                next.end_at = sched.end_at;
+            }
+            return next;
+        });
+    };
+
+    // Toggle manual editing of start/end. Turning it OFF recomputes from the
+    // date + duration (keeps the three fields congruent). Turning it ON leaves
+    // the current computed values as the editable starting point.
+    const toggleCustomize = () => {
+        setForm((f) => {
+            const turningOn = !f.customize_schedule;
+            const next = { ...f, customize_schedule: turningOn };
+            if (!turningOn) {
+                const sched = computeSchedule(f.event_date, f.duration_days);
+                next.start_at = sched.start_at;
+                next.end_at = sched.end_at;
+            }
+            return next;
+        });
+    };
 
     // Step 3 — attendees (manual + excel)
     const [manualAttendees, setManualAttendees] = useState([emptyAttendee()]);
@@ -97,6 +203,26 @@ export const EventCreate = () => {
 
     const handleManualChange = (idx, field, value) => {
         setManualAttendees((prev) => prev.map((a, i) => (i === idx ? { ...a, [field]: value } : a)));
+
+        // Live per-field validation for email (only email format is enforced;
+        // phone is guarded by the PhoneInput mask which rejects letters).
+        if (field === "email") {
+            setAttendeeErrors((prev) => {
+                const rowErrs = { ...(prev[idx] || {}) };
+                if (value && !EMAIL_RE.test(value)) rowErrs.email = "Enter a valid email address.";
+                else delete rowErrs.email;
+                return { ...prev, [idx]: rowErrs };
+            });
+        }
+    };
+
+    // Any manual row with a value that fails validation blocks Next.
+    const manualRowsValid = () => {
+        return manualAttendees.every((a) => {
+            if (!(a.first_name || "").trim()) return true; // empty row is ignored
+            if (a.email && !EMAIL_RE.test(a.email)) return false;
+            return true;
+        });
     };
     const addManualRow = () => setManualAttendees((prev) => [...prev, emptyAttendee()]);
     const removeManualRow = (idx) => setManualAttendees((prev) => prev.filter((_, i) => i !== idx));
@@ -124,15 +250,30 @@ export const EventCreate = () => {
     const canNext = () => {
         if (step === 0) return pipelineId && !prereqError && pipelineFields.length > 0;
         if (step === 1) {
-            if (!form.name.trim() || !form.start_at || !form.end_at) return false;
-            if (new Date(form.end_at) <= new Date(form.start_at)) return false;
+            if (!form.name.trim()) return false;
             if (form.modality === "in_person" && !form.location.trim()) return false;
             if (form.modality === "virtual" && !form.virtual_url.trim()) return false;
-            const d = Number(form.link_duration_days);
-            if (d < LINK_MIN_DAYS || d > LINK_MAX_DAYS) return false;
+
+            // Cascade: date required, then a valid duration (1-30).
+            if (!form.event_date) return false;
+            const days = Number(form.duration_days);
+            if (!days || days < LINK_MIN_DAYS || days > LINK_MAX_DAYS) return false;
+
+            // Computed or customized start/end must exist and be coherent.
+            if (!form.start_at || !form.end_at) return false;
+            const start = new Date(form.start_at);
+            const end = new Date(form.end_at);
+            if (isNaN(start) || isNaN(end)) return false;
+            if (end <= start) return false;
+
+            // No events in the past (compare against now, minute precision).
+            const now = new Date();
+            now.setSeconds(0, 0);
+            if (start < now) return false;
+
             return true;
         }
-        if (step === 2) return allAttendees().length >= 1;
+        if (step === 2) return allAttendees().length >= 1 && manualRowsValid();
         return true;
     };
 
@@ -153,7 +294,8 @@ export const EventCreate = () => {
                 virtual_url: form.modality === "virtual" ? form.virtual_url.trim() : "",
                 start_at: new Date(form.start_at).toISOString(),
                 end_at: new Date(form.end_at).toISOString(),
-                link_duration_days: Number(form.link_duration_days),
+                // Link validity equals the declared event duration in days.
+                link_duration_days: Number(form.duration_days),
                 attendees,
             };
             const event = await createEvent(payload);
@@ -179,6 +321,7 @@ export const EventCreate = () => {
     const labelStyle = { color: "#2E2A26", fontSize: 13, fontWeight: 600 };
     const inputCls = "w-full h-10 px-3 rounded-lg text-sm";
     const inputStyle = { border: "1px solid #D8D2C4", backgroundColor: "#FFFFFF", color: "#2E2A26" };
+    const disabledStyle = { backgroundColor: "#F0ECE3", color: "#9b948e", cursor: "not-allowed" };
 
     return (
         <div className="p-6 max-w-4xl mx-auto space-y-6" style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
@@ -311,26 +454,113 @@ export const EventCreate = () => {
                             </div>
                         )}
 
+                        {/* Cascade: date → duration → (auto) start/end. */}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label style={labelStyle}>Starts at *</label>
-                                <input type="datetime-local" className={inputCls} style={inputStyle} value={form.start_at} onChange={(e) => setForm({ ...form, start_at: e.target.value })} />
+                                <label style={labelStyle}>Event date *</label>
+                                <input
+                                    type="date"
+                                    className={inputCls}
+                                    style={inputStyle}
+                                    min={todayDate()}
+                                    value={form.event_date}
+                                    onChange={(e) => setEventDate(e.target.value)}
+                                />
                             </div>
                             <div>
-                                <label style={labelStyle}>Ends at *</label>
-                                <input type="datetime-local" className={inputCls} style={inputStyle} value={form.end_at} onChange={(e) => setForm({ ...form, end_at: e.target.value })} />
+                                <label style={labelStyle}>Duration (days) *</label>
+                                <input
+                                    type="number" min={LINK_MIN_DAYS} max={LINK_MAX_DAYS}
+                                    className={inputCls}
+                                    style={{ ...inputStyle, ...(form.event_date ? {} : disabledStyle) }}
+                                    disabled={!form.event_date}
+                                    placeholder={form.event_date ? "" : "Pick an event date first"}
+                                    value={form.duration_days}
+                                    onChange={(e) => setDurationDays(e.target.value)}
+                                />
+                                <p className="text-xs mt-1" style={{ color: "#9b948e" }}>
+                                    Minimum {LINK_MIN_DAYS}, maximum {LINK_MAX_DAYS}. Also sets the link validity.
+                                </p>
                             </div>
                         </div>
 
+                        {/* Computed / customizable schedule. Times shown in 24h. */}
                         <div>
-                            <label style={labelStyle}>Registration link valid for (days) *</label>
-                            <p className="text-xs mb-1" style={{ color: "#9b948e" }}>Minimum {LINK_MIN_DAYS}, maximum {LINK_MAX_DAYS} days.</p>
-                            <input
-                                type="number" min={LINK_MIN_DAYS} max={LINK_MAX_DAYS}
-                                className={inputCls} style={inputStyle}
-                                value={form.link_duration_days}
-                                onChange={(e) => setForm({ ...form, link_duration_days: e.target.value })}
-                            />
+                            <div className="flex items-center justify-between mb-1">
+                                <label style={labelStyle}>Schedule</label>
+                                <button
+                                    type="button"
+                                    onClick={toggleCustomize}
+                                    disabled={!form.event_date || !form.duration_days}
+                                    className="text-xs font-semibold cursor-pointer"
+                                    style={{ color: (!form.event_date || !form.duration_days) ? "#c9c3b6" : GREEN }}
+                                >
+                                    {form.customize_schedule ? "Use automatic schedule" : "Customize"}
+                                </button>
+                            </div>
+                            <p className="text-xs mb-2" style={{ color: "#9b948e" }}>
+                                {form.customize_schedule
+                                    ? "Editing start/end manually. The event still lasts the number of days set above."
+                                    : "Auto: starts at 08:00 on the event date, ends at 23:59 on the last day."}
+                            </p>
+                            <div className="grid grid-cols-2 gap-4">
+                                {[
+                                    { key: "start_at", label: "Starts at" },
+                                    { key: "end_at", label: "Ends at" },
+                                ].map(({ key, label }) => {
+                                    const { date, time } = splitLocal(form[key]);
+                                    const [hh = "", mm = ""] = time ? time.split(":") : ["", ""];
+                                    const setDate = (v) => setForm({ ...form, [key]: joinLocal(v, time || "08:00") });
+                                    const setHH = (v) => setForm({ ...form, [key]: joinLocal(date, `${v}:${mm || "00"}`) });
+                                    const setMM = (v) => setForm({ ...form, [key]: joinLocal(date, `${hh || "00"}:${v}`) });
+                                    return (
+                                        <div key={key}>
+                                            <label className="text-xs" style={{ color: "#6b6560" }}>{label}</label>
+                                            {form.customize_schedule ? (
+                                                <div className="flex gap-1.5">
+                                                    <input
+                                                        type="date"
+                                                        className="h-10 px-2 rounded-lg text-sm flex-1 min-w-0"
+                                                        style={inputStyle}
+                                                        min={todayDate()}
+                                                        value={date}
+                                                        onChange={(e) => setDate(e.target.value)}
+                                                    />
+                                                    <select
+                                                        className="h-10 px-1 rounded-lg text-sm"
+                                                        style={inputStyle}
+                                                        value={hh}
+                                                        onChange={(e) => setHH(e.target.value)}
+                                                        aria-label={`${label} hour`}
+                                                    >
+                                                        <option value="" disabled>HH</option>
+                                                        {HOURS_24.map((h) => <option key={h} value={h}>{h}</option>)}
+                                                    </select>
+                                                    <span className="self-center text-sm" style={{ color: "#6b6560" }}>:</span>
+                                                    <select
+                                                        className="h-10 px-1 rounded-lg text-sm"
+                                                        style={inputStyle}
+                                                        value={mm}
+                                                        onChange={(e) => setMM(e.target.value)}
+                                                        aria-label={`${label} minute`}
+                                                    >
+                                                        <option value="" disabled>MM</option>
+                                                        {MINUTES_60.map((m) => <option key={m} value={m}>{m}</option>)}
+                                                    </select>
+                                                </div>
+                                            ) : (
+                                                <div
+                                                    className="h-10 px-3 rounded-lg text-sm flex items-center"
+                                                    style={disabledStyle}
+                                                >
+                                                    {fmt24(form[key]) || "—"}
+                                                </div>
+                                            )}
+                                            <p className="text-[11px] mt-0.5" style={{ color: "#9b948e" }}>{fmt24(form[key])}</p>
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         </div>
                     </div>
                 )}
@@ -353,17 +583,44 @@ export const EventCreate = () => {
                             </button>
                         </div>
 
-                        {/* Manual entry */}
-                        <div className="space-y-2">
+                        {/* Manual entry — one card per attendee (fits all base fields) */}
+                        <div className="space-y-3">
                             {manualAttendees.map((a, idx) => (
-                                <div key={idx} className="grid grid-cols-12 gap-2 items-center">
-                                    <input className="col-span-3 h-9 px-2 rounded-md text-sm" style={inputStyle} placeholder="First name *" value={a.first_name} onChange={(e) => handleManualChange(idx, "first_name", e.target.value)} />
-                                    <input className="col-span-3 h-9 px-2 rounded-md text-sm" style={inputStyle} placeholder="Last name" value={a.last_name} onChange={(e) => handleManualChange(idx, "last_name", e.target.value)} />
-                                    <input className="col-span-3 h-9 px-2 rounded-md text-sm" style={inputStyle} placeholder="Email" value={a.email} onChange={(e) => handleManualChange(idx, "email", e.target.value)} />
-                                    <input className="col-span-2 h-9 px-2 rounded-md text-sm" style={inputStyle} placeholder="Phone" value={a.phone} onChange={(e) => handleManualChange(idx, "phone", e.target.value)} />
-                                    <button type="button" className="col-span-1 flex justify-center cursor-pointer" style={{ color: "#c0392b" }} onClick={() => removeManualRow(idx)} title="Remove">
-                                        <Trash2 className="h-4 w-4" />
-                                    </button>
+                                <div key={idx} className="p-3 rounded-lg" style={{ border: "1px solid #E7E1D4", backgroundColor: "#FFFFFF" }}>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className="text-xs font-semibold" style={{ color: "#9b948e" }}>Attendee {idx + 1}</span>
+                                        {manualAttendees.length > 1 && (
+                                            <button type="button" className="cursor-pointer" style={{ color: "#c0392b" }} onClick={() => removeManualRow(idx)} title="Remove">
+                                                <Trash2 className="h-4 w-4" />
+                                            </button>
+                                        )}
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <input className="h-9 px-2 rounded-md text-sm" style={inputStyle} placeholder="First name *" value={a.first_name} onChange={(e) => handleManualChange(idx, "first_name", e.target.value)} />
+                                        <input className="h-9 px-2 rounded-md text-sm" style={inputStyle} placeholder="Last name" value={a.last_name} onChange={(e) => handleManualChange(idx, "last_name", e.target.value)} />
+                                        <div>
+                                            <input
+                                                type="email"
+                                                className="h-9 px-2 rounded-md text-sm w-full"
+                                                style={{ ...inputStyle, borderColor: attendeeErrors[idx]?.email ? "#c0392b" : "#D8D2C4" }}
+                                                placeholder="Email"
+                                                value={a.email}
+                                                onChange={(e) => handleManualChange(idx, "email", e.target.value)}
+                                            />
+                                            {attendeeErrors[idx]?.email && (
+                                                <p className="text-[11px] mt-0.5" style={{ color: "#c0392b" }}>{attendeeErrors[idx].email}</p>
+                                            )}
+                                        </div>
+                                        <input className="h-9 px-2 rounded-md text-sm" style={inputStyle} placeholder="Company" value={a.company} onChange={(e) => handleManualChange(idx, "company", e.target.value)} />
+                                    </div>
+                                    <div className="mt-2">
+                                        <PhoneInput
+                                            value={a.phone}
+                                            onChange={(v) => handleManualChange(idx, "phone", v)}
+                                            defaultCountry="US"
+                                            placeholder="Phone number"
+                                        />
+                                    </div>
                                 </div>
                             ))}
                             <button type="button" onClick={addManualRow} className="flex items-center gap-1.5 text-xs font-semibold cursor-pointer mt-1" style={{ color: GREEN }}>
@@ -438,7 +695,8 @@ export const EventCreate = () => {
                             <div><span style={{ color: "#9b948e" }}>Modality: </span>{form.modality === "virtual" ? "Virtual" : "In Person"}</div>
                             <div><span style={{ color: "#9b948e" }}>Pipeline: </span>{pipelines.find((p) => p.id === pipelineId)?.name}</div>
                             <div><span style={{ color: "#9b948e" }}>Attendees: </span>{allAttendees().length}</div>
-                            <div><span style={{ color: "#9b948e" }}>Link valid: </span>{form.link_duration_days} day(s)</div>
+                            <div><span style={{ color: "#9b948e" }}>Duration: </span>{form.duration_days} day(s)</div>
+                            <div className="col-span-2"><span style={{ color: "#9b948e" }}>When: </span>{fmt24(form.start_at)} → {fmt24(form.end_at)}</div>
                         </div>
                         <div className="flex items-start gap-2 p-3 rounded-lg" style={{ backgroundColor: "rgba(94,106,67,0.08)", border: "1px solid rgba(94,106,67,0.25)" }}>
                             <Check className="h-4 w-4 mt-0.5" style={{ color: GREEN }} />
