@@ -160,6 +160,24 @@ export const EventDetail = () => {
                 </div>
             </div>
 
+            {/* Quick stats */}
+            <div className="grid grid-cols-3 gap-4">
+                {[
+                    { label: "Total attendees", value: event.attendee_count, color: "#5E6A43", bg: "rgba(94,106,67,0.10)" },
+                    { label: "Confirmed", value: event.registered_count, color: "#2f9e3a", bg: "rgba(60,198,71,0.12)" },
+                    {
+                        label: event.is_ended ? "Did not attend" : "Pending",
+                        value: event.is_ended ? event.not_attended_count : event.pending_count,
+                        color: "#B0592E", bg: "rgba(176,89,46,0.12)",
+                    },
+                ].map((s) => (
+                    <div key={s.label} className="rounded-xl p-5 text-center" style={{ border: "1px solid #D8D2C4", backgroundColor: s.bg }}>
+                        <p className="text-3xl font-bold" style={{ color: s.color }}>{s.value ?? 0}</p>
+                        <p className="text-xs font-semibold mt-1" style={{ color: "#6b6560" }}>{s.label}</p>
+                    </div>
+                ))}
+            </div>
+
             {/* Public link + QR */}
             <div className="grid md:grid-cols-3 gap-4">
                 <div className="md:col-span-2 rounded-xl p-6" style={{ border: "1px solid #D8D2C4", backgroundColor: "#FBF7EF" }}>
@@ -177,7 +195,7 @@ export const EventDetail = () => {
                     </div>
                     <p className="text-xs mt-2" style={{ color: "#9b948e" }}>
                         {linkValid
-                            ? `Link is live. Expires ${event.link_expires_at ? new Date(event.link_expires_at).toLocaleString() : ""}.`
+                            ? `Link is live. Valid for ${event.link_duration_days} day${event.link_duration_days === 1 ? "" : "s"}.`
                             : "This link is not currently valid (event inactive, ended, or expired)."}
                     </p>
                 </div>
@@ -221,7 +239,7 @@ export const EventDetail = () => {
                         <table className="w-full text-sm">
                             <thead>
                                 <tr style={{ backgroundColor: GREEN }}>
-                                    {["Name", "Email", "Phone", "Company", "Source", "Registered"].map((h) => (
+                                    {["Name", "Email", "Phone", "Company", "Source", "Status"].map((h) => (
                                         <th key={h} className="px-4 py-2 text-xs font-semibold text-left" style={{ color: "#FBF7EF" }}>{h}</th>
                                     ))}
                                 </tr>
@@ -237,9 +255,20 @@ export const EventDetail = () => {
                                             <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: "#F2EBDD", color: "#6b6560" }}>{a.source}</span>
                                         </td>
                                         <td className="px-4 py-2">
-                                            {a.has_registered
-                                                ? <CheckCircle2 className="h-4 w-4" style={{ color: "#2f9e3a" }} />
-                                                : <span style={{ color: "#c9c3b6" }}>—</span>}
+                                            {(() => {
+                                                const map = {
+                                                    confirmed: { label: "Confirmed", color: "#2f9e3a", bg: "rgba(60,198,71,0.12)" },
+                                                    pending: { label: "Pending", color: "#9b7a2e", bg: "rgba(206,218,102,0.25)" },
+                                                    not_attended: { label: "Did not attend", color: "#B0592E", bg: "rgba(176,89,46,0.12)" },
+                                                };
+                                                const s = map[a.status] || map.pending;
+                                                return (
+                                                    <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: s.bg, color: s.color }}>
+                                                        {a.status === "confirmed" && <CheckCircle2 className="h-3.5 w-3.5" />}
+                                                        {s.label}
+                                                    </span>
+                                                );
+                                            })()}
                                         </td>
                                     </tr>
                                 ))}

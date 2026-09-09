@@ -8,7 +8,7 @@ import Swal from "sweetalert2";
 import { getPipelines } from "@/services/pipelineService";
 import {
     getPipelineFields, createEvent, previewAttendeesExcel,
-    approveAttendees, downloadAttendeeTemplate,
+    sendInvitations, downloadAttendeeTemplate,
 } from "@/services/eventService";
 import { PhoneInput } from "@/components/ui/phone-input";
 
@@ -298,11 +298,13 @@ export const EventCreate = () => {
                 link_duration_days: Number(form.duration_days),
                 attendees,
             };
+            // createEvent already persists the attendees (once). We only need
+            // to send the invitation emails here — re-creating them would
+            // duplicate every attendee, which is the bug this replaces.
             const event = await createEvent(payload);
 
-            // Send invitations (with .ics) to the loaded attendees.
             try {
-                await approveAttendees(event.id, attendees, true);
+                await sendInvitations(event.id);
             } catch (e) {
                 // Non-fatal — event exists; invitations can be resent from detail.
                 console.error("Invitation send failed:", e);

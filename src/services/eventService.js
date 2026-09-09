@@ -148,8 +148,32 @@ export const getPublicEvent = async (token) => {
     return { ok: res.ok, status: res.status, data };
 };
 
-export const submitPublicRegistration = async (token, payload) => {
+// Step 1: exchange the 6-digit code for the attendee's data + field schema.
+export const verifyEventCode = async (token, code) => {
+    const res = await fetch(`${API_URL}/public/events/${token}/verify-code/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+    });
+    const data = await res.json().catch(() => null);
+    return { ok: res.ok, status: res.status, data };
+};
+
+// Step 2: confirm the attendee (identified by code) + submit lead fields.
+export const submitPublicRegistration = async (token, code, attributes) => {
     const res = await fetch(`${API_URL}/public/events/${token}/register/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, attributes }),
+    });
+    const data = await res.json().catch(() => null);
+    return { ok: res.ok, status: res.status, data };
+};
+
+// Walk-in: on-site self-registration with no prior invite/code. The person
+// fills in all their own details (base contact fields + lead fields).
+export const submitWalkIn = async (token, payload) => {
+    const res = await fetch(`${API_URL}/public/events/${token}/walk-in/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
