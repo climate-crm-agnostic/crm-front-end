@@ -110,6 +110,19 @@ export const sendInvitations = async (id) => {
     return res.json();
 };
 
+// Resend to a single attendee (regenerates that attendee's code).
+export const resendAttendee = async (eventId, attendeeId) => {
+    const res = await fetch(`${EVENTS_URL}${eventId}/attendees/${attendeeId}/resend/`, {
+        method: "POST",
+        headers: getHeaders(),
+    });
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error resending invitation"));
+    }
+    return res.json();
+};
+
 export const reactivateEvent = async (id, data) => {
     const res = await fetch(`${EVENTS_URL}${id}/reactivate/`, {
         method: "POST",

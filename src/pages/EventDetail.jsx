@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import Swal from "sweetalert2";
 import {
-    getEvent, getEventAttendees, deactivateEvent, reactivateEvent, sendInvitations,
+    getEvent, getEventAttendees, deactivateEvent, reactivateEvent, sendInvitations, resendAttendee,
 } from "@/services/eventService";
 
 const GREEN = "#5E6A43";
@@ -101,9 +101,29 @@ export const EventDetail = () => {
         } catch (e) { toast("error", e.message || "Failed to reactivate"); }
     };
 
-    const handleResend = async () => {
-        try { const r = await sendInvitations(id); toast("success", `Invitations sent: ${r.invitations_sent}`); }
+    const handleResendAll = async () => {
+        const r = await Swal.fire({
+            title: "Resend to all attendees?",
+            text: "This will resend the invitation to every attendee and generate a new code for each. Their previous codes will stop working.",
+            icon: "warning", showCancelButton: true, confirmButtonColor: GREEN,
+            cancelButtonColor: "#9b948e", confirmButtonText: "Yes, resend all",
+        });
+        if (!r.isConfirmed) return;
+        try { const res = await sendInvitations(id); toast("success", `Invitations sent: ${res.invitations_sent}`); load(); }
         catch { toast("error", "Failed to send invitations"); }
+    };
+
+    const handleResendOne = async (attendee) => {
+        const name = attendee.full_name || attendee.email || "this attendee";
+        const r = await Swal.fire({
+            title: "Resend invitation?",
+            text: `A new invitation and a fresh code will be sent to ${name}. Their previous code will stop working.`,
+            icon: "warning", showCancelButton: true, confirmButtonColor: GREEN,
+            cancelButtonColor: "#9b948e", confirmButtonText: "Resend",
+        });
+        if (!r.isConfirmed) return;
+        try { await resendAttendee(id, attendee.id); toast("success", `Invitation resent to ${name}`); load(); }
+        catch (e) { toast("error", e.message || "Failed to resend"); }
     };
 
     if (loading || !event) {
@@ -153,9 +173,6 @@ export const EventDetail = () => {
                                 <RefreshCw className="h-4 w-4" /> Reactivate
                             </button>
                         )}
-                        <button onClick={handleResend} className="flex items-center gap-1.5 h-9 px-3 rounded-lg text-xs font-semibold cursor-pointer" style={{ border: `1px solid ${GREEN}`, color: GREEN, backgroundColor: "#FFFFFF" }}>
-                            <Send className="h-4 w-4" /> Resend invitations
-                        </button>
                     </div>
                 </div>
             </div>
@@ -228,9 +245,16 @@ export const EventDetail = () => {
                     <span className="ml-1 text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: "rgba(94,106,67,0.12)", color: GREEN }}>
                         {attendees.length}
                     </span>
-                    <span className="ml-auto text-xs" style={{ color: "#9b948e" }}>
+                    <span className="ml-3 text-xs" style={{ color: "#9b948e" }}>
                         {event.registered_count} registered
                     </span>
+                    <button
+                        onClick={handleResendAll}
+                        className="ml-auto flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-semibold cursor-pointer"
+                        style={{ border: `1px solid ${GREEN}`, color: GREEN, backgroundColor: "#FFFFFF" }}
+                    >
+                        <Send className="h-3.5 w-3.5" /> Resend all
+                    </button>
                 </div>
                 {attendees.length === 0 ? (
                     <div className="py-10 text-center text-sm" style={{ color: "#9b948e" }}>No attendees yet.</div>
@@ -239,8 +263,8 @@ export const EventDetail = () => {
                         <table className="w-full text-sm">
                             <thead>
                                 <tr style={{ backgroundColor: GREEN }}>
-                                    {["Name", "Email", "Phone", "Company", "Source", "Status"].map((h) => (
-                                        <th key={h} className="px-4 py-2 text-xs font-semibold text-left" style={{ color: "#FBF7EF" }}>{h}</th>
+                                    {["Name", "Email", "Phone", "Company", "Source", "Status", "Actions"].map((h, i) => (
+                                        <th key={h} className="px-4 py-2 text-xs font-semibold" style={{ color: "#FBF7EF", textAlign: i === 6 ? "center" : "left" }}>{h}</th>
                                     ))}
                                 </tr>
                             </thead>
@@ -269,6 +293,19 @@ export const EventDetail = () => {
                                                     </span>
                                                 );
                                             })()}
+                                        </td>
+                                        <td className="px-4 py-2 text-center">
+                                            <button
+                                                onClick={() => handleResendOne(a)}
+                                                disabled={!a.email}
+                                                title={a.email ? "Resend invitation (new code)" : "No email on file"}
+                                                className="inline-flex h-8 w-8 items-center justify-center rounded-md cursor-pointer"
+                                                style={{ color: a.email ? GREEN : "#c9c3b6", backgroundColor: "transparent" }}
+                                                onMouseEnter={(e) => { if (a.email) e.currentTarget.style.backgroundColor = "rgba(94,106,67,0.1)"; }}
+                                                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                                            >
+                                                <Send className="h-4 w-4" />
+                                            </button>
                                         </td>
                                     </tr>
                                 ))}

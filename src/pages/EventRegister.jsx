@@ -9,17 +9,13 @@ const GREEN = "#5E6A43";
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 /**
- * Maps a backend PipelineAttribute into the shape DynamicAttributeField
- * expects: `list_values` (array of strings) -> `options`.
+ * Passes a backend PipelineAttribute straight through to DynamicAttributeField.
+ * The renderer already reads `list_values` / `format_config` / `is_calculated`
+ * / etc. and normalizes options itself (via normalizeOptions), so we must NOT
+ * pre-transform them here — doing so double-wraps the option objects and
+ * crashes the renderer (React error #31).
  */
-const toFieldProps = (f) => ({
-    name: f.name,
-    label: f.label,
-    type: f.type,
-    is_required: f.is_required,
-    format_config: f.format_config,
-    options: (f.list_values || []).map((v) => ({ value: v, label: v })),
-});
+const toFieldProps = (f) => f;
 
 // Formats the typed code as NNN-NNN as the user types (digits only).
 const formatCode = (raw) => {
@@ -50,6 +46,10 @@ export const EventRegister = () => {
     // Walk-in (no code) — the person fills in all their own base details.
     const [walkBase, setWalkBase] = useState({ first_name: "", last_name: "", email: "", phone: "", company: "", job_title: "" });
     const [baseErrors, setBaseErrors] = useState({});
+
+    // Calculated fields are derived on save — never shown or required on the
+    // public form. Everything the attendee actually fills in is here.
+    const editableFields = fields.filter((f) => !f.is_calculated);
 
     useEffect(() => {
         (async () => {
@@ -100,7 +100,7 @@ export const EventRegister = () => {
 
     const validate = () => {
         const errs = {};
-        fields.forEach((f) => {
+        editableFields.forEach((f) => {
             if (f.is_required) {
                 const v = attrs[f.name];
                 if (v === undefined || v === null || v === "") errs[f.name] = `${f.label} is required.`;
@@ -142,7 +142,7 @@ export const EventRegister = () => {
         if (!walkBase.email.trim()) errs.email = "Email is required.";
         else if (!EMAIL_RE.test(walkBase.email)) errs.email = "Enter a valid email address.";
         const dynErrs = {};
-        fields.forEach((f) => {
+        editableFields.forEach((f) => {
             if (f.is_required) {
                 const v = attrs[f.name];
                 if (v === undefined || v === null || v === "") dynErrs[f.name] = `${f.label} is required.`;
@@ -345,10 +345,10 @@ export const EventRegister = () => {
                         </div>
                     </div>
 
-                    {fields.length > 0 && (
+                    {editableFields.length > 0 && (
                         <div className="pt-2 space-y-4" style={{ borderTop: "1px solid #EDE7D8" }}>
                             <p className="text-xs font-semibold" style={{ color: "#9b948e", textTransform: "uppercase", letterSpacing: "0.06em" }}>Additional information</p>
-                            {fields.map((f) => {
+                            {editableFields.map((f) => {
                                 const fp = toFieldProps(f);
                                 return (
                                     <div key={f.id}>
@@ -422,10 +422,10 @@ export const EventRegister = () => {
                 </div>
 
                 {/* Editable dynamic lead fields */}
-                {fields.length > 0 && (
+                {editableFields.length > 0 && (
                     <div className="pt-2 space-y-4" style={{ borderTop: "1px solid #EDE7D8" }}>
                         <p className="text-xs font-semibold" style={{ color: "#9b948e", textTransform: "uppercase", letterSpacing: "0.06em" }}>Additional information</p>
-                        {fields.map((f) => {
+                        {editableFields.map((f) => {
                             const fp = toFieldProps(f);
                             return (
                                 <div key={f.id}>
