@@ -25,7 +25,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs"
 import { SendEmailModal } from "../components/SendEmailModal";
 import { ViewEmailModal } from "../components/ViewEmailModal";
 import { DynamicAttributeField } from "../components/attributes/DynamicAttributeField";
-import { coerceAttributeValue, collectAttributeValuesByType } from "../utils/attributeTypes";
+import { coerceAttributeValue, collectAttributeValuesByType, emptyValueFor, normalizeOptions } from "../utils/attributeTypes";
 import Swal from "sweetalert2";
 
 export const LeadDetail = () => {
@@ -293,12 +293,7 @@ export const LeadDetail = () => {
 
             // Helper to process options
             const processAttrs = (attrs) => attrs.map(attr => {
-                let options = attr.options;
-                if (!options && attr.list_values) {
-                    options = typeof attr.list_values === 'string'
-                        ? JSON.parse(attr.list_values)
-                        : attr.list_values;
-                }
+                const options = normalizeOptions(attr.options || attr.list_values);
                 return { ...attr, options };
             });
 
@@ -325,7 +320,7 @@ export const LeadDetail = () => {
             // Initialize form data keys
             const initialData = {};
             processedLeadAttrs.forEach(attr => {
-                initialData[attr.name] = attr.type === 'boolean' ? false : "";
+                initialData[attr.name] = emptyValueFor(attr);
             });
 
             setFormData(prev => {
@@ -345,7 +340,7 @@ export const LeadDetail = () => {
                 const updated = { ...prev };
                 processedClientAttrs.forEach(attr => {
                     if (updated[attr.name] === undefined) {
-                        updated[attr.name] = attr.type === 'boolean' ? false : "";
+                        updated[attr.name] = emptyValueFor(attr);
                     }
                 });
                 return updated;

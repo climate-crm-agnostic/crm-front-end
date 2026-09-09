@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Input } from "./input";
+import { currencySymbol, resolveCurrencyDecimals } from "@/utils/attributeTypes";
 
 // Keeps only digits and a single decimal point — anything else the user
 // types (a second ".", a stray comma, letters) is dropped rather than
@@ -16,6 +17,11 @@ const stripToNumericString = (input) => {
 // Live, while-typing formatting — inserts thousands separators into the
 // integer part but leaves the decimal part exactly as typed (no padding/
 // truncating mid-keystroke; that only happens on blur, see handleBlur below).
+//
+// Note this always groups with commas while typing, regardless of locale: the
+// locale-correct separators are applied on blur via toLocaleString. Reformatting
+// mid-keystroke in a locale that uses "." as the group separator would fight the
+// user's own decimal point.
 const formatLive = (numericString) => {
     if (!numericString) return "";
     const [intPart, decPart] = numericString.split(".");
@@ -27,7 +33,14 @@ const formatLive = (numericString) => {
 // the stored value (`value` prop / `onChange` payload) is always a plain
 // number, only the on-screen text carries the "$" / thousands-separator
 // formatting. `symbol`/`decimals` come from the attribute's format_config.
-export const CurrencyInput = ({ id, value, onChange, symbol = "$", decimals = 2, placeholder, disabled }) => {
+export const CurrencyInput = ({
+    id, value, onChange, currencyCode = "USD", symbol, symbolPosition = "before",
+    locale, decimals, placeholder, disabled,
+}) => {
+    // Symbol and precision come from the ISO currency unless the attribute
+    // explicitly overrides them — JPY has no minor unit, BHD has three.
+    const resolvedDecimals = decimals ?? resolveCurrencyDecimals(currencyCode);
+    const resolvedSymbol = symbol || currencySymbol(currencyCode, locale);
     const displayFromValue = () => (value === "" || value === null || value === undefined ? "" : formatLive(String(value)));
     const [text, setText] = useState(displayFromValue());
 
@@ -53,13 +66,22 @@ export const CurrencyInput = ({ id, value, onChange, symbol = "$", decimals = 2,
             setText("");
             return;
         }
-        setText(num.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals }));
+        setText(num.toLocaleString(locale || undefined, {
+            minimumFractionDigits: resolvedDecimals,
+            maximumFractionDigits: resolvedDecimals,
+        }));
     };
+
+    const after = symbolPosition === "after";
+    const pad = `${resolvedSymbol}`.length > 2 ? 12 : 6;
 
     return (
         <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">
-                {symbol}
+            <span
+                className="absolute top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none"
+                style={after ? { right: "0.75rem" } : { left: "0.75rem" }}
+            >
+                {resolvedSymbol}
             </span>
             <Input
                 id={id}
@@ -71,7 +93,7 @@ export const CurrencyInput = ({ id, value, onChange, symbol = "$", decimals = 2,
                 disabled={disabled}
                 onChange={handleChange}
                 onBlur={handleBlur}
-                className="pl-6"
+                style={after ? { paddingRight: `${pad * 4}px` } : { paddingLeft: `${pad * 4}px` }}
             />
         </div>
     );

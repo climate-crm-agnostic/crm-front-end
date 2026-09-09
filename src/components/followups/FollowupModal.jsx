@@ -8,7 +8,7 @@ import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
 import { DateInput } from "../ui/date-input";
 import { DynamicAttributeField } from "../attributes/DynamicAttributeField";
-import { coerceAttributeValue } from "../../utils/attributeTypes";
+import { coerceAttributeValue, emptyValueFor, normalizeOptions } from "../../utils/attributeTypes";
 
 export const FollowupModal = ({ isOpen, onClose, onFollowupSaved, followupToEdit = null, serviceId }) => {
     const { user } = useAuth();
@@ -31,12 +31,7 @@ export const FollowupModal = ({ isOpen, onClose, onFollowupSaved, followupToEdit
             const data = await getFollowupAttributes();
             // Map list_values to options if options is missing (similar to LeadModal logic if needed)
             const processedData = data.map(attr => {
-                let options = attr.options;
-                if (!options && attr.list_values) {
-                    options = typeof attr.list_values === 'string'
-                        ? JSON.parse(attr.list_values)
-                        : attr.list_values;
-                }
+                const options = normalizeOptions(attr.options || attr.list_values);
                 return { ...attr, options };
             });
             setAttributes(processedData);
@@ -50,14 +45,14 @@ export const FollowupModal = ({ isOpen, onClose, onFollowupSaved, followupToEdit
                         ? followupToEdit[attr.name]
                         : (followupToEdit.attributes?.[attr.name]);
                     if (val === undefined || val === null) {
-                        initialData[attr.name] = attr.type === 'boolean' ? false : "";
+                        initialData[attr.name] = emptyValueFor(attr);
                     } else {
                         initialData[attr.name] = val;
                     }
                 });
             } else {
                 processedData.forEach(attr => {
-                    initialData[attr.name] = attr.type === 'boolean' ? false : "";
+                    initialData[attr.name] = emptyValueFor(attr);
                 });
             }
             setFormData(initialData);

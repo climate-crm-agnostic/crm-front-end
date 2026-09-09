@@ -11,7 +11,7 @@ import { Checkbox } from "../ui/checkbox";
 import { Textarea } from "../ui/textarea";
 import { DateInput } from "../ui/date-input";
 import { DynamicAttributeField } from "../attributes/DynamicAttributeField";
-import { coerceAttributeValue } from "../../utils/attributeTypes";
+import { coerceAttributeValue, emptyValueFor } from "../../utils/attributeTypes";
 
 export const ClientModal = ({ isOpen, onClose, onClientSaved, clientToEdit = null, attributes = [] }) => {
     const [loading, setLoading] = useState(false);
@@ -58,7 +58,7 @@ export const ClientModal = ({ isOpen, onClose, onClientSaved, clientToEdit = nul
                     // Try to find the value in root or in attributes dict
                     let val = clientToEdit[attr.name] !== undefined ? clientToEdit[attr.name] : (clientToEdit.attributes?.[attr.name]);
                     if (val === undefined || val === null) {
-                        val = attr.type === 'boolean' ? false : "";
+                        val = emptyValueFor(attr);
                     }
                     newDynamicData[attr.name] = val;
                 });
@@ -76,7 +76,7 @@ export const ClientModal = ({ isOpen, onClose, onClientSaved, clientToEdit = nul
                 // Initialize dynamic data
                 const newDynamicData = {};
                 attributes.forEach(attr => {
-                    newDynamicData[attr.name] = attr.type === 'boolean' ? false : "";
+                    newDynamicData[attr.name] = emptyValueFor(attr);
                 });
                 setDynamicData(newDynamicData);
                 setImages([]);

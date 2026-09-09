@@ -29,8 +29,18 @@ const deriveDisplay = (value, fallbackCountry) => {
     return { country: fallbackCountry, text: value };
 };
 
-export const PhoneInput = ({ id, value, onChange, defaultCountry, disabled, placeholder }) => {
-    const fallbackCountry = defaultCountry || guessDefaultCountry();
+export const PhoneInput = ({
+    id, value, onChange, defaultCountry, allowedCountries, disabled, placeholder,
+}) => {
+    // An attribute may restrict which countries are offered (format_config's
+    // allowed_countries). Empty/absent means every country, as before.
+    const countries = (allowedCountries && allowedCountries.length)
+        ? COUNTRY_LIST.filter((c) => allowedCountries.includes(c.code))
+        : COUNTRY_LIST;
+    const fallbackCountry = defaultCountry
+        || (countries.length && !countries.some((c) => c.code === guessDefaultCountry())
+            ? countries[0].code
+            : guessDefaultCountry());
     const [country, setCountry] = useState(() => deriveDisplay(value, fallbackCountry).country);
     const [text, setText] = useState(() => deriveDisplay(value, fallbackCountry).text);
 
@@ -80,7 +90,7 @@ export const PhoneInput = ({ id, value, onChange, defaultCountry, disabled, plac
                     </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                    {COUNTRY_LIST.map((c) => (
+                    {countries.map((c) => (
                         <SelectItem key={c.code} value={c.code}>
                             {c.flag} {c.name} (+{c.callingCode})
                         </SelectItem>

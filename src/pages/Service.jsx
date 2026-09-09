@@ -7,6 +7,8 @@ import { getServices, deleteService, getServiceAttributes, importServicesFromExc
 import { getClients } from "../services/clientService";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { formatAttributeValue } from "../utils/attributeTypes";
+import { buildFilterParams } from "../utils/attributeFilters";
+import { AttributeFilterBar } from "../components/attributes/AttributeFilterBar";
 import Swal from "sweetalert2";
 
 const IMPORT_FIXED_FIELDS = [
@@ -21,6 +23,8 @@ export const Service = () => {
     const [clients, setClients] = useState([]);
     const [selectedClient, setSelectedClient] = useState("");
     const [contactFilter, setContactFilter] = useState("");
+    // Filter-bar rows; applied on demand, since this page searches on a button.
+    const [filterRows, setFilterRows] = useState([]);
     const navigate = useNavigate();
 
     const availableContactTypes = React.useMemo(
@@ -81,6 +85,7 @@ export const Service = () => {
             const servicesData = await getServices({
                 client: selectedClient,
                 ...(contactFilter ? { has_attribute_type: contactFilter } : {}),
+                ...buildFilterParams(filterRows),
             });
 
             // Flatten data for table
@@ -216,6 +221,12 @@ export const Service = () => {
                         {availableContactTypes.includes('phone') && <option value="phone">Has Phone</option>}
                     </select>
                 )}
+                <AttributeFilterBar
+                    attributes={attributes}
+                    rows={filterRows}
+                    onChange={setFilterRows}
+                    onApply={() => selectedClient && handleSearch()}
+                />
                 <button
                     onClick={handleSearch}
                     disabled={!selectedClient || loading}

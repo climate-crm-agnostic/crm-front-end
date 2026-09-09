@@ -5,6 +5,8 @@ import { Button } from "../components/ui/button";
 import { Plus, Download, Upload, X, CheckCircle, AlertCircle } from "lucide-react";
 import { getClients, deleteClient, getClientAttributes, importClientsFromExcel, exportClientsExcel } from "../services/clientService";
 import { formatAttributeValue } from "../utils/attributeTypes";
+import { buildFilterParams } from "../utils/attributeFilters";
+import { AttributeFilterBar } from "../components/attributes/AttributeFilterBar";
 import { saveAs } from "file-saver";
 import Swal from "sweetalert2";
 
@@ -32,16 +34,24 @@ export const Client = () => {
         [attributes]
     );
 
+    // Rows the filter bar is editing, and the set actually applied — kept
+    // apart so typing in a row does not fire a request per keystroke.
+    const [filterRows, setFilterRows] = useState([]);
+    const [appliedFilters, setAppliedFilters] = useState({});
+
     useEffect(() => {
         fetchData();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [contactFilter]);
+    }, [contactFilter, appliedFilters]);
 
     const fetchData = async () => {
         setLoading(true);
         try {
             const [clientsData, attributesData] = await Promise.all([
-                getClients(contactFilter ? { has_attribute_type: contactFilter } : {}),
+                getClients({
+                    ...(contactFilter ? { has_attribute_type: contactFilter } : {}),
+                    ...appliedFilters,
+                }),
                 getClientAttributes()
             ]);
             const processedClients = clientsData.map(client => ({
@@ -197,6 +207,14 @@ export const Client = () => {
                         </select>
                     </div>
                 )}
+                <div className="px-1 pb-2">
+                    <AttributeFilterBar
+                        attributes={attributes}
+                        rows={filterRows}
+                        onChange={setFilterRows}
+                        onApply={(rows) => setAppliedFilters(buildFilterParams(rows))}
+                    />
+                </div>
                 <Table
                     data={clients}
                     columns={columns}

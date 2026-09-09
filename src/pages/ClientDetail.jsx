@@ -12,7 +12,7 @@ import { Textarea } from "../components/ui/textarea";
 import { ArrowLeft } from "lucide-react";
 import { DateInput } from "../components/ui/date-input";
 import { DynamicAttributeField } from "../components/attributes/DynamicAttributeField";
-import { coerceAttributeValue } from "../utils/attributeTypes";
+import { coerceAttributeValue, emptyValueFor, normalizeOptions } from "../utils/attributeTypes";
 
 export const ClientDetail = () => {
     const { id } = useParams();
@@ -69,12 +69,7 @@ export const ClientDetail = () => {
             const data = await getClientAttributes();
             // Process options
             const processedData = data.map(attr => {
-                let options = attr.options;
-                if (!options && attr.list_values) {
-                    options = typeof attr.list_values === 'string'
-                        ? JSON.parse(attr.list_values)
-                        : attr.list_values;
-                }
+                const options = normalizeOptions(attr.options || attr.list_values);
                 return { ...attr, options };
             });
             setAttributes(processedData);
@@ -82,7 +77,7 @@ export const ClientDetail = () => {
             // Init default dynamic data
             const initialDynamic = {};
             processedData.forEach(attr => {
-                initialDynamic[attr.name] = attr.type === 'boolean' ? false : "";
+                initialDynamic[attr.name] = emptyValueFor(attr);
             });
             setDynamicData(initialDynamic);
 

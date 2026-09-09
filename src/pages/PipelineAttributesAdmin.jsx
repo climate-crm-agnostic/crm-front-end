@@ -54,11 +54,11 @@ const Modal = ({ isOpen, children, onClose }) => {
     if (!isOpen) return null;
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto"
             style={{ backgroundColor: "rgba(46,42,38,0.4)" }}
         >
             <div
-                className="w-full max-w-md rounded-xl shadow-2xl p-6 relative animate-in zoom-in-95 duration-200"
+                className="w-full max-w-4xl rounded-xl shadow-2xl p-5 relative animate-in zoom-in-95 duration-200"
                 style={{ backgroundColor: "#FBF7EF", border: "1px solid #D8D2C4" }}
                 onClick={e => e.stopPropagation()}
             >
@@ -459,6 +459,8 @@ export const PipelineAttributesAdmin = () => {
                     initialData={editingAttribute}
                     defaultOrder={(attributesData[currentPipeline?.id]?.length ?? 0) + 1}
                     supportsUnique
+                    siblings={attributesData[currentPipeline?.id] || []}
+                    rollupEntity={"lead"}
                 />
             </Modal>
         </div>

@@ -36,9 +36,21 @@ export const MergeFieldPicker = ({ onInsert, label = "Insert Variable" }) => {
                         {idx > 0 && <DropdownMenuSeparator />}
                         <DropdownMenuLabel>{group}</DropdownMenuLabel>
                         {items.map(f => (
-                            <DropdownMenuItem key={f.path} onClick={() => onInsert(`{${f.path}}`)} className="flex items-center justify-between gap-3">
-                                <span className="text-sm">{f.label}</span>
-                                <span className="font-mono text-xs text-muted-foreground">{`{${f.path}}`}</span>
+                            <DropdownMenuItem key={f.path} onClick={() => onInsert(`{${f.path}}`)} className="flex flex-col items-start gap-0.5">
+                                <span className="flex w-full items-center justify-between gap-3">
+                                    <span className="text-sm">{f.label}</span>
+                                    <span className="font-mono text-xs text-muted-foreground">{`{${f.path}}`}</span>
+                                </span>
+                                {/* What the value will look like once sent —
+                                    a currency field renders formatted, a list
+                                    renders its label, not the stored value. */}
+                                {f.sample ? (
+                                    <span className="text-[11px] text-muted-foreground">
+                                        {f.type} · renders as <strong>{f.sample}</strong>
+                                    </span>
+                                ) : (
+                                    <span className="text-[11px] text-muted-foreground">{f.type}</span>
+                                )}
                             </DropdownMenuItem>
                         ))}
                     </div>

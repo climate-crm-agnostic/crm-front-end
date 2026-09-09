@@ -4,9 +4,14 @@ import { getPipelineAttributes, createPipelineAttribute, updatePipelineAttribute
 import { getStageValidationRules, createStageValidationRule, updateStageValidationRule, deleteStageValidationRule } from "../services/stageValidationService";
 import { PipelineForm } from "../components/pipelines/PipelineForm";
 import { PipelineModal } from "../components/pipelines/PipelineModal";
+import { AttributeForm } from "../components/attributes/AttributeForm";
+import { useAttributeRegistry } from "../hooks/useAttributeRegistry";
+import {
+    CONDITION_UNARY_OPERATORS, attributeForConditionField,
+    conditionOperatorLabel, conditionOperatorsFor,
+} from "../utils/conditionOperators";
 import { Plus, Edit2, Columns, ChevronDown, ChevronUp, Trash2, SlidersHorizontal, ShieldCheck } from "lucide-react";
 import { ATTRIBUTE_TYPES } from "../utils/attributeTypes";
-import { COUNTRY_LIST, guessDefaultCountry } from "../utils/phoneCountries";
 
 const FONT = '"Source Sans 3", Arial, sans-serif';
 const INK = "#2E2A26";
@@ -35,282 +40,150 @@ const EMPTY_FORM = {
     list_values: [], description: "", format_symbol: "$", format_decimals: 2, format_default_country: "",
 };
 
+// The pipeline's field manager is the shared component, not a local copy.
+// There used to be a full second implementation of the attribute form inline
+// here — its own EMPTY_FORM, its own format_config serialization, its own type
+// list — which drifted from components/attributes/AttributeForm.jsx and is a
+// large part of why types shipped configured in one screen and not the other.
 function AttributeManager({ pipeline }) {
     const [attrs, setAttrs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [editingId, setEditingId] = useState(null);
-    const [form, setForm] = useState(EMPTY_FORM);
-    const [listInput, setListInput] = useState("");
+    const [editing, setEditing] = useState(null);   // attribute being edited
+    const [creating, setCreating] = useState(false);
     const [error, setError] = useState(null);
 
-    useEffect(() => {
-        load();
-    }, [pipeline.id]);
+    useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [pipeline.id]);
 
     const load = async () => {
         setLoading(true);
         try {
-            const data = await getPipelineAttributes(pipeline.id);
-            setAttrs(data);
+            setAttrs(await getPipelineAttributes(pipeline.id));
+            setError(null);
         } catch {
-            setError("Could not load attributes.");
+            setError("Could not load fields.");
         } finally {
             setLoading(false);
         }
     };
 
-    const autoName = (label) => label.toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_]/g, "");
+    const closeForm = () => { setEditing(null); setCreating(false); setError(null); };
 
-    const handleLabelChange = (label) => {
-        setForm(prev => ({
-            ...prev,
-            label,
-            name: editingId ? prev.name : autoName(label),
-        }));
-    };
-
-    const startEdit = (attr) => {
-        setEditingId(attr.id);
-        const formatConfig = attr.format_config || {};
-        setForm({
-            label: attr.label,
-            name: attr.name,
-            type: attr.type,
-            is_required: attr.is_required,
-            is_unique: attr.is_unique,
-            order: attr.order,
-            list_values: attr.list_values || [],
-            description: attr.description || "",
-            format_symbol: formatConfig.symbol ?? "$",
-            format_decimals: formatConfig.decimals ?? 2,
-            format_default_country: formatConfig.default_country ?? "",
-        });
-        setListInput((attr.list_values || []).join(", "));
-        setError(null);
-    };
-
-    const cancelEdit = () => {
-        setEditingId(null);
-        setForm(EMPTY_FORM);
-        setListInput("");
-        setError(null);
-    };
-
-    const handleSave = async () => {
-        if (!form.label.trim() || !form.name.trim()) {
-            setError("Label and key name are required.");
-            return;
-        }
+    const handleSubmit = async (payload) => {
         setSaving(true);
         setError(null);
         try {
-            const payload = {
-                ...form,
-                list_values: form.type === "list"
-                    ? listInput.split(",").map(s => s.trim()).filter(Boolean)
-                    : [],
-                format_config: form.type === "currency"
-                    ? { symbol: form.format_symbol || "$", decimals: Number(form.format_decimals) || 0 }
-                    : form.type === "phone"
-                        ? (form.format_default_country ? { default_country: form.format_default_country } : {})
-                        : {},
-            };
-            delete payload.format_symbol;
-            delete payload.format_decimals;
-            delete payload.format_default_country;
-            if (editingId) {
-                await updatePipelineAttribute(pipeline.id, editingId, payload);
-            } else {
-                await createPipelineAttribute(pipeline.id, payload);
-            }
-            cancelEdit();
+            if (editing) await updatePipelineAttribute(pipeline.id, editing.id, payload);
+            else await createPipelineAttribute(pipeline.id, payload);
+            closeForm();
             await load();
         } catch (err) {
-            setError(err.message || "Error saving attribute.");
+            setError(err.message || "Error saving field.");
         } finally {
             setSaving(false);
         }
     };
 
     const handleDelete = async (attrId) => {
-        if (!window.confirm("Delete this attribute?")) return;
+        if (!window.confirm("Delete this field?")) return;
         try {
             await deletePipelineAttribute(pipeline.id, attrId);
             await load();
         } catch {
-            setError("Error deleting attribute.");
+            setError("Could not delete the field.");
         }
     };
 
-    const inputStyle = {
-        width: "100%", padding: "6px 10px", border: `1px solid ${PEBBLE}`,
-        borderRadius: "6px", backgroundColor: "#fff", color: INK,
-        fontFamily: FONT, fontSize: "13px", outline: "none", boxSizing: "border-box",
-    };
+    const isFormOpen = creating || !!editing;
 
     return (
-        <div
-            style={{ borderTop: `1px solid ${PEBBLE}`, marginTop: "16px", paddingTop: "16px" }}
-            onClick={e => e.stopPropagation()}
-        >
-            <p style={{ fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: HINT, marginBottom: "12px", fontFamily: FONT }}>
-                Lead Fields
-            </p>
+        <div style={{ fontFamily: FONT }}>
+            <div className="flex items-center justify-between mb-3">
+                <p style={{ fontSize: 13, fontWeight: 600, color: INK }}>
+                    Lead fields
+                    <span style={{ color: HINT, fontWeight: 400 }}> · {attrs.length}</span>
+                </p>
+                <button
+                    type="button"
+                    onClick={() => { setEditing(null); setCreating(true); }}
+                    className="flex items-center gap-1 px-3 h-7 rounded-full text-[10px] font-bold uppercase tracking-wider cursor-pointer"
+                    style={{ backgroundColor: OLIVE, color: LINEN }}
+                >
+                    <Plus size={11} /> New field
+                </button>
+            </div>
+
+            {error && (
+                <p className="mb-2" style={{ fontSize: 12, color: "#c0392b" }}>{error}</p>
+            )}
 
             {loading ? (
-                <p style={{ fontSize: "13px", color: HINT, fontFamily: FONT }}>Loading...</p>
+                <p style={{ fontSize: 12, color: HINT }}>Loading fields…</p>
+            ) : attrs.length === 0 ? (
+                <p className="rounded-lg px-3 py-4 text-center"
+                   style={{ border: `1.5px dashed ${PEBBLE}`, color: HINT, fontSize: 12 }}>
+                    No fields yet.
+                </p>
             ) : (
-                <>
-                    {attrs.length > 0 && (
-                        <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "14px" }}>
-                            {attrs.map(attr => (
-                                <div key={attr.id} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 10px", backgroundColor: OAT, borderRadius: "6px", border: `1px solid ${PEBBLE}` }}>
-                                    <div style={{ flex: 1 }}>
-                                        <span style={{ fontSize: "13px", fontWeight: 600, color: INK, fontFamily: FONT }}>{attr.label}</span>
-                                        <span style={{ fontSize: "11px", color: HINT, marginLeft: "6px", fontFamily: FONT }}>{TYPE_LABELS[attr.type]}</span>
-                                        {attr.is_required && (
-                                            <span style={{ fontSize: "10px", color: OLIVE, fontWeight: 700, marginLeft: "6px", fontFamily: FONT }}>REQ</span>
-                                        )}
-                                        {attr.is_unique && (
-                                            <span style={{ fontSize: "10px", color: APRICOT, fontWeight: 700, marginLeft: "6px", fontFamily: FONT }}>UNIQUE</span>
-                                        )}
-                                        <span style={{ fontSize: "11px", color: PEBBLE, marginLeft: "6px", fontFamily: FONT }}>·</span>
-                                        <span style={{ fontSize: "11px", color: HINT, marginLeft: "6px", fontFamily: FONT }}>{attr.name}</span>
-                                    </div>
-                                    <button
-                                        onClick={() => startEdit(attr)}
-                                        style={{ background: "none", border: "none", cursor: "pointer", color: HINT, padding: "2px" }}
-                                    >
-                                        <Edit2 size={13} />
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(attr.id)}
-                                        style={{ background: "none", border: "none", cursor: "pointer", color: "#dc2626", padding: "2px" }}
-                                    >
-                                        <Trash2 size={13} />
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-
-                    {/* Add / Edit form */}
-                    <div style={{ backgroundColor: "#fff", border: `1px solid ${PEBBLE}`, borderRadius: "8px", padding: "12px" }}>
-                        <p style={{ fontSize: "12px", fontWeight: 600, color: INK, marginBottom: "10px", fontFamily: FONT }}>
-                            {editingId ? "Edit Field" : "Add Field"}
-                        </p>
-
-                        {error && (
-                            <p style={{ fontSize: "12px", color: "#dc2626", marginBottom: "8px", fontFamily: FONT }}>{error}</p>
-                        )}
-
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: "8px" }}>
-                            <div>
-                                <p style={{ fontSize: "11px", fontWeight: 600, color: INK, marginBottom: "3px", fontFamily: FONT }}>Label *</p>
-                                <input style={inputStyle} value={form.label} onChange={e => handleLabelChange(e.target.value)} placeholder="e.g. First Name" />
-                            </div>
-                            <div>
-                                <p style={{ fontSize: "11px", fontWeight: 600, color: INK, marginBottom: "3px", fontFamily: FONT }}>Key name *</p>
-                                <input style={inputStyle} value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="e.g. first_name" />
-                            </div>
-                            <div>
-                                <p style={{ fontSize: "11px", fontWeight: 600, color: INK, marginBottom: "3px", fontFamily: FONT }}>Type *</p>
-                                <select style={inputStyle} value={form.type} onChange={e => setForm(p => ({ ...p, type: e.target.value }))}>
-                                    {ATTRIBUTE_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-                                </select>
-                            </div>
-                            <div>
-                                <p style={{ fontSize: "11px", fontWeight: 600, color: INK, marginBottom: "3px", fontFamily: FONT }}>Order</p>
-                                <input style={inputStyle} type="number" value={form.order} onChange={e => setForm(p => ({ ...p, order: Number(e.target.value) }))} />
-                            </div>
-                        </div>
-
-                        {form.type === "list" && (
-                            <div style={{ marginBottom: "8px" }}>
-                                <p style={{ fontSize: "11px", fontWeight: 600, color: INK, marginBottom: "3px", fontFamily: FONT }}>Options (comma-separated)</p>
-                                <input style={inputStyle} value={listInput} onChange={e => setListInput(e.target.value)} placeholder="Option A, Option B, Option C" />
-                            </div>
-                        )}
-
-                        {form.type === "currency" && (
-                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: "8px" }}>
-                                <div>
-                                    <p style={{ fontSize: "11px", fontWeight: 600, color: INK, marginBottom: "3px", fontFamily: FONT }}>Symbol</p>
-                                    <input style={inputStyle} value={form.format_symbol} onChange={e => setForm(p => ({ ...p, format_symbol: e.target.value }))} placeholder="$" />
-                                </div>
-                                <div>
-                                    <p style={{ fontSize: "11px", fontWeight: 600, color: INK, marginBottom: "3px", fontFamily: FONT }}>Decimals</p>
-                                    <input style={inputStyle} type="number" min="0" max="4" value={form.format_decimals} onChange={e => setForm(p => ({ ...p, format_decimals: e.target.value }))} />
-                                </div>
-                            </div>
-                        )}
-
-                        {form.type === "phone" && (
-                            <div style={{ marginBottom: "8px" }}>
-                                <p style={{ fontSize: "11px", fontWeight: 600, color: INK, marginBottom: "3px", fontFamily: FONT }}>Default Country</p>
-                                <select style={inputStyle} value={form.format_default_country} onChange={e => setForm(p => ({ ...p, format_default_country: e.target.value }))}>
-                                    <option value="">Guess from browser ({guessDefaultCountry()})</option>
-                                    {COUNTRY_LIST.map(c => (
-                                        <option key={c.code} value={c.code}>{c.flag} {c.name} (+{c.callingCode})</option>
-                                    ))}
-                                </select>
-                                <p style={{ fontSize: "10px", color: HINT, marginTop: "3px", fontFamily: FONT }}>
-                                    Starting country for the phone input — the mask is applied automatically per country, nothing to type.
+                <div className="flex flex-col gap-1.5">
+                    {attrs.map((attr) => (
+                        <div key={attr.id}
+                             className="flex items-center gap-2 rounded-lg px-3 py-2"
+                             style={{ border: `1px solid ${PEBBLE}`, backgroundColor: "#fff" }}>
+                            <span className="shrink-0 text-[9px] font-black tabular-nums rounded px-1.5 py-0.5"
+                                  style={{ backgroundColor: "rgba(94,106,67,0.12)", color: OLIVE }}>
+                                {attr.order ?? 0}
+                            </span>
+                            <div className="min-w-0 flex-1">
+                                <p className="truncate" style={{ fontSize: 13, fontWeight: 600, color: INK }}>
+                                    {attr.label}
+                                    {attr.is_required && <span style={{ color: "#c0392b" }}> *</span>}
+                                </p>
+                                <p className="truncate" style={{ fontSize: 10, color: HINT, fontFamily: "ui-monospace, monospace" }}>
+                                    {TYPE_LABELS[attr.type] || attr.type} · #{attr.name}
                                 </p>
                             </div>
-                        )}
-
-                        <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", color: INK, fontFamily: FONT, cursor: "pointer", marginBottom: "8px" }}>
-                            <input type="checkbox" checked={form.is_required} onChange={e => setForm(p => ({ ...p, is_required: e.target.checked }))} style={{ accentColor: OLIVE }} />
-                            Required field
-                        </label>
-
-                        <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", color: INK, fontFamily: FONT, cursor: "pointer", marginBottom: "10px" }}>
-                            <input type="checkbox" checked={form.is_unique} onChange={e => setForm(p => ({ ...p, is_unique: e.target.checked }))} style={{ accentColor: OLIVE }} />
-                            Unique — no two leads can share this value
-                        </label>
-
-                        <div style={{ display: "flex", gap: "8px" }}>
-                            <button
-                                onClick={handleSave}
-                                disabled={saving}
-                                style={{ flex: 1, padding: "7px", backgroundColor: OLIVE, color: LINEN, border: "none", borderRadius: "6px", fontSize: "12px", fontWeight: 600, fontFamily: FONT, cursor: saving ? "not-allowed" : "pointer", opacity: saving ? 0.7 : 1 }}
-                            >
-                                {saving ? "Saving..." : editingId ? "Update" : "Add Field"}
+                            <button type="button" onClick={() => { setCreating(false); setEditing(attr); }}
+                                    className="cursor-pointer" style={{ color: OLIVE }} title="Edit">
+                                <Edit2 size={13} />
                             </button>
-                            {editingId && (
-                                <button
-                                    onClick={cancelEdit}
-                                    style={{ padding: "7px 14px", backgroundColor: "transparent", color: MUTED, border: `1px solid ${PEBBLE}`, borderRadius: "6px", fontSize: "12px", fontFamily: FONT, cursor: "pointer" }}
-                                >
-                                    Cancel
-                                </button>
-                            )}
+                            <button type="button" onClick={() => handleDelete(attr.id)}
+                                    className="cursor-pointer" style={{ color: "#c0392b" }} title="Delete">
+                                <Trash2 size={13} />
+                            </button>
                         </div>
+                    ))}
+                </div>
+            )}
+
+            {isFormOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto"
+                     style={{ backgroundColor: "rgba(46,42,38,0.4)" }}>
+                    <div className="w-full max-w-4xl rounded-xl shadow-2xl p-5 relative"
+                         style={{ backgroundColor: LINEN, border: `1px solid ${PEBBLE}` }}>
+                        <AttributeForm
+                            entity={`${pipeline.name} — lead fields`}
+                            initialData={editing}
+                            defaultOrder={attrs.length + 1}
+                            isLoading={saving}
+                            supportsUnique
+                            siblings={attrs}
+                            rollupEntity={"lead"}
+                            onSubmit={handleSubmit}
+                            onCancel={closeForm}
+                        />
                     </div>
-                </>
+                </div>
             )}
         </div>
     );
 }
 
-const OPERATORS = [
-    { value: "=", label: "= equals" },
-    { value: "!=", label: "≠ not equals" },
-    { value: ">", label: "> greater than" },
-    { value: "<", label: "< less than" },
-    { value: ">=", label: "≥ greater or equal" },
-    { value: "<=", label: "≤ less or equal" },
-    { value: "in", label: "in (list)" },
-    { value: "contains", label: "contains" },
-    { value: "is_not_empty", label: "is filled in" },
-    { value: "is_empty", label: "is empty" },
-    { value: "is_not_null", label: "is not null" },
-    { value: "is_null", label: "is null" },
-];
 
-const UNARY_OPERATORS = new Set(["is_null", "is_not_null", "is_empty", "is_not_empty"]);
+// Operators are no longer a fixed list: they are derived from the type of the
+// attribute the condition points at, so "greater than" is not offered on a
+// text field. See src/utils/conditionOperators.js.
+const UNARY_OPERATORS = CONDITION_UNARY_OPERATORS;
 
 const EMPTY_RULE_FORM = {
     name: "", target_stage: "", conditions: [{ field: "", operator: "is_not_empty", value: "" }],
@@ -318,6 +191,7 @@ const EMPTY_RULE_FORM = {
 };
 
 function ValidationRuleManager({ pipeline }) {
+    const { byType } = useAttributeRegistry();
     const [rules, setRules] = useState([]);
     const [attrs, setAttrs] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -522,7 +396,11 @@ function ValidationRuleManager({ pipeline }) {
                                         value={cond.operator}
                                         onChange={e => updateCondition(idx, "operator", e.target.value)}
                                     >
-                                        {OPERATORS.map(op => <option key={op.value} value={op.value}>{op.label}</option>)}
+                                        {conditionOperatorsFor(
+                                            byType[attributeForConditionField(cond.field, attrs)?.type]
+                                        ).map(op => (
+                                            <option key={op} value={op}>{conditionOperatorLabel(op)}</option>
+                                        ))}
                                     </select>
                                     {!UNARY_OPERATORS.has(cond.operator) && (
                                         <input

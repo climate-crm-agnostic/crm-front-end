@@ -11,6 +11,12 @@ import { AttributeForm } from '../components/attributes/AttributeForm';
 import { Plus, Trash, Edit, ChevronLeft, ChevronRight, SlidersHorizontal, GripVertical } from 'lucide-react';
 import Swal from 'sweetalert2';
 
+const ENTITY_LABELS = {
+    catalogue_item: 'Catalogue Item',
+    asset_assignment: 'Asset Assignment',
+    follow_up: 'Follow Up',
+};
+
 const TYPE_COLORS = {
     text:     { bg: "rgba(94,106,67,0.10)",  border: "rgba(94,106,67,0.35)",  color: "#4a5535" },
     boolean:  { bg: "rgba(242,155,107,0.12)", border: "rgba(242,155,107,0.4)", color: "#c0622a" },
@@ -35,11 +41,11 @@ const Modal = ({ isOpen, children, onClose }) => {
     if (!isOpen) return null;
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto"
             style={{ backgroundColor: "rgba(46,42,38,0.4)" }}
         >
             <div
-                className="w-full max-w-md rounded-xl shadow-2xl p-6 relative"
+                className="w-full max-w-4xl rounded-xl shadow-2xl p-5 relative"
                 style={{ backgroundColor: "#FBF7EF", border: "1px solid #D8D2C4" }}
                 onClick={e => e.stopPropagation()}
             >
@@ -143,9 +149,12 @@ const SortableAttrCard = ({ attr, onEdit, onDelete }) => {
 };
 
 export const Attributes = () => {
+    // Must match Attribute.ENTITY_CHOICES on the backend — entity_name is
+    // read-only there and taken straight from the URL, so a value that isn't
+    // in that list creates rows nothing else can ever read back.
     const [entities] = useState([
         'client', 'contact', 'lead', 'service',
-        'category', 'catalogue_item', 'invoice', 'followup', 'inventory', 'asset', 'asset_assignment'
+        'category', 'catalogue_item', 'invoice', 'follow_up', 'inventory', 'asset', 'asset_assignment'
     ]);
     const [attributesData, setAttributesData] = useState({});
     const [loading, setLoading] = useState(true);
@@ -331,9 +340,7 @@ export const Attributes = () => {
                     style={{ scrollbarWidth: "thin", scrollbarColor: "#D8D2C4 transparent" }}
                 >
                     {entities.map(entity => {
-                        const label = entity === 'catalogue_item' ? 'Catalogue Item'
-                            : entity === 'asset_assignment' ? 'Asset Assignment'
-                            : entity.replace('_', ' ');
+                        const label = ENTITY_LABELS[entity] || entity.replace(/_/g, ' ');
                         const attrs = attributesData[entity] || [];
                         const attrIds = attrs.map(a => a.id);
 
@@ -418,6 +425,9 @@ export const Attributes = () => {
                     isLoading={formLoading}
                     initialData={editingAttribute}
                     defaultOrder={(attributesData[currentEntity]?.length ?? 0) + 1}
+                    supportsUnique
+                    siblings={attributesData[currentEntity] || []}
+                    rollupEntity={currentEntity}
                 />
             </Modal>
         </div>

@@ -1,290 +1,543 @@
-import React from 'react';
-import { useForm } from 'react-hook-form';
-import { X } from 'lucide-react';
-import { ATTRIBUTE_TYPES } from '../../utils/attributeTypes';
-import { COUNTRY_LIST, guessDefaultCountry } from '../../utils/phoneCountries';
+import React, { useEffect, useMemo, useState } from 'react';
+import * as Icons from 'lucide-react';
+import { AlertTriangle, X } from 'lucide-react';
+import { ATTRIBUTE_TYPE_GROUPS, emptyValueFor, formatCurrency, normalizeOptions } from '../../utils/attributeTypes';
+import { CURRENCY_LIST } from '../../utils/currencies';
+import { useAttributeRegistry } from '../../hooks/useAttributeRegistry';
+import { TypeConfigPanel } from './TypeConfigPanel';
+import { AttributePreview } from './AttributePreview';
+import { OptionsEditor } from './OptionsEditor';
+import { FormulaEditor } from './FormulaEditor';
 
-const inputClass = {
-    backgroundColor: "#fff",
-    border: "1px solid #D8D2C4",
-    color: "#2E2A26",
-    borderRadius: "6px",
-    padding: "8px 10px",
-    fontSize: "14px",
-    width: "100%",
-    fontFamily: '"Source Sans 3", Arial, sans-serif',
-    outline: "none",
+const INK = "#2E2A26";
+const MUTED = "#6b6560";
+const HINT = "#9b948e";
+const OAT = "#F2EBDD";
+const PEBBLE = "#D8D2C4";
+const OLIVE = "#5E6A43";
+const FONT = '"Source Sans 3", Arial, sans-serif';
+
+const inputStyle = {
+    backgroundColor: "#fff", border: `1px solid ${PEBBLE}`, color: INK,
+    borderRadius: 6, padding: "8px 10px", fontSize: 14, width: "100%",
+    fontFamily: FONT, outline: "none",
 };
 
-const labelClass = {
-    display: "block",
-    fontSize: "11px",
-    fontWeight: 600,
-    textTransform: "uppercase",
-    letterSpacing: "0.06em",
-    color: "#6b6560",
-    marginBottom: "5px",
-    fontFamily: '"Source Sans 3", Arial, sans-serif',
+const labelStyle = {
+    display: "block", fontSize: 11, fontWeight: 600, textTransform: "uppercase",
+    letterSpacing: "0.06em", color: MUTED, marginBottom: 5, fontFamily: FONT,
 };
 
-export const AttributeForm = ({ entity, onSubmit, onCancel, isLoading, initialData = null, defaultOrder = 1, supportsUnique = false }) => {
+const SECTION = {
+    border: `1px solid ${PEBBLE}`, borderRadius: 10, padding: 14, backgroundColor: "#fff",
+};
+
+const sectionTitle = (n, text) => (
+    <p style={{
+        fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em",
+        color: HINT, marginBottom: 10,
+    }}>
+        <span style={{ color: OLIVE }}>{n}</span> &nbsp;{text}
+    </p>
+);
+
+const slugify = (label) =>
+    label.toLowerCase().trim().replace(/\s+/g, "_").replace(/[^a-z0-9_]/g, "");
+
+const EMPTY = {
+    name: "", label: "", description: "", placeholder: "", type: "text",
+    order: 1, is_required: false, is_unique: false, is_filterable: true,
+    show_in_table: false, list_values: [], format_config: {},
+    is_calculated: false, formula: "",
+};
+
+/**
+ * Create/edit form for an Attribute or PipelineAttribute.
+ *
+ * One component for all three screens that manage attributes (Attributes.jsx,
+ * PipelineAttributesAdmin.jsx and the pipeline detail page). There used to be
+ * three separate implementations, including a full inline copy in Pipeline.jsx,
+ * each with its own defaults and its own format_config serialization — which is
+ * exactly how types shipped half-wired before.
+ *
+ * The type-specific settings in section ③ are generated from the registry
+ * (GET /api/attribute-types/), so adding an option on the backend surfaces here
+ * with no change to this file.
+ */
+export const AttributeForm = ({
+    entity, onSubmit, onCancel, isLoading, initialData = null,
+    defaultOrder = 1, supportsUnique = false, usageCount = null,
+    siblings = [], rollupEntity = null,
+}) => {
     const isEdit = !!initialData;
+    const { types, byType, ready } = useAttributeRegistry();
 
-    const getDefaultValues = () => {
-        if (!initialData) return { order: defaultOrder, format_symbol: '$', format_decimals: 2, format_default_country: '' };
-        const formatConfig = initialData.format_config || {};
-        return {
-            ...initialData,
-            list_values: Array.isArray(initialData.list_values)
-                ? initialData.list_values.join(', ')
-                : initialData.list_values,
-            format_symbol: formatConfig.symbol ?? '$',
-            format_decimals: formatConfig.decimals ?? 2,
-            format_default_country: formatConfig.default_country ?? '',
-        };
+    const [draft, setDraft] = useState(EMPTY);
+    const [previewValue, setPreviewValue] = useState("");
+    const [errors, setErrors] = useState({});
+    const [typeChange, setTypeChange] = useState(null);
+
+    useEffect(() => {
+        if (initialData) {
+            setDraft({
+                ...EMPTY,
+                ...initialData,
+                list_values: normalizeOptions(initialData.list_values),
+                format_config: initialData.format_config || {},
+            });
+        } else {
+            setDraft({ ...EMPTY, order: defaultOrder });
+        }
+        setPreviewValue("");
+        setErrors({});
+        setTypeChange(null);
+    }, [initialData, defaultOrder]);
+
+    const typeMeta = byType[draft.type];
+    const usesOptions = typeMeta?.uses_list_values ?? ["list", "multiselect"].includes(draft.type);
+    // A derived value is not typed in, so required and unique cannot apply.
+    const canBeUnique = supportsUnique && (typeMeta?.supports_unique ?? false) && !draft.is_calculated;
+    // Options belong to a value someone picks; a calculated list would have to
+    // produce one of them, which is a different feature.
+    const canBeCalculated = !usesOptions;
+
+    // Reset the preview whenever the shape of the value changes under it.
+    useEffect(() => { setPreviewValue(emptyValueFor({ type: draft.type })); }, [draft.type]);
+
+    const set = (patch) => setDraft((prev) => ({ ...prev, ...patch }));
+
+    const handleLabelChange = (label) => {
+        // The key is only auto-derived while the attribute is new: it is the
+        // JSON key every stored record uses, so it must never move afterwards.
+        set(isEdit ? { label } : { label, name: slugify(label) });
     };
 
-    const { register, handleSubmit, watch, formState: { errors }, reset } = useForm({
-        defaultValues: getDefaultValues()
-    });
-
-    React.useEffect(() => { reset(getDefaultValues()); }, [initialData, reset]);
-
-    const selectedType = watch("type");
-
-    const handleFormSubmit = (data) => {
-        let payload = { ...data, is_required: data.is_required === true };
-        if (supportsUnique) {
-            payload.is_unique = data.is_unique === true;
+    const requestTypeChange = (nextType) => {
+        if (nextType === draft.type) return;
+        if (isEdit) {
+            // Changing the type of a field that already holds data can make
+            // those values invalid. Say so, with the count, before doing it.
+            setTypeChange({ from: draft.type, to: nextType });
+            return;
         }
-        if (data.type === 'list' && typeof data.list_values === 'string') {
-            payload.list_values = data.list_values.split(',').map(s => s.trim()).filter(s => s);
-        } else {
-            payload.list_values = [];
+        set({ type: nextType, format_config: {}, list_values: [] });
+    };
+
+    const confirmTypeChange = () => {
+        set({
+            type: typeChange.to,
+            // Options and settings belong to the old type; carrying them over
+            // would leave config that the new type's schema rejects.
+            format_config: {},
+            list_values: [],
+            is_unique: false,
+        });
+        setTypeChange(null);
+    };
+
+    const validate = () => {
+        const next = {};
+        if (!draft.label.trim()) next.label = "Label is required";
+        if (!draft.name.trim()) next.name = "Key is required";
+        else if (!/^[a-z][a-z0-9_]*$/.test(draft.name))
+            next.name = "Lowercase letters, numbers and underscores; must start with a letter";
+        if (!draft.order || draft.order < 1) next.order = "Minimum value is 1";
+        if (usesOptions) {
+            const options = normalizeOptions(draft.list_values);
+            if (options.length === 0) next.list_values = "Add at least one option";
+            else if (options.some((o) => !String(o.value || "").trim()))
+                next.list_values = "Every option needs a label";
         }
-        if (data.type === 'currency') {
-            payload.format_config = { symbol: data.format_symbol || '$', decimals: Number(data.format_decimals) || 0 };
-        } else if (data.type === 'phone') {
-            payload.format_config = data.format_default_country ? { default_country: data.format_default_country } : {};
-        } else {
-            payload.format_config = {};
-        }
-        delete payload.format_symbol;
-        delete payload.format_decimals;
-        delete payload.format_default_country;
+        if (draft.is_calculated && !String(draft.formula || "").trim())
+            next.formula = "A calculated field needs a formula";
+        setErrors(next);
+        return Object.keys(next).length === 0;
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        if (!validate()) return;
+        const payload = {
+            ...draft,
+            order: Number(draft.order),
+            list_values: usesOptions ? normalizeOptions(draft.list_values) : [],
+            is_unique: canBeUnique ? !!draft.is_unique : false,
+            is_calculated: canBeCalculated && !!draft.is_calculated,
+            formula: canBeCalculated && draft.is_calculated ? draft.formula : "",
+            is_required: draft.is_calculated ? false : !!draft.is_required,
+            // Drop options the current type does not declare — they would be
+            // rejected by the backend's format_config validation.
+            format_config: pickKnownConfig(draft.format_config, typeMeta),
+        };
         onSubmit(payload);
     };
 
+    const rules = useMemo(
+        () => describeRules(draft, typeMeta, canBeUnique),
+        [draft, typeMeta, canBeUnique]
+    );
+
+    const grouped = useMemo(() => {
+        const list = types.length ? types : [];
+        return ATTRIBUTE_TYPE_GROUPS
+            .map((g) => ({ ...g, items: list.filter((t) => t.group === g.value) }))
+            .filter((g) => g.items.length);
+    }, [types]);
+
     return (
-        <form
-            onSubmit={handleSubmit(handleFormSubmit)}
-            className="space-y-4"
-            style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}
-        >
-            {/* Header */}
-            <div className="flex justify-between items-center mb-2">
-                <p style={{ fontSize: "15px", fontWeight: 600, color: "#2E2A26" }}>
-                    {isEdit ? 'Edit Attribute' : `Add Attribute — ${entity}`}
-                </p>
-                <button
-                    type="button"
-                    onClick={onCancel}
-                    className="flex h-7 w-7 items-center justify-center rounded-md transition-colors cursor-pointer"
-                    style={{ color: "#9b948e", backgroundColor: "transparent" }}
-                    onMouseEnter={e => e.currentTarget.style.backgroundColor = "#F2EBDD"}
-                    onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
-                >
+        <form onSubmit={handleSubmit} style={{ fontFamily: FONT }} className="flex flex-col max-h-[86vh]">
+            {/* ── Header ─────────────────────────────────────────────────── */}
+            <div className="flex items-center justify-between shrink-0 pb-3"
+                 style={{ borderBottom: `1px solid ${PEBBLE}` }}>
+                <div>
+                    <p style={{ fontSize: 16, fontWeight: 600, color: INK }}>
+                        {isEdit ? 'Edit field' : 'New field'}
+                    </p>
+                    {entity && (
+                        <p style={{ fontSize: 12, color: HINT, marginTop: 2 }}>
+                            {String(entity).replace(/_/g, ' ')}
+                        </p>
+                    )}
+                </div>
+                <button type="button" onClick={onCancel}
+                        className="flex h-7 w-7 items-center justify-center rounded-md cursor-pointer"
+                        style={{ color: HINT }}
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = OAT)}
+                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}>
                     <X size={16} />
                 </button>
             </div>
 
-            {/* Name */}
-            <div>
-                <label style={labelClass}>Name (Key)</label>
-                <input
-                    {...register("name", { required: "Name is required" })}
-                    style={{ ...inputClass, opacity: isEdit ? 0.6 : 1, cursor: isEdit ? "not-allowed" : "text" }}
-                    placeholder="e.g. industry_sector"
-                    disabled={isEdit}
-                    onFocus={e => !isEdit && (e.target.style.borderColor = "#5E6A43")}
-                    onBlur={e => e.target.style.borderColor = "#D8D2C4"}
-                />
-                {errors.name && <span style={{ color: "#c0392b", fontSize: "11px" }}>{errors.name.message}</span>}
-                <p style={{ fontSize: "11px", color: "#9b948e", marginTop: "3px" }}>
-                    Internal identifier (unique, no spaces). Cannot be changed after creation.
-                </p>
-            </div>
+            {/* ── Body: settings | preview ───────────────────────────────── */}
+            <div className="flex-1 min-h-0 overflow-y-auto py-4">
+                <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_300px] gap-4">
+                    <div className="flex flex-col gap-3 min-w-0">
 
-            {/* Label */}
-            <div>
-                <label style={labelClass}>Label (Display Name)</label>
-                <input
-                    {...register("label", { required: "Label is required" })}
-                    style={inputClass}
-                    placeholder="e.g. Industry Sector"
-                    onFocus={e => e.target.style.borderColor = "#5E6A43"}
-                    onBlur={e => e.target.style.borderColor = "#D8D2C4"}
-                />
-                {errors.label && <span style={{ color: "#c0392b", fontSize: "11px" }}>{errors.label.message}</span>}
-            </div>
+                        {/* ① Identity */}
+                        <div style={SECTION}>
+                            {sectionTitle('①', 'Identity')}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label style={labelStyle}>Label</label>
+                                    <input value={draft.label} style={inputStyle}
+                                           placeholder="e.g. Annual budget"
+                                           onChange={(e) => handleLabelChange(e.target.value)} />
+                                    {errors.label && <Err>{errors.label}</Err>}
+                                </div>
+                                <div>
+                                    <label style={labelStyle}>Key</label>
+                                    <input value={draft.name} disabled={isEdit}
+                                           placeholder="annual_budget"
+                                           style={{ ...inputStyle, opacity: isEdit ? 0.6 : 1,
+                                                    cursor: isEdit ? "not-allowed" : "text",
+                                                    fontFamily: "ui-monospace, monospace" }}
+                                           onChange={(e) => set({ name: e.target.value })} />
+                                    {errors.name
+                                        ? <Err>{errors.name}</Err>
+                                        : <Hint>{isEdit
+                                            ? "Fixed — records are stored under this key."
+                                            : "Auto-filled from the label. Cannot change later."}</Hint>}
+                                </div>
+                                <div>
+                                    <label style={labelStyle}>Help text</label>
+                                    <input value={draft.description || ""} style={inputStyle}
+                                           placeholder="Shown under the field"
+                                           onChange={(e) => set({ description: e.target.value })} />
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label style={labelStyle}>Placeholder</label>
+                                        <input value={draft.placeholder || ""} style={inputStyle}
+                                               onChange={(e) => set({ placeholder: e.target.value })} />
+                                    </div>
+                                    <div>
+                                        <label style={labelStyle}>Order</label>
+                                        <input type="number" min="1" value={draft.order} style={inputStyle}
+                                               onChange={(e) => set({ order: e.target.value })} />
+                                        {errors.order && <Err>{errors.order}</Err>}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-            {/* Order */}
-            <div>
-                <label style={labelClass}>Display Order</label>
-                <input
-                    type="number"
-                    min="1"
-                    {...register("order", { required: "Order is required", valueAsNumber: true, min: { value: 1, message: "Minimum value is 1" } })}
-                    style={inputClass}
-                    onFocus={e => e.target.style.borderColor = "#5E6A43"}
-                    onBlur={e => e.target.style.borderColor = "#D8D2C4"}
-                />
-                {errors.order && <span style={{ color: "#c0392b", fontSize: "11px" }}>{errors.order.message}</span>}
-                <p style={{ fontSize: "11px", color: "#9b948e", marginTop: "3px" }}>
-                    Controls the position of this field in forms. Lower numbers appear first.
-                </p>
-            </div>
+                        {/* ② Type */}
+                        <div style={SECTION}>
+                            {sectionTitle('②', 'Type')}
+                            {!ready && <Hint>Loading types…</Hint>}
+                            <div className="flex flex-col gap-2.5">
+                                {grouped.map((group) => (
+                                    <div key={group.value}>
+                                        <p style={{ fontSize: 10, fontWeight: 700, color: HINT,
+                                                    textTransform: "uppercase", letterSpacing: "0.08em",
+                                                    marginBottom: 5 }}>
+                                            {group.label}
+                                        </p>
+                                        <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
+                                            {group.items.map((t) => (
+                                                <TypeCard
+                                                    key={t.value}
+                                                    type={t}
+                                                    selected={t.value === draft.type}
+                                                    onClick={() => requestTypeChange(t.value)}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
 
-            {/* Type */}
-            <div>
-                <label style={labelClass}>Type</label>
-                <select
-                    {...register("type", { required: "Type is required" })}
-                    style={{ ...inputClass, opacity: isEdit ? 0.6 : 1, cursor: isEdit ? "not-allowed" : "pointer", appearance: "auto" }}
-                    disabled={isEdit}
-                >
-                    {ATTRIBUTE_TYPES.map(t => (
-                        <option key={t.value} value={t.value}>{t.label}</option>
-                    ))}
-                </select>
-            </div>
+                        {/* ③ Formula, or the type-specific settings */}
+                        <div style={SECTION}>
+                            {sectionTitle('③', draft.is_calculated
+                                ? 'Formula'
+                                : `${typeMeta?.label || draft.type} settings`)}
 
-            {/* List options */}
-            {selectedType === 'list' && (
-                <div>
-                    <label style={labelClass}>List Options (comma separated)</label>
-                    <textarea
-                        {...register("list_values", { required: "List options are required" })}
-                        style={{ ...inputClass, height: "80px", resize: "vertical" }}
-                        placeholder="Option 1, Option 2, Option 3"
-                        onFocus={e => e.target.style.borderColor = "#5E6A43"}
-                        onBlur={e => e.target.style.borderColor = "#D8D2C4"}
-                    />
-                    {errors.list_values && <span style={{ color: "#c0392b", fontSize: "11px" }}>{errors.list_values.message}</span>}
-                </div>
-            )}
+                            {canBeCalculated && (
+                                <label className="flex items-start gap-2 rounded-md p-2 mb-3 cursor-pointer"
+                                       style={{ border: `1px solid ${PEBBLE}` }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={!!draft.is_calculated}
+                                        onChange={(e) => set({
+                                            is_calculated: e.target.checked,
+                                            is_required: false,
+                                            is_unique: false,
+                                        })}
+                                        style={{ accentColor: OLIVE, width: 14, height: 14, marginTop: 2 }}
+                                    />
+                                    <span>
+                                        <span style={{ display: "block", fontSize: 13, fontWeight: 600, color: INK }}>
+                                            This field is calculated
+                                        </span>
+                                        <span style={{ display: "block", fontSize: 11, color: HINT }}>
+                                            Its value comes from a formula and is recomputed every time
+                                            the record is saved. Nobody types into it.
+                                        </span>
+                                    </span>
+                                </label>
+                            )}
 
-            {/* Currency format */}
-            {selectedType === 'currency' && (
-                <div className="grid grid-cols-2 gap-3">
-                    <div>
-                        <label style={labelClass}>Symbol</label>
-                        <input
-                            {...register("format_symbol")}
-                            style={inputClass}
-                            placeholder="$"
-                            onFocus={e => e.target.style.borderColor = "#5E6A43"}
-                            onBlur={e => e.target.style.borderColor = "#D8D2C4"}
+                            {draft.is_calculated ? (
+                                <FormulaEditor
+                                    formula={draft.formula}
+                                    onChange={(formula) => set({ formula })}
+                                    outputType={draft.type}
+                                    siblings={siblings.filter((a) => a.name !== draft.name)}
+                                    entity={rollupEntity}
+                                    error={errors.formula}
+                                />
+                            ) : (
+                            <>
+                            {usesOptions && (
+                                <div className="mb-4">
+                                    <OptionsEditor
+                                        value={draft.list_values}
+                                        onChange={(list_values) => set({ list_values })}
+                                        error={errors.list_values}
+                                    />
+                                </div>
+                            )}
+                            <TypeConfigPanel
+                                typeMeta={typeMeta}
+                                config={draft.format_config}
+                                currencies={CURRENCY_LIST}
+                                onChange={(format_config) => set({ format_config })}
+                            />
+                            </>
+                            )}
+                        </div>
+
+                        {/* ④ Behaviour */}
+                        <div style={SECTION}>
+                            {sectionTitle('④', 'Behaviour')}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <Toggle checked={draft.is_required} label="Required"
+                                        disabled={draft.is_calculated}
+                                        hint={draft.is_calculated
+                                            ? "Not available for a calculated field"
+                                            : "Cannot be left empty"}
+                                        onChange={(v) => set({ is_required: v })} />
+                                <Toggle checked={draft.is_unique} label="Unique"
+                                        disabled={!canBeUnique}
+                                        hint={canBeUnique
+                                            ? "No two records may share this value"
+                                            : `Not available for ${typeMeta?.label || draft.type}`}
+                                        onChange={(v) => set({ is_unique: v })} />
+                                <Toggle checked={draft.is_filterable} label="Filterable"
+                                        hint="Offer this field in list filters"
+                                        onChange={(v) => set({ is_filterable: v })} />
+                                <Toggle checked={draft.show_in_table} label="Column in tables"
+                                        hint="Show as a column by default"
+                                        onChange={(v) => set({ show_in_table: v })} />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Preview column */}
+                    <div className="lg:sticky lg:top-0 self-start w-full">
+                        <AttributePreview
+                            draft={draft}
+                            value={previewValue}
+                            onChange={setPreviewValue}
+                            rules={rules}
                         />
                     </div>
-                    <div>
-                        <label style={labelClass}>Decimals</label>
-                        <input
-                            type="number"
-                            min="0"
-                            max="4"
-                            {...register("format_decimals", { valueAsNumber: true })}
-                            style={inputClass}
-                            onFocus={e => e.target.style.borderColor = "#5E6A43"}
-                            onBlur={e => e.target.style.borderColor = "#D8D2C4"}
-                        />
+                </div>
+            </div>
+
+            {/* ── Type-change confirmation ───────────────────────────────── */}
+            {typeChange && (
+                <div className="shrink-0 rounded-lg p-3 mb-2"
+                     style={{ backgroundColor: "rgba(242,155,107,0.12)", border: "1px solid #F29B6B" }}>
+                    <div className="flex gap-2">
+                        <AlertTriangle size={16} style={{ color: "#c0622a", flexShrink: 0, marginTop: 2 }} />
+                        <div className="flex-1">
+                            <p style={{ fontSize: 13, fontWeight: 600, color: INK }}>
+                                Change {byType[typeChange.from]?.label || typeChange.from} to{' '}
+                                {byType[typeChange.to]?.label || typeChange.to}?
+                            </p>
+                            <p style={{ fontSize: 12, color: MUTED, marginTop: 3 }}>
+                                {usageCount === null
+                                    ? "Existing values that do not fit the new type will be rejected the next time each record is saved. The stored data itself is not touched."
+                                    : usageCount === 0
+                                        ? "No record uses this field yet, so nothing can break."
+                                        : `${usageCount} record(s) hold a value for this field. Any that do not fit the new type will be rejected the next time that record is saved. The stored data itself is not touched.`}
+                            </p>
+                            <p style={{ fontSize: 12, color: MUTED, marginTop: 3 }}>
+                                Its settings and options will be cleared.
+                            </p>
+                            <div className="flex gap-2 mt-2">
+                                <button type="button" onClick={confirmTypeChange}
+                                        className="h-7 px-3 rounded-md text-xs font-semibold cursor-pointer"
+                                        style={{ backgroundColor: "#c0622a", color: "#FBF7EF" }}>
+                                    Change type
+                                </button>
+                                <button type="button" onClick={() => setTypeChange(null)}
+                                        className="h-7 px-3 rounded-md text-xs font-semibold cursor-pointer"
+                                        style={{ border: `1px solid ${PEBBLE}`, color: MUTED }}>
+                                    Keep {byType[typeChange.from]?.label || typeChange.from}
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
 
-            {/* Phone default country */}
-            {selectedType === 'phone' && (
-                <div>
-                    <label style={labelClass}>Default Country</label>
-                    <select
-                        {...register("format_default_country")}
-                        style={{ ...inputClass, appearance: "auto" }}
-                    >
-                        <option value="">Guess from browser ({guessDefaultCountry()})</option>
-                        {COUNTRY_LIST.map(c => (
-                            <option key={c.code} value={c.code}>{c.flag} {c.name} (+{c.callingCode})</option>
-                        ))}
-                    </select>
-                    <p style={{ fontSize: "11px", color: "#9b948e", marginTop: "3px" }}>
-                        The country the phone input starts on. The person filling in a value can always switch it — the mask is applied automatically per country, no pattern to configure.
-                    </p>
-                </div>
-            )}
-
-            {/* Description */}
-            <div>
-                <label style={labelClass}>Description</label>
-                <textarea
-                    {...register("description")}
-                    style={{ ...inputClass, height: "72px", resize: "vertical" }}
-                    placeholder="Describe what this attribute is for..."
-                    onFocus={e => e.target.style.borderColor = "#5E6A43"}
-                    onBlur={e => e.target.style.borderColor = "#D8D2C4"}
-                />
-            </div>
-
-            {/* Required checkbox */}
-            <div className="flex items-center gap-2">
-                <input
-                    type="checkbox"
-                    id="is_required"
-                    {...register("is_required")}
-                    style={{ accentColor: "#5E6A43", width: "14px", height: "14px", cursor: "pointer" }}
-                />
-                <label htmlFor="is_required" style={{ fontSize: "13px", fontWeight: 500, color: "#2E2A26", cursor: "pointer" }}>
-                    Required Field
-                </label>
-            </div>
-
-            {/* Unique checkbox */}
-            {supportsUnique && (
-                <div className="flex items-center gap-2">
-                    <input
-                        type="checkbox"
-                        id="is_unique"
-                        {...register("is_unique")}
-                        style={{ accentColor: "#5E6A43", width: "14px", height: "14px", cursor: "pointer" }}
-                    />
-                    <label htmlFor="is_unique" style={{ fontSize: "13px", fontWeight: 500, color: "#2E2A26", cursor: "pointer" }}>
-                        Unique — no two leads can share this value
-                    </label>
-                </div>
-            )}
-
-            {/* Actions */}
-            <div className="flex justify-end gap-2 pt-2" style={{ borderTop: "1px solid #D8D2C4" }}>
-                <button
-                    type="button"
-                    onClick={onCancel}
-                    disabled={isLoading}
-                    className="h-9 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
-                    style={{ border: "1px solid #D8D2C4", backgroundColor: "transparent", color: "#6b6560" }}
-                    onMouseEnter={e => e.currentTarget.style.backgroundColor = "#F2EBDD"}
-                    onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
-                >
+            {/* ── Actions ────────────────────────────────────────────────── */}
+            <div className="flex justify-end gap-2 pt-3 shrink-0" style={{ borderTop: `1px solid ${PEBBLE}` }}>
+                <button type="button" onClick={onCancel} disabled={isLoading}
+                        className="h-9 px-4 rounded-lg text-sm font-semibold cursor-pointer"
+                        style={{ border: `1px solid ${PEBBLE}`, backgroundColor: "transparent", color: MUTED }}>
                     Cancel
                 </button>
-                <button
-                    type="submit"
-                    disabled={isLoading}
-                    className="h-9 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
-                    style={{ backgroundColor: isLoading ? "#4a5535" : "#5E6A43", color: "#FBF7EF", opacity: isLoading ? 0.7 : 1 }}
-                    onMouseEnter={e => !isLoading && (e.currentTarget.style.backgroundColor = "#4a5535")}
-                    onMouseLeave={e => !isLoading && (e.currentTarget.style.backgroundColor = "#5E6A43")}
-                >
-                    {isLoading ? 'Saving...' : 'Save Attribute'}
+                <button type="submit" disabled={isLoading}
+                        className="h-9 px-4 rounded-lg text-sm font-semibold cursor-pointer"
+                        style={{ backgroundColor: isLoading ? "#4a5535" : OLIVE, color: "#FBF7EF",
+                                 opacity: isLoading ? 0.7 : 1 }}>
+                    {isLoading ? 'Saving…' : 'Save field'}
                 </button>
             </div>
         </form>
     );
+};
+
+const TypeCard = ({ type, selected, onClick }) => {
+    const Icon = Icons[type.icon] || Icons.Type;
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            title={type.label}
+            className="flex flex-col items-center gap-1 rounded-lg px-1 py-2 transition-colors cursor-pointer"
+            style={{
+                border: `1px solid ${selected ? OLIVE : PEBBLE}`,
+                backgroundColor: selected ? "rgba(94,106,67,0.10)" : "#fff",
+                color: selected ? OLIVE : MUTED,
+            }}
+        >
+            <Icon size={15} />
+            <span style={{ fontSize: 10, fontWeight: 600, lineHeight: 1.1, textAlign: "center" }}>
+                {type.label}
+            </span>
+        </button>
+    );
+};
+
+const Toggle = ({ checked, label, hint, onChange, disabled }) => (
+    <label className="flex items-start gap-2 rounded-md p-2 cursor-pointer"
+           style={{ border: `1px solid ${PEBBLE}`, opacity: disabled ? 0.55 : 1,
+                    cursor: disabled ? "not-allowed" : "pointer" }}>
+        <input type="checkbox" checked={!!checked} disabled={disabled}
+               onChange={(e) => onChange(e.target.checked)}
+               style={{ accentColor: OLIVE, width: 14, height: 14, marginTop: 2 }} />
+        <span>
+            <span style={{ display: "block", fontSize: 13, fontWeight: 600, color: INK }}>{label}</span>
+            <span style={{ display: "block", fontSize: 11, color: HINT }}>{hint}</span>
+        </span>
+    </label>
+);
+
+const Err = ({ children }) => <span style={{ color: "#c0392b", fontSize: 11 }}>{children}</span>;
+const Hint = ({ children }) => <p style={{ fontSize: 11, color: HINT, marginTop: 3 }}>{children}</p>;
+
+// Only options the current type declares survive — carrying a previous type's
+// settings over would be rejected by the backend's format_config validation.
+const pickKnownConfig = (config, typeMeta) => {
+    const schema = typeMeta?.config_schema;
+    if (!schema) return config || {};
+    const out = {};
+    Object.entries(config || {}).forEach(([key, value]) => {
+        if (key in schema && value !== null && value !== undefined && value !== "") out[key] = value;
+    });
+    return out;
+};
+
+// Plain-language summary of what the field will accept — "Between ₡0 and
+// ₡50,000,000", not "min: 0, max: 50000000".
+const describeRules = (draft, typeMeta, canBeUnique) => {
+    const c = draft.format_config || {};
+    const rules = [];
+    if (draft.is_calculated) {
+        rules.push("Calculated — recomputed on every save, read-only in forms");
+        if (draft.formula_dependencies?.length)
+            rules.push(`Depends on ${draft.formula_dependencies.join(", ")}`);
+    }
+    if (draft.is_required) rules.push("Required — cannot be left empty");
+    if (canBeUnique && draft.is_unique) rules.push("Must be unique across records");
+
+    const money = (n) => formatCurrency(n, c);
+    const isMoney = draft.type === "currency";
+
+    if (c.min != null && c.max != null)
+        rules.push(`Between ${isMoney ? money(c.min) : c.min} and ${isMoney ? money(c.max) : c.max}`);
+    else if (c.min != null) rules.push(`At least ${isMoney ? money(c.min) : c.min}`);
+    else if (c.max != null) rules.push(`At most ${isMoney ? money(c.max) : c.max}`);
+
+    if (c.allow_negative === false) rules.push("Negative values are not allowed");
+    if (c.decimals != null) rules.push(`${c.decimals} decimal place(s)`);
+    if (c.min_length != null && c.max_length != null)
+        rules.push(`Between ${c.min_length} and ${c.max_length} characters`);
+    else if (c.min_length != null) rules.push(`At least ${c.min_length} characters`);
+    else if (c.max_length != null) rules.push(`At most ${c.max_length} characters`);
+
+    if (c.mask) rules.push(`Must match the format ${c.mask}`);
+    if (c.pattern) rules.push("Must match a specific pattern");
+    if (c.transform && c.transform !== "none") rules.push(`Stored in ${c.transform}`);
+    if (c.allowed_domains?.length) rules.push(`Only these domains: ${c.allowed_domains.join(", ")}`);
+    if (c.blocked_domains?.length) rules.push(`Blocked domains: ${c.blocked_domains.join(", ")}`);
+    if (c.allowed_schemes?.length && draft.type === "url")
+        rules.push(`Only ${c.allowed_schemes.join(" / ")} links`);
+    if (c.require_valid) rules.push("Must be a real, dialable phone number");
+    if (c.allowed_countries?.length) rules.push(`Only from: ${c.allowed_countries.join(", ")}`);
+    if (c.number_type && c.number_type !== "any") rules.push(`Must be a ${c.number_type.replace("_", " ")} number`);
+    if (c.relative_constraint === "no_past") rules.push("Cannot be in the past");
+    if (c.relative_constraint === "no_future") rules.push("Cannot be in the future");
+    if (c.min_date) rules.push(`Not earlier than ${c.min_date}`);
+    if (c.max_date) rules.push(`Not later than ${c.max_date}`);
+    if (c.min_selected != null) rules.push(`At least ${c.min_selected} selected`);
+    if (c.max_selected != null) rules.push(`At most ${c.max_selected} selected`);
+    if (draft.type === "currency") rules.push(`Amounts in ${c.currency_code || "USD"}`);
+
+    return rules;
 };

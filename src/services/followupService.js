@@ -59,8 +59,11 @@ export const deleteFollowup = async (serviceId, followupId) => {
     return true;
 };
 
+// 'follow_up', not 'followup': that is the value in Attribute.ENTITY_CHOICES
+// and the one the seeds write. This endpoint used to ask for 'followup', so
+// every follow-up field the industry seeds create was invisible here.
 export const getFollowupAttributes = async () => {
-    return fetchAllPages(`${API_URL}/attributes/followup/`, {
+    return fetchAllPages(`${API_URL}/attributes/follow_up/`, {
         method: "GET",
         headers: getHeaders(),
     });

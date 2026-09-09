@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { buildFilterParams } from "../../utils/attributeFilters";
+import { AttributeFilterBar } from "../attributes/AttributeFilterBar";
 import { Archive } from "lucide-react";
 import Swal from "sweetalert2";
 import { Table } from "../Table";
@@ -22,6 +24,8 @@ export const LeadTable = ({ selectedPipelineId, refreshTrigger, onLeadClick }) =
     const [clientsById, setClientsById] = useState({});
     const [pipelineAttributes, setPipelineAttributes] = useState([]);
     const [contactFilter, setContactFilter] = useState("");
+    const [filterRows, setFilterRows] = useState([]);
+    const [appliedFilters, setAppliedFilters] = useState({});
 
     useEffect(() => {
         Promise.all([getSales(), getClients()]).then(([salesData, clientsData]) => {
@@ -55,6 +59,7 @@ export const LeadTable = ({ selectedPipelineId, refreshTrigger, onLeadClick }) =
             pipeline_id: selectedPipelineId,
             include_archived: "true",
             ...(contactFilter ? { has_attribute_type: contactFilter } : {}),
+            ...appliedFilters,
         })
             .then(data => { if (!cancelled) setLeads(data || []); })
             .catch(err => {
@@ -63,7 +68,7 @@ export const LeadTable = ({ selectedPipelineId, refreshTrigger, onLeadClick }) =
             })
             .finally(() => { if (!cancelled) setLoading(false); });
         return () => { cancelled = true; };
-    }, [selectedPipelineId, refreshTrigger, contactFilter]);
+    }, [selectedPipelineId, refreshTrigger, contactFilter, appliedFilters]);
 
     // Only offer the filter for contact-type attributes this pipeline
     // actually has — showing "Has Phone" for a pipeline with no phone
@@ -176,6 +181,14 @@ export const LeadTable = ({ selectedPipelineId, refreshTrigger, onLeadClick }) =
                     </select>
                 </div>
             )}
+            <div className="py-2">
+                <AttributeFilterBar
+                    attributes={pipelineAttributes}
+                    rows={filterRows}
+                    onChange={setFilterRows}
+                    onApply={(rows) => setAppliedFilters(buildFilterParams(rows))}
+                />
+            </div>
             <Table
                 data={rows}
                 columns={columns}

@@ -8,6 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "check:format-contract": "node scripts/check-format-contract.mjs",
     "deploy": "npm run build && rm -rf ../crm-back-end/frontend_build && cp -r dist ../crm-back-end/frontend_build"
   },
   "dependencies": {

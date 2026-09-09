@@ -29,6 +29,11 @@ import { getWebhook, createWebhook, updateWebhook, deleteWebhook } from "@/servi
 import { getAttributes } from "@/services/attributeService";
 import Swal from 'sweetalert2';
 import { KeyValueEditor } from "@/components/webhook/KeyValueEditor";
+import { useAttributeRegistry } from "@/hooks/useAttributeRegistry";
+import {
+    CONDITION_UNARY_OPERATORS, attributeForConditionField,
+    conditionOperatorLabel, conditionOperatorsFor,
+} from "@/utils/conditionOperators";
 
 export const WebhookDetail = () => {
     const { id } = useParams();
@@ -50,7 +55,11 @@ export const WebhookDetail = () => {
         condition_logic: "AND"
     });
 
+    const { byType } = useAttributeRegistry();
     const [availableAttributes, setAvailableAttributes] = useState([]);
+    // The definitions behind those paths, so a condition's operator list can
+    // follow the type of the field it points at.
+    const [entityAttributes, setEntityAttributes] = useState([]);
 
     // Postman-style state
     const [queryParams, setQueryParams] = useState([]);
@@ -100,7 +109,10 @@ export const WebhookDetail = () => {
                     'Lead': 'lead',
                     'Client': 'client',
                     'Service': 'service',
-                    'FollowUp': 'followup'
+                    // 'follow_up', matching Attribute.ENTITY_CHOICES. This was
+                    // the last place still asking for 'followup', so follow-up
+                    // fields never appeared in the condition picker.
+                    'FollowUp': 'follow_up'
                 };
                 const entity = entityMap[formData.model];
                 if (entity) {
@@ -112,6 +124,9 @@ export const WebhookDetail = () => {
                         'FollowUp': ['follow_up_date', 'comment']
                     };
 
+                    // Keep the definitions too: the operator list for a
+                    // condition depends on the type of the field it points at.
+                    setEntityAttributes(attrs || []);
                     const attrOptions = (attrs || []).map(a => `self.attributes.${a.name}`);
                     let stdOptions = (standardFields[formData.model] || []).map(f => `self.${f}`);
 
@@ -139,6 +154,8 @@ export const WebhookDetail = () => {
                     // Combine and dedupe
                     const unique = [...new Set([...stdOptions, ...attrOptions])];
                     setAvailableAttributes(unique);
+                } else {
+                    setEntityAttributes([]);
                 }
             } catch (error) {
                 console.error("Failed to fetch attributes", error);
@@ -780,24 +797,27 @@ export const WebhookDetail = () => {
                                                                 <SelectValue />
                                                             </SelectTrigger>
                                                             <SelectContent>
-                                                                <SelectItem value="=">=</SelectItem>
-                                                                <SelectItem value="!=">!=</SelectItem>
-                                                                <SelectItem value=">">&gt;</SelectItem>
-                                                                <SelectItem value="<">&lt;</SelectItem>
-                                                                <SelectItem value=">=">&gt;=</SelectItem>
-                                                                <SelectItem value="<=">&lt;=</SelectItem>
-                                                                <SelectItem value="in">in</SelectItem>
-                                                                <SelectItem value="contains">contains</SelectItem>
+                                                                {conditionOperatorsFor(
+                                                                    byType[attributeForConditionField(
+                                                                        condition.field, entityAttributes
+                                                                    )?.type]
+                                                                ).map((op) => (
+                                                                    <SelectItem key={op} value={op}>
+                                                                        {conditionOperatorLabel(op)}
+                                                                    </SelectItem>
+                                                                ))}
                                                             </SelectContent>
                                                         </Select>
                                                     </div>
-                                                    <div className="flex-1">
-                                                        <Input
-                                                            placeholder="Value"
-                                                            value={condition.value}
-                                                            onChange={(e) => handleConditionChange(index, 'value', e.target.value)}
-                                                        />
-                                                    </div>
+                                                    {!CONDITION_UNARY_OPERATORS.has(condition.operator) && (
+                                                        <div className="flex-1">
+                                                            <Input
+                                                                placeholder="Value"
+                                                                value={condition.value}
+                                                                onChange={(e) => handleConditionChange(index, 'value', e.target.value)}
+                                                            />
+                                                        </div>
+                                                    )}
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"

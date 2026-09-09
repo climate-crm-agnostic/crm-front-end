@@ -70,6 +70,11 @@ export const DateInput = ({
     placeholder = "mm/dd/yyyy",
     className = "",
     style = {},
+    // ISO bounds from an attribute's format_config (min_date / max_date). They
+    // grey out days in the picker; the backend is still what enforces them, so
+    // a value typed by hand or sent by an API client cannot slip past.
+    min,
+    max,
 }) => {
     const [text, setText] = useState(isoToDisplay(value));
     const [open, setOpen] = useState(false);
@@ -150,6 +155,12 @@ export const DateInput = ({
                             mode="single"
                             selected={isoToDate(value)}
                             defaultMonth={isoToDate(value) || new Date()}
+                            startMonth={isoToDate(min) || undefined}
+                            endMonth={isoToDate(max) || undefined}
+                            disabled={[
+                                ...(isoToDate(min) ? [{ before: isoToDate(min) }] : []),
+                                ...(isoToDate(max) ? [{ after: isoToDate(max) }] : []),
+                            ]}
                             onSelect={(date) => {
                                 if (!date) return;
                                 emit(dateToIso(date));

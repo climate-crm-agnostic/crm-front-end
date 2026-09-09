@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { emptyValueFor, normalizeOptions } from "../utils/attributeTypes";
 import { useParams, useNavigate } from "react-router-dom";
 import {
     createInvoice, updateInvoice, getInvoiceById, getInvoiceAttributes,
@@ -145,21 +146,14 @@ export const InvoiceDetail = () => {
         try {
             const data = await getInvoiceAttributes();
             const processedData = data.map(attr => {
-                let options = attr.options;
-                if (!options && attr.list_values) {
-                    try {
-                        options = typeof attr.list_values === 'string'
-                            ? JSON.parse(attr.list_values)
-                            : attr.list_values;
-                    } catch (e) { options = []; }
-                }
+                const options = normalizeOptions(attr.options || attr.list_values);
                 return { ...attr, options };
             });
             setAttributes(processedData);
 
             const initialDynamic = {};
             processedData.forEach(attr => {
-                initialDynamic[attr.name] = attr.type === 'boolean' ? false : "";
+                initialDynamic[attr.name] = emptyValueFor(attr);
             });
             setDynamicData(initialDynamic);
         } catch (err) {
