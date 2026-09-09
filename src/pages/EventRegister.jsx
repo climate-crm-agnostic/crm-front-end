@@ -64,6 +64,20 @@ export const EventRegister = () => {
         })();
     }, [token]);
 
+    // Clears everything and returns to the code screen so the on-site host can
+    // register the next person without reloading the page.
+    const resetForm = () => {
+        setDone(false);
+        setPhase("code");
+        setCode("");
+        setCodeError("");
+        setAttendee(null);
+        setAttrs({});
+        setFieldErrors({});
+        setWalkBase({ first_name: "", last_name: "", email: "", phone: "", company: "", job_title: "" });
+        setBaseErrors({});
+    };
+
     const verify = async (e) => {
         e.preventDefault();
         setCodeError("");
@@ -76,13 +90,12 @@ export const EventRegister = () => {
         try {
             const res = await verifyEventCode(token, code);
             if (res.ok && res.data?.valid) {
-                if (res.data.already_registered) {
-                    setDone(true);
-                    return;
-                }
                 setAttendee(res.data.attendee);
                 setFields(res.data.fields || []);
                 setPhase("form");
+            } else if (res.status === 409) {
+                // Code already used to register — no longer valid.
+                setCodeError(res.data?.error || "This code has already been used to register.");
             } else if (res.status === 410) {
                 setErrorMsg(res.data?.error || "This event registration link is no longer available.");
                 setEvent(null);
@@ -200,7 +213,15 @@ export const EventRegister = () => {
             <div className="rounded-2xl p-8 text-center" style={{ border: "1px solid #D8D2C4", backgroundColor: "#FFFFFF" }}>
                 <CheckCircle2 className="h-12 w-12 mx-auto mb-4" style={{ color: "#2f9e3a" }} />
                 <h1 className="text-lg font-semibold mb-1" style={{ color: "#2E2A26" }}>You're registered!</h1>
-                <p className="text-sm" style={{ color: "#6b6560" }}>Thank you for confirming your attendance to {event?.name}. We look forward to seeing you.</p>
+                <p className="text-sm mb-6" style={{ color: "#6b6560" }}>Thank you for confirming your attendance to {event?.name}. We look forward to seeing you.</p>
+                <button
+                    type="button"
+                    onClick={resetForm}
+                    className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-lg text-sm font-semibold cursor-pointer"
+                    style={{ backgroundColor: GREEN, color: "#FBF7EF" }}
+                >
+                    <UserPlus className="h-4 w-4" /> Register another attendee
+                </button>
             </div>
         );
     }
