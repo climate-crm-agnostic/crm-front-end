@@ -50,6 +50,10 @@ import { EmailTemplates } from "../pages/Campaigns/EmailTemplates";
 import { CampaignList } from "../pages/Campaigns/CampaignList";
 import { Unsubscribe } from "../pages/Unsubscribe";
 import { QuotationDetail } from "../pages/QuotationDetail";
+import { Events } from "../pages/Events";
+import { EventCreate } from "../pages/EventCreate";
+import { EventDetail } from "../pages/EventDetail";
+import { EventRegister } from "../pages/EventRegister";
 import AdminLayout from "@/layout/AdminLayout"
 import { useAuth } from "@/context/AuthContext"
 import { PermissionGuard } from "../components/PermissionGuard"
@@ -85,6 +89,7 @@ export const RouterApp = () => {
             <Route path="/reset-password/:uid/:token" element={<ResetPassword />} />
             <Route path="/plan-expired" element={<PlanExpired />} />
             <Route path="/unsubscribe/:token" element={<Unsubscribe />} />
+            <Route path="/event-register/:token" element={<EventRegister />} />
 
             {/* private routes */}
 
@@ -131,6 +136,9 @@ export const RouterApp = () => {
                 <Route path="team/:id" element={<PermissionGuard requiredPermission="app.view_team"><FeatureGate feature="teams"><TeamDetail /></FeatureGate></PermissionGuard>} />
                 <Route path="period" element={<PermissionGuard requiredPermission="app.view_period"><FeatureGate feature="goals"><Periods /></FeatureGate></PermissionGuard>} />
                 <Route path="goal" element={<PermissionGuard requiredPermission="app.view_goal"><FeatureGate feature="goals"><Goals /></FeatureGate></PermissionGuard>} />
+                <Route path="event" element={<PermissionGuard requiredPermission="app.view_event"><FeatureGate feature="events"><Events /></FeatureGate></PermissionGuard>} />
+                <Route path="event/new" element={<PermissionGuard requiredPermission="app.add_event"><FeatureGate feature="events"><EventCreate /></FeatureGate></PermissionGuard>} />
+                <Route path="event/:id" element={<PermissionGuard requiredPermission="app.view_event"><FeatureGate feature="events"><EventDetail /></FeatureGate></PermissionGuard>} />
                 <Route path="my-info" element={<MyInfo />} />
                 <Route path="lead-reassignment" element={<PermissionGuard requireSuperuser><LeadReassignment /></PermissionGuard>} />
             </Route>

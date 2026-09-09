@@ -10,6 +10,7 @@ const MENU_CONFIG = [
             { title: "Contacts", url: "/contact",  icon: "UserCircle",permission: "app.add_contact" },
             { title: "Services", url: "/service",  icon: "Briefcase", permission: "app.add_service" },
             { title: "Pipeline", url: "/pipeline", icon: "GitMerge",  permission: "app.add_pipeline" },
+            { title: "Events",   url: "/event",    icon: "CalendarDays", permission: "app.view_event", feature: "events" },
         ],
     },
     {
