@@ -11,8 +11,6 @@ import {
 } from "@/services/eventService";
 
 const GREEN = "#5E6A43";
-const LINK_MIN_DAYS = 1;
-const LINK_MAX_DAYS = 30;
 
 const toast = (icon, title) =>
     Swal.fire({ icon, title, toast: true, position: "top-end", showConfirmButton: false, timer: 3000 });
@@ -25,6 +23,7 @@ export const EventDetail = () => {
     const [event, setEvent] = useState(null);
     const [attendees, setAttendees] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [reactivateOpen, setReactivateOpen] = useState(false);
 
     const load = async () => {
         try {
@@ -68,35 +67,15 @@ export const EventDetail = () => {
         catch { toast("error", "Failed to deactivate"); }
     };
 
-    const handleReactivate = async () => {
-        const { value: formValues } = await Swal.fire({
-            title: "Reactivate event",
-            html:
-                `<input id="swal-start" type="datetime-local" class="swal2-input" placeholder="Start">` +
-                `<input id="swal-end" type="datetime-local" class="swal2-input" placeholder="End">` +
-                `<input id="swal-days" type="number" min="${LINK_MIN_DAYS}" max="${LINK_MAX_DAYS}" value="${event.link_duration_days}" class="swal2-input" placeholder="Link days (1-30)">`,
-            focusConfirm: false,
-            showCancelButton: true,
-            confirmButtonColor: GREEN,
-            confirmButtonText: "Reactivate",
-            preConfirm: () => {
-                const start = document.getElementById("swal-start").value;
-                const end = document.getElementById("swal-end").value;
-                const days = Number(document.getElementById("swal-days").value);
-                if (!start || !end) { Swal.showValidationMessage("Start and end are required"); return false; }
-                if (new Date(end) <= new Date(start)) { Swal.showValidationMessage("End must be after start"); return false; }
-                if (days < LINK_MIN_DAYS || days > LINK_MAX_DAYS) { Swal.showValidationMessage(`Link days must be ${LINK_MIN_DAYS}-${LINK_MAX_DAYS}`); return false; }
-                return { start, end, days };
-            },
-        });
-        if (!formValues) return;
+    // Reactivation is handled by a dedicated modal (ReactivateModal below),
+    // which reuses the same cascading date logic as event creation.
+    const openReactivate = () => setReactivateOpen(true);
+
+    const doReactivate = async (payload) => {
         try {
-            await reactivateEvent(id, {
-                start_at: new Date(formValues.start).toISOString(),
-                end_at: new Date(formValues.end).toISOString(),
-                link_duration_days: formValues.days,
-            });
+            await reactivateEvent(id, payload);
             toast("success", "Event reactivated — new link & QR generated");
+            setReactivateOpen(false);
             load();
         } catch (e) { toast("error", e.message || "Failed to reactivate"); }
     };
@@ -131,6 +110,10 @@ export const EventDetail = () => {
     }
 
     const linkValid = event.is_link_valid;
+    // Resend is only meaningful for people who still need to register, and
+    // only while the event link is live.
+    const pendingWithEmail = attendees.filter((a) => a.status === "pending" && a.email);
+    const canResendAll = linkValid && pendingWithEmail.length > 0;
 
     return (
         <div className="p-6 max-w-5xl mx-auto space-y-6" style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
@@ -169,7 +152,7 @@ export const EventDetail = () => {
                                 <Power className="h-4 w-4" /> Deactivate
                             </button>
                         ) : (
-                            <button onClick={handleReactivate} className="flex items-center gap-1.5 h-9 px-3 rounded-lg text-xs font-semibold cursor-pointer" style={{ border: `1px solid ${GREEN}`, color: GREEN, backgroundColor: "#FFFFFF" }}>
+                            <button onClick={openReactivate} className="flex items-center gap-1.5 h-9 px-3 rounded-lg text-xs font-semibold cursor-pointer" style={{ border: `1px solid ${GREEN}`, color: GREEN, backgroundColor: "#FFFFFF" }}>
                                 <RefreshCw className="h-4 w-4" /> Reactivate
                             </button>
                         )}
@@ -178,7 +161,7 @@ export const EventDetail = () => {
             </div>
 
             {/* Quick stats */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
                     { label: "Total attendees", value: event.attendee_count, color: "#5E6A43", bg: "rgba(94,106,67,0.10)" },
                     { label: "Confirmed", value: event.registered_count, color: "#2f9e3a", bg: "rgba(60,198,71,0.12)" },
@@ -186,6 +169,11 @@ export const EventDetail = () => {
                         label: event.is_ended ? "Did not attend" : "Pending",
                         value: event.is_ended ? event.not_attended_count : event.pending_count,
                         color: "#B0592E", bg: "rgba(176,89,46,0.12)",
+                    },
+                    {
+                        label: "% Confirmed",
+                        value: `${event.attendee_count ? Math.round((event.registered_count / event.attendee_count) * 100) : 0}%`,
+                        color: "#5E6A43", bg: "rgba(94,106,67,0.10)",
                     },
                 ].map((s) => (
                     <div key={s.label} className="rounded-xl p-5 text-center" style={{ border: "1px solid #D8D2C4", backgroundColor: s.bg }}>
@@ -250,8 +238,15 @@ export const EventDetail = () => {
                     </span>
                     <button
                         onClick={handleResendAll}
-                        className="ml-auto flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-semibold cursor-pointer"
-                        style={{ border: `1px solid ${GREEN}`, color: GREEN, backgroundColor: "#FFFFFF" }}
+                        disabled={!canResendAll}
+                        title={canResendAll ? "Resend to all pending attendees" : (linkValid ? "No pending attendees to resend to" : "Event is not active")}
+                        className="ml-auto flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-semibold"
+                        style={{
+                            border: `1px solid ${canResendAll ? GREEN : "#D8D2C4"}`,
+                            color: canResendAll ? GREEN : "#c9c3b6",
+                            backgroundColor: "#FFFFFF",
+                            cursor: canResendAll ? "pointer" : "not-allowed",
+                        }}
                     >
                         <Send className="h-3.5 w-3.5" /> Resend all
                     </button>
@@ -295,17 +290,29 @@ export const EventDetail = () => {
                                             })()}
                                         </td>
                                         <td className="px-4 py-2 text-center">
-                                            <button
-                                                onClick={() => handleResendOne(a)}
-                                                disabled={!a.email}
-                                                title={a.email ? "Resend invitation (new code)" : "No email on file"}
-                                                className="inline-flex h-8 w-8 items-center justify-center rounded-md cursor-pointer"
-                                                style={{ color: a.email ? GREEN : "#c9c3b6", backgroundColor: "transparent" }}
-                                                onMouseEnter={(e) => { if (a.email) e.currentTarget.style.backgroundColor = "rgba(94,106,67,0.1)"; }}
-                                                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-                                            >
-                                                <Send className="h-4 w-4" />
-                                            </button>
+                                            {(() => {
+                                                // Resend only makes sense for a pending attendee with an
+                                                // email, while the event link is still live.
+                                                const canResend = linkValid && a.email && a.status === "pending";
+                                                const reason = !linkValid ? "Event is not active"
+                                                    : !a.email ? "No email on file"
+                                                    : a.status === "confirmed" ? "Already confirmed"
+                                                    : a.status === "not_attended" ? "Event ended"
+                                                    : "Resend invitation (new code)";
+                                                return (
+                                                    <button
+                                                        onClick={() => canResend && handleResendOne(a)}
+                                                        disabled={!canResend}
+                                                        title={reason}
+                                                        className="inline-flex h-8 w-8 items-center justify-center rounded-md"
+                                                        style={{ color: canResend ? GREEN : "#c9c3b6", backgroundColor: "transparent", cursor: canResend ? "pointer" : "not-allowed" }}
+                                                        onMouseEnter={(e) => { if (canResend) e.currentTarget.style.backgroundColor = "rgba(94,106,67,0.1)"; }}
+                                                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                                                    >
+                                                        <Send className="h-4 w-4" />
+                                                    </button>
+                                                );
+                                            })()}
                                         </td>
                                     </tr>
                                 ))}
@@ -313,6 +320,185 @@ export const EventDetail = () => {
                         </table>
                     </div>
                 )}
+            </div>
+
+            {reactivateOpen && (
+                <ReactivateModal
+                    event={event}
+                    onClose={() => setReactivateOpen(false)}
+                    onSubmit={doReactivate}
+                />
+            )}
+        </div>
+    );
+};
+
+
+// ── Reactivate modal — reuses the create wizard's cascading date logic ─────
+const LINK_MIN = 1, LINK_MAX = 30;
+
+const pad = (n) => String(n).padStart(2, "0");
+const toLocalInput = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+const todayDate = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
+const dateOf = (iso) => { const d = new Date(iso); return isNaN(d) ? "" : `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
+const HOURS = Array.from({ length: 24 }, (_, h) => pad(h));
+const MINUTES = Array.from({ length: 60 }, (_, m) => pad(m));
+const splitLocal = (s) => (s && s.includes("T") ? { date: s.split("T")[0], time: s.split("T")[1].slice(0, 5) } : { date: "", time: "" });
+const joinLocal = (d, t) => (d && t ? `${d}T${t}` : "");
+const fmt24 = (s) => { if (!s) return ""; const d = new Date(s); return isNaN(d) ? "" : d.toLocaleString("en-US", { month: "short", day: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: false }); };
+
+// Same rule as creation: N whole calendar days, 08:00 → 23:59 on the last day.
+const computeSchedule = (dateStr, days) => {
+    const n = Number(days);
+    if (!dateStr || !n || n < 1) return { start_at: "", end_at: "" };
+    const [y, m, d] = dateStr.split("-").map(Number);
+    if (!y || !m || !d) return { start_at: "", end_at: "" };
+    const start = new Date(y, m - 1, d, 8, 0, 0);
+    const end = new Date(y, m - 1, d, 23, 59, 0);
+    end.setDate(end.getDate() + (n - 1));
+    return { start_at: toLocalInput(start), end_at: toLocalInput(end) };
+};
+
+const ReactivateModal = ({ event, onClose, onSubmit }) => {
+    const GREEN = "#5E6A43";
+    const isVirtual = event.modality === "virtual";
+
+    const [form, setForm] = useState(() => ({
+        event_date: dateOf(event.start_at) || todayDate(),
+        duration_days: event.link_duration_days || 1,
+        start_at: "",
+        end_at: "",
+        customize: false,
+        location: event.location || "",
+        virtual_url: event.virtual_url || "",
+    }));
+    const [submitting, setSubmitting] = useState(false);
+
+    // Initialize computed schedule from the event's original date + duration.
+    useEffect(() => {
+        const sched = computeSchedule(dateOf(event.start_at) || todayDate(), event.link_duration_days || 1);
+        setForm((f) => ({ ...f, ...sched }));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const setDate = (v) => setForm((f) => {
+        const next = { ...f, event_date: v };
+        if (!f.customize) Object.assign(next, computeSchedule(v, f.duration_days));
+        return next;
+    });
+    const setDays = (v) => setForm((f) => {
+        const next = { ...f, duration_days: v };
+        if (!f.customize) Object.assign(next, computeSchedule(f.event_date, v));
+        return next;
+    });
+    const toggleCustomize = () => setForm((f) => {
+        const on = !f.customize;
+        const next = { ...f, customize: on };
+        if (!on) Object.assign(next, computeSchedule(f.event_date, f.duration_days));
+        return next;
+    });
+
+    const inputCls = "w-full h-10 px-3 rounded-lg text-sm";
+    const inputStyle = { border: "1px solid #D8D2C4", backgroundColor: "#FFFFFF", color: "#2E2A26" };
+    const disabledStyle = { backgroundColor: "#F0ECE3", color: "#9b948e", cursor: "not-allowed" };
+    const labelStyle = { color: "#2E2A26", fontSize: 13, fontWeight: 600 };
+
+    const valid = (() => {
+        const days = Number(form.duration_days);
+        if (!form.event_date || !days || days < LINK_MIN || days > LINK_MAX) return false;
+        if (!form.start_at || !form.end_at) return false;
+        const s = new Date(form.start_at), e = new Date(form.end_at);
+        if (isNaN(s) || isNaN(e) || e <= s) return false;
+        if (isVirtual && !form.virtual_url.trim()) return false;
+        if (!isVirtual && !form.location.trim()) return false;
+        return true;
+    })();
+
+    const submit = async () => {
+        if (!valid) return;
+        setSubmitting(true);
+        await onSubmit({
+            start_at: new Date(form.start_at).toISOString(),
+            end_at: new Date(form.end_at).toISOString(),
+            link_duration_days: Number(form.duration_days),
+            location: isVirtual ? "" : form.location.trim(),
+            virtual_url: isVirtual ? form.virtual_url.trim() : "",
+        });
+        setSubmitting(false);
+    };
+
+    const { date: sDate, time: sTime } = splitLocal(form.start_at);
+    const { date: eDate, time: eTime } = splitLocal(form.end_at);
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: "rgba(0,0,0,0.4)" }}>
+            <div className="w-full max-w-lg rounded-2xl p-6 space-y-4 max-h-[90vh] overflow-auto" style={{ backgroundColor: "#FBF7EF", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+                <h2 className="text-lg font-semibold" style={{ color: "#2E2A26" }}>Reactivate event</h2>
+                <p className="text-xs" style={{ color: "#9b948e" }}>New registrations add to the existing ones. A new link and QR are generated.</p>
+
+                <div className="grid grid-cols-2 gap-3">
+                    <div>
+                        <label style={labelStyle}>Event date *</label>
+                        <input type="date" className={inputCls} style={inputStyle} min={todayDate()} value={form.event_date} onChange={(e) => setDate(e.target.value)} />
+                    </div>
+                    <div>
+                        <label style={labelStyle}>Duration (days) *</label>
+                        <input type="number" min={LINK_MIN} max={LINK_MAX} className={inputCls} style={inputStyle} value={form.duration_days} onChange={(e) => setDays(e.target.value)} />
+                        <p className="text-xs mt-1" style={{ color: "#9b948e" }}>Min {LINK_MIN}, max {LINK_MAX}. Also sets link validity.</p>
+                    </div>
+                </div>
+
+                <div>
+                    <div className="flex items-center justify-between mb-1">
+                        <label style={labelStyle}>Schedule</label>
+                        <button type="button" onClick={toggleCustomize} className="text-xs font-semibold cursor-pointer" style={{ color: GREEN }}>
+                            {form.customize ? "Use automatic schedule" : "Customize"}
+                        </button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                        {[
+                            { key: "start_at", label: "Starts at", date: sDate, time: sTime },
+                            { key: "end_at", label: "Ends at", date: eDate, time: eTime },
+                        ].map(({ key, label, date, time }) => {
+                            const [hh = "", mm = ""] = time ? time.split(":") : ["", ""];
+                            return (
+                                <div key={key}>
+                                    <label className="text-xs" style={{ color: "#6b6560" }}>{label}</label>
+                                    {form.customize ? (
+                                        <div className="flex gap-1.5">
+                                            <input type="date" className="h-10 px-2 rounded-lg text-sm flex-1 min-w-0" style={inputStyle} min={todayDate()} value={date} onChange={(e) => setForm((f) => ({ ...f, [key]: joinLocal(e.target.value, time || "08:00") }))} />
+                                            <select className="h-10 px-1 rounded-lg text-sm" style={inputStyle} value={hh} onChange={(e) => setForm((f) => ({ ...f, [key]: joinLocal(date, `${e.target.value}:${mm || "00"}`) }))}>
+                                                <option value="" disabled>HH</option>{HOURS.map((h) => <option key={h} value={h}>{h}</option>)}
+                                            </select>
+                                            <span className="self-center text-sm" style={{ color: "#6b6560" }}>:</span>
+                                            <select className="h-10 px-1 rounded-lg text-sm" style={inputStyle} value={mm} onChange={(e) => setForm((f) => ({ ...f, [key]: joinLocal(date, `${hh || "00"}:${e.target.value}`) }))}>
+                                                <option value="" disabled>MM</option>{MINUTES.map((m) => <option key={m} value={m}>{m}</option>)}
+                                            </select>
+                                        </div>
+                                    ) : (
+                                        <div className="h-10 px-3 rounded-lg text-sm flex items-center" style={disabledStyle}>{fmt24(form[key]) || "—"}</div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                <div>
+                    <label style={labelStyle}>{isVirtual ? "Join URL *" : "Location / address *"}</label>
+                    {isVirtual ? (
+                        <input className={inputCls} style={inputStyle} placeholder="https://meet.example.com/..." value={form.virtual_url} onChange={(e) => setForm((f) => ({ ...f, virtual_url: e.target.value }))} />
+                    ) : (
+                        <input className={inputCls} style={inputStyle} placeholder="Venue address" value={form.location} onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))} />
+                    )}
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-2">
+                    <button type="button" onClick={onClose} className="h-10 px-4 rounded-lg text-sm font-semibold cursor-pointer" style={{ border: "1px solid #D8D2C4", color: "#6b6560", backgroundColor: "#FFFFFF" }}>Cancel</button>
+                    <button type="button" onClick={submit} disabled={!valid || submitting} className="h-10 px-5 rounded-lg text-sm font-semibold cursor-pointer" style={{ backgroundColor: valid ? GREEN : "#c9c3b6", color: "#FBF7EF", opacity: submitting ? 0.7 : 1 }}>
+                        {submitting ? "Reactivating…" : "Reactivate"}
+                    </button>
+                </div>
             </div>
         </div>
     );

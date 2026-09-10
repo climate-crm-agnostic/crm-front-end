@@ -17,6 +17,17 @@ const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
  */
 const toFieldProps = (f) => f;
 
+// Seeds a controlled starting value for each editable field so inputs never
+// flip from uncontrolled (undefined) to controlled (React warning).
+const initAttrs = (fields) => {
+    const out = {};
+    (fields || []).forEach((f) => {
+        if (f.is_calculated) return;
+        out[f.name] = f.type === "multiselect" ? [] : "";
+    });
+    return out;
+};
+
 // Formats the typed code as NNN-NNN as the user types (digits only).
 const formatCode = (raw) => {
     const digits = String(raw || "").replace(/\D/g, "").slice(0, 6);
@@ -89,13 +100,14 @@ export const EventRegister = () => {
         setVerifying(true);
         try {
             const res = await verifyEventCode(token, code);
+            // Invalid / already-used codes now come back as 200 with
+            // valid:false (no 4xx), so read the body, not the status.
             if (res.ok && res.data?.valid) {
+                const fx = res.data.fields || [];
                 setAttendee(res.data.attendee);
-                setFields(res.data.fields || []);
+                setFields(fx);
+                setAttrs(initAttrs(fx));   // seed controlled values (avoids uncontrolled→controlled warning)
                 setPhase("form");
-            } else if (res.status === 409) {
-                // Code already used to register — no longer valid.
-                setCodeError(res.data?.error || "This code has already been used to register.");
             } else if (res.status === 410) {
                 setErrorMsg(res.data?.error || "This event registration link is no longer available.");
                 setEvent(null);
@@ -297,7 +309,7 @@ export const EventRegister = () => {
 
                     <button
                         type="button"
-                        onClick={() => setPhase("walkin")}
+                        onClick={() => { setAttrs(initAttrs(fields)); setPhase("walkin"); }}
                         className="w-full h-11 rounded-lg text-sm font-semibold cursor-pointer flex items-center justify-center gap-2"
                         style={{ border: `1px solid ${GREEN}`, color: GREEN, backgroundColor: "#FFFFFF" }}
                     >
