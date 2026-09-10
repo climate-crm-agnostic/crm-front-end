@@ -374,7 +374,7 @@ export const EventRegister = () => {
                         </div>
                     )}
 
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label style={labelStyle}>First name *</label>
                             <input className={inputCls} style={{ ...inputStyle, borderColor: baseErrors.first_name ? "#c0392b" : "#D8D2C4" }} value={walkBase.first_name} onChange={(e) => setWalk("first_name", e.target.value)} />
@@ -384,14 +384,10 @@ export const EventRegister = () => {
                             <label style={labelStyle}>Last name</label>
                             <input className={inputCls} style={inputStyle} value={walkBase.last_name} onChange={(e) => setWalk("last_name", e.target.value)} />
                         </div>
-                        <div>
+                        <div className="sm:col-span-2">
                             <label style={labelStyle}>Email *</label>
                             <input type="email" className={inputCls} style={{ ...inputStyle, borderColor: baseErrors.email ? "#c0392b" : "#D8D2C4" }} value={walkBase.email} onChange={(e) => setWalk("email", e.target.value)} />
                             {baseErrors.email && <p className="text-xs mt-1" style={{ color: "#c0392b" }}>{baseErrors.email}</p>}
-                        </div>
-                        <div className="col-span-2">
-                            <label style={labelStyle}>Phone</label>
-                            <PhoneInput value={walkBase.phone} onChange={(v) => setWalk("phone", v)} defaultCountry="US" placeholder="Phone number" />
                         </div>
                         <div>
                             <label style={labelStyle}>Company</label>
@@ -400,6 +396,10 @@ export const EventRegister = () => {
                         <div>
                             <label style={labelStyle}>Job title</label>
                             <input className={inputCls} style={inputStyle} value={walkBase.job_title} onChange={(e) => setWalk("job_title", e.target.value)} />
+                        </div>
+                        <div className="sm:col-span-2">
+                            <label style={labelStyle}>Phone</label>
+                            <PhoneInput value={walkBase.phone} onChange={(v) => setWalk("phone", v)} defaultCountry="US" placeholder="Phone number" />
                         </div>
                     </div>
 
@@ -451,7 +451,7 @@ export const EventRegister = () => {
                 {/* Read-only base info (already on file — cannot be edited here) */}
                 <div>
                     <p className="text-xs font-semibold mb-2" style={{ color: "#9b948e", textTransform: "uppercase", letterSpacing: "0.06em" }}>Your details</p>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label style={labelStyle}>First name</label>
                             <input readOnly disabled className={inputCls} style={readonlyStyle} value={attendee?.first_name || ""} />
