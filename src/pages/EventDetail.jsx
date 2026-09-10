@@ -45,6 +45,12 @@ export const EventDetail = () => {
         toast("success", "Link copied");
     };
 
+    const copyJoinUrl = () => {
+        if (!event?.virtual_url) return;
+        navigator.clipboard.writeText(event.virtual_url);
+        toast("success", "Meeting link copied");
+    };
+
     const downloadQR = () => {
         const canvas = qrRef.current?.querySelector("canvas");
         if (!canvas) return;
@@ -200,9 +206,31 @@ export const EventDetail = () => {
                     </div>
                     <p className="text-xs mt-2" style={{ color: "#9b948e" }}>
                         {linkValid
-                            ? `Link is live. Valid for ${event.link_duration_days} day${event.link_duration_days === 1 ? "" : "s"}.`
-                            : "This link is not currently valid (event inactive, ended, or expired)."}
+                            ? "Link is live. Opens 1h before start, closes 1h after end."
+                            : "This link is not currently valid (event inactive, ended, or outside its open window)."}
                     </p>
+
+                    {event.modality === "virtual" && event.virtual_url && (
+                        <div className="mt-4 pt-4" style={{ borderTop: "1px solid #E4DECF" }}>
+                            <p className="text-sm font-semibold mb-2 inline-flex items-center gap-1.5" style={{ color: "#2E2A26" }}>
+                                <Video className="h-4 w-4" /> Meeting link
+                            </p>
+                            <div className="flex items-center gap-2">
+                                <input
+                                    readOnly
+                                    value={event.virtual_url}
+                                    className="flex-1 h-10 px-3 rounded-lg text-sm"
+                                    style={{ border: "1px solid #D8D2C4", backgroundColor: "#F5F0E8", color: "#2E2A26" }}
+                                />
+                                <button onClick={copyJoinUrl} className="flex items-center gap-1.5 h-10 px-3 rounded-lg text-sm font-semibold cursor-pointer" style={{ backgroundColor: GREEN, color: "#FBF7EF" }}>
+                                    <Copy className="h-4 w-4" /> Copy
+                                </button>
+                            </div>
+                            <p className="text-xs mt-2" style={{ color: "#9b948e" }}>
+                                Attendees join the event through this link.
+                            </p>
+                        </div>
+                    )}
                 </div>
 
                 <div className="rounded-xl p-6 flex flex-col items-center justify-center" style={{ border: "1px solid #D8D2C4", backgroundColor: "#FBF7EF" }}>
@@ -334,81 +362,68 @@ export const EventDetail = () => {
 };
 
 
-// ── Reactivate modal — reuses the create wizard's cascading date logic ─────
-const LINK_MIN = 1, LINK_MAX = 30;
-
+// ── Reactivate modal — reuses the create wizard's new date logic ───────────
 const pad = (n) => String(n).padStart(2, "0");
-const toLocalInput = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 const todayDate = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
 const dateOf = (iso) => { const d = new Date(iso); return isNaN(d) ? "" : `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
-const HOURS = Array.from({ length: 24 }, (_, h) => pad(h));
-const MINUTES = Array.from({ length: 60 }, (_, m) => pad(m));
-const splitLocal = (s) => (s && s.includes("T") ? { date: s.split("T")[0], time: s.split("T")[1].slice(0, 5) } : { date: "", time: "" });
-const joinLocal = (d, t) => (d && t ? `${d}T${t}` : "");
-const fmt24 = (s) => { if (!s) return ""; const d = new Date(s); return isNaN(d) ? "" : d.toLocaleString("en-US", { month: "short", day: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: false }); };
+const timeOf = (iso) => { const d = new Date(iso); return isNaN(d) ? "" : `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
 
-// Same rule as creation: N whole calendar days, 08:00 → 23:59 on the last day.
-const computeSchedule = (dateStr, days) => {
-    const n = Number(days);
-    if (!dateStr || !n || n < 1) return { start_at: "", end_at: "" };
-    const [y, m, d] = dateStr.split("-").map(Number);
-    if (!y || !m || !d) return { start_at: "", end_at: "" };
-    const start = new Date(y, m - 1, d, 8, 0, 0);
-    const end = new Date(y, m - 1, d, 23, 59, 0);
-    end.setDate(end.getDate() + (n - 1));
-    return { start_at: toLocalInput(start), end_at: toLocalInput(end) };
+// Builds ISO start/end from date(s) + hours. End date falls back to start date
+// when the multi-day toggle is off.
+const computeStartEnd = (f) => {
+    const startDate = f.start_date;
+    const endDate = f.has_end_date && f.end_date ? f.end_date : f.start_date;
+    if (!startDate || !f.start_time || !f.end_time) return { start_at: null, end_at: null };
+    const start = new Date(`${startDate}T${f.start_time}`);
+    const end = new Date(`${endDate}T${f.end_time}`);
+    if (isNaN(start) || isNaN(end)) return { start_at: null, end_at: null };
+    return { start_at: start, end_at: end };
 };
 
 const ReactivateModal = ({ event, onClose, onSubmit }) => {
     const GREEN = "#5E6A43";
     const isVirtual = event.modality === "virtual";
 
-    const [form, setForm] = useState(() => ({
-        event_date: dateOf(event.start_at) || todayDate(),
-        duration_days: event.link_duration_days || 1,
-        start_at: "",
-        end_at: "",
-        customize: false,
-        location: event.location || "",
-        virtual_url: event.virtual_url || "",
-    }));
+    // Seed from the event's original schedule (defaults to today / 06:00-20:00).
+    const [form, setForm] = useState(() => {
+        const sDate = dateOf(event.start_at) || todayDate();
+        const eDate = dateOf(event.end_at) || sDate;
+        return {
+            start_date: sDate,
+            has_end_date: !!eDate && eDate !== sDate,
+            end_date: eDate,
+            start_time: timeOf(event.start_at) || "06:00",
+            end_time: timeOf(event.end_at) || "20:00",
+            customize_hours: false,
+            location: event.location || "",
+            virtual_url: event.virtual_url || "",
+        };
+    });
     const [submitting, setSubmitting] = useState(false);
 
-    // Initialize computed schedule from the event's original date + duration.
-    useEffect(() => {
-        const sched = computeSchedule(dateOf(event.start_at) || todayDate(), event.link_duration_days || 1);
-        setForm((f) => ({ ...f, ...sched }));
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    const setDate = (v) => setForm((f) => {
-        const next = { ...f, event_date: v };
-        if (!f.customize) Object.assign(next, computeSchedule(v, f.duration_days));
-        return next;
-    });
-    const setDays = (v) => setForm((f) => {
-        const next = { ...f, duration_days: v };
-        if (!f.customize) Object.assign(next, computeSchedule(f.event_date, v));
-        return next;
-    });
-    const toggleCustomize = () => setForm((f) => {
-        const on = !f.customize;
-        const next = { ...f, customize: on };
-        if (!on) Object.assign(next, computeSchedule(f.event_date, f.duration_days));
-        return next;
-    });
+    const setStartDate = (v) => setForm((f) => ({
+        ...f,
+        start_date: v,
+        start_time: f.start_time || "06:00",
+        end_time: f.end_time || "20:00",
+    }));
+    const toggleEndDate = () => setForm((f) => ({
+        ...f,
+        has_end_date: !f.has_end_date,
+        end_date: !f.has_end_date ? (f.end_date || f.start_date) : "",
+    }));
+    const toggleCustomize = () => setForm((f) => ({ ...f, customize_hours: !f.customize_hours }));
 
     const inputCls = "w-full h-10 px-3 rounded-lg text-sm";
     const inputStyle = { border: "1px solid #D8D2C4", backgroundColor: "#FFFFFF", color: "#2E2A26" };
     const disabledStyle = { backgroundColor: "#F0ECE3", color: "#9b948e", cursor: "not-allowed" };
     const labelStyle = { color: "#2E2A26", fontSize: 13, fontWeight: 600 };
 
+    const { start_at, end_at } = computeStartEnd(form);
     const valid = (() => {
-        const days = Number(form.duration_days);
-        if (!form.event_date || !days || days < LINK_MIN || days > LINK_MAX) return false;
-        if (!form.start_at || !form.end_at) return false;
-        const s = new Date(form.start_at), e = new Date(form.end_at);
-        if (isNaN(s) || isNaN(e) || e <= s) return false;
+        if (!form.start_date || !form.start_time || !form.end_time) return false;
+        if (!start_at || !end_at) return false;
+        if (end_at <= start_at) return false;
         if (isVirtual && !form.virtual_url.trim()) return false;
         if (!isVirtual && !form.location.trim()) return false;
         return true;
@@ -418,17 +433,13 @@ const ReactivateModal = ({ event, onClose, onSubmit }) => {
         if (!valid) return;
         setSubmitting(true);
         await onSubmit({
-            start_at: new Date(form.start_at).toISOString(),
-            end_at: new Date(form.end_at).toISOString(),
-            link_duration_days: Number(form.duration_days),
+            start_at: start_at.toISOString(),
+            end_at: end_at.toISOString(),
             location: isVirtual ? "" : form.location.trim(),
             virtual_url: isVirtual ? form.virtual_url.trim() : "",
         });
         setSubmitting(false);
     };
-
-    const { date: sDate, time: sTime } = splitLocal(form.start_at);
-    const { date: eDate, time: eTime } = splitLocal(form.end_at);
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: "rgba(0,0,0,0.4)" }}>
@@ -436,52 +447,55 @@ const ReactivateModal = ({ event, onClose, onSubmit }) => {
                 <h2 className="text-lg font-semibold" style={{ color: "#2E2A26" }}>Reactivate event</h2>
                 <p className="text-xs" style={{ color: "#9b948e" }}>New registrations add to the existing ones. A new link and QR are generated.</p>
 
+                {/* Dates: start date + optional end date. */}
                 <div className="grid grid-cols-2 gap-3">
                     <div>
-                        <label style={labelStyle}>Event date *</label>
-                        <input type="date" className={inputCls} style={inputStyle} min={todayDate()} value={form.event_date} onChange={(e) => setDate(e.target.value)} />
+                        <div className="flex items-center justify-between mb-1">
+                            <label style={labelStyle}>Start date *</label>
+                            <button type="button" onClick={toggleEndDate} disabled={!form.start_date} className="text-xs font-semibold cursor-pointer" style={{ color: !form.start_date ? "#c9c3b6" : GREEN }}>
+                                {form.has_end_date ? "Remove end date" : "Add end date"}
+                            </button>
+                        </div>
+                        <input type="date" className={inputCls} style={inputStyle} min={todayDate()} value={form.start_date} onChange={(e) => setStartDate(e.target.value)} />
                     </div>
-                    <div>
-                        <label style={labelStyle}>Duration (days) *</label>
-                        <input type="number" min={LINK_MIN} max={LINK_MAX} className={inputCls} style={inputStyle} value={form.duration_days} onChange={(e) => setDays(e.target.value)} />
-                        <p className="text-xs mt-1" style={{ color: "#9b948e" }}>Min {LINK_MIN}, max {LINK_MAX}. Also sets link validity.</p>
-                    </div>
+                    {form.has_end_date && (
+                        <div>
+                            <label style={labelStyle}>End date</label>
+                            <input type="date" className={inputCls} style={inputStyle} min={form.start_date || todayDate()} value={form.end_date} onChange={(e) => setForm((f) => ({ ...f, end_date: e.target.value }))} />
+                        </div>
+                    )}
                 </div>
 
+                {/* Hours: locked at 06:00/20:00 until Customize. */}
                 <div>
                     <div className="flex items-center justify-between mb-1">
-                        <label style={labelStyle}>Schedule</label>
-                        <button type="button" onClick={toggleCustomize} className="text-xs font-semibold cursor-pointer" style={{ color: GREEN }}>
-                            {form.customize ? "Use automatic schedule" : "Customize"}
+                        <label style={labelStyle}>Hours</label>
+                        <button type="button" onClick={toggleCustomize} disabled={!form.start_date} className="text-xs font-semibold cursor-pointer" style={{ color: !form.start_date ? "#c9c3b6" : GREEN }}>
+                            {form.customize_hours ? "Use default hours" : "Customize"}
                         </button>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                         {[
-                            { key: "start_at", label: "Starts at", date: sDate, time: sTime },
-                            { key: "end_at", label: "Ends at", date: eDate, time: eTime },
-                        ].map(({ key, label, date, time }) => {
-                            const [hh = "", mm = ""] = time ? time.split(":") : ["", ""];
-                            return (
-                                <div key={key}>
-                                    <label className="text-xs" style={{ color: "#6b6560" }}>{label}</label>
-                                    {form.customize ? (
-                                        <div className="flex gap-1.5">
-                                            <input type="date" className="h-10 px-2 rounded-lg text-sm flex-1 min-w-0" style={inputStyle} min={todayDate()} value={date} onChange={(e) => setForm((f) => ({ ...f, [key]: joinLocal(e.target.value, time || "08:00") }))} />
-                                            <select className="h-10 px-1 rounded-lg text-sm" style={inputStyle} value={hh} onChange={(e) => setForm((f) => ({ ...f, [key]: joinLocal(date, `${e.target.value}:${mm || "00"}`) }))}>
-                                                <option value="" disabled>HH</option>{HOURS.map((h) => <option key={h} value={h}>{h}</option>)}
-                                            </select>
-                                            <span className="self-center text-sm" style={{ color: "#6b6560" }}>:</span>
-                                            <select className="h-10 px-1 rounded-lg text-sm" style={inputStyle} value={mm} onChange={(e) => setForm((f) => ({ ...f, [key]: joinLocal(date, `${hh || "00"}:${e.target.value}`) }))}>
-                                                <option value="" disabled>MM</option>{MINUTES.map((m) => <option key={m} value={m}>{m}</option>)}
-                                            </select>
-                                        </div>
-                                    ) : (
-                                        <div className="h-10 px-3 rounded-lg text-sm flex items-center" style={disabledStyle}>{fmt24(form[key]) || "—"}</div>
-                                    )}
-                                </div>
-                            );
-                        })}
+                            { key: "start_time", label: "Start hour" },
+                            { key: "end_time", label: "End hour" },
+                        ].map(({ key, label }) => (
+                            <div key={key}>
+                                <label className="text-xs" style={{ color: "#6b6560" }}>{label}</label>
+                                <input
+                                    type="time"
+                                    className={inputCls}
+                                    style={{ ...inputStyle, ...((!form.start_date || !form.customize_hours) ? disabledStyle : {}) }}
+                                    disabled={!form.start_date || !form.customize_hours}
+                                    value={form[key]}
+                                    onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
+                                />
+                            </div>
+                        ))}
                     </div>
+                    {form.customize_hours && start_at && end_at && end_at <= start_at && (
+                        <p className="text-xs mt-1" style={{ color: "#b91c1c" }}>End must be after start.</p>
+                    )}
+                    <p className="text-xs mt-1" style={{ color: "#9b948e" }}>Opens 1h before start, closes 1h after end.</p>
                 </div>
 
                 <div>

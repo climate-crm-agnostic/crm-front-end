@@ -13,16 +13,7 @@ import {
 import { PhoneInput } from "@/components/ui/phone-input";
 
 const GREEN = "#5E6A43";
-const LINK_MIN_DAYS = 1;
-const LINK_MAX_DAYS = 30;
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
-
-// Formats a Date into the value a <input type="datetime-local"> expects
-// (local time, no timezone suffix): "YYYY-MM-DDTHH:mm".
-const toLocalInput = (d) => {
-    const pad = (n) => String(n).padStart(2, "0");
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-};
 
 // Today's date (YYYY-MM-DD) — min for the event-date picker (no past dates).
 const todayDate = () => {
@@ -42,21 +33,6 @@ const fmt24 = (localStr) => {
         hour: "2-digit", minute: "2-digit", hour12: false,
     });
 };
-
-// Splits a "YYYY-MM-DDTHH:mm" value into its date and time parts, and
-// rebuilds it — used by the custom 24-hour schedule editor (native
-// datetime-local renders am/pm depending on the browser locale, so we drive
-// the time with our own 24h selects instead).
-const splitLocal = (localStr) => {
-    if (!localStr || !localStr.includes("T")) return { date: "", time: "" };
-    const [date, time] = localStr.split("T");
-    return { date, time: (time || "").slice(0, 5) };
-};
-const joinLocal = (date, time) => (date && time ? `${date}T${time}` : "");
-
-// 24-hour options for the hour/minute selects.
-const HOURS_24 = Array.from({ length: 24 }, (_, h) => String(h).padStart(2, "0"));
-const MINUTES_60 = Array.from({ length: 60 }, (_, m) => String(m).padStart(2, "0"));
 
 const STEPS = [
     "Pipeline",
@@ -82,75 +58,54 @@ export const EventCreate = () => {
     const [prereqError, setPrereqError] = useState("");
     const [checkingPrereq, setCheckingPrereq] = useState(false);
 
-    // Step 2 — details
+    // Step 2 — details.
+    // Date model (both modalities): a start date, an optional separate end
+    // date (for multi-day events), and start/end hours. Hours default to
+    // 06:00 / 20:00 once a date is picked, and stay locked until "Customize".
+    // The link validity is derived on the backend (start-1h .. end+1h).
     const [form, setForm] = useState({
         name: "", description: "", modality: "in_person",
         location: "", virtual_url: "",
-        event_date: "",                // YYYY-MM-DD — first cascade control
-        duration_days: "",             // event length in days (also the link validity)
-        start_at: "", end_at: "",      // computed (or manually customized)
-        customize_schedule: false,     // when true, start/end are edited manually
+        start_date: "",                // YYYY-MM-DD (required)
+        has_end_date: false,           // multi-day toggle
+        end_date: "",                  // YYYY-MM-DD (defaults to start_date)
+        start_time: "",                // HH:mm — set to 06:00 when a date is chosen
+        end_time: "",                  // HH:mm — set to 20:00 when a date is chosen
+        customize_hours: false,        // hours editable only when true
     });
     const [attendeeErrors, setAttendeeErrors] = useState({}); // { idx: {email} }
 
-    // Business rule: an event that lasts N days occupies WHOLE calendar days.
-    //   start = event_date @ 08:00
-    //   end   = (event_date + (N-1) days) @ 23:59
-    // So a 1-day event on the 13th runs 13 08:00 → 13 23:59 (never spills into
-    // the 14th). Returns { start_at, end_at } as datetime-local strings, or
-    // empty strings when inputs are incomplete.
-    const computeSchedule = (dateStr, days) => {
-        const n = Number(days);
-        if (!dateStr || !n || n < 1) return { start_at: "", end_at: "" };
-        const [y, m, d] = dateStr.split("-").map(Number);
-        if (!y || !m || !d) return { start_at: "", end_at: "" };
-        const start = new Date(y, m - 1, d, 8, 0, 0);
-        const end = new Date(y, m - 1, d, 23, 59, 0);
-        end.setDate(end.getDate() + (n - 1));
-        return { start_at: toLocalInput(start), end_at: toLocalInput(end) };
+    // Sets the start date and seeds default hours (06:00 / 20:00) the first
+    // time a date is chosen.
+    const setStartDate = (dateStr) => {
+        setForm((f) => ({
+            ...f,
+            start_date: dateStr,
+            start_time: f.start_time || "06:00",
+            end_time: f.end_time || "20:00",
+        }));
     };
 
-    // Cascade control 1 — event date. Changing it recomputes start/end
-    // (unless the user has taken manual control via Customize).
-    const setEventDate = (dateStr) => {
-        setForm((f) => {
-            const next = { ...f, event_date: dateStr };
-            if (!f.customize_schedule) {
-                const sched = computeSchedule(dateStr, f.duration_days);
-                next.start_at = sched.start_at;
-                next.end_at = sched.end_at;
-            }
-            return next;
-        });
+    const toggleEndDate = () => {
+        setForm((f) => ({
+            ...f,
+            has_end_date: !f.has_end_date,
+            end_date: !f.has_end_date ? (f.end_date || f.start_date) : "",
+        }));
     };
 
-    // Cascade control 2 — duration in days (enabled only once a date exists).
-    const setDurationDays = (daysVal) => {
-        setForm((f) => {
-            const next = { ...f, duration_days: daysVal };
-            if (!f.customize_schedule) {
-                const sched = computeSchedule(f.event_date, daysVal);
-                next.start_at = sched.start_at;
-                next.end_at = sched.end_at;
-            }
-            return next;
-        });
-    };
+    const toggleCustomize = () => setForm((f) => ({ ...f, customize_hours: !f.customize_hours }));
 
-    // Toggle manual editing of start/end. Turning it OFF recomputes from the
-    // date + duration (keeps the three fields congruent). Turning it ON leaves
-    // the current computed values as the editable starting point.
-    const toggleCustomize = () => {
-        setForm((f) => {
-            const turningOn = !f.customize_schedule;
-            const next = { ...f, customize_schedule: turningOn };
-            if (!turningOn) {
-                const sched = computeSchedule(f.event_date, f.duration_days);
-                next.start_at = sched.start_at;
-                next.end_at = sched.end_at;
-            }
-            return next;
-        });
+    // Builds the ISO start/end datetimes from date(s) + hours. End date falls
+    // back to the start date when the multi-day toggle is off.
+    const computeStartEnd = (f) => {
+        const startDate = f.start_date;
+        const endDate = f.has_end_date && f.end_date ? f.end_date : f.start_date;
+        if (!startDate || !f.start_time || !f.end_time) return { start_at: "", end_at: "" };
+        const start = new Date(`${startDate}T${f.start_time}`);
+        const end = new Date(`${endDate}T${f.end_time}`);
+        if (isNaN(start) || isNaN(end)) return { start_at: "", end_at: "" };
+        return { start_at: start, end_at: end };
     };
 
     // Step 3 — attendees (manual + excel)
@@ -254,22 +209,19 @@ export const EventCreate = () => {
             if (form.modality === "in_person" && !form.location.trim()) return false;
             if (form.modality === "virtual" && !form.virtual_url.trim()) return false;
 
-            // Cascade: date required, then a valid duration (1-30).
-            if (!form.event_date) return false;
-            const days = Number(form.duration_days);
-            if (!days || days < LINK_MIN_DAYS || days > LINK_MAX_DAYS) return false;
+            // Date model: start date + hours required.
+            if (!form.start_date || !form.start_time || !form.end_time) return false;
+            const { start_at, end_at } = computeStartEnd(form);
+            if (!start_at || !end_at) return false;
+            if (isNaN(start_at) || isNaN(end_at)) return false;
 
-            // Computed or customized start/end must exist and be coherent.
-            if (!form.start_at || !form.end_at) return false;
-            const start = new Date(form.start_at);
-            const end = new Date(form.end_at);
-            if (isNaN(start) || isNaN(end)) return false;
-            if (end <= start) return false;
+            // End must be strictly after start.
+            if (end_at <= start_at) return false;
 
             // No events in the past (compare against now, minute precision).
             const now = new Date();
             now.setSeconds(0, 0);
-            if (start < now) return false;
+            if (start_at < now) return false;
 
             return true;
         }
@@ -285,6 +237,7 @@ export const EventCreate = () => {
         setSubmitting(true);
         try {
             const attendees = allAttendees();
+            const { start_at: startAt, end_at: endAt } = computeStartEnd(form);
             const payload = {
                 name: form.name.trim(),
                 description: form.description,
@@ -292,10 +245,8 @@ export const EventCreate = () => {
                 pipeline: pipelineId,
                 location: form.modality === "in_person" ? form.location.trim() : "",
                 virtual_url: form.modality === "virtual" ? form.virtual_url.trim() : "",
-                start_at: new Date(form.start_at).toISOString(),
-                end_at: new Date(form.end_at).toISOString(),
-                // Link validity equals the declared event duration in days.
-                link_duration_days: Number(form.duration_days),
+                start_at: startAt.toISOString(),
+                end_at: endAt.toISOString(),
                 attendees,
             };
             // createEvent already persists the attendees (once). We only need
@@ -456,113 +407,93 @@ export const EventCreate = () => {
                             </div>
                         )}
 
-                        {/* Cascade: date → duration → (auto) start/end. */}
+                        {/* Dates: start date + optional end date. */}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label style={labelStyle}>Event date *</label>
+                                <div className="flex items-center justify-between mb-1">
+                                    <label style={labelStyle}>Start date *</label>
+                                    <button
+                                        type="button"
+                                        onClick={toggleEndDate}
+                                        disabled={!form.start_date}
+                                        className="text-xs font-semibold cursor-pointer"
+                                        style={{ color: !form.start_date ? "#c9c3b6" : GREEN }}
+                                    >
+                                        {form.has_end_date ? "Remove end date" : "Add end date"}
+                                    </button>
+                                </div>
                                 <input
                                     type="date"
                                     className={inputCls}
                                     style={inputStyle}
                                     min={todayDate()}
-                                    value={form.event_date}
-                                    onChange={(e) => setEventDate(e.target.value)}
+                                    value={form.start_date}
+                                    onChange={(e) => setStartDate(e.target.value)}
                                 />
                             </div>
-                            <div>
-                                <label style={labelStyle}>Duration (days) *</label>
-                                <input
-                                    type="number" min={LINK_MIN_DAYS} max={LINK_MAX_DAYS}
-                                    className={inputCls}
-                                    style={{ ...inputStyle, ...(form.event_date ? {} : disabledStyle) }}
-                                    disabled={!form.event_date}
-                                    placeholder={form.event_date ? "" : "Pick an event date first"}
-                                    value={form.duration_days}
-                                    onChange={(e) => setDurationDays(e.target.value)}
-                                />
-                                <p className="text-xs mt-1" style={{ color: "#9b948e" }}>
-                                    Minimum {LINK_MIN_DAYS}, maximum {LINK_MAX_DAYS}. Also sets the link validity.
-                                </p>
-                            </div>
+                            {form.has_end_date && (
+                                <div>
+                                    <label style={labelStyle}>End date</label>
+                                    <input
+                                        type="date"
+                                        className={inputCls}
+                                        style={inputStyle}
+                                        min={form.start_date || todayDate()}
+                                        value={form.end_date}
+                                        onChange={(e) => setForm({ ...form, end_date: e.target.value })}
+                                    />
+                                </div>
+                            )}
                         </div>
 
-                        {/* Computed / customizable schedule. Times shown in 24h. */}
+                        {/* Start / end hours. Locked at 06:00 / 20:00 until Customize. */}
                         <div>
                             <div className="flex items-center justify-between mb-1">
-                                <label style={labelStyle}>Schedule</label>
+                                <label style={labelStyle}>Hours</label>
                                 <button
                                     type="button"
                                     onClick={toggleCustomize}
-                                    disabled={!form.event_date || !form.duration_days}
+                                    disabled={!form.start_date}
                                     className="text-xs font-semibold cursor-pointer"
-                                    style={{ color: (!form.event_date || !form.duration_days) ? "#c9c3b6" : GREEN }}
+                                    style={{ color: !form.start_date ? "#c9c3b6" : GREEN }}
                                 >
-                                    {form.customize_schedule ? "Use automatic schedule" : "Customize"}
+                                    {form.customize_hours ? "Use default hours" : "Customize"}
                                 </button>
                             </div>
                             <p className="text-xs mb-2" style={{ color: "#9b948e" }}>
-                                {form.customize_schedule
-                                    ? "Editing start/end manually. The event still lasts the number of days set above."
-                                    : "Auto: starts at 08:00 on the event date, ends at 23:59 on the last day."}
+                                {form.customize_hours
+                                    ? "Editing the start and end hours manually."
+                                    : "Default: starts at 06:00, ends at 20:00. Tap Customize to change."}
                             </p>
                             <div className="grid grid-cols-2 gap-4">
                                 {[
-                                    { key: "start_at", label: "Starts at" },
-                                    { key: "end_at", label: "Ends at" },
-                                ].map(({ key, label }) => {
-                                    const { date, time } = splitLocal(form[key]);
-                                    const [hh = "", mm = ""] = time ? time.split(":") : ["", ""];
-                                    const setDate = (v) => setForm({ ...form, [key]: joinLocal(v, time || "08:00") });
-                                    const setHH = (v) => setForm({ ...form, [key]: joinLocal(date, `${v}:${mm || "00"}`) });
-                                    const setMM = (v) => setForm({ ...form, [key]: joinLocal(date, `${hh || "00"}:${v}`) });
-                                    return (
-                                        <div key={key}>
-                                            <label className="text-xs" style={{ color: "#6b6560" }}>{label}</label>
-                                            {form.customize_schedule ? (
-                                                <div className="flex gap-1.5">
-                                                    <input
-                                                        type="date"
-                                                        className="h-10 px-2 rounded-lg text-sm flex-1 min-w-0"
-                                                        style={inputStyle}
-                                                        min={todayDate()}
-                                                        value={date}
-                                                        onChange={(e) => setDate(e.target.value)}
-                                                    />
-                                                    <select
-                                                        className="h-10 px-1 rounded-lg text-sm"
-                                                        style={inputStyle}
-                                                        value={hh}
-                                                        onChange={(e) => setHH(e.target.value)}
-                                                        aria-label={`${label} hour`}
-                                                    >
-                                                        <option value="" disabled>HH</option>
-                                                        {HOURS_24.map((h) => <option key={h} value={h}>{h}</option>)}
-                                                    </select>
-                                                    <span className="self-center text-sm" style={{ color: "#6b6560" }}>:</span>
-                                                    <select
-                                                        className="h-10 px-1 rounded-lg text-sm"
-                                                        style={inputStyle}
-                                                        value={mm}
-                                                        onChange={(e) => setMM(e.target.value)}
-                                                        aria-label={`${label} minute`}
-                                                    >
-                                                        <option value="" disabled>MM</option>
-                                                        {MINUTES_60.map((m) => <option key={m} value={m}>{m}</option>)}
-                                                    </select>
-                                                </div>
-                                            ) : (
-                                                <div
-                                                    className="h-10 px-3 rounded-lg text-sm flex items-center"
-                                                    style={disabledStyle}
-                                                >
-                                                    {fmt24(form[key]) || "—"}
-                                                </div>
-                                            )}
-                                            <p className="text-[11px] mt-0.5" style={{ color: "#9b948e" }}>{fmt24(form[key])}</p>
-                                        </div>
-                                    );
-                                })}
+                                    { key: "start_time", label: "Start hour" },
+                                    { key: "end_time", label: "End hour" },
+                                ].map(({ key, label }) => (
+                                    <div key={key}>
+                                        <label className="text-xs" style={{ color: "#6b6560" }}>{label}</label>
+                                        <input
+                                            type="time"
+                                            className={inputCls}
+                                            style={{ ...inputStyle, ...((!form.start_date || !form.customize_hours) ? disabledStyle : {}) }}
+                                            disabled={!form.start_date || !form.customize_hours}
+                                            value={form[key]}
+                                            onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+                                        />
+                                    </div>
+                                ))}
                             </div>
+                            {form.customize_hours && (() => {
+                                const { start_at, end_at } = computeStartEnd(form);
+                                if (start_at && end_at && end_at <= start_at) {
+                                    return (
+                                        <p className="text-xs mt-1" style={{ color: "#b91c1c" }}>
+                                            End must be after start.
+                                        </p>
+                                    );
+                                }
+                                return null;
+                            })()}
                         </div>
                     </div>
                 )}
@@ -697,8 +628,15 @@ export const EventCreate = () => {
                             <div><span style={{ color: "#9b948e" }}>Modality: </span>{form.modality === "virtual" ? "Virtual" : "In Person"}</div>
                             <div><span style={{ color: "#9b948e" }}>Pipeline: </span>{pipelines.find((p) => p.id === pipelineId)?.name}</div>
                             <div><span style={{ color: "#9b948e" }}>Attendees: </span>{allAttendees().length}</div>
-                            <div><span style={{ color: "#9b948e" }}>Duration: </span>{form.duration_days} day(s)</div>
-                            <div className="col-span-2"><span style={{ color: "#9b948e" }}>When: </span>{fmt24(form.start_at)} → {fmt24(form.end_at)}</div>
+                            {(() => {
+                                const { start_at, end_at } = computeStartEnd(form);
+                                return (
+                                    <div className="col-span-2"><span style={{ color: "#9b948e" }}>When: </span>{fmt24(start_at)} → {fmt24(end_at)}</div>
+                                );
+                            })()}
+                            {form.modality === "virtual" && form.virtual_url.trim() && (
+                                <div className="col-span-2 break-all"><span style={{ color: "#9b948e" }}>Join URL: </span>{form.virtual_url.trim()}</div>
+                            )}
                         </div>
                         <div className="flex items-start gap-2 p-3 rounded-lg" style={{ backgroundColor: "rgba(94,106,67,0.08)", border: "1px solid rgba(94,106,67,0.25)" }}>
                             <Check className="h-4 w-4 mt-0.5" style={{ color: GREEN }} />

@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { MapPin, Video, CheckCircle2, XCircle, Clock, KeyRound, UserPlus, ChevronLeft } from "lucide-react";
 import { DynamicAttributeField } from "@/components/attributes/DynamicAttributeField";
 import { PhoneInput } from "@/components/ui/phone-input";
-import { getPublicEvent, verifyEventCode, submitPublicRegistration, submitWalkIn } from "@/services/eventService";
+import { getPublicEvent, getEventByAttendeeToken, verifyEventCode, submitPublicRegistration, submitWalkIn } from "@/services/eventService";
 
 const GREEN = "#5E6A43";
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
@@ -61,12 +61,19 @@ const formatCode = (raw) => {
 
 export const EventRegister = () => {
     const { token } = useParams();
+    const [searchParams] = useSearchParams();
+    // Virtual events send a per-attendee token in the URL (?a=...). When it's
+    // present we skip the access-code screen entirely and go straight to the
+    // form, resolving the attendee from that token.
+    const attendeeToken = searchParams.get("a") || "";
 
     const [loading, setLoading] = useState(true);
     const [event, setEvent] = useState(null);
     const [errorMsg, setErrorMsg] = useState("");
 
-    // Phase: "code" → enter access code; "form" → review + fill lead fields.
+    // Phase: "code" → enter access code; "form" → review + fill lead fields;
+    // "walkin" → self-registration. Virtual (attendeeToken present) jumps to
+    // "form" directly.
     const [phase, setPhase] = useState("code");
     const [code, setCode] = useState("");
     const [codeError, setCodeError] = useState("");
@@ -89,6 +96,28 @@ export const EventRegister = () => {
 
     useEffect(() => {
         (async () => {
+            // Virtual single-step: resolve the attendee straight from the URL
+            // token and jump to the form (no code screen, no walk-in).
+            if (attendeeToken) {
+                const res = await getEventByAttendeeToken(token, attendeeToken);
+                if (res.ok && res.data?.valid) {
+                    const fx = res.data.fields || [];
+                    setEvent(res.data.event);
+                    setAttendee(res.data.attendee);
+                    setFields(fx);
+                    setAttrs(initAttrs(fx));
+                    setPhase("form");
+                } else {
+                    setErrorMsg(
+                        res.data?.error ||
+                        "This registration link is not valid. Please use the link from your invitation email."
+                    );
+                }
+                setLoading(false);
+                return;
+            }
+
+            // In-person / code flow.
             const res = await getPublicEvent(token);
             if (res.ok && res.data?.valid) {
                 setEvent(res.data.event);
@@ -98,7 +127,7 @@ export const EventRegister = () => {
             }
             setLoading(false);
         })();
-    }, [token]);
+    }, [token, attendeeToken]);
 
     // Clears everything and returns to the code screen so the on-site host can
     // register the next person without reloading the page.
@@ -165,7 +194,8 @@ export const EventRegister = () => {
         if (!validate()) return;
         setSubmitting(true);
         try {
-            const res = await submitPublicRegistration(token, code, attrs);
+            const identity = attendeeToken ? { attendee_token: attendeeToken } : { code };
+            const res = await submitPublicRegistration(token, identity, attrs);
             if (res.ok && res.data?.success) {
                 setDone(true);
             } else if (res.status === 410) {
@@ -251,14 +281,26 @@ export const EventRegister = () => {
                 <CheckCircle2 className="h-12 w-12 mx-auto mb-4" style={{ color: "#2f9e3a" }} />
                 <h1 className="text-lg font-semibold mb-1" style={{ color: "#2E2A26" }}>You're registered!</h1>
                 <p className="text-sm mb-6" style={{ color: "#6b6560" }}>Thank you for confirming your attendance to {event?.name}. We look forward to seeing you.</p>
-                <button
-                    type="button"
-                    onClick={resetForm}
-                    className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-lg text-sm font-semibold cursor-pointer"
-                    style={{ backgroundColor: GREEN, color: "#FBF7EF" }}
-                >
-                    <UserPlus className="h-4 w-4" /> Register another attendee
-                </button>
+                {event?.modality === "virtual" && event?.virtual_url ? (
+                    <a
+                        href={event.virtual_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-lg text-sm font-semibold cursor-pointer"
+                        style={{ backgroundColor: GREEN, color: "#FBF7EF" }}
+                    >
+                        <Video className="h-4 w-4" /> Join the event
+                    </a>
+                ) : !attendeeToken ? (
+                    <button
+                        type="button"
+                        onClick={resetForm}
+                        className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-lg text-sm font-semibold cursor-pointer"
+                        style={{ backgroundColor: GREEN, color: "#FBF7EF" }}
+                    >
+                        <UserPlus className="h-4 w-4" /> Register another attendee
+                    </button>
+                ) : null}
             </div>
         );
     }
@@ -460,13 +502,9 @@ export const EventRegister = () => {
                             <label style={labelStyle}>Last name</label>
                             <input readOnly disabled className={inputCls} style={readonlyStyle} value={attendee?.last_name || ""} />
                         </div>
-                        <div>
+                        <div className="sm:col-span-2">
                             <label style={labelStyle}>Email</label>
                             <input readOnly disabled className={inputCls} style={readonlyStyle} value={attendee?.email || ""} />
-                        </div>
-                        <div>
-                            <label style={labelStyle}>Phone</label>
-                            <input readOnly disabled className={inputCls} style={readonlyStyle} value={attendee?.phone || ""} />
                         </div>
                         <div>
                             <label style={labelStyle}>Company</label>
@@ -475,6 +513,10 @@ export const EventRegister = () => {
                         <div>
                             <label style={labelStyle}>Job title</label>
                             <input readOnly disabled className={inputCls} style={readonlyStyle} value={attendee?.job_title || ""} />
+                        </div>
+                        <div className="sm:col-span-2">
+                            <label style={labelStyle}>Phone</label>
+                            <input readOnly disabled className={inputCls} style={readonlyStyle} value={attendee?.phone || ""} />
                         </div>
                     </div>
                 </div>

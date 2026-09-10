@@ -172,12 +172,23 @@ export const verifyEventCode = async (token, code) => {
     return { ok: res.ok, status: res.status, data };
 };
 
-// Step 2: confirm the attendee (identified by code) + submit lead fields.
-export const submitPublicRegistration = async (token, code, attributes) => {
+// Virtual single-step: resolve the attendee directly from their URL token.
+export const getEventByAttendeeToken = async (eventToken, attendeeToken) => {
+    const res = await fetch(`${API_URL}/public/events/${eventToken}/attendee/${attendeeToken}/`, {
+        headers: { "Content-Type": "application/json" },
+    });
+    const data = await res.json().catch(() => null);
+    return { ok: res.ok, status: res.status, data };
+};
+
+// Final step: confirm the attendee (identified by code OR attendee_token) +
+// submit lead fields. `identity` is { code } for in-person or
+// { attendee_token } for virtual.
+export const submitPublicRegistration = async (token, identity, attributes) => {
     const res = await fetch(`${API_URL}/public/events/${token}/register/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code, attributes }),
+        body: JSON.stringify({ ...identity, attributes }),
     });
     const data = await res.json().catch(() => null);
     return { ok: res.ok, status: res.status, data };
