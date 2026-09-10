@@ -15,7 +15,32 @@ const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
  * pre-transform them here — doing so double-wraps the option objects and
  * crashes the renderer (React error #31).
  */
-const toFieldProps = (f) => f;
+// Today's date (local) as YYYY-MM-DD — used to forbid past dates in the
+// event form's date/datetime fields.
+const _pad = (n) => String(n).padStart(2, "0");
+const todayISO = () => { const d = new Date(); return `${d.getFullYear()}-${_pad(d.getMonth() + 1)}-${_pad(d.getDate())}`; };
+
+/**
+ * Passes a PipelineAttribute through to DynamicAttributeField, but for the
+ * public event form we additionally forbid PAST dates on date/datetime
+ * fields — regardless of how the admin configured the field elsewhere. We
+ * merge into format_config (min_date + relative_constraint) so the shared
+ * renderer enforces it without changing that field's behavior in the rest of
+ * the CRM (leads, etc.), where the untouched attribute is used.
+ */
+const toFieldProps = (f) => {
+    if (f.type === "date" || f.type === "datetime") {
+        return {
+            ...f,
+            format_config: {
+                ...(f.format_config || {}),
+                min_date: (f.format_config && f.format_config.min_date) || todayISO(),
+                relative_constraint: "no_past",
+            },
+        };
+    }
+    return f;
+};
 
 // Seeds a controlled starting value for each editable field so inputs never
 // flip from uncontrolled (undefined) to controlled (React warning).
@@ -364,7 +389,7 @@ export const EventRegister = () => {
                             <input type="email" className={inputCls} style={{ ...inputStyle, borderColor: baseErrors.email ? "#c0392b" : "#D8D2C4" }} value={walkBase.email} onChange={(e) => setWalk("email", e.target.value)} />
                             {baseErrors.email && <p className="text-xs mt-1" style={{ color: "#c0392b" }}>{baseErrors.email}</p>}
                         </div>
-                        <div>
+                        <div className="col-span-2">
                             <label style={labelStyle}>Phone</label>
                             <PhoneInput value={walkBase.phone} onChange={(v) => setWalk("phone", v)} defaultCountry="US" placeholder="Phone number" />
                         </div>
