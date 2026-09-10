@@ -4,12 +4,14 @@ import {
     createInventoryItem, updateInventoryItem, getInventoryItemById,
     getInventoryItemAttributes
 } from "../services/inventoryService";
+import { getSuppliers } from "../services/supplierService";
 
 // UI Components
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Button } from "../components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { DynamicAttributeField } from "../components/attributes/DynamicAttributeField";
 import { coerceAttributeValue, emptyValueFor, normalizeOptions } from "../utils/attributeTypes";
 
@@ -20,12 +22,14 @@ export const InventoryDetail = () => {
 
     const [attributes, setAttributes] = useState([]);
     const [dynamicData, setDynamicData] = useState({});
+    const [suppliers, setSuppliers] = useState([]);
 
     // Static fields
     const [sku, setSku] = useState("");
     const [quantityOnHand, setQuantityOnHand] = useState("0.00");
     const [reorderLevel, setReorderLevel] = useState("0.00");
     const [location, setLocation] = useState("");
+    const [supplierId, setSupplierId] = useState("none");
 
     // UI state
     const [loading, setLoading] = useState(false);
@@ -36,7 +40,7 @@ export const InventoryDetail = () => {
         const init = async () => {
             setFetching(true);
             try {
-                await fetchAttributes();
+                await Promise.all([fetchAttributes(), fetchSuppliers()]);
 
                 if (!isNew) {
                     await fetchItemData(id);
@@ -72,6 +76,15 @@ export const InventoryDetail = () => {
         }
     };
 
+    const fetchSuppliers = async () => {
+        try {
+            const data = await getSuppliers();
+            setSuppliers(data);
+        } catch (err) {
+            console.error("Error fetching suppliers", err);
+        }
+    };
+
     const fetchItemData = async (itemId) => {
         try {
             const data = await getInventoryItemById(itemId);
@@ -87,6 +100,7 @@ export const InventoryDetail = () => {
         setQuantityOnHand(data.quantity_on_hand || "0.00");
         setReorderLevel(data.reorder_level || "0.00");
         setLocation(data.location || "");
+        setSupplierId(data.supplier ? String(data.supplier) : "none");
 
         setDynamicData(prev => {
             const updated = { ...prev };
@@ -128,6 +142,7 @@ export const InventoryDetail = () => {
                 quantity_on_hand: quantityOnHand,
                 reorder_level: reorderLevel,
                 location,
+                supplier: supplierId === "none" ? null : supplierId,
                 attributes: formattedAttributes
             };
 
@@ -199,6 +214,18 @@ export const InventoryDetail = () => {
                             <div className="space-y-2">
                                 <Label htmlFor="reorder">Reorder Level</Label>
                                 <Input id="reorder" type="number" step="0.01" value={reorderLevel} onChange={(e) => setReorderLevel(e.target.value)} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="supplier">Supplier</Label>
+                                <Select value={supplierId} onValueChange={setSupplierId}>
+                                    <SelectTrigger><SelectValue placeholder="Select Supplier..." /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="none">-- No Supplier --</SelectItem>
+                                        {suppliers.map(s => (
+                                            <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
                         </div>
                     </div>

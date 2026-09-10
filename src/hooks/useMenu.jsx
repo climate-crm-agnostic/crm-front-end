@@ -20,6 +20,7 @@ const MENU_CONFIG = [
             { title: "Catalogue",  url: "/catalogue", icon: "Package",    permission: "app.add_catalogueitem" },
             { title: "Categories", url: "/category",  icon: "FolderTree", permission: "app.add_category" },
             { title: "Inventory",  url: "/inventory", icon: "Warehouse",  permission: "app.add_inventory",  feature: "inventory" },
+            { title: "Suppliers",  url: "/supplier",  icon: "Truck",      permission: "app.add_supplier" },
         ],
     },
     {

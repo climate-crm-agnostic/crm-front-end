@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
-    createAsset, updateAsset, getAssetById,
-    getAssetAttributes
-} from "../services/assetService";
-import { getSuppliers } from "../services/supplierService";
+    createSupplier, updateSupplier, getSupplierById,
+    getSupplierAttributes
+} from "../services/supplierService";
 
 // UI Components
 import { Input } from "../components/ui/input";
@@ -12,27 +11,30 @@ import { Label } from "../components/ui/label";
 import { Button } from "../components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { Textarea } from "../components/ui/textarea";
-import { DateInput } from "../components/ui/date-input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
+import { Switch } from "../components/ui/switch";
 import { DynamicAttributeField } from "../components/attributes/DynamicAttributeField";
 import { coerceAttributeValue, emptyValueFor, normalizeOptions } from "../utils/attributeTypes";
 
-export const AssetDetail = () => {
+export const SupplierDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const isNew = id === 'new';
 
     const [attributes, setAttributes] = useState([]);
     const [dynamicData, setDynamicData] = useState({});
-    const [suppliers, setSuppliers] = useState([]);
 
     // Static fields
     const [name, setName] = useState("");
-    const [description, setDescription] = useState("");
-    const [boughtDate, setBoughtDate] = useState("");
-    const [price, setPrice] = useState("0.00");
-    const [quantity, setQuantity] = useState("1");
-    const [supplierId, setSupplierId] = useState("none");
+    const [legalName, setLegalName] = useState("");
+    const [taxId, setTaxId] = useState("");
+    const [email, setEmail] = useState("");
+    const [phone, setPhone] = useState("");
+    const [address, setAddress] = useState("");
+    const [website, setWebsite] = useState("");
+    const [paymentTerms, setPaymentTerms] = useState("");
+    const [currency, setCurrency] = useState("USD");
+    const [isActive, setIsActive] = useState(true);
+    const [notes, setNotes] = useState("");
 
     // UI state
     const [loading, setLoading] = useState(false);
@@ -43,7 +45,7 @@ export const AssetDetail = () => {
         const init = async () => {
             setFetching(true);
             try {
-                await Promise.all([fetchAttributes(), fetchSuppliers()]);
+                await fetchAttributes();
 
                 if (!isNew) {
                     await fetchItemData(id);
@@ -62,7 +64,7 @@ export const AssetDetail = () => {
 
     const fetchAttributes = async () => {
         try {
-            const data = await getAssetAttributes();
+            const data = await getSupplierAttributes();
             const processedData = data.map(attr => {
                 const options = normalizeOptions(attr.options || attr.list_values);
                 return { ...attr, options };
@@ -79,32 +81,28 @@ export const AssetDetail = () => {
         }
     };
 
-    const fetchSuppliers = async () => {
-        try {
-            const data = await getSuppliers();
-            setSuppliers(data);
-        } catch (err) {
-            console.error("Error fetching suppliers", err);
-        }
-    };
-
     const fetchItemData = async (itemId) => {
         try {
-            const data = await getAssetById(itemId);
+            const data = await getSupplierById(itemId);
             populateForm(data);
         } catch (err) {
             console.error("Error fetching item", err);
-            setError("Failed to load asset details.");
+            setError("Failed to load supplier details.");
         }
     };
 
     const populateForm = (data) => {
         setName(data.name || "");
-        setDescription(data.description || "");
-        setBoughtDate(data.bought_date || "");
-        setPrice(data.price || "0.00");
-        setQuantity(data.quantity || "1");
-        setSupplierId(data.supplier ? String(data.supplier) : "none");
+        setLegalName(data.legal_name || "");
+        setTaxId(data.tax_id || "");
+        setEmail(data.email || "");
+        setPhone(data.phone || "");
+        setAddress(data.address || "");
+        setWebsite(data.website || "");
+        setPaymentTerms(data.payment_terms ?? "");
+        setCurrency(data.currency || "USD");
+        setIsActive(data.is_active !== false);
+        setNotes(data.notes || "");
 
         setDynamicData(prev => {
             const updated = { ...prev };
@@ -143,25 +141,30 @@ export const AssetDetail = () => {
 
             const payload = {
                 name,
-                description,
-                bought_date: boughtDate || null,
-                price: price || "0.00",
-                quantity: quantity || 1,
-                supplier: supplierId === "none" ? null : supplierId,
+                legal_name: legalName || null,
+                tax_id: taxId || null,
+                email: email || null,
+                phone: phone || null,
+                address: address || null,
+                website: website || null,
+                payment_terms: paymentTerms === "" ? null : paymentTerms,
+                currency,
+                is_active: isActive,
+                notes: notes || null,
                 attributes: formattedAttributes
             };
 
             if (isNew) {
-                await createAsset(payload);
+                await createSupplier(payload);
                 navigate(-1);
             } else {
-                await updateAsset(id, payload);
+                await updateSupplier(id, payload);
                 navigate(-1);
             }
 
         } catch (err) {
-            console.error("Error saving asset", err);
-            setError(`Failed to save asset. ${err.message || ""}`);
+            console.error("Error saving supplier", err);
+            setError(`Failed to save supplier. ${err.message || ""}`);
         } finally {
             setLoading(false);
         }
@@ -178,17 +181,17 @@ export const AssetDetail = () => {
                     </Button>
                     <div className="min-w-0">
                         <h1 className="text-xl font-semibold truncate">
-                            {isNew ? "New Asset" : "Edit Asset"}
+                            {isNew ? "New Supplier" : "Edit Supplier"}
                         </h1>
                         <p className="text-sm text-muted-foreground truncate">
-                            {isNew ? "Add physical equipment tracking" : `Managing details for ${name}`}
+                            {isNew ? "Add a vendor your company buys from" : `Managing details for ${name}`}
                         </p>
                     </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
                     <Button variant="outline" onClick={() => navigate(-1)}>Cancel</Button>
                     <Button onClick={handleSubmit} disabled={loading}>
-                        {loading ? "Saving..." : "Save Asset"}
+                        {loading ? "Saving..." : "Save Supplier"}
                     </Button>
                 </div>
             </div>
@@ -205,37 +208,50 @@ export const AssetDetail = () => {
                     <div className="bg-card p-6 rounded-lg border shadow-sm space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
-                                <Label htmlFor="name">Asset Name <span className="text-red-500">*</span></Label>
-                                <Input id="name" placeholder="MacBook Pro 16''" value={name} onChange={(e) => setName(e.target.value)} />
+                                <Label htmlFor="name">Supplier Name <span className="text-red-500">*</span></Label>
+                                <Input id="name" placeholder="Acme Corp" value={name} onChange={(e) => setName(e.target.value)} />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="bought_date">Purchase Date</Label>
-                                <DateInput id="bought_date" value={boughtDate} onChange={(e) => setBoughtDate(e.target.value)} />
+                                <Label htmlFor="legal_name">Legal Name</Label>
+                                <Input id="legal_name" placeholder="Acme Corporation Inc." value={legalName} onChange={(e) => setLegalName(e.target.value)} />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="qty">Total Stock Quantity</Label>
-                                <Input id="qty" type="number" step="1" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
-                                <p className="text-xs text-muted-foreground mt-1">Total physical copies purchased.</p>
+                                <Label htmlFor="tax_id">Tax ID</Label>
+                                <Input id="tax_id" placeholder="3-101-123456" value={taxId} onChange={(e) => setTaxId(e.target.value)} />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="price">Unit Price</Label>
-                                <Input id="price" type="number" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} />
+                                <Label htmlFor="email">Email</Label>
+                                <Input id="email" type="email" placeholder="orders@acme.com" value={email} onChange={(e) => setEmail(e.target.value)} />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="supplier">Supplier</Label>
-                                <Select value={supplierId} onValueChange={setSupplierId}>
-                                    <SelectTrigger><SelectValue placeholder="Select Supplier..." /></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="none">-- No Supplier --</SelectItem>
-                                        {suppliers.map(s => (
-                                            <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                <Label htmlFor="phone">Phone</Label>
+                                <Input id="phone" placeholder="+1 555-123-4567" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="website">Website</Label>
+                                <Input id="website" type="url" placeholder="https://acme.com" value={website} onChange={(e) => setWebsite(e.target.value)} />
                             </div>
                             <div className="space-y-2 md:col-span-2">
-                                <Label htmlFor="description">Description</Label>
-                                <Textarea id="description" placeholder="Optional details, serial numbers..." value={description} onChange={(e) => setDescription(e.target.value)} />
+                                <Label htmlFor="address">Address</Label>
+                                <Input id="address" placeholder="123 Main St, San José" value={address} onChange={(e) => setAddress(e.target.value)} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="payment_terms">Payment Terms (days)</Label>
+                                <Input id="payment_terms" type="number" step="1" placeholder="30" value={paymentTerms} onChange={(e) => setPaymentTerms(e.target.value)} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="currency">Currency</Label>
+                                <Input id="currency" placeholder="USD" value={currency} onChange={(e) => setCurrency(e.target.value.toUpperCase())} />
+                            </div>
+                            <div className="space-y-2 flex flex-col justify-end pb-2">
+                                <div className="flex items-center space-x-2">
+                                    <Switch id="is_active" checked={isActive} onCheckedChange={setIsActive} />
+                                    <Label htmlFor="is_active" className="cursor-pointer">Active</Label>
+                                </div>
+                            </div>
+                            <div className="space-y-2 md:col-span-2">
+                                <Label htmlFor="notes">Notes</Label>
+                                <Textarea id="notes" placeholder="Optional details..." value={notes} onChange={(e) => setNotes(e.target.value)} />
                             </div>
                         </div>
                     </div>

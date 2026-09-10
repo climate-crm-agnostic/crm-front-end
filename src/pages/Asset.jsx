@@ -23,7 +23,8 @@ export const Asset = () => {
             label: "Price",
             render: (value) => value ? `$${Number(value).toFixed(2)}` : '-'
         },
-        { key: "quantity", label: "Quantity" }
+        { key: "quantity", label: "Quantity" },
+        { key: "supplier_name", label: "Supplier", render: (value) => value || "-" },
     ];
 
     const [columns, setColumns] = useState(staticColumns);

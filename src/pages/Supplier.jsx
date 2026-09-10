@@ -3,29 +3,24 @@ import { useNavigate } from "react-router-dom";
 import { Table } from "../components/Table";
 import { Button } from "../components/ui/button";
 import { Plus } from "lucide-react";
-import { getInventoryItems, deleteInventoryItem, getInventoryItemAttributes } from "../services/inventoryService";
+import { getSuppliers, deleteSupplier, getSupplierAttributes } from "../services/supplierService";
 import Swal from "sweetalert2";
 
-export const Inventory = () => {
+export const Supplier = () => {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [attributes, setAttributes] = useState([]);
     const navigate = useNavigate();
 
     const staticColumns = [
-        { key: "sku", label: "SKU" },
+        { key: "name", label: "Name" },
+        { key: "email", label: "Email" },
+        { key: "phone", label: "Phone" },
         {
-            key: "quantity_on_hand",
-            label: "Quantity",
-            render: (value) => Number(value).toFixed(2)
+            key: "is_active",
+            label: "Active",
+            render: (value) => (value ? "Yes" : "No"),
         },
-        {
-            key: "reorder_level",
-            label: "Reorder Lvl",
-            render: (value) => Number(value).toFixed(2)
-        },
-        { key: "location", label: "Location" },
-        { key: "supplier_name", label: "Supplier", render: (value) => value || "-" },
     ];
 
     const [columns, setColumns] = useState(staticColumns);
@@ -38,8 +33,8 @@ export const Inventory = () => {
         setLoading(true);
         try {
             const [itemsData, attributesData] = await Promise.all([
-                getInventoryItems(),
-                getInventoryItemAttributes()
+                getSuppliers(),
+                getSupplierAttributes()
             ]);
 
             const processedItems = itemsData.map(item => ({
@@ -65,7 +60,7 @@ export const Inventory = () => {
     };
 
     const handleEdit = (item) => {
-        navigate(`/inventory/${item.id}`);
+        navigate(`/supplier/${item.id}`);
     };
 
     const handleDelete = async (item) => {
@@ -81,11 +76,11 @@ export const Inventory = () => {
 
         if (result.isConfirmed) {
             try {
-                await deleteInventoryItem(item.id);
+                await deleteSupplier(item.id);
                 fetchData();
                 Swal.fire(
                     'Deleted!',
-                    'Inventory item has been deleted.',
+                    'Supplier has been deleted.',
                     'success'
                 );
             } catch (error) {
@@ -104,15 +99,15 @@ export const Inventory = () => {
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-2">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight text-codex-texto-primary dark:text-codex-texto-dark-primary">
-                        Inventory
+                        Suppliers
                     </h1>
                     <p className="text-sm text-muted-foreground">
-                        Manage physical stock and locations.
+                        Manage the vendors your company buys from.
                     </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                    <Button onClick={() => navigate("/inventory/new")}>
-                        <Plus className="mr-2 h-4 w-4" /> Add Inventory
+                    <Button onClick={() => navigate("/supplier/new")}>
+                        <Plus className="mr-2 h-4 w-4" /> Add Supplier
                     </Button>
                 </div>
             </div>

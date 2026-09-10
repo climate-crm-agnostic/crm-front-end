@@ -26,6 +26,8 @@ import { Inventory } from "../pages/Inventory";
 import { InventoryDetail } from "../pages/InventoryDetail";
 import { Asset } from "../pages/Asset";
 import { AssetDetail } from "../pages/AssetDetail";
+import { Supplier } from "../pages/Supplier";
+import { SupplierDetail } from "../pages/SupplierDetail";
 import { AssetAssignment } from "../pages/AssetAssignment";
 import { AssetAssignmentDetail } from "../pages/AssetAssignmentDetail";
 import { WebhookList } from "../pages/Webhooks/WebhookList";
@@ -118,6 +120,8 @@ export const RouterApp = () => {
                 <Route path="inventory/:id" element={<PermissionGuard requiredPermission="app.add_inventory"><FeatureGate feature="inventory"><InventoryDetail /></FeatureGate></PermissionGuard>} />
                 <Route path="asset" element={<PermissionGuard requiredPermission="app.add_asset"><FeatureGate feature="assets"><Asset /></FeatureGate></PermissionGuard>} />
                 <Route path="asset/:id" element={<PermissionGuard requiredPermission="app.add_asset"><FeatureGate feature="assets"><AssetDetail /></FeatureGate></PermissionGuard>} />
+                <Route path="supplier" element={<PermissionGuard requiredPermission="app.add_supplier"><Supplier /></PermissionGuard>} />
+                <Route path="supplier/:id" element={<PermissionGuard requiredPermission="app.add_supplier"><SupplierDetail /></PermissionGuard>} />
                 <Route path="assetassignment" element={<PermissionGuard requiredPermission="app.add_assetassignment"><FeatureGate feature="assets"><AssetAssignment /></FeatureGate></PermissionGuard>} />
                 <Route path="assetassignment/:id" element={<PermissionGuard requiredPermission="app.add_assetassignment"><FeatureGate feature="assets"><AssetAssignmentDetail /></FeatureGate></PermissionGuard>} />
                 <Route path="followup" element={<PermissionGuard requiredPermission="app.add_followup"><Followup /></PermissionGuard>} />

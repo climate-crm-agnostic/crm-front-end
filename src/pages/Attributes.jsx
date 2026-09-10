@@ -154,7 +154,8 @@ export const Attributes = () => {
     // in that list creates rows nothing else can ever read back.
     const [entities] = useState([
         'client', 'contact', 'lead', 'service',
-        'category', 'catalogue_item', 'invoice', 'follow_up', 'inventory', 'asset', 'asset_assignment'
+        'category', 'catalogue_item', 'invoice', 'follow_up', 'inventory', 'asset', 'asset_assignment',
+        'supplier'
     ]);
     const [attributesData, setAttributesData] = useState({});
     const [loading, setLoading] = useState(true);
