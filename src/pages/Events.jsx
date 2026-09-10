@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Plus, Trash2, Eye, CalendarDays, MapPin, Video, BarChart3 } from "lucide-react";
+import { Plus, Trash2, Eye, CalendarDays, MapPin, Video, BarChart3, ArrowLeft } from "lucide-react";
 import { getEvents, deleteEvent } from "@/services/eventService";
 import Swal from "sweetalert2";
-import { LeadsReportModal } from "@/components/events/LeadsReportModal";
+import { LeadsReportView } from "@/components/events/LeadsReportView";
 
 const toast = (icon, title) =>
     Swal.fire({ icon, title, toast: true, position: "top-end", showConfirmButton: false, timer: 3000 });
@@ -32,7 +32,7 @@ const StatusBadge = ({ event }) => {
 export const Events = () => {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [reportOpen, setReportOpen] = useState(false);
+    const [view, setView] = useState("events");   // "events" | "report"
 
     useEffect(() => {
         load();
@@ -98,12 +98,16 @@ export const Events = () => {
 
                 <div className="flex items-center gap-2">
                     <button
-                        onClick={() => setReportOpen(true)}
+                        onClick={() => setView((v) => (v === "report" ? "events" : "report"))}
                         className="flex items-center gap-2 h-10 px-4 rounded-lg text-sm font-semibold cursor-pointer"
-                        style={{ border: "1px solid #5E6A43", color: "#5E6A43", backgroundColor: "#FFFFFF" }}
+                        style={
+                            view === "report"
+                                ? { border: "1px solid #D8D2C4", color: "#6b6560", backgroundColor: "#FFFFFF" }
+                                : { border: "1px solid #5E6A43", color: "#5E6A43", backgroundColor: "#FFFFFF" }
+                        }
                     >
-                        <BarChart3 className="h-4 w-4" />
-                        Leads report
+                        {view === "report" ? <ArrowLeft className="h-4 w-4" /> : <BarChart3 className="h-4 w-4" />}
+                        {view === "report" ? "Back to events" : "Leads report"}
                     </button>
                     <Link to="/event/new">
                         <button
@@ -119,8 +123,9 @@ export const Events = () => {
                 </div>
             </div>
 
-            {reportOpen && <LeadsReportModal events={events} onClose={() => setReportOpen(false)} />}
-
+            {view === "report" ? (
+                <LeadsReportView events={events} />
+            ) : (
             <div className="overflow-hidden" style={{ borderRadius: "10px", border: "1px solid #D8D2C4", backgroundColor: "#FBF7EF" }}>
                 <div className="px-5 py-3" style={{ borderBottom: "1px solid #D8D2C4", backgroundColor: "#F2EBDD" }}>
                     <span className="text-sm font-semibold" style={{ color: "#2E2A26" }}>All Events</span>
@@ -205,6 +210,7 @@ export const Events = () => {
                     </div>
                 )}
             </div>
+            )}
         </div>
     );
 };
