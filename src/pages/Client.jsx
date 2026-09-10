@@ -4,7 +4,7 @@ import { Table } from "../components/Table";
 import { Button } from "../components/ui/button";
 import { Plus, Download, Upload, X, CheckCircle, AlertCircle } from "lucide-react";
 import { getClients, deleteClient, getClientAttributes, importClientsFromExcel, exportClientsExcel } from "../services/clientService";
-import { formatAttributeValue } from "../utils/attributeTypes";
+import { AttributeValueCell } from "../components/attributes/AttributeValueCell";
 import { buildFilterParams } from "../utils/attributeFilters";
 import { AttributeFilterBar } from "../components/attributes/AttributeFilterBar";
 import { saveAs } from "file-saver";
@@ -65,7 +65,7 @@ export const Client = () => {
             const dynamicColumns = attributesData.map(attr => ({
                 key: attr.name, // The backend key/name for the attribute
                 label: attr.label,
-                render: (value) => formatAttributeValue(attr, value),
+                render: (value) => <AttributeValueCell attr={attr} value={value} />,
             }));
 
             setColumns([...staticColumns, ...dynamicColumns]);

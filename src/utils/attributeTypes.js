@@ -186,9 +186,12 @@ export const formatAttributeValue = (attr, rawValue) => {
             const num = Number(rawValue);
             if (Number.isNaN(num)) return String(rawValue);
             const decimals = config.decimals ?? 2;
+            // '0-1' means the stored value is a fraction (0.15 == 15%);
+            // '0-100' (the default) means the stored value already is one.
+            const display = config.display_mode === "0-1" ? num * 100 : num;
             // config.locale, not undefined: the server formats merge fields
             // with it, and the two have to agree (see format_cases.json).
-            return `${num.toLocaleString(config.locale || undefined, { maximumFractionDigits: decimals })}%`;
+            return `${display.toLocaleString(config.locale || undefined, { maximumFractionDigits: decimals })}%`;
         }
         case "number": {
             const num = Number(rawValue);
@@ -211,6 +214,25 @@ export const formatAttributeValue = (attr, rawValue) => {
         }
         case "boolean":
             return rawValue ? (config.true_label || "Yes") : (config.false_label || "No");
+        case "date": {
+            // Stored as a bare "YYYY-MM-DD" — parsing that through `new
+            // Date(string)` reads it as UTC midnight, which a negative-offset
+            // timezone then rolls back a day. Build the local date by hand.
+            const [y, m, d] = String(rawValue).split("-").map(Number);
+            if (!y || !m || !d) return String(rawValue);
+            const parsed = new Date(y, m - 1, d);
+            // 'iso' echoes the stored string, matching the server exactly
+            // (see format_cases.json). 'locale' and 'long' follow the
+            // viewer's own browser, which the server cannot know in advance —
+            // same reasoning as datetime's 'locale' mode below.
+            if (config.display_format === "iso") return String(rawValue);
+            if (config.display_format === "long") {
+                return parsed.toLocaleDateString(undefined, {
+                    year: "numeric", month: "long", day: "numeric",
+                });
+            }
+            return parsed.toLocaleDateString();
+        }
         case "datetime": {
             const parsed = new Date(rawValue);
             if (Number.isNaN(parsed.getTime())) return String(rawValue);

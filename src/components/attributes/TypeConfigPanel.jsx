@@ -22,6 +22,7 @@ const OPTION_LABELS = {
     min: "Minimum",
     max: "Maximum",
     allow_negative: "Allow negative values",
+    display_mode: "Value scale",
     thousands_separator: "Group thousands",
     prefix: "Prefix",
     suffix: "Suffix",
@@ -67,6 +68,18 @@ const OPTION_HINTS = {
     relative_constraint: "Blocks dates before today or after today.",
     searchable: "Leave unset to turn on automatically past 8 options.",
     allow_other: "Lets someone type a value that is not in the list.",
+    display_mode: "How a stored number maps to a percent shown on screen.",
+};
+
+// Per-value overrides for an enum's option text, keyed by option key. Falls
+// back to enumLabel() below when a key or value isn't listed here — needed
+// for display_mode because "0-100" / "0-1" read as noise once the dashes are
+// stripped to spaces.
+const ENUM_VALUE_LABELS = {
+    display_mode: {
+        "0-100": "0–100 (a stored 15 is 15%)",
+        "0-1": "0–1 (a stored 0.15 is 15%)",
+    },
 };
 
 const humanize = (key) =>
@@ -163,7 +176,9 @@ const Control = ({ spec, optionKey, value, onChange, currencies }) => {
                 <select value={value ?? ""} onChange={(e) => onChange(e.target.value)}
                         style={{ ...inputStyle, appearance: "auto" }}>
                     {spec.options.map((option) => (
-                        <option key={option} value={option}>{enumLabel(option)}</option>
+                        <option key={option} value={option}>
+                            {ENUM_VALUE_LABELS[optionKey]?.[option] || enumLabel(option)}
+                        </option>
                     ))}
                 </select>
             );

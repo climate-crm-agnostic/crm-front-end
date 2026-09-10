@@ -10,7 +10,7 @@ import { getSales } from "../../services/salesService";
 import { getClients } from "../../services/clientService";
 import { getPipelineAttributes } from "../../services/pipelineAttributeService";
 import { formatDate } from "../../utils/date";
-import { formatAttributeValue } from "../../utils/attributeTypes";
+import { AttributeValueCell } from "../attributes/AttributeValueCell";
 
 // Table view of the leads in the active pipeline — a flat alternative to the
 // Kanban (LeadBoard). Self-contained data fetching (sales/clients/attributes)
@@ -102,7 +102,7 @@ export const LeadTable = ({ selectedPipelineId, refreshTrigger, onLeadClick }) =
     const attributeColumns = pipelineAttributes.map(attr => ({
         key: attr.name,
         label: attr.label || attr.name,
-        render: (value) => formatAttributeValue(attr, value),
+        render: (value) => <AttributeValueCell attr={attr} value={value} />,
     }));
 
     const columns = [

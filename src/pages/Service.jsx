@@ -6,7 +6,7 @@ import { Plus, Search, Upload, X, CheckCircle, AlertCircle } from "lucide-react"
 import { getServices, deleteService, getServiceAttributes, importServicesFromExcel } from "../services/serviceService";
 import { getClients } from "../services/clientService";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
-import { formatAttributeValue } from "../utils/attributeTypes";
+import { AttributeValueCell } from "../components/attributes/AttributeValueCell";
 import { buildFilterParams } from "../utils/attributeFilters";
 import { AttributeFilterBar } from "../components/attributes/AttributeFilterBar";
 import Swal from "sweetalert2";
@@ -65,7 +65,7 @@ export const Service = () => {
             const dynamicColumns = attributesData.map(attr => ({
                 key: attr.name,
                 label: attr.label,
-                render: (value) => formatAttributeValue(attr, value),
+                render: (value) => <AttributeValueCell attr={attr} value={value} />,
             }));
 
             setColumns([...staticColumns, ...dynamicColumns]);
