@@ -3,12 +3,15 @@ import { useParams, useNavigate } from "react-router-dom";
 import { QRCodeCanvas } from "qrcode.react";
 import {
     ArrowLeft, Copy, Download, Power, RefreshCw, Send, MapPin, Video,
-    CheckCircle2, XCircle, Users,
+    CheckCircle2, XCircle, Users, MoreVertical, Pencil, Trash2, UserPlus,
 } from "lucide-react";
 import Swal from "sweetalert2";
 import {
     getEvent, getEventAttendees, deactivateEvent, reactivateEvent, sendInvitations, resendAttendee,
+    updateAttendee, deleteAttendee,
 } from "@/services/eventService";
+import { AddAttendeesModal } from "@/components/events/AddAttendeesModal";
+import { EditAttendeeModal } from "@/components/events/EditAttendeeModal";
 
 const GREEN = "#5E6A43";
 
@@ -33,6 +36,9 @@ export const EventDetail = () => {
     const [attendees, setAttendees] = useState([]);
     const [loading, setLoading] = useState(true);
     const [reactivateOpen, setReactivateOpen] = useState(false);
+    const [addOpen, setAddOpen] = useState(false);
+    const [editAttendee, setEditAttendee] = useState(null);   // attendee being edited
+    const [menuFor, setMenuFor] = useState(null);             // attendee id whose row menu is open
 
     const load = async () => {
         try {
@@ -120,11 +126,38 @@ export const EventDetail = () => {
         catch (e) { toast("error", e.message || "Failed to resend"); }
     };
 
+    const handleDeleteAttendee = async (attendee) => {
+        setMenuFor(null);
+        const name = attendee.full_name || attendee.email || "this attendee";
+        const r = await Swal.fire({
+            title: "Remove attendee?",
+            text: `${name} will be removed from this event. This can't be undone.`,
+            icon: "warning", showCancelButton: true, confirmButtonColor: "#B0592E",
+            cancelButtonColor: "#9b948e", confirmButtonText: "Yes, remove",
+        });
+        if (!r.isConfirmed) return;
+        try { await deleteAttendee(id, attendee.id); toast("success", `${name} removed`); load(); }
+        catch (e) { toast("error", e.message || "Failed to remove attendee"); }
+    };
+
+    const handleSaveAttendee = async (data) => {
+        await updateAttendee(id, editAttendee.id, data);
+        toast("success", "Attendee updated");
+        setEditAttendee(null);
+        load();
+    };
+
+    const handleAttendeesAdded = () => {
+        setAddOpen(false);
+        load();
+    };
+
     if (loading || !event) {
         return <div className="p-8 text-center" style={{ color: "#6b6560" }}>Loading…</div>;
     }
 
     const linkValid = event.is_link_valid;
+    const isVirtual = event.modality === "virtual";
     // A scheduled (future) event's link/QR are worth showing so the admin can
     // distribute them ahead of time; only ended/inactive events hide the QR.
     const linkShareable = linkValid || event.is_not_open_yet;
@@ -208,55 +241,71 @@ export const EventDetail = () => {
                 ))}
             </div>
 
-            {/* Public link + QR */}
+            {/* Link + QR */}
             <div className="grid md:grid-cols-3 gap-4">
                 <div className="md:col-span-2 rounded-xl p-6" style={{ border: "1px solid #D8D2C4", backgroundColor: "#FBF7EF" }}>
-                    <p className="text-sm font-semibold mb-2" style={{ color: "#2E2A26" }}>Public registration link</p>
-                    <div className="flex items-center gap-2">
-                        <input
-                            readOnly
-                            value={event.register_url}
-                            className="flex-1 h-10 px-3 rounded-lg text-sm"
-                            style={{ border: "1px solid #D8D2C4", backgroundColor: "#F5F0E8", color: "#2E2A26" }}
-                        />
-                        <button onClick={copyLink} className="flex items-center gap-1.5 h-10 px-3 rounded-lg text-sm font-semibold cursor-pointer" style={{ backgroundColor: GREEN, color: "#FBF7EF" }}>
-                            <Copy className="h-4 w-4" /> Copy
-                        </button>
-                    </div>
-                    <p className="text-xs mt-2" style={{ color: "#9b948e" }}>
-                        {linkValid
-                            ? "Link is live. Opens 1h before start, closes 1h after end."
-                            : event.is_not_open_yet
-                                ? "Scheduled. The link opens 1h before the event starts."
-                                : "This link is not currently valid (event inactive or ended)."}
-                    </p>
-
-                    {event.modality === "virtual" && event.virtual_url && (
-                        <div className="mt-4 pt-4" style={{ borderTop: "1px solid #E4DECF" }}>
+                    {isVirtual ? (
+                        // VIRTUAL: no public registration link (attendees get a
+                        // personal link by email). Only the meeting link shows.
+                        <>
                             <p className="text-sm font-semibold mb-2 inline-flex items-center gap-1.5" style={{ color: "#2E2A26" }}>
                                 <Video className="h-4 w-4" /> Meeting link
                             </p>
+                            {event.virtual_url ? (
+                                <>
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            readOnly
+                                            value={event.virtual_url}
+                                            className="flex-1 h-10 px-3 rounded-lg text-sm"
+                                            style={{ border: "1px solid #D8D2C4", backgroundColor: "#F5F0E8", color: "#2E2A26" }}
+                                        />
+                                        <button onClick={copyJoinUrl} className="flex items-center gap-1.5 h-10 px-3 rounded-lg text-sm font-semibold cursor-pointer" style={{ backgroundColor: GREEN, color: "#FBF7EF" }}>
+                                            <Copy className="h-4 w-4" /> Copy
+                                        </button>
+                                    </div>
+                                    <p className="text-xs mt-2" style={{ color: "#9b948e" }}>
+                                        Attendees join the event through this link. Each attendee also receives their own registration link by email.
+                                    </p>
+                                </>
+                            ) : (
+                                <p className="text-xs" style={{ color: "#9b948e" }}>No meeting link set.</p>
+                            )}
+                        </>
+                    ) : (
+                        // IN-PERSON: public registration link.
+                        <>
+                            <p className="text-sm font-semibold mb-2" style={{ color: "#2E2A26" }}>Public registration link</p>
                             <div className="flex items-center gap-2">
                                 <input
                                     readOnly
-                                    value={event.virtual_url}
+                                    value={event.register_url}
                                     className="flex-1 h-10 px-3 rounded-lg text-sm"
                                     style={{ border: "1px solid #D8D2C4", backgroundColor: "#F5F0E8", color: "#2E2A26" }}
                                 />
-                                <button onClick={copyJoinUrl} className="flex items-center gap-1.5 h-10 px-3 rounded-lg text-sm font-semibold cursor-pointer" style={{ backgroundColor: GREEN, color: "#FBF7EF" }}>
+                                <button onClick={copyLink} className="flex items-center gap-1.5 h-10 px-3 rounded-lg text-sm font-semibold cursor-pointer" style={{ backgroundColor: GREEN, color: "#FBF7EF" }}>
                                     <Copy className="h-4 w-4" /> Copy
                                 </button>
                             </div>
                             <p className="text-xs mt-2" style={{ color: "#9b948e" }}>
-                                Attendees join the event through this link.
+                                {linkValid
+                                    ? "Link is live. Opens at 00:00 of the start day, closes 1h after the event ends."
+                                    : event.is_not_open_yet
+                                        ? "Scheduled. The link opens at 00:00 of the start day."
+                                        : "This link is not currently valid (event inactive or ended)."}
                             </p>
-                        </div>
+                        </>
                     )}
                 </div>
 
                 <div className="rounded-xl p-6 flex flex-col items-center justify-center" style={{ border: "1px solid #D8D2C4", backgroundColor: "#FBF7EF" }}>
                     <p className="text-sm font-semibold mb-3" style={{ color: "#2E2A26" }}>QR code</p>
-                    {linkShareable ? (
+                    {isVirtual ? (
+                        <div className="text-center py-6" style={{ color: "#9b948e" }}>
+                            <Video className="h-8 w-8 mx-auto mb-2 opacity-40" />
+                            <p className="text-xs">Not available for virtual events. Attendees register through the personal link sent to their email.</p>
+                        </div>
+                    ) : linkShareable ? (
                         <>
                             <div ref={qrRef} className="p-2 bg-white rounded-lg">
                                 <QRCodeCanvas value={event.register_url} size={140} level="M" includeMargin />
@@ -285,20 +334,31 @@ export const EventDetail = () => {
                     <span className="ml-3 text-xs" style={{ color: "#9b948e" }}>
                         {event.registered_count} registered
                     </span>
-                    <button
-                        onClick={handleResendAll}
-                        disabled={!canResendAll}
-                        title={canResendAll ? "Resend to all pending attendees" : (canSendInvites ? "No pending attendees to resend to" : "Event is not active")}
-                        className="ml-auto flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-semibold"
-                        style={{
-                            border: `1px solid ${canResendAll ? GREEN : "#D8D2C4"}`,
-                            color: canResendAll ? GREEN : "#c9c3b6",
-                            backgroundColor: "#FFFFFF",
-                            cursor: canResendAll ? "pointer" : "not-allowed",
-                        }}
-                    >
-                        <Send className="h-3.5 w-3.5" /> Resend all
-                    </button>
+                    <div className="ml-auto flex items-center gap-2">
+                        {isVirtual && canSendInvites && (
+                            <button
+                                onClick={() => setAddOpen(true)}
+                                className="flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-semibold cursor-pointer"
+                                style={{ backgroundColor: GREEN, color: "#FBF7EF" }}
+                            >
+                                <UserPlus className="h-3.5 w-3.5" /> Add attendees
+                            </button>
+                        )}
+                        <button
+                            onClick={handleResendAll}
+                            disabled={!canResendAll}
+                            title={canResendAll ? "Resend to all pending attendees" : (canSendInvites ? "No pending attendees to resend to" : "Event is not active")}
+                            className="flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-semibold"
+                            style={{
+                                border: `1px solid ${canResendAll ? GREEN : "#D8D2C4"}`,
+                                color: canResendAll ? GREEN : "#c9c3b6",
+                                backgroundColor: "#FFFFFF",
+                                cursor: canResendAll ? "pointer" : "not-allowed",
+                            }}
+                        >
+                            <Send className="h-3.5 w-3.5" /> Resend all
+                        </button>
+                    </div>
                 </div>
                 {attendees.length === 0 ? (
                     <div className="py-10 text-center text-sm" style={{ color: "#9b948e" }}>No attendees yet.</div>
@@ -343,23 +403,63 @@ export const EventDetail = () => {
                                                 // Resend only makes sense for a pending attendee with an
                                                 // email, while the event is active and not ended.
                                                 const canResend = canSendInvites && a.email && a.status === "pending";
-                                                const reason = !canSendInvites ? "Event is not active"
+                                                const resendReason = !canSendInvites ? "Event is not active"
                                                     : !a.email ? "No email on file"
                                                     : a.status === "confirmed" ? "Already confirmed"
                                                     : a.status === "not_attended" ? "Event ended"
-                                                    : "Resend invitation (new code)";
+                                                    : "";
+                                                const open = menuFor === a.id;
                                                 return (
-                                                    <button
-                                                        onClick={() => canResend && handleResendOne(a)}
-                                                        disabled={!canResend}
-                                                        title={reason}
-                                                        className="inline-flex h-8 w-8 items-center justify-center rounded-md"
-                                                        style={{ color: canResend ? GREEN : "#c9c3b6", backgroundColor: "transparent", cursor: canResend ? "pointer" : "not-allowed" }}
-                                                        onMouseEnter={(e) => { if (canResend) e.currentTarget.style.backgroundColor = "rgba(94,106,67,0.1)"; }}
-                                                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-                                                    >
-                                                        <Send className="h-4 w-4" />
-                                                    </button>
+                                                    <div className="relative inline-block">
+                                                        <button
+                                                            onClick={() => setMenuFor(open ? null : a.id)}
+                                                            title="Actions"
+                                                            className="inline-flex h-8 w-8 items-center justify-center rounded-md cursor-pointer"
+                                                            style={{ color: "#6b6560", backgroundColor: open ? "rgba(94,106,67,0.1)" : "transparent" }}
+                                                        >
+                                                            <MoreVertical className="h-4 w-4" />
+                                                        </button>
+                                                        {open && (
+                                                            <>
+                                                                {/* click-away layer */}
+                                                                <div className="fixed inset-0 z-40" onClick={() => setMenuFor(null)} />
+                                                                <div
+                                                                    className="absolute right-0 z-50 mt-1 w-44 rounded-lg py-1 text-left"
+                                                                    style={{ backgroundColor: "#FFFFFF", border: "1px solid #D8D2C4", boxShadow: "0 6px 20px rgba(0,0,0,0.12)" }}
+                                                                >
+                                                                    <button
+                                                                        onClick={() => { if (canResend) { setMenuFor(null); handleResendOne(a); } }}
+                                                                        disabled={!canResend}
+                                                                        title={resendReason}
+                                                                        className="w-full flex items-center gap-2 px-3 py-2 text-sm"
+                                                                        style={{ color: canResend ? "#2E2A26" : "#c9c3b6", cursor: canResend ? "pointer" : "not-allowed" }}
+                                                                        onMouseEnter={(e) => { if (canResend) e.currentTarget.style.backgroundColor = "#F5F0E8"; }}
+                                                                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                                                                    >
+                                                                        <Send className="h-4 w-4" /> Resend invitation
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => { setMenuFor(null); setEditAttendee(a); }}
+                                                                        className="w-full flex items-center gap-2 px-3 py-2 text-sm cursor-pointer"
+                                                                        style={{ color: "#2E2A26" }}
+                                                                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#F5F0E8")}
+                                                                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                                                                    >
+                                                                        <Pencil className="h-4 w-4" /> Edit
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => handleDeleteAttendee(a)}
+                                                                        className="w-full flex items-center gap-2 px-3 py-2 text-sm cursor-pointer"
+                                                                        style={{ color: "#B0592E" }}
+                                                                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#FBEEE9")}
+                                                                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                                                                    >
+                                                                        <Trash2 className="h-4 w-4" /> Delete
+                                                                    </button>
+                                                                </div>
+                                                            </>
+                                                        )}
+                                                    </div>
                                                 );
                                             })()}
                                         </td>
@@ -376,6 +476,22 @@ export const EventDetail = () => {
                     event={event}
                     onClose={() => setReactivateOpen(false)}
                     onSubmit={doReactivate}
+                />
+            )}
+
+            {addOpen && (
+                <AddAttendeesModal
+                    eventId={id}
+                    onClose={() => setAddOpen(false)}
+                    onDone={handleAttendeesAdded}
+                />
+            )}
+
+            {editAttendee && (
+                <EditAttendeeModal
+                    attendee={editAttendee}
+                    onClose={() => setEditAttendee(null)}
+                    onSave={handleSaveAttendee}
                 />
             )}
         </div>
@@ -525,7 +641,7 @@ const ReactivateModal = ({ event, onClose, onSubmit }) => {
                     {form.customize_hours && start_at && end_at && end_at <= start_at && (
                         <p className="text-xs mt-1" style={{ color: "#b91c1c" }}>End must be after start.</p>
                     )}
-                    <p className="text-xs mt-1" style={{ color: "#9b948e" }}>Opens 1h before start, closes 1h after end.</p>
+                    <p className="text-xs mt-1" style={{ color: "#9b948e" }}>Opens at 00:00 of the start day, closes 1h after the event ends.</p>
                 </div>
 
                 <div>

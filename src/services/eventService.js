@@ -123,6 +123,34 @@ export const resendAttendee = async (eventId, attendeeId) => {
     return res.json();
 };
 
+// Update a single attendee's basic contact fields (name, email, phone,
+// company). No invitation is re-sent.
+export const updateAttendee = async (eventId, attendeeId, data) => {
+    const res = await fetch(`${EVENTS_URL}${eventId}/attendees/${attendeeId}/`, {
+        method: "PATCH",
+        headers: getHeaders(),
+        body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error updating attendee"));
+    }
+    return res.json();
+};
+
+// Soft-remove an attendee from the event.
+export const deleteAttendee = async (eventId, attendeeId) => {
+    const res = await fetch(`${EVENTS_URL}${eventId}/attendees/${attendeeId}/`, {
+        method: "DELETE",
+        headers: getHeaders(),
+    });
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error deleting attendee"));
+    }
+    return true;
+};
+
 export const reactivateEvent = async (id, data) => {
     const res = await fetch(`${EVENTS_URL}${id}/reactivate/`, {
         method: "POST",

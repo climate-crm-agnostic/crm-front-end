@@ -114,6 +114,23 @@ export const EventCreate = () => {
         return { start_at: start, end_at: end };
     };
 
+    // Returns a human message when the schedule is invalid, or "" when it's
+    // fine. Rules: no past day; if the event is TODAY the start hour must be
+    // later than the current time; the end must be after the start.
+    const scheduleError = (f) => {
+        if (!f.start_date || !f.start_time || !f.end_time) return "";
+        const { start_at, end_at } = computeStartEnd(f);
+        if (!start_at || !end_at) return "";
+        if (f.start_date < todayDate()) return "The event date can't be in the past.";
+        // Today → the start hour must still be ahead of now.
+        if (f.start_date === todayDate()) {
+            const now = new Date();
+            if (start_at <= now) return "The start time can't be in the past. Choose a time later than the current hour.";
+        }
+        if (end_at <= start_at) return "The end time must be after the start time.";
+        return "";
+    };
+
     // Step 3 — attendees (manual + excel)
     const [manualAttendees, setManualAttendees] = useState([emptyAttendee()]);
     const [excelRows, setExcelRows] = useState([]);
@@ -215,19 +232,13 @@ export const EventCreate = () => {
             if (form.modality === "in_person" && !form.location.trim()) return false;
             if (form.modality === "virtual" && !form.virtual_url.trim()) return false;
 
-            // Date model: start date + hours required.
+            // Date model: start date + hours required, and the schedule must
+            // pass all rules (no past day, no past start hour today, end>start).
             if (!form.start_date || !form.start_time || !form.end_time) return false;
             const { start_at, end_at } = computeStartEnd(form);
             if (!start_at || !end_at) return false;
             if (isNaN(start_at) || isNaN(end_at)) return false;
-
-            // End must be strictly after start.
-            if (end_at <= start_at) return false;
-
-            // No events in the past (compare against now, minute precision).
-            const now = new Date();
-            now.setSeconds(0, 0);
-            if (start_at < now) return false;
+            if (scheduleError(form)) return false;
 
             return true;
         }
@@ -509,16 +520,11 @@ export const EventCreate = () => {
                                     );
                                 })}
                             </div>
-                            {form.customize_hours && (() => {
-                                const { start_at, end_at } = computeStartEnd(form);
-                                if (start_at && end_at && end_at <= start_at) {
-                                    return (
-                                        <p className="text-xs mt-1" style={{ color: "#b91c1c" }}>
-                                            End must be after start.
-                                        </p>
-                                    );
-                                }
-                                return null;
+                            {(() => {
+                                const msg = scheduleError(form);
+                                return msg ? (
+                                    <p className="text-xs mt-2" style={{ color: "#b91c1c" }}>{msg}</p>
+                                ) : null;
                             })()}
                         </div>
                     </div>
