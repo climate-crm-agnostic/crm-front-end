@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { COUNTRY_LIST } from "../../utils/phoneCountries";
 
 const labelStyle = {
@@ -246,20 +247,40 @@ const Control = ({ spec, optionKey, value, onChange, currencies }) => {
     }
 };
 
-// Comma-separated entry for the list-shaped options. Kept as free text while
-// typing so a trailing comma does not fight the user mid-word.
-const TokenList = ({ value, onChange, placeholder, transform }) => (
-    <input
-        type="text"
-        value={Array.isArray(value) ? value.join(", ") : (value ?? "")}
-        placeholder={placeholder}
-        onChange={(e) =>
-            onChange(
-                e.target.value
-                    .split(",")
-                    .map((v) => (transform ? transform(v.trim()) : v.trim()))
-                    .filter(Boolean)
-            )}
-        style={inputStyle}
-    />
-);
+// Comma-separated entry for the list-shaped options.
+//
+// The input keeps its own draft text while the admin is typing, rather than
+// showing `value.join(", ")` recomputed on every keystroke: re-deriving from
+// the parsed array immediately drops whatever comma or trailing space they
+// just typed (a lone "," parses to no tokens, so the display would snap back
+// to what was there before it). The draft is only turned into the actual
+// array — and handed to onChange — when the field loses focus.
+const TokenList = ({ value, onChange, placeholder, transform }) => {
+    const [draft, setDraft] = useState(
+        () => (Array.isArray(value) ? value.join(", ") : (value ?? ""))
+    );
+
+    const commit = () => {
+        const tokens = draft
+            .split(",")
+            .map((v) => (transform ? transform(v.trim()) : v.trim()))
+            .filter(Boolean);
+        onChange(tokens);
+        // Re-sync the draft to what actually got saved — collapses stray
+        // spacing and reflects `transform` (e.g. lowercase "cr" becoming
+        // "CR"), so the field doesn't show something other than the value
+        // it now holds.
+        setDraft(tokens.join(", "));
+    };
+
+    return (
+        <input
+            type="text"
+            value={draft}
+            placeholder={placeholder}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={commit}
+            style={inputStyle}
+        />
+    );
+};
