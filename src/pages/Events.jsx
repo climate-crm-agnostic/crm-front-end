@@ -7,10 +7,17 @@ import Swal from "sweetalert2";
 const toast = (icon, title) =>
     Swal.fire({ icon, title, toast: true, position: "top-end", showConfirmButton: false, timer: 3000 });
 
+// Derives the badge label/color from the event's live state. A future event
+// (active but its link hasn't opened yet) shows "Scheduled" — not "Expired".
+const eventStatus = (event) => {
+    if (event.status !== "active") return { label: "Inactive", color: "#B0592E" };
+    if (event.is_link_valid) return { label: "Active", color: "#3CC647" };
+    if (event.is_not_open_yet) return { label: "Scheduled", color: "#5E6A43" };
+    return { label: "Expired", color: "#B0592E" };
+};
+
 const StatusBadge = ({ event }) => {
-    const valid = event.is_link_valid;
-    const label = event.status === "active" ? (valid ? "Active" : "Expired") : "Inactive";
-    const color = event.status === "active" && valid ? "#3CC647" : "#B0592E";
+    const { label, color } = eventStatus(event);
     return (
         <span
             className="text-xs font-semibold px-2 py-0.5 rounded-full"

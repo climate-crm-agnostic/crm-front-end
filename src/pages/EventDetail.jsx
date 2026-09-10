@@ -15,6 +15,15 @@ const GREEN = "#5E6A43";
 const toast = (icon, title) =>
     Swal.fire({ icon, title, toast: true, position: "top-end", showConfirmButton: false, timer: 3000 });
 
+// Derives the badge label/color from the event's live state. A future event
+// (active but its link hasn't opened yet) shows "Scheduled" — not "Expired".
+const eventStatus = (event) => {
+    if (event.status !== "active") return { label: "Inactive", color: "#B0592E" };
+    if (event.is_link_valid) return { label: "Active", color: "#2f9e3a" };
+    if (event.is_not_open_yet) return { label: "Scheduled", color: "#5E6A43" };
+    return { label: "Expired", color: "#B0592E" };
+};
+
 export const EventDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -116,10 +125,15 @@ export const EventDetail = () => {
     }
 
     const linkValid = event.is_link_valid;
-    // Resend is only meaningful for people who still need to register, and
-    // only while the event link is live.
+    // A scheduled (future) event's link/QR are worth showing so the admin can
+    // distribute them ahead of time; only ended/inactive events hide the QR.
+    const linkShareable = linkValid || event.is_not_open_yet;
+    // Invitations can be sent while the event is active and hasn't ended —
+    // including scheduled (future) events, whose link just isn't open yet.
+    const canSendInvites = event.status === "active" && !event.is_ended;
+    // Resend is only meaningful for people who still need to register.
     const pendingWithEmail = attendees.filter((a) => a.status === "pending" && a.email);
-    const canResendAll = linkValid && pendingWithEmail.length > 0;
+    const canResendAll = canSendInvites && pendingWithEmail.length > 0;
 
     return (
         <div className="p-6 max-w-5xl mx-auto space-y-6" style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
@@ -133,19 +147,24 @@ export const EventDetail = () => {
                     <div>
                         <div className="flex items-center gap-2">
                             <h1 className="text-xl font-semibold" style={{ color: "#2E2A26" }}>{event.name}</h1>
-                            <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{
-                                backgroundColor: linkValid ? "rgba(60,198,71,0.12)" : "rgba(176,89,46,0.12)",
-                                color: linkValid ? "#2f9e3a" : "#B0592E",
-                                border: `1px solid ${linkValid ? "#3CC64755" : "#B0592E55"}`,
-                            }}>
-                                {event.status === "active" ? (linkValid ? "Active" : "Expired") : "Inactive"}
-                            </span>
+                            {(() => {
+                                const { label, color } = eventStatus(event);
+                                return (
+                                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{
+                                        backgroundColor: `${color}1f`,
+                                        color,
+                                        border: `1px solid ${color}55`,
+                                    }}>
+                                        {label}
+                                    </span>
+                                );
+                            })()}
                         </div>
                         <p className="text-sm mt-1" style={{ color: "#9b948e" }}>{event.description || "No description"}</p>
                         <div className="flex flex-wrap gap-4 mt-3 text-sm" style={{ color: "#6b6560" }}>
                             <span className="inline-flex items-center gap-1.5">
                                 {event.modality === "virtual" ? <Video className="h-4 w-4" /> : <MapPin className="h-4 w-4" />}
-                                {event.modality === "virtual" ? (event.virtual_url || "Virtual") : (event.location || "In person")}
+                                {event.modality === "virtual" ? "Virtual" : (event.location || "In person")}
                             </span>
                             <span>Pipeline: <strong style={{ color: "#2E2A26" }}>{event.pipeline_name}</strong></span>
                             <span>Initial stage: <strong style={{ color: "#2E2A26" }}>{event.initial_stage}</strong></span>
@@ -207,7 +226,9 @@ export const EventDetail = () => {
                     <p className="text-xs mt-2" style={{ color: "#9b948e" }}>
                         {linkValid
                             ? "Link is live. Opens 1h before start, closes 1h after end."
-                            : "This link is not currently valid (event inactive, ended, or outside its open window)."}
+                            : event.is_not_open_yet
+                                ? "Scheduled. The link opens 1h before the event starts."
+                                : "This link is not currently valid (event inactive or ended)."}
                     </p>
 
                     {event.modality === "virtual" && event.virtual_url && (
@@ -235,7 +256,7 @@ export const EventDetail = () => {
 
                 <div className="rounded-xl p-6 flex flex-col items-center justify-center" style={{ border: "1px solid #D8D2C4", backgroundColor: "#FBF7EF" }}>
                     <p className="text-sm font-semibold mb-3" style={{ color: "#2E2A26" }}>QR code</p>
-                    {linkValid ? (
+                    {linkShareable ? (
                         <>
                             <div ref={qrRef} className="p-2 bg-white rounded-lg">
                                 <QRCodeCanvas value={event.register_url} size={140} level="M" includeMargin />
@@ -247,7 +268,7 @@ export const EventDetail = () => {
                     ) : (
                         <div className="text-center py-6" style={{ color: "#9b948e" }}>
                             <XCircle className="h-8 w-8 mx-auto mb-2 opacity-40" />
-                            <p className="text-xs">QR available only while the event link is valid.</p>
+                            <p className="text-xs">QR available only while the event is active.</p>
                         </div>
                     )}
                 </div>
@@ -267,7 +288,7 @@ export const EventDetail = () => {
                     <button
                         onClick={handleResendAll}
                         disabled={!canResendAll}
-                        title={canResendAll ? "Resend to all pending attendees" : (linkValid ? "No pending attendees to resend to" : "Event is not active")}
+                        title={canResendAll ? "Resend to all pending attendees" : (canSendInvites ? "No pending attendees to resend to" : "Event is not active")}
                         className="ml-auto flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-semibold"
                         style={{
                             border: `1px solid ${canResendAll ? GREEN : "#D8D2C4"}`,
@@ -320,9 +341,9 @@ export const EventDetail = () => {
                                         <td className="px-4 py-2 text-center">
                                             {(() => {
                                                 // Resend only makes sense for a pending attendee with an
-                                                // email, while the event link is still live.
-                                                const canResend = linkValid && a.email && a.status === "pending";
-                                                const reason = !linkValid ? "Event is not active"
+                                                // email, while the event is active and not ended.
+                                                const canResend = canSendInvites && a.email && a.status === "pending";
+                                                const reason = !canSendInvites ? "Event is not active"
                                                     : !a.email ? "No email on file"
                                                     : a.status === "confirmed" ? "Already confirmed"
                                                     : a.status === "not_attended" ? "Event ended"
@@ -367,6 +388,9 @@ const pad = (n) => String(n).padStart(2, "0");
 const todayDate = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
 const dateOf = (iso) => { const d = new Date(iso); return isNaN(d) ? "" : `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
 const timeOf = (iso) => { const d = new Date(iso); return isNaN(d) ? "" : `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+// 24-hour options (we use selects, not <input type="time">, so the UI is always 24h).
+const HOURS_24 = Array.from({ length: 24 }, (_, h) => pad(h));
+const MINUTES_60 = Array.from({ length: 60 }, (_, m) => pad(m));
 
 // Builds ISO start/end from date(s) + hours. End date falls back to start date
 // when the multi-day toggle is off.
@@ -466,31 +490,37 @@ const ReactivateModal = ({ event, onClose, onSubmit }) => {
                     )}
                 </div>
 
-                {/* Hours: locked at 06:00/20:00 until Customize. */}
+                {/* Hours (24h): locked at 06:00/20:00 until Customize. */}
                 <div>
-                    <div className="flex items-center justify-between mb-1">
-                        <label style={labelStyle}>Hours</label>
+                    <div className="flex items-center gap-3 mb-1">
+                        <label style={labelStyle}>Hours (24h)</label>
                         <button type="button" onClick={toggleCustomize} disabled={!form.start_date} className="text-xs font-semibold cursor-pointer" style={{ color: !form.start_date ? "#c9c3b6" : GREEN }}>
-                            {form.customize_hours ? "Use default hours" : "Customize"}
+                            {form.customize_hours ? "Use default hours" : "Customize hours"}
                         </button>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                         {[
                             { key: "start_time", label: "Start hour" },
                             { key: "end_time", label: "End hour" },
-                        ].map(({ key, label }) => (
-                            <div key={key}>
-                                <label className="text-xs" style={{ color: "#6b6560" }}>{label}</label>
-                                <input
-                                    type="time"
-                                    className={inputCls}
-                                    style={{ ...inputStyle, ...((!form.start_date || !form.customize_hours) ? disabledStyle : {}) }}
-                                    disabled={!form.start_date || !form.customize_hours}
-                                    value={form[key]}
-                                    onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
-                                />
-                            </div>
-                        ))}
+                        ].map(({ key, label }) => {
+                            const [hh = "", mm = ""] = (form[key] || "").split(":");
+                            const locked = !form.start_date || !form.customize_hours;
+                            const selStyle = { ...inputStyle, ...(locked ? disabledStyle : {}) };
+                            return (
+                                <div key={key}>
+                                    <label className="text-xs" style={{ color: "#6b6560" }}>{label}</label>
+                                    <div className="flex items-center gap-1.5">
+                                        <select className="h-10 px-2 rounded-lg text-sm flex-1" style={selStyle} disabled={locked} value={hh} onChange={(e) => setForm((f) => ({ ...f, [key]: `${e.target.value}:${mm || "00"}` }))} aria-label={`${label} (hour)`}>
+                                            {HOURS_24.map((h) => <option key={h} value={h}>{h}</option>)}
+                                        </select>
+                                        <span className="text-sm" style={{ color: "#6b6560" }}>:</span>
+                                        <select className="h-10 px-2 rounded-lg text-sm flex-1" style={selStyle} disabled={locked} value={mm} onChange={(e) => setForm((f) => ({ ...f, [key]: `${hh || "00"}:${e.target.value}` }))} aria-label={`${label} (minute)`}>
+                                            {MINUTES_60.map((m) => <option key={m} value={m}>{m}</option>)}
+                                        </select>
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
                     {form.customize_hours && start_at && end_at && end_at <= start_at && (
                         <p className="text-xs mt-1" style={{ color: "#b91c1c" }}>End must be after start.</p>

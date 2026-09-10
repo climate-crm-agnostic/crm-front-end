@@ -15,6 +15,12 @@ import { PhoneInput } from "@/components/ui/phone-input";
 const GREEN = "#5E6A43";
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
+// 24-hour time options for the hour/minute selects. We drive time with our own
+// selects (not <input type="time">, which renders am/pm per browser locale) so
+// the UI is ALWAYS 24-hour.
+const HOURS_24 = Array.from({ length: 24 }, (_, h) => String(h).padStart(2, "0"));
+const MINUTES_60 = Array.from({ length: 60 }, (_, m) => String(m).padStart(2, "0"));
+
 // Today's date (YYYY-MM-DD) — min for the event-date picker (no past dates).
 const todayDate = () => {
     const d = new Date();
@@ -446,10 +452,10 @@ export const EventCreate = () => {
                             )}
                         </div>
 
-                        {/* Start / end hours. Locked at 06:00 / 20:00 until Customize. */}
+                        {/* Start / end hours (24h). Locked at 06:00 / 20:00 until Customize. */}
                         <div>
-                            <div className="flex items-center justify-between mb-1">
-                                <label style={labelStyle}>Hours</label>
+                            <div className="flex items-center gap-3 mb-1">
+                                <label style={labelStyle}>Hours (24h)</label>
                                 <button
                                     type="button"
                                     onClick={toggleCustomize}
@@ -457,31 +463,51 @@ export const EventCreate = () => {
                                     className="text-xs font-semibold cursor-pointer"
                                     style={{ color: !form.start_date ? "#c9c3b6" : GREEN }}
                                 >
-                                    {form.customize_hours ? "Use default hours" : "Customize"}
+                                    {form.customize_hours ? "Use default hours" : "Customize hours"}
                                 </button>
                             </div>
                             <p className="text-xs mb-2" style={{ color: "#9b948e" }}>
                                 {form.customize_hours
                                     ? "Editing the start and end hours manually."
-                                    : "Default: starts at 06:00, ends at 20:00. Tap Customize to change."}
+                                    : "Default: starts at 06:00, ends at 20:00. Tap Customize hours to change."}
                             </p>
                             <div className="grid grid-cols-2 gap-4">
                                 {[
                                     { key: "start_time", label: "Start hour" },
                                     { key: "end_time", label: "End hour" },
-                                ].map(({ key, label }) => (
-                                    <div key={key}>
-                                        <label className="text-xs" style={{ color: "#6b6560" }}>{label}</label>
-                                        <input
-                                            type="time"
-                                            className={inputCls}
-                                            style={{ ...inputStyle, ...((!form.start_date || !form.customize_hours) ? disabledStyle : {}) }}
-                                            disabled={!form.start_date || !form.customize_hours}
-                                            value={form[key]}
-                                            onChange={(e) => setForm({ ...form, [key]: e.target.value })}
-                                        />
-                                    </div>
-                                ))}
+                                ].map(({ key, label }) => {
+                                    const [hh = "", mm = ""] = (form[key] || "").split(":");
+                                    const locked = !form.start_date || !form.customize_hours;
+                                    const selStyle = { ...inputStyle, ...(locked ? disabledStyle : {}) };
+                                    return (
+                                        <div key={key}>
+                                            <label className="text-xs" style={{ color: "#6b6560" }}>{label}</label>
+                                            <div className="flex items-center gap-1.5">
+                                                <select
+                                                    className="h-10 px-2 rounded-lg text-sm flex-1"
+                                                    style={selStyle}
+                                                    disabled={locked}
+                                                    value={hh}
+                                                    onChange={(e) => setForm({ ...form, [key]: `${e.target.value}:${mm || "00"}` })}
+                                                    aria-label={`${label} (hour)`}
+                                                >
+                                                    {HOURS_24.map((h) => <option key={h} value={h}>{h}</option>)}
+                                                </select>
+                                                <span className="text-sm" style={{ color: "#6b6560" }}>:</span>
+                                                <select
+                                                    className="h-10 px-2 rounded-lg text-sm flex-1"
+                                                    style={selStyle}
+                                                    disabled={locked}
+                                                    value={mm}
+                                                    onChange={(e) => setForm({ ...form, [key]: `${hh || "00"}:${e.target.value}` })}
+                                                    aria-label={`${label} (minute)`}
+                                                >
+                                                    {MINUTES_60.map((m) => <option key={m} value={m}>{m}</option>)}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
                             {form.customize_hours && (() => {
                                 const { start_at, end_at } = computeStartEnd(form);
@@ -501,15 +527,15 @@ export const EventCreate = () => {
                 {/* STEP 3 — Attendees */}
                 {step === 2 && (
                     <div className="space-y-5">
-                        <div className="flex items-center justify-between">
-                            <div>
+                        <div className="flex items-start justify-between gap-4">
+                            <div className="min-w-0">
                                 <p className="text-sm font-semibold" style={{ color: "#2E2A26" }}>Participantes / Attendees</p>
                                 <p className="text-xs" style={{ color: "#9b948e" }}>Add manually or upload an Excel file. At least one is required.</p>
                             </div>
                             <button
                                 type="button"
                                 onClick={downloadAttendeeTemplate}
-                                className="flex items-center gap-2 h-9 px-3 rounded-lg text-xs font-semibold cursor-pointer"
+                                className="flex items-center gap-2 h-9 px-3 rounded-lg text-xs font-semibold cursor-pointer shrink-0 whitespace-nowrap"
                                 style={{ border: `1px solid ${GREEN}`, color: GREEN, backgroundColor: "#FFFFFF" }}
                             >
                                 <Download className="h-4 w-4" /> Download template
