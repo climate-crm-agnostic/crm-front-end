@@ -1,7 +1,8 @@
-import { forwardRef, useEffect, useImperativeHandle } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { Bold, Italic, Strikethrough, List, ListOrdered, Heading2, Undo, Redo } from "lucide-react";
+import { ResizableImage } from "./RichTextEditorImage";
+import { Bold, Italic, Strikethrough, List, ListOrdered, Heading2, Undo, Redo, Image as ImageIcon, Loader2 } from "lucide-react";
 
 const ToolbarButton = ({ onClick, active, disabled, title, children }) => (
     <button
@@ -20,9 +21,16 @@ const ToolbarButton = ({ onClick, active, disabled, title, children }) => (
 // backend's EmailTemplate.html_body already stores) rich text editor for
 // campaign template bodies. Exposes insertText(text) via ref so the merge
 // field picker can drop a {contact.x} token at the current cursor position.
-export const RichTextEditor = forwardRef(({ value, onChange, placeholder }, ref) => {
+//
+// onUploadImage is optional: pass it to show the image toolbar button (it
+// must resolve to a permanent URL — SendEmailModal doesn't pass it because
+// there's no saved entity to attach an upload to before the email is sent).
+export const RichTextEditor = forwardRef(({ value, onChange, placeholder, onUploadImage }, ref) => {
+    const fileInputRef = useRef(null);
+    const [uploading, setUploading] = useState(false);
+
     const editor = useEditor({
-        extensions: [StarterKit],
+        extensions: [StarterKit, ResizableImage],
         content: value || "",
         onUpdate: ({ editor }) => onChange(editor.getHTML()),
         editorProps: {
@@ -31,6 +39,20 @@ export const RichTextEditor = forwardRef(({ value, onChange, placeholder }, ref)
             },
         },
     });
+
+    const handleImageFileChange = async (e) => {
+        const file = e.target.files?.[0];
+        e.target.value = ""; // allow re-selecting the same file later
+        if (!file || !onUploadImage) return;
+
+        setUploading(true);
+        try {
+            const url = await onUploadImage(file);
+            if (url) editor?.chain().focus().setImage({ src: url }).run();
+        } finally {
+            setUploading(false);
+        }
+    };
 
     // Sync external value changes (e.g. loading a different template to
     // edit) without fighting the user's own typing/cursor position.
@@ -87,6 +109,21 @@ export const RichTextEditor = forwardRef(({ value, onChange, placeholder }, ref)
                 <ToolbarButton title="Redo" disabled={!editor.can().redo()} onClick={() => editor.chain().focus().redo().run()}>
                     <Redo className="h-3.5 w-3.5" />
                 </ToolbarButton>
+                {onUploadImage && (
+                    <>
+                        <span className="w-px h-4 bg-border mx-1" />
+                        <ToolbarButton title="Insertar imagen" disabled={uploading} onClick={() => fileInputRef.current?.click()}>
+                            {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImageIcon className="h-3.5 w-3.5" />}
+                        </ToolbarButton>
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handleImageFileChange}
+                        />
+                    </>
+                )}
             </div>
             <div className="relative">
                 {isEmpty && placeholder && (

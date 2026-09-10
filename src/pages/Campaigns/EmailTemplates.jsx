@@ -6,7 +6,7 @@ import { Button } from "../../components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
 import { RichTextEditor } from "../../components/RichTextEditor";
 import { MergeFieldPicker } from "../../components/MergeFieldPicker";
-import { getEmailTemplates, createEmailTemplate, updateEmailTemplate, deleteEmailTemplate, previewEmailTemplate } from "../../services/emailTemplateService";
+import { getEmailTemplates, createEmailTemplate, updateEmailTemplate, deleteEmailTemplate, previewEmailTemplate, uploadEmailTemplateImage } from "../../services/emailTemplateService";
 import Swal from 'sweetalert2';
 
 const emptyForm = { name: "", subject: "", campaign_type: "one_time", html_body: "" };
@@ -102,6 +102,16 @@ export const EmailTemplates = () => {
         bodyEditorRef.current?.insertText(token);
     };
 
+    const handleUploadImage = async (file) => {
+        try {
+            const res = await uploadEmailTemplateImage(file);
+            return res.url;
+        } catch (err) {
+            Swal.fire({ icon: 'error', title: 'Error', text: err.message, toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
+            return null;
+        }
+    };
+
     const handlePreview = async () => {
         if (!editingId) return;
         setPreviewing(true);
@@ -172,6 +182,7 @@ export const EmailTemplates = () => {
                             value={form.html_body}
                             onChange={html => setForm(f => ({ ...f, html_body: html }))}
                             placeholder="Write the email content — click Insert Variable to add {contact.x} or {client.x} fields..."
+                            onUploadImage={handleUploadImage}
                         />
                         <p className="text-xs text-muted-foreground">An unsubscribe link is appended automatically — no need to add one.</p>
                     </div>

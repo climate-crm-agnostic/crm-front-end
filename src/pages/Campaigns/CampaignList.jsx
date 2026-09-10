@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
-import { Send, Trash2, Megaphone } from "lucide-react";
+import { Send, Trash2, Megaphone, Users, Eye, RotateCcw } from "lucide-react";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { Button } from "../../components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../../components/ui/dialog";
+import { AudienceFilterBuilder } from "./AudienceFilterBuilder";
 import { getEmailTemplates } from "../../services/emailTemplateService";
-import { getCampaigns, createCampaign, deleteCampaign, sendCampaignNow, previewRecipients } from "../../services/campaignService";
+import { getCampaigns, createCampaign, updateCampaign, deleteCampaign, sendCampaignNow, previewRecipients, getSendProgress, getCampaignRecipients } from "../../services/campaignService";
 import Swal from 'sweetalert2';
 
 const STATUS_COLORS = { draft: "#9b948e", sending: "#c0622a", sent: "#4a5535" };
@@ -18,10 +20,91 @@ export const CampaignList = () => {
 
     const [name, setName] = useState("");
     const [templateId, setTemplateId] = useState("");
+    const [audienceEntity, setAudienceEntity] = useState("");
+    const [audienceFilters, setAudienceFilters] = useState([]);
+    const [audienceLogic, setAudienceLogic] = useState("AND");
+
+    const [audienceEditor, setAudienceEditor] = useState(null); // campaign being edited, or null
+    const [editorEntity, setEditorEntity] = useState("contact");
+    const [editorFilters, setEditorFilters] = useState([]);
+    const [editorLogic, setEditorLogic] = useState("AND");
+    const [savingAudience, setSavingAudience] = useState(false);
+
+    const [sendPreviewCampaign, setSendPreviewCampaign] = useState(null); // campaign pending send confirmation, or null
+    const [sendPreviewData, setSendPreviewData] = useState(null); // { recipient_count, recipients, max_send_now }
+    const [sendPreviewLoading, setSendPreviewLoading] = useState(false);
+
+    // Read-only audience inspection, decoupled from the send flow — lets an
+    // admin check who matches without landing one click away from sending.
+    // For a draft campaign this shows the pre-send estimate (who WOULD get
+    // it); once sending/sent it shows actual per-recipient outcomes instead.
+    const [detailsCampaign, setDetailsCampaign] = useState(null);
+    const [detailsData, setDetailsData] = useState(null);
+    const [detailsLoading, setDetailsLoading] = useState(false);
+
+    // Blocking progress modal for an in-flight send, polling send-progress
+    // until the background thread (see campaigns_view.py) finishes, then
+    // switching the same modal to a sent/failed summary.
+    const [sendProgressCampaign, setSendProgressCampaign] = useState(null);
+    const [sendProgress, setSendProgressState] = useState(null); // { status, total, sent, failed }
+    const [sendResults, setSendResults] = useState(null); // recipient list, fetched once status is 'sent'
 
     useEffect(() => {
         loadAll();
     }, []);
+
+    // Polls send-progress while a send is in flight. Keyed only on the
+    // campaign id (not on sendProgress.status): the loop decides for itself
+    // when to stop, from inside a tick, the moment the send reaches a terminal
+    // state ('sent' or a dead worker's 'is_stale'). Depending on status here
+    // instead let a sending->stale transition (same status) leak the interval.
+    const pollCampaignId = sendProgressCampaign?.id ?? null;
+    useEffect(() => {
+        if (!pollCampaignId) return;
+
+        let cancelled = false;          // set on cleanup so an in-flight await can't write stale state
+        let intervalId = null;
+
+        const stop = () => {
+            if (intervalId !== null) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+        };
+
+        const tick = async () => {
+            try {
+                const progress = await getSendProgress(pollCampaignId);
+                if (cancelled) return;   // modal closed / campaign changed mid-request
+                // Keep the batch size from send-now as a floor: the polled
+                // `total` counts recipient rows, which the worker is still
+                // creating on the first ticks, so it can start below the real
+                // batch size and make the denominator (and the bar) jump.
+                setSendProgressState(prev => ({
+                    ...progress,
+                    total: Math.max(progress.total || 0, prev?.total || 0),
+                }));
+
+                if (progress.status === 'sent') {
+                    stop();
+                    const results = await getCampaignRecipients(pollCampaignId);
+                    if (cancelled) return;
+                    setSendResults(Array.isArray(results) ? results : []);
+                    loadAll();
+                } else if (progress.is_stale) {
+                    // Worker appears dead — stop polling, refresh the list so
+                    // the row shows a Resume button, let the user close.
+                    stop();
+                    loadAll();
+                }
+            } catch {
+                // transient poll failure — next tick retries, no toast needed
+            }
+        };
+
+        intervalId = setInterval(tick, 1500);
+        return () => { cancelled = true; stop(); };
+    }, [pollCampaignId]);
 
     const loadAll = async () => {
         setLoading(true);
@@ -37,13 +120,38 @@ export const CampaignList = () => {
     };
 
     const handleCreate = async () => {
-        if (!name.trim() || !templateId) return;
+        if (!name.trim() || !templateId || !audienceEntity) return;
         try {
-            await createCampaign({ name, template_id: templateId });
-            setName(""); setTemplateId("");
+            await createCampaign({
+                name, template_id: templateId,
+                audience_entity: audienceEntity, audience_filters: audienceFilters, audience_logic: audienceLogic,
+            });
+            setName(""); setTemplateId(""); setAudienceEntity(""); setAudienceFilters([]); setAudienceLogic("AND");
             loadAll();
         } catch (err) {
             Swal.fire({ icon: 'error', title: 'Error', text: err.message, toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
+        }
+    };
+
+    const openAudienceEditor = (campaign) => {
+        setAudienceEditor(campaign);
+        setEditorEntity(campaign.audience_entity || "contact");
+        setEditorFilters(campaign.audience_filters || []);
+        setEditorLogic(campaign.audience_logic || "AND");
+    };
+
+    const handleSaveAudience = async () => {
+        setSavingAudience(true);
+        try {
+            await updateCampaign(audienceEditor.id, {
+                audience_entity: editorEntity, audience_filters: editorFilters, audience_logic: editorLogic,
+            });
+            setAudienceEditor(null);
+            loadAll();
+        } catch (err) {
+            Swal.fire({ icon: 'error', title: 'Error', text: err.message, toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
+        } finally {
+            setSavingAudience(false);
         }
     };
 
@@ -61,29 +169,68 @@ export const CampaignList = () => {
         }
     };
 
-    const handleSend = async (campaign) => {
-        setSendingId(campaign.id);
+    const openDetails = async (campaign) => {
+        setDetailsCampaign(campaign);
+        setDetailsData(null);
+        setDetailsLoading(true);
+        try {
+            if (campaign.status === 'draft') {
+                const data = await previewRecipients(campaign.id);
+                setDetailsData({ mode: 'preview', recipient_count: data.recipient_count, recipients: data.recipients });
+            } else {
+                const results = await getCampaignRecipients(campaign.id);
+                const list = Array.isArray(results) ? results : [];
+                setDetailsData({
+                    mode: 'outcome',
+                    recipient_count: list.length,
+                    sent_count: list.filter(r => r.status === 'sent').length,
+                    failed_count: list.filter(r => r.status === 'failed').length,
+                    recipients: list,
+                });
+            }
+        } catch (err) {
+            setDetailsCampaign(null);
+            Swal.fire({ icon: 'error', title: 'Error', text: err.message, toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
+        } finally {
+            setDetailsLoading(false);
+        }
+    };
+
+    const openSendPreview = async (campaign) => {
+        setSendPreviewCampaign(campaign);
+        setSendPreviewData(null);
+        setSendPreviewLoading(true);
         try {
             const preview = await previewRecipients(campaign.id);
-            const confirm = await Swal.fire({
-                title: `Send "${campaign.name}"?`,
-                text: `This will email ${preview.recipient_count} recipient(s) right now. This can't be undone.`,
-                icon: 'warning', showCancelButton: true,
-                confirmButtonColor: '#5E6A43', cancelButtonColor: '#9b948e', confirmButtonText: 'Send Now',
-            });
-            if (!confirm.isConfirmed) return;
+            setSendPreviewData(preview);
+        } catch (err) {
+            setSendPreviewCampaign(null);
+            Swal.fire({ icon: 'error', title: 'Error', text: err.message, toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
+        } finally {
+            setSendPreviewLoading(false);
+        }
+    };
 
-            const result = await sendCampaignNow(campaign.id);
-            Swal.fire({
-                icon: 'success', title: 'Sent', text: `Sent to ${result.sent} recipient(s)${result.failed ? `, ${result.failed} failed` : ''}.`,
-                toast: true, position: 'top-end', showConfirmButton: false, timer: 4000,
-            });
-            loadAll();
+    const confirmSend = async () => {
+        const campaign = sendPreviewCampaign;
+        setSendingId(campaign.id);
+        try {
+            const { total } = await sendCampaignNow(campaign.id);
+            setSendPreviewCampaign(null);
+            setSendResults(null);
+            setSendProgressState({ status: 'sending', total, sent: 0, failed: 0 });
+            setSendProgressCampaign(campaign);
         } catch (err) {
             Swal.fire({ icon: 'error', title: 'Error', text: err.message, toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
         } finally {
             setSendingId(null);
         }
+    };
+
+    const closeSendProgress = () => {
+        setSendProgressCampaign(null);
+        setSendProgressState(null);
+        setSendResults(null);
     };
 
     if (loading) {
@@ -122,7 +269,21 @@ export const CampaignList = () => {
                 {templates.length === 0 && (
                     <p className="text-xs text-muted-foreground">No templates yet — create one under Email Templates first.</p>
                 )}
-                <Button type="button" onClick={handleCreate} disabled={!name.trim() || !templateId}>Create Campaign</Button>
+
+                <div className="pt-2 border-t">
+                    <AudienceFilterBuilder
+                        entity={audienceEntity}
+                        onEntityChange={setAudienceEntity}
+                        filters={audienceFilters}
+                        logic={audienceLogic}
+                        onChange={({ audience_filters, audience_logic }) => {
+                            setAudienceFilters(audience_filters);
+                            setAudienceLogic(audience_logic);
+                        }}
+                    />
+                </div>
+
+                <Button type="button" onClick={handleCreate} disabled={!name.trim() || !templateId || !audienceEntity}>Create Campaign</Button>
             </div>
 
             <div className="bg-card p-6 rounded-lg border shadow-sm space-y-2">
@@ -147,10 +308,36 @@ export const CampaignList = () => {
                                 </span>
                             </div>
                             <div className="flex gap-1">
-                                {c.status !== 'sent' && (
+                                <Button variant="outline" size="sm" onClick={() => openDetails(c)}>
+                                    <Eye className="h-4 w-4 mr-1" /> View Details
+                                </Button>
+                                {c.status === 'draft' && (
+                                    <Button variant="outline" size="sm" onClick={() => openAudienceEditor(c)}>
+                                        <Users className="h-4 w-4 mr-1" /> Edit Audience
+                                    </Button>
+                                )}
+                                {c.status === 'sending' && c.is_send_stale && (
+                                    // The send worker died mid-run (no task queue — it's a
+                                    // daemon thread). Resume re-sends only the leftover
+                                    // recipients; the backend skips ones already sent.
                                     <Button
                                         variant="secondary" size="sm"
-                                        onClick={() => handleSend(c)}
+                                        onClick={() => openSendPreview(c)}
+                                        disabled={sendingId === c.id}
+                                        title="This send was interrupted — resume it"
+                                    >
+                                        <RotateCcw className="h-4 w-4 mr-1" /> {sendingId === c.id ? 'Resuming...' : 'Resume'}
+                                    </Button>
+                                )}
+                                {c.status === 'sending' && !c.is_send_stale && (
+                                    <Button variant="secondary" size="sm" disabled title="Send in progress">
+                                        <Send className="h-4 w-4 mr-1" /> Sending...
+                                    </Button>
+                                )}
+                                {(c.status === 'draft') && (
+                                    <Button
+                                        variant="secondary" size="sm"
+                                        onClick={() => openSendPreview(c)}
                                         disabled={sendingId === c.id || c.template?.campaign_type === 'birthday'}
                                         title={c.template?.campaign_type === 'birthday' ? 'Birthday campaigns send automatically every day' : 'Send now'}
                                     >
@@ -165,6 +352,211 @@ export const CampaignList = () => {
                     ))
                 )}
             </div>
+
+            <Dialog open={!!audienceEditor} onOpenChange={(open) => !open && setAudienceEditor(null)}>
+                <DialogContent className="sm:max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle>Edit Audience — {audienceEditor?.name}</DialogTitle>
+                    </DialogHeader>
+                    <AudienceFilterBuilder
+                        entity={editorEntity}
+                        onEntityChange={setEditorEntity}
+                        filters={editorFilters}
+                        logic={editorLogic}
+                        onChange={({ audience_filters, audience_logic }) => {
+                            setEditorFilters(audience_filters);
+                            setEditorLogic(audience_logic);
+                        }}
+                    />
+                    <DialogFooter>
+                        <Button variant="secondary" onClick={() => setAudienceEditor(null)}>Cancel</Button>
+                        <Button onClick={handleSaveAudience} disabled={savingAudience}>
+                            {savingAudience ? 'Saving...' : 'Save Audience'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={!!detailsCampaign} onOpenChange={(open) => !open && setDetailsCampaign(null)}>
+                <DialogContent className="sm:max-w-lg">
+                    <DialogHeader>
+                        <DialogTitle>Recipients — {detailsCampaign?.name}</DialogTitle>
+                    </DialogHeader>
+                    {detailsLoading ? (
+                        <p className="text-sm text-muted-foreground">Loading recipients...</p>
+                    ) : detailsData && detailsData.mode === 'preview' && (
+                        <div className="space-y-3">
+                            <p className="text-sm text-muted-foreground">
+                                <strong>{detailsData.recipient_count}</strong> record(s) currently match this campaign's audience (not sent yet).
+                            </p>
+                            {detailsData.recipient_count > 0 && (
+                                <div className="max-h-64 overflow-y-auto border rounded-md divide-y">
+                                    {detailsData.recipients.map(r => (
+                                        <div key={r.id} className="flex items-center justify-between px-3 py-2 text-sm">
+                                            <span>{r.name || '—'}</span>
+                                            <span className="text-muted-foreground">{r.email}</span>
+                                        </div>
+                                    ))}
+                                    {detailsData.recipient_count > detailsData.recipients.length && (
+                                        <div className="px-3 py-2 text-xs text-muted-foreground italic">
+                                            + {detailsData.recipient_count - detailsData.recipients.length} more not shown
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                    {!detailsLoading && detailsData && detailsData.mode === 'outcome' && (
+                        <div className="space-y-3">
+                            <p className="text-sm text-muted-foreground">
+                                <strong className="text-[#4a5535]">{detailsData.sent_count}</strong> sent
+                                {detailsData.failed_count > 0 && <> · <strong className="text-red-600">{detailsData.failed_count}</strong> failed</>}
+                                {' '}of {detailsData.recipient_count} total.
+                            </p>
+                            {detailsData.recipient_count > 0 && (
+                                <div className="max-h-64 overflow-y-auto border rounded-md divide-y">
+                                    {detailsData.recipients.map(r => (
+                                        <div key={r.id} className="flex items-center justify-between px-3 py-2 text-sm gap-2">
+                                            <div className="min-w-0">
+                                                <div>{r.contact_name || '—'}</div>
+                                                <div className="text-muted-foreground truncate">{r.contact_email}</div>
+                                                {r.status === 'failed' && r.error_message && (
+                                                    <div className="text-xs text-red-600 truncate">{r.error_message}</div>
+                                                )}
+                                            </div>
+                                            <span
+                                                className="shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold"
+                                                style={{
+                                                    backgroundColor: r.status === 'sent' ? '#4a55351f' : '#dc26261f',
+                                                    color: r.status === 'sent' ? '#4a5535' : '#dc2626',
+                                                }}
+                                            >
+                                                {r.status}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                    <DialogFooter>
+                        <Button variant="secondary" onClick={() => setDetailsCampaign(null)}>Close</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={!!sendProgressCampaign} onOpenChange={(open) => !open && (sendProgress?.status === 'sent' || sendProgress?.is_stale) && closeSendProgress()}>
+                <DialogContent className="sm:max-w-lg" onInteractOutside={e => !(sendProgress?.status === 'sent' || sendProgress?.is_stale) && e.preventDefault()} onEscapeKeyDown={e => !(sendProgress?.status === 'sent' || sendProgress?.is_stale) && e.preventDefault()}>
+                    <DialogHeader>
+                        <DialogTitle>
+                            {sendProgress?.status === 'sent'
+                                ? 'Send complete'
+                                : sendProgress?.is_stale
+                                    ? 'Send interrupted'
+                                    : `Sending "${sendProgressCampaign?.name}"...`}
+                        </DialogTitle>
+                    </DialogHeader>
+                    {sendProgress && (
+                        <div className="space-y-3">
+                            <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
+                                <div
+                                    className="h-full transition-all duration-300"
+                                    style={{
+                                        // Guard total=0 (first tick can arrive before the worker
+                                        // has created all recipient rows) and clamp to 100 so a
+                                        // resume's accumulated counts can't overflow the bar.
+                                        width: `${sendProgress.total > 0
+                                            ? Math.min(100, Math.round(((sendProgress.sent + sendProgress.failed) / sendProgress.total) * 100))
+                                            : 0}%`,
+                                        backgroundColor: sendProgress.status === 'sent' ? '#4a5535' : '#c0622a',
+                                    }}
+                                />
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                                {sendProgress.sent + sendProgress.failed} of {sendProgress.total} processed
+                                {sendProgress.failed > 0 && <> — <span className="text-red-600">{sendProgress.failed} failed</span></>}
+                            </p>
+
+                            {sendProgress.status === 'sent' && sendResults && (
+                                <div className="max-h-64 overflow-y-auto border rounded-md divide-y">
+                                    {sendResults.filter(r => r.status === 'failed').map(r => (
+                                        <div key={r.id} className="flex items-center justify-between px-3 py-2 text-sm gap-2">
+                                            <div className="min-w-0">
+                                                <div>{r.contact_name || '—'} <span className="text-muted-foreground">{r.contact_email}</span></div>
+                                                {r.error_message && <div className="text-xs text-red-600 truncate">{r.error_message}</div>}
+                                            </div>
+                                            <span className="shrink-0 text-xs font-semibold text-red-600">failed</span>
+                                        </div>
+                                    ))}
+                                    {sendResults.every(r => r.status === 'sent') && (
+                                        <div className="px-3 py-2 text-sm text-muted-foreground italic">All recipients sent successfully.</div>
+                                    )}
+                                </div>
+                            )}
+
+                            {sendProgress.is_stale && (
+                                <p className="text-xs text-amber-600">
+                                    This send was interrupted before finishing. Close this and use Resume to send the remaining recipients.
+                                </p>
+                            )}
+
+                            {sendProgress.status !== 'sent' && !sendProgress.is_stale && (
+                                <p className="text-xs text-muted-foreground italic">Sending — please don't close this window.</p>
+                            )}
+                        </div>
+                    )}
+                    <DialogFooter>
+                        <Button
+                            variant="secondary"
+                            onClick={closeSendProgress}
+                            disabled={sendProgress?.status !== 'sent' && !sendProgress?.is_stale}
+                        >
+                            {(sendProgress?.status === 'sent' || sendProgress?.is_stale) ? 'Close' : 'Sending...'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={!!sendPreviewCampaign} onOpenChange={(open) => !open && setSendPreviewCampaign(null)}>
+                <DialogContent className="sm:max-w-lg">
+                    <DialogHeader>
+                        <DialogTitle>Send "{sendPreviewCampaign?.name}"?</DialogTitle>
+                    </DialogHeader>
+                    {sendPreviewLoading ? (
+                        <p className="text-sm text-muted-foreground">Loading recipients...</p>
+                    ) : sendPreviewData && (
+                        <div className="space-y-3">
+                            <p className="text-sm text-muted-foreground">
+                                This will email <strong>{sendPreviewData.recipient_count}</strong> recipient(s) right now. This can't be undone.
+                            </p>
+                            {sendPreviewData.recipient_count > 0 && (
+                                <div className="max-h-64 overflow-y-auto border rounded-md divide-y">
+                                    {sendPreviewData.recipients.map(r => (
+                                        <div key={r.id} className="flex items-center justify-between px-3 py-2 text-sm">
+                                            <span>{r.name || '—'}</span>
+                                            <span className="text-muted-foreground">{r.email}</span>
+                                        </div>
+                                    ))}
+                                    {sendPreviewData.recipient_count > sendPreviewData.recipients.length && (
+                                        <div className="px-3 py-2 text-xs text-muted-foreground italic">
+                                            + {sendPreviewData.recipient_count - sendPreviewData.recipients.length} more not shown
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                    <DialogFooter>
+                        <Button variant="secondary" onClick={() => setSendPreviewCampaign(null)}>Cancel</Button>
+                        <Button
+                            onClick={confirmSend}
+                            disabled={sendPreviewLoading || !sendPreviewData?.recipient_count || sendingId === sendPreviewCampaign?.id}
+                        >
+                            {sendingId === sendPreviewCampaign?.id ? 'Sending...' : 'Send Now'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };

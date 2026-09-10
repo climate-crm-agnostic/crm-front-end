@@ -49,6 +49,32 @@ export const getMergeFields = async () => {
   return res.json();
 };
 
+// Uploads an image for use inside a template's body. Returns a permanent
+// public URL (not a presigned one — see EmailTemplateViewSet.upload_image),
+// since the HTML gets embedded in real emails that may be opened days later.
+// No template id needed — the image only ever lives embedded in html_body,
+// so this works while drafting a brand-new, unsaved template too.
+export const uploadEmailTemplateImage = async (file) => {
+  const formData = new FormData();
+  formData.append('file', file, file.name);
+
+  const token = localStorage.getItem('auth_token');
+  const headers = {
+    ...(token && { 'Authorization': `Token ${token}` }),
+  };
+
+  const res = await fetch(`${TEMPLATES_URL}upload-image/`, {
+    method: 'POST',
+    headers,
+    body: formData,
+  });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => null);
+    throw new Error(extractErrorMessage(errorData, 'Error uploading image'));
+  }
+  return res.json();
+};
+
 // Renders subject/html_body against a real Contact so the editor can show
 // what the variables actually resolve to. contactId is optional.
 export const previewEmailTemplate = async (id, contactId) => {
