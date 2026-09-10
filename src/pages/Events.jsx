@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Plus, Trash2, Eye, CalendarDays, MapPin, Video } from "lucide-react";
+import { Plus, Trash2, Eye, CalendarDays, MapPin, Video, BarChart3 } from "lucide-react";
 import { getEvents, deleteEvent } from "@/services/eventService";
 import Swal from "sweetalert2";
+import { LeadsReportModal } from "@/components/events/LeadsReportModal";
 
 const toast = (icon, title) =>
     Swal.fire({ icon, title, toast: true, position: "top-end", showConfirmButton: false, timer: 3000 });
@@ -31,6 +32,7 @@ const StatusBadge = ({ event }) => {
 export const Events = () => {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [reportOpen, setReportOpen] = useState(false);
 
     useEffect(() => {
         load();
@@ -94,18 +96,30 @@ export const Events = () => {
                     </div>
                 </div>
 
-                <Link to="/event/new">
+                <div className="flex items-center gap-2">
                     <button
-                        className="flex items-center gap-2 h-10 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
-                        style={{ backgroundColor: "#5E6A43", color: "#FBF7EF" }}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#4a5535")}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#5E6A43")}
+                        onClick={() => setReportOpen(true)}
+                        className="flex items-center gap-2 h-10 px-4 rounded-lg text-sm font-semibold cursor-pointer"
+                        style={{ border: "1px solid #5E6A43", color: "#5E6A43", backgroundColor: "#FFFFFF" }}
                     >
-                        <Plus className="h-4 w-4" />
-                        New Event
+                        <BarChart3 className="h-4 w-4" />
+                        Leads report
                     </button>
-                </Link>
+                    <Link to="/event/new">
+                        <button
+                            className="flex items-center gap-2 h-10 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
+                            style={{ backgroundColor: "#5E6A43", color: "#FBF7EF" }}
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#4a5535")}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#5E6A43")}
+                        >
+                            <Plus className="h-4 w-4" />
+                            New Event
+                        </button>
+                    </Link>
+                </div>
             </div>
+
+            {reportOpen && <LeadsReportModal events={events} onClose={() => setReportOpen(false)} />}
 
             <div className="overflow-hidden" style={{ borderRadius: "10px", border: "1px solid #D8D2C4", backgroundColor: "#FBF7EF" }}>
                 <div className="px-5 py-3" style={{ borderBottom: "1px solid #D8D2C4", backgroundColor: "#F2EBDD" }}>

@@ -164,6 +164,37 @@ export const reactivateEvent = async (id, data) => {
     return res.json();
 };
 
+// ── Event → leads report ───────────────────────────────────────────────────
+// `params` may include { event, date_from, date_to } (all optional).
+export const getEventLeadsReport = async (params = {}) => {
+    const query = new URLSearchParams(
+        Object.fromEntries(Object.entries(params).filter(([, v]) => v))
+    ).toString();
+    const res = await fetch(`${EVENTS_URL}leads-report/${query ? `?${query}` : ""}`, {
+        headers: getHeaders(),
+    });
+    if (!res.ok) throw new Error("Error loading leads report");
+    return res.json();
+};
+
+// Triggers an .xlsx download of the leads report with the current filters.
+export const exportEventLeadsReport = async (params = {}) => {
+    const query = new URLSearchParams(
+        Object.fromEntries(Object.entries(params).filter(([, v]) => v))
+    ).toString();
+    const res = await fetch(`${EVENTS_URL}leads-report-export/${query ? `?${query}` : ""}`, {
+        headers: getHeaders(),
+    });
+    if (!res.ok) throw new Error("Error exporting leads report");
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "event_leads_report.xlsx";
+    a.click();
+    window.URL.revokeObjectURL(url);
+};
+
 export const deactivateEvent = async (id) => {
     const res = await fetch(`${EVENTS_URL}${id}/deactivate/`, {
         method: "POST",

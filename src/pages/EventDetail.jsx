@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { QRCodeCanvas } from "qrcode.react";
 import {
     ArrowLeft, Copy, Download, Power, RefreshCw, Send, MapPin, Video,
-    CheckCircle2, XCircle, Users, MoreVertical, Pencil, Trash2, UserPlus,
+    CheckCircle2, XCircle, Users, UserPlus,
 } from "lucide-react";
 import Swal from "sweetalert2";
 import {
@@ -12,6 +12,7 @@ import {
 } from "@/services/eventService";
 import { AddAttendeesModal } from "@/components/events/AddAttendeesModal";
 import { EditAttendeeModal } from "@/components/events/EditAttendeeModal";
+import { AttendeeActionsMenu } from "@/components/events/AttendeeActionsMenu";
 
 const GREEN = "#5E6A43";
 
@@ -38,7 +39,6 @@ export const EventDetail = () => {
     const [reactivateOpen, setReactivateOpen] = useState(false);
     const [addOpen, setAddOpen] = useState(false);
     const [editAttendee, setEditAttendee] = useState(null);   // attendee being edited
-    const [menuFor, setMenuFor] = useState(null);             // attendee id whose row menu is open
 
     const load = async () => {
         try {
@@ -127,7 +127,6 @@ export const EventDetail = () => {
     };
 
     const handleDeleteAttendee = async (attendee) => {
-        setMenuFor(null);
         const name = attendee.full_name || attendee.email || "this attendee";
         const r = await Swal.fire({
             title: "Remove attendee?",
@@ -408,58 +407,15 @@ export const EventDetail = () => {
                                                     : a.status === "confirmed" ? "Already confirmed"
                                                     : a.status === "not_attended" ? "Event ended"
                                                     : "";
-                                                const open = menuFor === a.id;
                                                 return (
-                                                    <div className="relative inline-block">
-                                                        <button
-                                                            onClick={() => setMenuFor(open ? null : a.id)}
-                                                            title="Actions"
-                                                            className="inline-flex h-8 w-8 items-center justify-center rounded-md cursor-pointer"
-                                                            style={{ color: "#6b6560", backgroundColor: open ? "rgba(94,106,67,0.1)" : "transparent" }}
-                                                        >
-                                                            <MoreVertical className="h-4 w-4" />
-                                                        </button>
-                                                        {open && (
-                                                            <>
-                                                                {/* click-away layer */}
-                                                                <div className="fixed inset-0 z-40" onClick={() => setMenuFor(null)} />
-                                                                <div
-                                                                    className="absolute right-0 z-50 mt-1 w-44 rounded-lg py-1 text-left"
-                                                                    style={{ backgroundColor: "#FFFFFF", border: "1px solid #D8D2C4", boxShadow: "0 6px 20px rgba(0,0,0,0.12)" }}
-                                                                >
-                                                                    <button
-                                                                        onClick={() => { if (canResend) { setMenuFor(null); handleResendOne(a); } }}
-                                                                        disabled={!canResend}
-                                                                        title={resendReason}
-                                                                        className="w-full flex items-center gap-2 px-3 py-2 text-sm"
-                                                                        style={{ color: canResend ? "#2E2A26" : "#c9c3b6", cursor: canResend ? "pointer" : "not-allowed" }}
-                                                                        onMouseEnter={(e) => { if (canResend) e.currentTarget.style.backgroundColor = "#F5F0E8"; }}
-                                                                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-                                                                    >
-                                                                        <Send className="h-4 w-4" /> Resend invitation
-                                                                    </button>
-                                                                    <button
-                                                                        onClick={() => { setMenuFor(null); setEditAttendee(a); }}
-                                                                        className="w-full flex items-center gap-2 px-3 py-2 text-sm cursor-pointer"
-                                                                        style={{ color: "#2E2A26" }}
-                                                                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#F5F0E8")}
-                                                                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-                                                                    >
-                                                                        <Pencil className="h-4 w-4" /> Edit
-                                                                    </button>
-                                                                    <button
-                                                                        onClick={() => handleDeleteAttendee(a)}
-                                                                        className="w-full flex items-center gap-2 px-3 py-2 text-sm cursor-pointer"
-                                                                        style={{ color: "#B0592E" }}
-                                                                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#FBEEE9")}
-                                                                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-                                                                    >
-                                                                        <Trash2 className="h-4 w-4" /> Delete
-                                                                    </button>
-                                                                </div>
-                                                            </>
-                                                        )}
-                                                    </div>
+                                                    <AttendeeActionsMenu
+                                                        attendee={a}
+                                                        canResend={canResend}
+                                                        resendReason={resendReason}
+                                                        onResend={handleResendOne}
+                                                        onEdit={setEditAttendee}
+                                                        onDelete={handleDeleteAttendee}
+                                                    />
                                                 );
                                             })()}
                                         </td>
