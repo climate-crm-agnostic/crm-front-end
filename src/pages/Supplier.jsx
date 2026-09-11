@@ -4,6 +4,7 @@ import { Table } from "../components/Table";
 import { Button } from "../components/ui/button";
 import { Plus } from "lucide-react";
 import { getSuppliers, deleteSupplier, getSupplierAttributes } from "../services/supplierService";
+import { AttributeValueCell } from "../components/attributes/AttributeValueCell";
 import Swal from "sweetalert2";
 
 export const Supplier = () => {
@@ -47,7 +48,8 @@ export const Supplier = () => {
             // Dynamic columns from attributes
             const dynamicColumns = attributesData.map(attr => ({
                 key: attr.name,
-                label: attr.label
+                label: attr.label,
+                render: (value) => <AttributeValueCell attr={attr} value={value} />,
             }));
 
             setColumns([...staticColumns, ...dynamicColumns]);
