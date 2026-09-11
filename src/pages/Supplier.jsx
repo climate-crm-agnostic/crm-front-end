@@ -13,15 +13,11 @@ export const Supplier = () => {
     const [attributes, setAttributes] = useState([]);
     const navigate = useNavigate();
 
+    // name is the only fixed column left on Supplier — email, phone and
+    // is_active are dynamic attributes now (see app/models/suppliers.py),
+    // so they arrive through dynamicColumns below like everything else.
     const staticColumns = [
         { key: "name", label: "Name" },
-        { key: "email", label: "Email" },
-        { key: "phone", label: "Phone" },
-        {
-            key: "is_active",
-            label: "Active",
-            render: (value) => (value ? "Yes" : "No"),
-        },
     ];
 
     const [columns, setColumns] = useState(staticColumns);

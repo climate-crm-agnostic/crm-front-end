@@ -10,8 +10,6 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Button } from "../components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { Textarea } from "../components/ui/textarea";
-import { Switch } from "../components/ui/switch";
 import { DynamicAttributeField } from "../components/attributes/DynamicAttributeField";
 import { coerceAttributeValue, emptyValueFor, normalizeOptions } from "../utils/attributeTypes";
 
@@ -23,18 +21,10 @@ export const SupplierDetail = () => {
     const [attributes, setAttributes] = useState([]);
     const [dynamicData, setDynamicData] = useState({});
 
-    // Static fields
+    // The only fixed field — see app/models/suppliers.py. Everything else
+    // about a supplier (legal name, tax ID, contact details, terms,
+    // currency, active flag, notes) is a dynamic attribute, same as Client.
     const [name, setName] = useState("");
-    const [legalName, setLegalName] = useState("");
-    const [taxId, setTaxId] = useState("");
-    const [email, setEmail] = useState("");
-    const [phone, setPhone] = useState("");
-    const [address, setAddress] = useState("");
-    const [website, setWebsite] = useState("");
-    const [paymentTerms, setPaymentTerms] = useState("");
-    const [currency, setCurrency] = useState("USD");
-    const [isActive, setIsActive] = useState(true);
-    const [notes, setNotes] = useState("");
 
     // UI state
     const [loading, setLoading] = useState(false);
@@ -50,6 +40,7 @@ export const SupplierDetail = () => {
                 if (!isNew) {
                     await fetchItemData(id);
                 } else {
+                    setName("");
                     setDynamicData({});
                 }
             } catch (err) {
@@ -93,16 +84,6 @@ export const SupplierDetail = () => {
 
     const populateForm = (data) => {
         setName(data.name || "");
-        setLegalName(data.legal_name || "");
-        setTaxId(data.tax_id || "");
-        setEmail(data.email || "");
-        setPhone(data.phone || "");
-        setAddress(data.address || "");
-        setWebsite(data.website || "");
-        setPaymentTerms(data.payment_terms ?? "");
-        setCurrency(data.currency || "USD");
-        setIsActive(data.is_active !== false);
-        setNotes(data.notes || "");
 
         setDynamicData(prev => {
             const updated = { ...prev };
@@ -141,16 +122,6 @@ export const SupplierDetail = () => {
 
             const payload = {
                 name,
-                legal_name: legalName || null,
-                tax_id: taxId || null,
-                email: email || null,
-                phone: phone || null,
-                address: address || null,
-                website: website || null,
-                payment_terms: paymentTerms === "" ? null : paymentTerms,
-                currency,
-                is_active: isActive,
-                notes: notes || null,
                 attributes: formattedAttributes
             };
 
@@ -206,53 +177,9 @@ export const SupplierDetail = () => {
                 <div className="space-y-6">
                     {/* Main Info */}
                     <div className="bg-card p-6 rounded-lg border shadow-sm space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                                <Label htmlFor="name">Supplier Name <span className="text-red-500">*</span></Label>
-                                <Input id="name" placeholder="Acme Corp" value={name} onChange={(e) => setName(e.target.value)} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="legal_name">Legal Name</Label>
-                                <Input id="legal_name" placeholder="Acme Corporation Inc." value={legalName} onChange={(e) => setLegalName(e.target.value)} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="tax_id">Tax ID</Label>
-                                <Input id="tax_id" placeholder="3-101-123456" value={taxId} onChange={(e) => setTaxId(e.target.value)} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="email">Email</Label>
-                                <Input id="email" type="email" placeholder="orders@acme.com" value={email} onChange={(e) => setEmail(e.target.value)} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="phone">Phone</Label>
-                                <Input id="phone" placeholder="+1 555-123-4567" value={phone} onChange={(e) => setPhone(e.target.value)} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="website">Website</Label>
-                                <Input id="website" type="url" placeholder="https://acme.com" value={website} onChange={(e) => setWebsite(e.target.value)} />
-                            </div>
-                            <div className="space-y-2 md:col-span-2">
-                                <Label htmlFor="address">Address</Label>
-                                <Input id="address" placeholder="123 Main St, San José" value={address} onChange={(e) => setAddress(e.target.value)} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="payment_terms">Payment Terms (days)</Label>
-                                <Input id="payment_terms" type="number" step="1" placeholder="30" value={paymentTerms} onChange={(e) => setPaymentTerms(e.target.value)} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="currency">Currency</Label>
-                                <Input id="currency" placeholder="USD" value={currency} onChange={(e) => setCurrency(e.target.value.toUpperCase())} />
-                            </div>
-                            <div className="space-y-2 flex flex-col justify-end pb-2">
-                                <div className="flex items-center space-x-2">
-                                    <Switch id="is_active" checked={isActive} onCheckedChange={setIsActive} />
-                                    <Label htmlFor="is_active" className="cursor-pointer">Active</Label>
-                                </div>
-                            </div>
-                            <div className="space-y-2 md:col-span-2">
-                                <Label htmlFor="notes">Notes</Label>
-                                <Textarea id="notes" placeholder="Optional details..." value={notes} onChange={(e) => setNotes(e.target.value)} />
-                            </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="name">Supplier Name <span className="text-red-500">*</span></Label>
+                            <Input id="name" placeholder="Acme Corp" value={name} onChange={(e) => setName(e.target.value)} />
                         </div>
                     </div>
 
