@@ -45,6 +45,29 @@ export const deleteCampaign = async (id) => {
 // tenant's custom attributes, per entity, straight from the backend (which is
 // the single source of truth / security whitelist). Omit `entity` to get all
 // three keyed by entity. Each field: { name, label, type, fixed, list_values? }.
+// Client-entity only: per eligible client, its mailable contacts + the
+// selected one (default = primary/first). Used by the "Configure Recipients"
+// step, which is mandatory before a client campaign can be sent.
+export const getRecipientsConfig = async (id) => {
+  const res = await fetch(`${CAMPAIGNS_URL}${id}/recipients-config/`, { headers: getHeaders() });
+  if (!res.ok) throw new Error('Error fetching recipient configuration');
+  return res.json();
+};
+
+// selections: { [clientId]: contactId }
+export const saveRecipientsConfig = async (id, selections) => {
+  const res = await fetch(`${CAMPAIGNS_URL}${id}/recipients-config/`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify({ selections }),
+  });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => null);
+    throw new Error(extractErrorMessage(errorData, 'Error saving recipients'));
+  }
+  return res.json();
+};
+
 export const getAudienceFields = async (entity) => {
   const url = entity
     ? `${CAMPAIGNS_URL}audience-fields/?entity=${encodeURIComponent(entity)}`

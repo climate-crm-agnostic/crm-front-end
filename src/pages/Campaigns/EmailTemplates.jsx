@@ -9,7 +9,7 @@ import { MergeFieldPicker } from "../../components/MergeFieldPicker";
 import { getEmailTemplates, createEmailTemplate, updateEmailTemplate, deleteEmailTemplate, previewEmailTemplate, uploadEmailTemplateImage } from "../../services/emailTemplateService";
 import Swal from 'sweetalert2';
 
-const emptyForm = { name: "", subject: "", campaign_type: "one_time", html_body: "" };
+const emptyForm = { name: "", subject: "", campaign_type: "one_time", entity: "client", html_body: "" };
 
 export const EmailTemplates = () => {
     const [templates, setTemplates] = useState([]);
@@ -41,7 +41,7 @@ export const EmailTemplates = () => {
 
     const handleEdit = (t) => {
         setEditingId(t.id);
-        setForm({ name: t.name, subject: t.subject, campaign_type: t.campaign_type, html_body: t.html_body });
+        setForm({ name: t.name, subject: t.subject, campaign_type: t.campaign_type, entity: t.entity || "client", html_body: t.html_body });
         setPreview(null);
     };
 
@@ -158,10 +158,23 @@ export const EmailTemplates = () => {
                             </SelectContent>
                         </Select>
                     </div>
+                    <div className="space-y-2">
+                        <Label>Entity</Label>
+                        <Select value={form.entity} onValueChange={v => setForm(f => ({ ...f, entity: v }))}>
+                            <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="client">Client</SelectItem>
+                                <SelectItem value="lead">Lead</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground">
+                            Determines which variables you can insert and who the campaign targets.
+                        </p>
+                    </div>
                     <div className="space-y-2 md:col-span-2">
                         <div className="flex items-center justify-between">
                             <Label>Subject Line</Label>
-                            <MergeFieldPicker onInsert={insertIntoSubject} label="Insert Variable" />
+                            <MergeFieldPicker onInsert={insertIntoSubject} label="Insert Variable" entity={form.entity} />
                         </div>
                         <Input
                             ref={subjectRef}
@@ -174,7 +187,7 @@ export const EmailTemplates = () => {
                     <div className="space-y-2 md:col-span-2">
                         <div className="flex items-center justify-between">
                             <Label>Body</Label>
-                            <MergeFieldPicker onInsert={insertIntoBody} label="Insert Variable" />
+                            <MergeFieldPicker onInsert={insertIntoBody} label="Insert Variable" entity={form.entity} />
                         </div>
                         <RichTextEditor
                             key={editingId || 'new'}

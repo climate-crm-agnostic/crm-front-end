@@ -41,10 +41,10 @@ export const deleteEmailTemplate = async (id) => {
   return true;
 };
 
-// Catalog of {contact.x} / {client.x} variables — fixed fields plus
-// whatever custom Attributes this tenant has defined for Contact/Client.
-export const getMergeFields = async () => {
-  const res = await fetch(`${TEMPLATES_URL}merge-fields/`, { headers: getHeaders() });
+// Merge-field catalog for the picker, scoped to the template's entity:
+//   'client' -> {contact.x} + {client.x}   'lead' -> {lead.x} + {client.x}
+export const getMergeFields = async (entity = 'client') => {
+  const res = await fetch(`${TEMPLATES_URL}merge-fields/?entity=${encodeURIComponent(entity)}`, { headers: getHeaders() });
   if (!res.ok) throw new Error('Error fetching merge fields');
   return res.json();
 };

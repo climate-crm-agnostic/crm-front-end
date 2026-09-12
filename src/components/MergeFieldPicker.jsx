@@ -7,16 +7,17 @@ import {
 } from "./ui/dropdown-menu";
 import { getMergeFields } from "../services/emailTemplateService";
 
-// Dropdown of {contact.x} / {client.x} variables, fetched from the backend
-// so it only ever lists fields that really exist (fixed Contact/Client
-// fields plus this tenant's own custom Attributes). `onInsert` receives the
-// literal "{path}" token to drop into a subject input or the RTE body.
-export const MergeFieldPicker = ({ onInsert, label = "Insert Variable" }) => {
+// Dropdown of merge-field variables for the template's `entity`, fetched from
+// the backend so it only ever lists fields that really exist (fixed columns
+// plus this tenant's custom Attributes). `client` -> {contact.x}/{client.x};
+// `lead` -> {lead.x}/{client.x}. `onInsert` receives the literal "{path}"
+// token to drop into a subject input or the RTE body.
+export const MergeFieldPicker = ({ onInsert, label = "Insert Variable", entity = "client" }) => {
     const [fields, setFields] = useState([]);
 
     useEffect(() => {
-        getMergeFields().then(setFields).catch(() => setFields([]));
-    }, []);
+        getMergeFields(entity).then(setFields).catch(() => setFields([]));
+    }, [entity]);
 
     const grouped = fields.reduce((acc, f) => {
         (acc[f.group] = acc[f.group] || []).push(f);

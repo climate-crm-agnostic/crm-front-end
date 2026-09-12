@@ -10,10 +10,10 @@ import { getAudienceFields } from "../../services/campaignService";
 import { selectableOptions } from "../../utils/attributeTypes";
 
 const ENTITIES = [
-    { value: "contact", label: "Contact" },
     { value: "client", label: "Client" },
     { value: "lead", label: "Lead" },
 ];
+const ENTITY_LABELS = Object.fromEntries(ENTITIES.map(e => [e.value, e.label]));
 
 // The field catalog per entity (fixed model columns + this tenant's custom
 // attributes) comes from the backend — GET /campaigns/audience-fields/ — which
@@ -52,7 +52,7 @@ const emptyRow = () => ({ field: "", operator: "=", value: "" });
  * mixing across rows. `onEntityChange`/`onChange` receive the raw values
  * ready to spread into the create/update payload.
  */
-export const AudienceFilterBuilder = ({ entity = "", onEntityChange, filters = [], logic = "AND", onChange }) => {
+export const AudienceFilterBuilder = ({ entity = "", onEntityChange, entityLocked = false, filters = [], logic = "AND", onChange }) => {
     const [fieldsByEntity, setFieldsByEntity] = useState({ contact: [], client: [], lead: [] });
 
     useEffect(() => {
@@ -158,12 +158,19 @@ export const AudienceFilterBuilder = ({ entity = "", onEntityChange, filters = [
             <div className="flex items-center justify-between gap-2 flex-wrap">
                 <Label>Audience filters</Label>
                 <div className="flex items-center gap-2">
-                    <Select value={entity} onValueChange={handleEntityChange}>
-                        <SelectTrigger className="w-32 h-8"><SelectValue placeholder="Select entity" /></SelectTrigger>
-                        <SelectContent>
-                            {ENTITIES.map(e => <SelectItem key={e.value} value={e.value}>{e.label}</SelectItem>)}
-                        </SelectContent>
-                    </Select>
+                    {entityLocked ? (
+                        // Entity is inherited from the template — shown read-only.
+                        <span className="inline-flex items-center h-8 px-3 rounded-md border bg-muted/40 text-xs font-medium">
+                            {ENTITY_LABELS[entity] || entity}
+                        </span>
+                    ) : (
+                        <Select value={entity} onValueChange={handleEntityChange}>
+                            <SelectTrigger className="w-32 h-8"><SelectValue placeholder="Select entity" /></SelectTrigger>
+                            <SelectContent>
+                                {ENTITIES.map(e => <SelectItem key={e.value} value={e.value}>{e.label}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    )}
                     {filters.length > 1 && (
                         <Select value={logic} onValueChange={v => emit(filters, v)}>
                             <SelectTrigger className="w-28 h-8"><SelectValue /></SelectTrigger>
@@ -177,7 +184,11 @@ export const AudienceFilterBuilder = ({ entity = "", onEntityChange, filters = [
             </div>
 
             {filters.length === 0 && (
-                <p className="text-xs text-muted-foreground italic">No filters — campaign goes to all contacts with a valid email.</p>
+                <p className="text-xs text-muted-foreground italic">
+                    {entity === 'lead'
+                        ? 'No filters — campaign goes to all leads that have an email.'
+                        : 'No filters — campaign goes to a contact of every client.'}
+                </p>
             )}
 
             {filters.map((row, index) => {

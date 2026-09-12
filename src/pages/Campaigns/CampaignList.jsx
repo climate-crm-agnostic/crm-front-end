@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Send, Trash2, Megaphone, Users, Eye, RotateCcw } from "lucide-react";
+import { Send, Trash2, Megaphone, Users, Eye, RotateCcw, UserCheck } from "lucide-react";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { Button } from "../../components/ui/button";
@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../../components/ui/dialog";
 import { AudienceFilterBuilder } from "./AudienceFilterBuilder";
 import { getEmailTemplates } from "../../services/emailTemplateService";
-import { getCampaigns, createCampaign, updateCampaign, deleteCampaign, sendCampaignNow, previewRecipients, getSendProgress, getCampaignRecipients } from "../../services/campaignService";
+import { getCampaigns, createCampaign, updateCampaign, deleteCampaign, sendCampaignNow, previewRecipients, getSendProgress, getCampaignRecipients, getRecipientsConfig, saveRecipientsConfig } from "../../services/campaignService";
 import Swal from 'sweetalert2';
 
 const STATUS_COLORS = { draft: "#9b948e", sending: "#c0622a", sent: "#4a5535" };
@@ -48,6 +48,14 @@ export const CampaignList = () => {
     const [sendProgressCampaign, setSendProgressCampaign] = useState(null);
     const [sendProgress, setSendProgressState] = useState(null); // { status, total, sent, failed }
     const [sendResults, setSendResults] = useState(null); // recipient list, fetched once status is 'sent'
+
+    // "Configure Recipients" modal (client campaigns, A3 — mandatory before send):
+    // choose which contact of each client receives the campaign.
+    const [recipientsCampaign, setRecipientsCampaign] = useState(null);
+    const [recipientsClients, setRecipientsClients] = useState([]);        // [{client_id, client_name, contacts, selected_contact_id}]
+    const [recipientsSelections, setRecipientsSelections] = useState({});  // {client_id: contact_id}
+    const [recipientsLoading, setRecipientsLoading] = useState(false);
+    const [recipientsSaving, setRecipientsSaving] = useState(false);
 
     useEffect(() => {
         loadAll();
@@ -119,12 +127,24 @@ export const CampaignList = () => {
         }
     };
 
+    // Selecting a template fixes the campaign's entity (inherited from the
+    // template) and resets filters, since the field catalog differs per entity.
+    const handleTemplateChange = (id) => {
+        setTemplateId(id);
+        const tpl = templates.find(t => t.id === id);
+        setAudienceEntity(tpl?.entity || "client");
+        setAudienceFilters([]);
+        setAudienceLogic("AND");
+    };
+
     const handleCreate = async () => {
-        if (!name.trim() || !templateId || !audienceEntity) return;
+        if (!name.trim() || !templateId) return;
         try {
+            // audience_entity is derived server-side from the template; we send
+            // filters/logic only.
             await createCampaign({
                 name, template_id: templateId,
-                audience_entity: audienceEntity, audience_filters: audienceFilters, audience_logic: audienceLogic,
+                audience_filters: audienceFilters, audience_logic: audienceLogic,
             });
             setName(""); setTemplateId(""); setAudienceEntity(""); setAudienceFilters([]); setAudienceLogic("AND");
             loadAll();
@@ -135,7 +155,7 @@ export const CampaignList = () => {
 
     const openAudienceEditor = (campaign) => {
         setAudienceEditor(campaign);
-        setEditorEntity(campaign.audience_entity || "contact");
+        setEditorEntity(campaign.audience_entity || "client");
         setEditorFilters(campaign.audience_filters || []);
         setEditorLogic(campaign.audience_logic || "AND");
     };
@@ -152,6 +172,41 @@ export const CampaignList = () => {
             Swal.fire({ icon: 'error', title: 'Error', text: err.message, toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
         } finally {
             setSavingAudience(false);
+        }
+    };
+
+    const openRecipientsConfig = async (campaign) => {
+        setRecipientsCampaign(campaign);
+        setRecipientsClients([]);
+        setRecipientsSelections({});
+        setRecipientsLoading(true);
+        try {
+            const data = await getRecipientsConfig(campaign.id);
+            const clients = Array.isArray(data.clients) ? data.clients : [];
+            setRecipientsClients(clients);
+            // Seed selections with the backend's default (primary/first) per client.
+            setRecipientsSelections(
+                Object.fromEntries(clients.filter(c => c.selected_contact_id).map(c => [c.client_id, c.selected_contact_id]))
+            );
+        } catch (err) {
+            setRecipientsCampaign(null);
+            Swal.fire({ icon: 'error', title: 'Error', text: err.message, toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
+        } finally {
+            setRecipientsLoading(false);
+        }
+    };
+
+    const handleSaveRecipients = async () => {
+        setRecipientsSaving(true);
+        try {
+            const res = await saveRecipientsConfig(recipientsCampaign.id, recipientsSelections);
+            setRecipientsCampaign(null);
+            Swal.fire({ icon: 'success', title: `${res.configured} recipient(s) configured`, toast: true, position: 'top-end', showConfirmButton: false, timer: 2500 });
+            loadAll();
+        } catch (err) {
+            Swal.fire({ icon: 'error', title: 'Error', text: err.message, toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
+        } finally {
+            setRecipientsSaving(false);
         }
     };
 
@@ -258,10 +313,10 @@ export const CampaignList = () => {
                     </div>
                     <div className="space-y-2">
                         <Label>Template</Label>
-                        <Select value={templateId} onValueChange={setTemplateId}>
+                        <Select value={templateId} onValueChange={handleTemplateChange}>
                             <SelectTrigger className="w-full"><SelectValue placeholder="Select a template" /></SelectTrigger>
                             <SelectContent>
-                                {templates.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
+                                {templates.map(t => <SelectItem key={t.id} value={t.id}>{t.name} · {t.entity === 'lead' ? 'Lead' : 'Client'}</SelectItem>)}
                             </SelectContent>
                         </Select>
                     </div>
@@ -270,20 +325,24 @@ export const CampaignList = () => {
                     <p className="text-xs text-muted-foreground">No templates yet — create one under Email Templates first.</p>
                 )}
 
-                <div className="pt-2 border-t">
-                    <AudienceFilterBuilder
-                        entity={audienceEntity}
-                        onEntityChange={setAudienceEntity}
-                        filters={audienceFilters}
-                        logic={audienceLogic}
-                        onChange={({ audience_filters, audience_logic }) => {
-                            setAudienceFilters(audience_filters);
-                            setAudienceLogic(audience_logic);
-                        }}
-                    />
-                </div>
+                {templateId && (
+                    <div className="pt-2 border-t">
+                        {/* Entity is inherited from the template, so the builder's
+                            entity picker is locked to it. */}
+                        <AudienceFilterBuilder
+                            entity={audienceEntity}
+                            entityLocked
+                            filters={audienceFilters}
+                            logic={audienceLogic}
+                            onChange={({ audience_filters, audience_logic }) => {
+                                setAudienceFilters(audience_filters);
+                                setAudienceLogic(audience_logic);
+                            }}
+                        />
+                    </div>
+                )}
 
-                <Button type="button" onClick={handleCreate} disabled={!name.trim() || !templateId || !audienceEntity}>Create Campaign</Button>
+                <Button type="button" onClick={handleCreate} disabled={!name.trim() || !templateId}>Create Campaign</Button>
             </div>
 
             <div className="bg-card p-6 rounded-lg border shadow-sm space-y-2">
@@ -314,6 +373,13 @@ export const CampaignList = () => {
                                 {c.status === 'draft' && (
                                     <Button variant="outline" size="sm" onClick={() => openAudienceEditor(c)}>
                                         <Users className="h-4 w-4 mr-1" /> Edit Audience
+                                    </Button>
+                                )}
+                                {c.status === 'draft' && c.template?.entity === 'client' && (
+                                    // Mandatory before sending a client campaign: choose the
+                                    // recipient contact for each client.
+                                    <Button variant="outline" size="sm" onClick={() => openRecipientsConfig(c)}>
+                                        <UserCheck className="h-4 w-4 mr-1" /> Recipients
                                     </Button>
                                 )}
                                 {c.status === 'sending' && c.is_send_stale && (
@@ -360,7 +426,7 @@ export const CampaignList = () => {
                     </DialogHeader>
                     <AudienceFilterBuilder
                         entity={editorEntity}
-                        onEntityChange={setEditorEntity}
+                        entityLocked
                         filters={editorFilters}
                         logic={editorLogic}
                         onChange={({ audience_filters, audience_logic }) => {
@@ -372,6 +438,49 @@ export const CampaignList = () => {
                         <Button variant="secondary" onClick={() => setAudienceEditor(null)}>Cancel</Button>
                         <Button onClick={handleSaveAudience} disabled={savingAudience}>
                             {savingAudience ? 'Saving...' : 'Save Audience'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={!!recipientsCampaign} onOpenChange={(open) => !open && setRecipientsCampaign(null)}>
+                <DialogContent className="sm:max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle>Configure Recipients — {recipientsCampaign?.name}</DialogTitle>
+                    </DialogHeader>
+                    {recipientsLoading ? (
+                        <p className="text-sm text-muted-foreground">Loading clients...</p>
+                    ) : recipientsClients.length === 0 ? (
+                        <p className="text-sm text-muted-foreground italic">No eligible clients (a client needs at least one contact with an email).</p>
+                    ) : (
+                        <div className="space-y-2 max-h-96 overflow-y-auto">
+                            <p className="text-xs text-muted-foreground">
+                                Pick which contact of each client receives this campaign. The primary contact is preselected.
+                            </p>
+                            {recipientsClients.map(cl => (
+                                <div key={cl.client_id} className="grid grid-cols-[1fr_1.4fr] gap-3 items-center p-2 border rounded-md">
+                                    <span className="text-sm font-medium truncate">{cl.client_name}</span>
+                                    <Select
+                                        value={recipientsSelections[cl.client_id] || ""}
+                                        onValueChange={v => setRecipientsSelections(s => ({ ...s, [cl.client_id]: v }))}
+                                    >
+                                        <SelectTrigger className="w-full h-8"><SelectValue placeholder="Select contact" /></SelectTrigger>
+                                        <SelectContent>
+                                            {cl.contacts.map(ct => (
+                                                <SelectItem key={ct.id} value={ct.id}>
+                                                    {ct.name || ct.email}{ct.is_primary ? ' ★' : ''} — {ct.email}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                    <DialogFooter>
+                        <Button variant="secondary" onClick={() => setRecipientsCampaign(null)}>Cancel</Button>
+                        <Button onClick={handleSaveRecipients} disabled={recipientsSaving || recipientsClients.length === 0}>
+                            {recipientsSaving ? 'Saving...' : 'Save Recipients'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -526,9 +635,17 @@ export const CampaignList = () => {
                         <p className="text-sm text-muted-foreground">Loading recipients...</p>
                     ) : sendPreviewData && (
                         <div className="space-y-3">
-                            <p className="text-sm text-muted-foreground">
-                                This will email <strong>{sendPreviewData.recipient_count}</strong> recipient(s) right now. This can't be undone.
-                            </p>
+                            {sendPreviewCampaign?.template?.entity === 'client' && sendPreviewData.recipient_count === 0 ? (
+                                <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-3 text-sm text-amber-800">
+                                    No recipients are configured yet. For client campaigns you must choose a contact
+                                    (primary or secondary) for each client before sending. Close this dialog and use the
+                                    <strong> Recipients </strong> button to configure contacts, then try again.
+                                </div>
+                            ) : (
+                                <p className="text-sm text-muted-foreground">
+                                    This will email <strong>{sendPreviewData.recipient_count}</strong> recipient(s) right now. This can't be undone.
+                                </p>
+                            )}
                             {sendPreviewData.recipient_count > 0 && (
                                 <div className="max-h-64 overflow-y-auto border rounded-md divide-y">
                                     {sendPreviewData.recipients.map(r => (
