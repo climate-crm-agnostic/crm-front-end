@@ -42,8 +42,24 @@ const ImageNodeView = ({ node, updateAttributes, deleteNode, selected }) => {
         window.addEventListener("pointerup", onUp);
     }, [updateAttributes, width]);
 
+    // The wrapper must reflect the alignment so the preview inside the editor
+    // matches the emailed HTML: center → a block that centers itself with
+    // auto margins (and shrinks to the image with a fit-content width);
+    // left/right → a float; none → natural inline flow.
+    const wrapperStyle =
+        align === "center"
+            ? { display: "block", marginLeft: "auto", marginRight: "auto", width: "fit-content" }
+            : align === "left" || align === "right"
+                ? { float: align }
+                : undefined;
+
     return (
-        <NodeViewWrapper as="span" className="relative inline-block" data-drag-handle style={{ float: align === "left" || align === "right" ? align : undefined }}>
+        <NodeViewWrapper
+            as="span"
+            className="relative inline-block"
+            data-drag-handle
+            style={wrapperStyle}
+        >
             {selected && (
                 <span className="absolute -top-9 left-0 z-10 flex items-center gap-0.5 rounded-md border bg-background p-1 shadow-md" contentEditable={false}>
                     <button
@@ -90,7 +106,11 @@ const ImageNodeView = ({ node, updateAttributes, deleteNode, selected }) => {
                 src={src}
                 alt={alt || ""}
                 title={title}
-                style={{ ...(width ? { width: `${width}px` } : {}), maxWidth: "100%", display: align ? undefined : "inline-block" }}
+                style={{
+                    ...(width ? { width: `${width}px` } : {}),
+                    maxWidth: "100%",
+                    display: align === "center" ? "block" : (align ? undefined : "inline-block"),
+                }}
                 className={selected ? "ring-2 ring-primary rounded-sm" : "rounded-sm"}
             />
             {selected && (
