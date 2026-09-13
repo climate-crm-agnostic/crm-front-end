@@ -1,19 +1,23 @@
 import { useEffect, useState } from "react";
 import { Download } from "lucide-react";
 import Swal from "sweetalert2";
-import { getEventLeadsReport, exportEventLeadsReport } from "@/services/eventService";
+import { getEventLeadsReport, exportEventLeadsReport, getEventLeadsReportEvents } from "@/services/eventService";
+import { formatDateTime } from "@/utils/tz";
 
 const GREEN = "#5E6A43";
 
-const fmtDate = (iso) => {
-    if (!iso) return "—";
-    const d = new Date(iso);
-    if (isNaN(d)) return "—";
-    return d.toLocaleString("en-US", {
-        month: "short", day: "2-digit", year: "numeric",
-        hour: "2-digit", minute: "2-digit", hour12: false,
-    });
+// Color for each event status label used in the report.
+const STATUS_COLOR = {
+    Active: "#2f9e3a",
+    Scheduled: "#5E6A43",
+    Inactive: "#B0592E",
+    Expired: "#B0592E",
+    Deleted: "#8a3f1e",
 };
+const statusColor = (label) => STATUS_COLOR[label] || "#6b6560";
+
+// Dates shown in the deployment timezone (not the browser's).
+const fmtDate = (iso) => formatDateTime(iso) || "—";
 
 /**
  * Event → leads report, rendered inline (in place of the events table) rather
@@ -21,9 +25,10 @@ const fmtDate = (iso) => {
  * attendees, filterable by event (select) and by a date range, exportable to
  * Excel.
  */
-export const LeadsReportView = ({ events = [] }) => {
+export const LeadsReportView = () => {
     const [filters, setFilters] = useState({ event: "", date_from: "", date_to: "" });
-    const [data, setData] = useState({ rows: [], count: 0, by_pipeline: {} });
+    const [data, setData] = useState({ rows: [], count: 0, by_pipeline: {}, selected_event: null });
+    const [reportEvents, setReportEvents] = useState([]);   // all events that generated leads (+status)
     const [loading, setLoading] = useState(true);
     const [exporting, setExporting] = useState(false);
 
@@ -35,6 +40,7 @@ export const LeadsReportView = ({ events = [] }) => {
                 rows: Array.isArray(res.rows) ? res.rows : [],
                 count: res.count || 0,
                 by_pipeline: res.by_pipeline || {},
+                selected_event: res.selected_event || null,
             });
         } catch (e) {
             Swal.fire({ icon: "error", title: "Could not load report", text: e.message });
@@ -43,7 +49,13 @@ export const LeadsReportView = ({ events = [] }) => {
         }
     };
 
-    useEffect(() => { load(filters); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
+    useEffect(() => {
+        getEventLeadsReportEvents()
+            .then((list) => setReportEvents(Array.isArray(list) ? list : []))
+            .catch(() => {});
+        load(filters);
+        /* eslint-disable-next-line react-hooks/exhaustive-deps */
+    }, []);
 
     const setFilter = (k, v) => setFilters((f) => ({ ...f, [k]: v }));
 
@@ -70,6 +82,12 @@ export const LeadsReportView = ({ events = [] }) => {
     const labelStyle = { color: "#2E2A26", fontSize: 12, fontWeight: 600, display: "block", marginBottom: 4 };
     const th = "px-3 py-2 text-xs font-semibold text-left";
 
+    // Event status column only shows when a single event is selected (derived
+    // from the LOADED data, not the pending filter); on "All events" it's
+    // hidden (per requirement).
+    const showStatus = !!data.selected_event;
+    const colCount = showStatus ? 7 : 6;
+
     return (
         <div className="overflow-hidden" style={{ borderRadius: "10px", border: "1px solid #D8D2C4", backgroundColor: "#FBF7EF" }}>
             <div className="px-5 py-3 flex items-center gap-2" style={{ borderBottom: "1px solid #D8D2C4", backgroundColor: "#F2EBDD" }}>
@@ -87,8 +105,10 @@ export const LeadsReportView = ({ events = [] }) => {
                         <label style={labelStyle}>Event</label>
                         <select className={`${inputCls} w-full`} style={inputStyle} value={filters.event} onChange={(e) => setFilter("event", e.target.value)}>
                             <option value="">All events</option>
-                            {events.map((ev) => (
-                                <option key={ev.id} value={ev.id}>{ev.name}</option>
+                            {reportEvents.map((ev) => (
+                                <option key={ev.id} value={ev.id}>
+                                    {ev.name}{ev.status_label ? ` — ${ev.status_label}` : ""}
+                                </option>
                             ))}
                         </select>
                     </div>
@@ -126,6 +146,19 @@ export const LeadsReportView = ({ events = [] }) => {
                 <div className="flex flex-wrap items-center gap-2 text-sm" style={{ color: "#2E2A26" }}>
                     <span className="font-semibold">{data.count}</span>
                     <span style={{ color: "#9b948e" }}>lead{data.count === 1 ? "" : "s"} generated</span>
+                    {/* Selected event's status — only when a single event is chosen. */}
+                    {data.selected_event?.status_label && (
+                        <span
+                            className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                            style={{
+                                backgroundColor: `${statusColor(data.selected_event.status_label)}1f`,
+                                color: statusColor(data.selected_event.status_label),
+                                border: `1px solid ${statusColor(data.selected_event.status_label)}55`,
+                            }}
+                        >
+                            {data.selected_event.name}: {data.selected_event.status_label}
+                        </span>
+                    )}
                     {Object.entries(data.by_pipeline).map(([name, n]) => (
                         <span key={name} className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: "rgba(94,106,67,0.12)", color: GREEN }}>
                             {name}: {n}
@@ -138,16 +171,16 @@ export const LeadsReportView = ({ events = [] }) => {
                     <table className="w-full text-sm">
                         <thead>
                             <tr style={{ backgroundColor: GREEN }}>
-                                {["Event", "Modality", "Lead", "Pipeline", "Stage", "Generated on"].map((h) => (
+                                {["Event", "Modality", ...(showStatus ? ["Event status"] : []), "Lead", "Pipeline", "Stage", "Generated on"].map((h) => (
                                     <th key={h} className={th} style={{ color: "#FBF7EF" }}>{h}</th>
                                 ))}
                             </tr>
                         </thead>
                         <tbody style={{ color: "#2E2A26" }}>
                             {loading ? (
-                                <tr><td colSpan={6} className="px-3 py-8 text-center" style={{ color: "#9b948e" }}>Loading…</td></tr>
+                                <tr><td colSpan={colCount} className="px-3 py-8 text-center" style={{ color: "#9b948e" }}>Loading…</td></tr>
                             ) : data.rows.length === 0 ? (
-                                <tr><td colSpan={6} className="px-3 py-8 text-center" style={{ color: "#9b948e" }}>No leads found for these filters.</td></tr>
+                                <tr><td colSpan={colCount} className="px-3 py-8 text-center" style={{ color: "#9b948e" }}>No leads found for these filters.</td></tr>
                             ) : (
                                 data.rows.map((r, i) => (
                                     <tr key={i} style={{ borderBottom: "1px solid #D8D2C4" }}>
@@ -155,6 +188,13 @@ export const LeadsReportView = ({ events = [] }) => {
                                         <td className="px-3 py-2">
                                             <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: "#F2EBDD", color: "#6b6560" }}>{r.modality || "—"}</span>
                                         </td>
+                                        {showStatus && (
+                                            <td className="px-3 py-2">
+                                                <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${statusColor(r.event_status)}1f`, color: statusColor(r.event_status), border: `1px solid ${statusColor(r.event_status)}55` }}>
+                                                    {r.event_status || "—"}
+                                                </span>
+                                            </td>
+                                        )}
                                         <td className="px-3 py-2 font-medium">{r.lead_name || "—"}</td>
                                         <td className="px-3 py-2" style={{ color: "#6b6560" }}>{r.pipeline || "—"}</td>
                                         <td className="px-3 py-2">

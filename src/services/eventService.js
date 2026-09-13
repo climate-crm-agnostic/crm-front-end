@@ -177,6 +177,14 @@ export const getEventLeadsReport = async (params = {}) => {
     return res.json();
 };
 
+// Events that have generated leads (for the report filter) — includes
+// inactive and deleted events, each with a status label.
+export const getEventLeadsReportEvents = async () => {
+    const res = await fetch(`${EVENTS_URL}leads-report-events/`, { headers: getHeaders() });
+    if (!res.ok) throw new Error("Error loading report events");
+    return res.json();
+};
+
 // Triggers an .xlsx download of the leads report with the current filters.
 export const exportEventLeadsReport = async (params = {}) => {
     const query = new URLSearchParams(

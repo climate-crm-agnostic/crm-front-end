@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { formatDateTime } from "../utils/tz";
 import { ClipboardList, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from "lucide-react";
 import Swal from "sweetalert2";
 import { getAuditLogs } from "@/services/auditLogService";
@@ -210,7 +211,7 @@ export const AuditLog = () => {
                                 }}
                             >
                                 <td className="px-4 py-3 text-xs whitespace-nowrap" style={{ color: "#6b6560" }}>
-                                    {new Date(entry.timestamp).toLocaleString()}
+                                    {formatDateTime(entry.timestamp, { second: "2-digit" })}
                                 </td>
                                 <td className="px-4 py-3 text-xs font-medium" style={{ color: "#2E2A26" }}>
                                     {MODEL_LABELS[entry.model] || entry.model}

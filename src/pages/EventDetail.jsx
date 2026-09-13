@@ -544,7 +544,7 @@ const ReactivateModal = ({ event, onClose, onSubmit }) => {
                 <p className="text-xs" style={{ color: "#9b948e" }}>New registrations add to the existing ones. A new link and QR are generated.</p>
 
                 {/* Dates: start date + optional end date. */}
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <div className="flex items-center justify-between mb-1">
                             <label style={labelStyle}>Start date *</label>
@@ -570,7 +570,7 @@ const ReactivateModal = ({ event, onClose, onSubmit }) => {
                             {form.customize_hours ? "Use default hours" : "Customize hours"}
                         </button>
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {[
                             { key: "start_time", label: "Start hour" },
                             { key: "end_time", label: "End hour" },

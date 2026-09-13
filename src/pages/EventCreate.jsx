@@ -294,7 +294,7 @@ export const EventCreate = () => {
     const disabledStyle = { backgroundColor: "#F0ECE3", color: "#9b948e", cursor: "not-allowed" };
 
     return (
-        <div className="p-6 max-w-4xl mx-auto space-y-6" style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+        <div className="p-4 sm:p-6 w-full max-w-5xl mx-auto space-y-6" style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
             {/* Header */}
             <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg" style={{ backgroundColor: "rgba(94,106,67,0.12)", border: "1px solid rgba(94,106,67,0.3)" }}>
@@ -425,7 +425,7 @@ export const EventCreate = () => {
                         )}
 
                         {/* Dates: start date + optional end date. */}
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <div className="flex items-center justify-between mb-1">
                                     <label style={labelStyle}>Start date *</label>
@@ -482,7 +482,7 @@ export const EventCreate = () => {
                                     ? "Editing the start and end hours manually."
                                     : "Default: starts at 06:00, ends at 20:00. Tap Customize hours to change."}
                             </p>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 {[
                                     { key: "start_time", label: "Start hour" },
                                     { key: "end_time", label: "End hour" },
@@ -560,7 +560,7 @@ export const EventCreate = () => {
                                             </button>
                                         )}
                                     </div>
-                                    <div className="grid grid-cols-2 gap-2">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                         <input className="h-9 px-2 rounded-md text-sm" style={inputStyle} placeholder="First name *" value={a.first_name} onChange={(e) => handleManualChange(idx, "first_name", e.target.value)} />
                                         <input className="h-9 px-2 rounded-md text-sm" style={inputStyle} placeholder="Last name" value={a.last_name} onChange={(e) => handleManualChange(idx, "last_name", e.target.value)} />
                                         <div>
@@ -655,7 +655,7 @@ export const EventCreate = () => {
                 {step === 4 && (
                     <div className="space-y-3">
                         <p className="text-sm font-semibold" style={{ color: "#2E2A26" }}>Confirm & create</p>
-                        <div className="grid grid-cols-2 gap-3 text-sm" style={{ color: "#2E2A26" }}>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm" style={{ color: "#2E2A26" }}>
                             <div><span style={{ color: "#9b948e" }}>Event: </span>{form.name}</div>
                             <div><span style={{ color: "#9b948e" }}>Modality: </span>{form.modality === "virtual" ? "Virtual" : "In Person"}</div>
                             <div><span style={{ color: "#9b948e" }}>Pipeline: </span>{pipelines.find((p) => p.id === pipelineId)?.name}</div>

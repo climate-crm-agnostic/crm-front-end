@@ -124,7 +124,7 @@ export const Events = () => {
             </div>
 
             {view === "report" ? (
-                <LeadsReportView events={events} />
+                <LeadsReportView />
             ) : (
             <div className="overflow-hidden" style={{ borderRadius: "10px", border: "1px solid #D8D2C4", backgroundColor: "#FBF7EF" }}>
                 <div className="px-5 py-3" style={{ borderBottom: "1px solid #D8D2C4", backgroundColor: "#F2EBDD" }}>

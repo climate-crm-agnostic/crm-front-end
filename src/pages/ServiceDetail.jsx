@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { formatDateTime } from "../utils/tz";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { createService, updateService, uploadServiceImage, deleteServiceImage, getServiceById, getServiceAttributes } from "../services/serviceService";
 import { getClients } from "../services/clientService";
@@ -440,7 +441,7 @@ export const ServiceDetail = () => {
                                     <div key={idx} className="p-3 bg-muted/20 border rounded-md space-y-1">
                                         <p className="text-sm whitespace-pre-wrap">{item.note}</p>
                                         <div className="flex justify-between items-center text-[10px] text-muted-foreground">
-                                            <span>{new Date(item.date).toLocaleString()}</span>
+                                            <span>{formatDateTime(item.date)}</span>
                                             {item.user_name && <span>{item.user_name}</span>}
                                         </div>
                                     </div>

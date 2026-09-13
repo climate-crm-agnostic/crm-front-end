@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation, useSearchParams } from "react-router-dom";
-import { getLeadClientAttributes, createLead, updateLead, uploadLeadImage, deleteLeadImage, getLead, archiveLead, unarchiveLead } from "../services/leadService";
+import { getLeadClientAttributes, createLead, updateLead, uploadLeadImage, deleteLeadImage, getLead, archiveLead, unarchiveLead, getLeadEvents } from "../services/leadService";
 import { getPipelineAttributes } from "../services/pipelineAttributeService";
 import { getPipelines } from "../services/pipelineService";
 import { getCatalogueItems } from "../services/catalogueService";
@@ -17,7 +17,7 @@ import { Button } from "../components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Checkbox } from "../components/ui/checkbox";
 import { Textarea } from "../components/ui/textarea";
-import { ArrowLeft, MoreVertical, FileText, Plus, Mail } from "lucide-react";
+import { ArrowLeft, MoreVertical, FileText, Plus, Mail, CalendarDays, MapPin, Video } from "lucide-react";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "../components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/table";
 import { DateInput } from "../components/ui/date-input";
@@ -26,6 +26,7 @@ import { SendEmailModal } from "../components/SendEmailModal";
 import { ViewEmailModal } from "../components/ViewEmailModal";
 import { DynamicAttributeField } from "../components/attributes/DynamicAttributeField";
 import { coerceAttributeValue, collectAttributeValuesByType, emptyValueFor, normalizeOptions } from "../utils/attributeTypes";
+import { formatDateTime } from "../utils/tz";
 import Swal from "sweetalert2";
 
 export const LeadDetail = () => {
@@ -95,6 +96,24 @@ export const LeadDetail = () => {
     // Notes state
     const [notes, setNotes] = useState([]);
     const [newNote, setNewNote] = useState("");
+
+    // Events this lead participated in (via attendee→lead links). Loaded lazily.
+    const [leadEvents, setLeadEvents] = useState({ from_event: false, attendee: null, events: [] });
+    const [leadEventsLoading, setLeadEventsLoading] = useState(false);
+
+    // Load the lead's event participation once for a real (saved) lead.
+    useEffect(() => {
+        if (isNew || !id) return;
+        setLeadEventsLoading(true);
+        getLeadEvents(id)
+            .then((res) => setLeadEvents({
+                from_event: !!res.from_event,
+                attendee: res.attendee || null,
+                events: Array.isArray(res.events) ? res.events : [],
+            }))
+            .catch(() => {})
+            .finally(() => setLeadEventsLoading(false));
+    }, [id, isNew]);
 
     // Detect first/last name dynamic attributes (case-insensitive label match)
     const firstNameAttr = attributes.find(a => a.label?.toLowerCase() === 'first name');
@@ -747,6 +766,7 @@ export const LeadDetail = () => {
                         <TabsTrigger value="info">Info</TabsTrigger>
                         <TabsTrigger value="communication">Communication</TabsTrigger>
                         <TabsTrigger value="tasks">Tasks, Notes & Files</TabsTrigger>
+                        {leadEvents.from_event && <TabsTrigger value="events">Events</TabsTrigger>}
                     </TabsList>
 
                 <TabsContent value="info" className="space-y-6 mt-0">
@@ -1034,7 +1054,7 @@ export const LeadDetail = () => {
                                             </div>
                                         </div>
                                         <div className="flex flex-col items-end shrink-0 text-xs text-muted-foreground">
-                                            <span>{new Date(mail.created_at).toLocaleString()}</span>
+                                            <span>{formatDateTime(mail.created_at, { second: undefined })}</span>
                                             {mail.sent_by?.name && <span>{mail.sent_by.name}</span>}
                                         </div>
                                     </div>
@@ -1140,7 +1160,7 @@ export const LeadDetail = () => {
                                         <div key={idx} className="p-3 bg-muted/20 border rounded-md space-y-1">
                                             <p className="text-sm whitespace-pre-wrap">{item.note}</p>
                                             <div className="flex justify-between items-center text-[10px] text-muted-foreground">
-                                                <span>{new Date(item.date).toLocaleString()}</span>
+                                                <span>{formatDateTime(item.date)}</span>
                                                 {item.user_name && <span>{item.user_name}</span>}
                                             </div>
                                         </div>
@@ -1198,6 +1218,73 @@ export const LeadDetail = () => {
                                 </Button>
                             </div>
                         </div>
+                    )}
+                </TabsContent>
+
+                <TabsContent value="events" className="space-y-6 mt-0">
+                    {leadEventsLoading ? (
+                        <div className="bg-card p-6 rounded-lg border shadow-sm text-sm text-muted-foreground">Loading…</div>
+                    ) : !leadEvents.from_event ? (
+                        <div className="bg-card p-6 rounded-lg border shadow-sm text-sm text-muted-foreground">
+                            This lead did not come from an event.
+                        </div>
+                    ) : (
+                        <>
+                            {/* Attendee general info */}
+                            {leadEvents.attendee && (
+                                <div className="bg-card p-6 rounded-lg border shadow-sm">
+                                    <h3 className="text-sm font-semibold mb-4">Attendee information</h3>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                                        <div><span className="text-muted-foreground">Name: </span>{leadEvents.attendee.full_name || "—"}</div>
+                                        <div><span className="text-muted-foreground">Email: </span>{leadEvents.attendee.email || "—"}</div>
+                                        <div><span className="text-muted-foreground">Company: </span>{leadEvents.attendee.company || "—"}</div>
+                                        <div><span className="text-muted-foreground">Job title: </span>{leadEvents.attendee.job_title || "—"}</div>
+                                        <div><span className="text-muted-foreground">Phone: </span>{leadEvents.attendee.phone || "—"}</div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Participated events */}
+                            <div className="bg-card rounded-lg border shadow-sm overflow-hidden">
+                                <div className="px-5 py-3 border-b flex items-center gap-2">
+                                    <CalendarDays className="h-4 w-4" style={{ color: "#5E6A43" }} />
+                                    <span className="text-sm font-semibold">Events participated</span>
+                                    <span className="ml-1 text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: "rgba(94,106,67,0.12)", color: "#5E6A43" }}>
+                                        {leadEvents.events.length}
+                                    </span>
+                                </div>
+                                <div className="overflow-auto">
+                                    <table className="w-full text-sm">
+                                        <thead>
+                                            <tr style={{ backgroundColor: "#5E6A43" }}>
+                                                {["Event", "Modality", "Status", "Registered on"].map((h) => (
+                                                    <th key={h} className="px-4 py-2 text-xs font-semibold text-left" style={{ color: "#FBF7EF" }}>{h}</th>
+                                                ))}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {leadEvents.events.map((ev) => (
+                                                <tr key={ev.id} className="border-b">
+                                                    <td className="px-4 py-2 font-medium">{ev.name}</td>
+                                                    <td className="px-4 py-2">
+                                                        <span className="inline-flex items-center gap-1 text-xs" style={{ color: "#6b6560" }}>
+                                                            {ev.modality === "Virtual" ? <Video className="h-3.5 w-3.5" /> : <MapPin className="h-3.5 w-3.5" />}
+                                                            {ev.modality}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-4 py-2">
+                                                        <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: "#F2EBDD", color: "#6b6560" }}>{ev.status_label}</span>
+                                                    </td>
+                                                    <td className="px-4 py-2" style={{ color: "#6b6560" }}>
+                                                        {ev.registered_at ? formatDateTime(ev.registered_at) : "—"}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </>
                     )}
                 </TabsContent>
                 </Tabs>

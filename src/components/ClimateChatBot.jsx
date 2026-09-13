@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { formatDateTz } from "../utils/tz";
 import { sendMessage, getConversations, getConversation, renameConversation, deleteConversation } from "../services/aiService";
 
 // ── Icons (inline SVGs — no extra package needed) ─────────────────────────
@@ -417,7 +418,7 @@ export const ClimateChatBot = () => {
                                             {conv.name}
                                         </div>
                                         <div style={{ fontSize: 11, color: "var(--muted-foreground)", marginTop: 2 }}>
-                                            {new Date(conv.updated_at).toLocaleDateString()}
+                                            {formatDateTz(conv.updated_at)}
                                         </div>
                                     </div>
                                     <button

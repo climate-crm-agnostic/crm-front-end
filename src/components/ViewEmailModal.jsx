@@ -1,4 +1,5 @@
 import { X, Paperclip } from "lucide-react";
+import { formatDateTime } from "../utils/tz";
 import { Button } from "./ui/button";
 
 /**
@@ -30,7 +31,7 @@ export const ViewEmailModal = ({ email, onClose }) => {
                         </div>
                         <div>
                             <p className="text-xs text-muted-foreground">Sent</p>
-                            <p className="font-medium">{new Date(email.created_at).toLocaleString()}</p>
+                            <p className="font-medium">{formatDateTime(email.created_at)}</p>
                         </div>
                         <div>
                             <p className="text-xs text-muted-foreground">Sent by</p>

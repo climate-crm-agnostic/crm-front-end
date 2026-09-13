@@ -39,6 +39,17 @@ export const updateLead = async (id, data) => {
     return res.json();
 };
 
+// The events this lead participated in (attendee info + event list), via the
+// permanent attendee→lead links. Empty when the lead didn't come from an event.
+export const getLeadEvents = async (id) => {
+    const res = await fetch(`${API_URL}/leads/${id}/events/`, {
+        method: "GET",
+        headers: getHeaders(),
+    });
+    if (!res.ok) throw new Error("Error fetching lead events");
+    return res.json();
+};
+
 export const getLead = async (id) => {
     const res = await fetch(`${API_URL}/leads/${id}/`, {
         method: "GET",

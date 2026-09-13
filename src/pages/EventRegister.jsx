@@ -4,6 +4,7 @@ import { MapPin, Video, CheckCircle2, XCircle, Clock, KeyRound, UserPlus, Chevro
 import { DynamicAttributeField } from "@/components/attributes/DynamicAttributeField";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { getPublicEvent, getEventByAttendeeToken, verifyEventCode, submitPublicRegistration, submitWalkIn } from "@/services/eventService";
+import { formatDateTime } from "@/utils/tz";
 
 const GREEN = "#5E6A43";
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
@@ -323,7 +324,7 @@ export const EventRegister = () => {
                 {event?.start_at && (
                     <span className="inline-flex items-center gap-1">
                         <Clock className="h-3.5 w-3.5" />
-                        {new Date(event.start_at).toLocaleString("en-US", { hour12: false })}
+                        {formatDateTime(event.start_at)}
                     </span>
                 )}
             </div>

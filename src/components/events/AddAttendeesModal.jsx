@@ -123,7 +123,7 @@ export const AddAttendeesModal = ({ eventId, onClose, onDone }) => {
                                     </button>
                                 )}
                             </div>
-                            <div className="grid grid-cols-2 gap-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 <input className="h-9 px-2 rounded-md text-sm" style={inputStyle} placeholder="First name *" value={a.first_name} onChange={(e) => setManualField(idx, "first_name", e.target.value)} />
                                 <input className="h-9 px-2 rounded-md text-sm" style={inputStyle} placeholder="Last name" value={a.last_name} onChange={(e) => setManualField(idx, "last_name", e.target.value)} />
                                 <div>

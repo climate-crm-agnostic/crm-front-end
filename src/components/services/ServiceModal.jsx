@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { formatDateTime } from "../../utils/tz";
 import { Modal } from "../Modal";
 import { createService, updateService, uploadServiceImage } from "../../services/serviceService";
 import { getClients } from "../../services/clientService";
@@ -379,7 +380,7 @@ export const ServiceModal = ({ isOpen, onClose, onServiceSaved, serviceToEdit = 
                                         <div key={idx} className="p-3 bg-card border rounded-md space-y-1">
                                             <p className="text-sm">{item.note}</p>
                                             <div className="flex justify-between items-center text-[10px] text-muted-foreground">
-                                                <span>{new Date(item.date).toLocaleString()}</span>
+                                                <span>{formatDateTime(item.date)}</span>
                                                 {item.user_id && <span>User ID: {item.user_id}</span>}
                                             </div>
                                         </div>
