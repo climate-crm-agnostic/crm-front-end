@@ -8,30 +8,30 @@
 
   /* Surfaces */
   --color-brand-linen: #FFFFFF;
-  --color-brand-oat: #F5F8F6;
+  --color-brand-oat: #f9fafc;
 
   /* Structure */
-  --color-brand-pebble: #DCE5DF;
+  --color-brand-pebble: #34534a33;
 
   /* Active States */
-  --color-brand-citron: #5ED331;
-  --color-brand-citron-dark: #34741B;
+  --color-brand-citron: #60d805;
+  --color-brand-citron-dark: #255b01;
 
   /* Primary CTA */
-  --color-brand-apricot: #5ED331;
-  --color-brand-apricot-dark: #34741B;
+  --color-brand-apricot: #60d805;
+  --color-brand-apricot-dark: #255b01;
 
   /* Soft Callouts */
-  --color-brand-peach-wash: #E7F8E0;
+  --color-brand-peach-wash: #f9fafc;
 
   /* Secondary CTA / Nav */
-  --color-brand-olive: #1A3A30;
-  --color-brand-olive-light: #2C5C4C;
-  --color-brand-olive-pale: #E7F8E0;
+  --color-brand-olive: #255b01;
+  --color-brand-olive-light: #34534a;
+  --color-brand-olive-pale: #f9fafc;
 
   /* Text */
-  --color-brand-ink: #1A3A30;
-  --color-brand-ink-muted: #5B6B63;
+  --color-brand-ink: #255b01;
+  --color-brand-ink-muted: #34534a;
 
   /* Font families */
   --font-heading: "Cormorant Garamond", Georgia, serif;
@@ -40,36 +40,36 @@
 
   /* --------- Colors Codex -------------- */
 
-  --color-codex-primary: #5ED331;
+  --color-codex-primary: #60d805;
 
-  --color-codex-secondary: #1A3A30;
+  --color-codex-secondary: #255b01;
 
-  --color-codex-terciario: #4CC02A;
+  --color-codex-terciario: #60d805;
 
   --color-codex-cuaternario: #FFFFFF;
 
 
-  --color-codex-fondo-primary: #5ED331;
+  --color-codex-fondo-primary: #60d805;
 
-  --color-codex-fondo-primary-variante1: #E7F8E0;
-  --color-codex-fondo-primary-variante2: #B8EBA2;
-  --color-codex-fondo-primary-variante3: #429422;
-  --color-codex-fondo-primary-variante4: #34741B;
-  --color-codex-fondo-secondary: #1A3A30;
+  --color-codex-fondo-primary-variante1: #f9fafc;
+  --color-codex-fondo-primary-variante2: #f9fafc;
+  --color-codex-fondo-primary-variante3: #255b01;
+  --color-codex-fondo-primary-variante4: #255b01;
+  --color-codex-fondo-secondary: #242424;
   /* Black */
   --color-codex-fondo-secondary-variante1: #E8EBEA;
   --color-codex-fondo-secondary-variante2: #BAC4C1;
   --color-codex-fondo-secondary-variante3: #6A7B78;
   --color-codex-fondo-secondary-variante4: #536B64;
   --color-codex-fondo-secondary-variante5: #314E45;
-  --color-codex-fondo-terciario: #4CC02A;
+  --color-codex-fondo-terciario: #60d805;
   /* Blue */
-  --color-codex-fondo-terciario-variante1: #E4F6DF;
-  --color-codex-fondo-terciario-variante2: #C0E9B4;
-  --color-codex-fondo-terciario-variante3: #41A324;
-  --color-codex-fondo-terciario-variante4: #317D1B;
-  --color-codex-fondo-terciario-variante5: #266015;
-  --color-codex-fondo-terciario-variante6: #1B430F;
+  --color-codex-fondo-terciario-variante1: #f9fafc;
+  --color-codex-fondo-terciario-variante2: #f9fafc;
+  --color-codex-fondo-terciario-variante3: #255b01;
+  --color-codex-fondo-terciario-variante4: #255b01;
+  --color-codex-fondo-terciario-variante5: #333333;
+  --color-codex-fondo-terciario-variante6: #2a2a2a;
   --color-codex-fondo-cuaternario: #FFFFFF;
   /* Gray Coffee */
   --color-codex-fondo-cuaternario-variante1: #F2F5F3;
@@ -77,27 +77,27 @@
   --color-codex-fondo-cuaternario-variante3: #8A9A93;
   --color-codex-fondo-cuaternario-variante4: #6B7A74;
 
-  --color-codex-cards-primary: #5ED331;
+  --color-codex-cards-primary: #60d805;
   /* Green */
-  --color-codex-cards-primary-variante1: #E7F8E0;
-  --color-codex-cards-primary-variante2: #B8EBA2;
-  --color-codex-cards-primary-variante3: #429422;
-  --color-codex-cards-primary-variante4: #34741B;
-  --color-codex-cards-secondary: #1A3A30;
+  --color-codex-cards-primary-variante1: #f9fafc;
+  --color-codex-cards-primary-variante2: #f9fafc;
+  --color-codex-cards-primary-variante3: #255b01;
+  --color-codex-cards-primary-variante4: #255b01;
+  --color-codex-cards-secondary: #255b01;
   /* Black */
   --color-codex-cards-secondary-variante1: #E8EBEA;
   --color-codex-cards-secondary-variante2: #BAC4C1;
   --color-codex-cards-secondary-variante3: #6A7B78;
   --color-codex-cards-secondary-variante4: #536B64;
   --color-codex-cards-secondary-variante5: #314E45;
-  --color-codex-cards-terciario: #4CC02A;
+  --color-codex-cards-terciario: #60d805;
   /* Blue */
-  --color-codex-cards-terciario-variante1: #E4F6DF;
-  --color-codex-cards-terciario-variante2: #C0E9B4;
-  --color-codex-cards-terciario-variante3: #41A324;
-  --color-codex-cards-terciario-variante4: #317D1B;
-  --color-codex-cards-terciario-variante5: #266015;
-  --color-codex-cards-terciario-variante6: #1B430F;
+  --color-codex-cards-terciario-variante1: #f9fafc;
+  --color-codex-cards-terciario-variante2: #f9fafc;
+  --color-codex-cards-terciario-variante3: #255b01;
+  --color-codex-cards-terciario-variante4: #255b01;
+  --color-codex-cards-terciario-variante5: #255b01;
+  --color-codex-cards-terciario-variante6: #255b01;
   --color-codex-cards-cuaternario: #FFFFFF;
   /* Gray Coffee */
   --color-codex-cards-cuaternario-variante1: #F2F5F3;
@@ -105,27 +105,27 @@
   --color-codex-cards-cuaternario-variante3: #8A9A93;
   --color-codex-cards-cuaternario-variante4: #6B7A74;
 
-  --color-codex-botones-primary: #5ED331;
+  --color-codex-botones-primary: #60d805;
   /* Green */
-  --color-codex-botones-primary-variante1: #E7F8E0;
-  --color-codex-botones-primary-variante2: #B8EBA2;
-  --color-codex-botones-primary-variante3: #429422;
-  --color-codex-botones-primary-variante4: #34741B;
-  --color-codex-botones-secondary: #1A3A30;
+  --color-codex-botones-primary-variante1: #f9fafc;
+  --color-codex-botones-primary-variante2: #f9fafc;
+  --color-codex-botones-primary-variante3: #255b01;
+  --color-codex-botones-primary-variante4: #255b01;
+  --color-codex-botones-secondary: #255b01;
   /* Black */
   --color-codex-botones-secondary-variante1: #E8EBEA;
   --color-codex-botones-secondary-variante2: #BAC4C1;
   --color-codex-botones-secondary-variante3: #6A7B78;
   --color-codex-botones-secondary-variante4: #536B64;
   --color-codex-botones-secondary-variante5: #314E45;
-  --color-codex-botones-terciario: #4CC02A;
+  --color-codex-botones-terciario: #60d805;
   /* Blue */
-  --color-codex-botones-terciario-variante1: #E4F6DF;
-  --color-codex-botones-terciario-variante2: #C0E9B4;
-  --color-codex-botones-terciario-variante3: #41A324;
-  --color-codex-botones-terciario-variante4: #317D1B;
-  --color-codex-botones-terciario-variante5: #266015;
-  --color-codex-botones-terciario-variante6: #1B430F;
+  --color-codex-botones-terciario-variante1: #f9fafc;
+  --color-codex-botones-terciario-variante2: #f9fafc;
+  --color-codex-botones-terciario-variante3: #255b01;
+  --color-codex-botones-terciario-variante4: #255b01;
+  --color-codex-botones-terciario-variante5: #255b01;
+  --color-codex-botones-terciario-variante6: #255b01;
   --color-codex-botones-cuaternario: #FFFFFF;
   /* Gray Coffee */
   --color-codex-botones-cuaternario-variante1: #F2F5F3;
@@ -133,27 +133,27 @@
   --color-codex-botones-cuaternario-variante3: #8A9A93;
   --color-codex-botones-cuaternario-variante4: #6B7A74;
 
-  --color-codex-bordes-primary: #5ED331;
+  --color-codex-bordes-primary: #60d805;
   /* Green */
-  --color-codex-bordes-primary-variante1: #E7F8E0;
-  --color-codex-bordes-primary-variante2: #B8EBA2;
-  --color-codex-bordes-primary-variante3: #429422;
-  --color-codex-bordes-primary-variante4: #34741B;
-  --color-codex-bordes-secondary: #1A3A30;
+  --color-codex-bordes-primary-variante1: #f9fafc;
+  --color-codex-bordes-primary-variante2: #f9fafc;
+  --color-codex-bordes-primary-variante3: #255b01;
+  --color-codex-bordes-primary-variante4: #255b01;
+  --color-codex-bordes-secondary: #255b01;
   /* Black */
   --color-codex-bordes-secondary-variante1: #E8EBEA;
   --color-codex-bordes-secondary-variante2: #BAC4C1;
   --color-codex-bordes-secondary-variante3: #6A7B78;
   --color-codex-bordes-secondary-variante4: #536B64;
   --color-codex-bordes-secondary-variante5: #314E45;
-  --color-codex-bordes-terciario: #4CC02A;
+  --color-codex-bordes-terciario: #60d805;
   /* Blue */
-  --color-codex-bordes-terciario-variante1: #E4F6DF;
-  --color-codex-bordes-terciario-variante2: #C0E9B4;
-  --color-codex-bordes-terciario-variante3: #41A324;
-  --color-codex-bordes-terciario-variante4: #317D1B;
-  --color-codex-bordes-terciario-variante5: #266015;
-  --color-codex-bordes-terciario-variante6: #1B430F;
+  --color-codex-bordes-terciario-variante1: #f9fafc;
+  --color-codex-bordes-terciario-variante2: #f9fafc;
+  --color-codex-bordes-terciario-variante3: #255b01;
+  --color-codex-bordes-terciario-variante4: #255b01;
+  --color-codex-bordes-terciario-variante5: #255b01;
+  --color-codex-bordes-terciario-variante6: #255b01;
   --color-codex-bordes-cuaternario: #FFFFFF;
   /* Gray Coffee */
   --color-codex-bordes-cuaternario-variante1: #F2F5F3;
@@ -161,27 +161,27 @@
   --color-codex-bordes-cuaternario-variante3: #8A9A93;
   --color-codex-bordes-cuaternario-variante4: #6B7A74;
 
-  --color-codex-texto-primary: #5ED331;
+  --color-codex-texto-primary: #60d805;
   /* Green */
-  --color-codex-texto-primary-variante1: #E7F8E0;
-  --color-codex-texto-primary-variante2: #B8EBA2;
-  --color-codex-texto-primary-variante3: #429422;
-  --color-codex-texto-primary-variante4: #34741B;
-  --color-codex-texto-secondary: #1A3A30;
+  --color-codex-texto-primary-variante1: #f9fafc;
+  --color-codex-texto-primary-variante2: #f9fafc;
+  --color-codex-texto-primary-variante3: #255b01;
+  --color-codex-texto-primary-variante4: #255b01;
+  --color-codex-texto-secondary: #255b01;
   /* Black */
   --color-codex-texto-secondary-variante1: #E8EBEA;
   --color-codex-texto-secondary-variante2: #BAC4C1;
   --color-codex-texto-secondary-variante3: #6A7B78;
   --color-codex-texto-secondary-variante4: #536B64;
   --color-codex-texto-secondary-variante5: #314E45;
-  --color-codex-texto-terciario: #4CC02A;
+  --color-codex-texto-terciario: #60d805;
   /* Blue */
-  --color-codex-texto-terciario-variante1: #E4F6DF;
-  --color-codex-texto-terciario-variante2: #C0E9B4;
-  --color-codex-texto-terciario-variante3: #41A324;
-  --color-codex-texto-terciario-variante4: #317D1B;
-  --color-codex-texto-terciario-variante5: #266015;
-  --color-codex-texto-terciario-variante6: #1B430F;
+  --color-codex-texto-terciario-variante1: #f9fafc;
+  --color-codex-texto-terciario-variante2: #f9fafc;
+  --color-codex-texto-terciario-variante3: #255b01;
+  --color-codex-texto-terciario-variante4: #255b01;
+  --color-codex-texto-terciario-variante5: #255b01;
+  --color-codex-texto-terciario-variante6: #255b01;
   --color-codex-texto-cuaternario: #FFFFFF;
   /* Gray Coffee */
   --color-codex-texto-cuaternario-variante1: #F2F5F3;
@@ -189,36 +189,36 @@
   --color-codex-texto-cuaternario-variante3: #8A9A93;
   --color-codex-texto-cuaternario-variante4: #6B7A74;
 
-  --color-codex-titulos-primary: #5ED331;
+  --color-codex-titulos-primary: #60d805;
   /* Green */
-  --color-codex-titulos-secondary: #1A3A30;
+  --color-codex-titulos-secondary: #255b01;
   /* Black */
-  --color-codex-titulos-terciario: #4CC02A;
+  --color-codex-titulos-terciario: #60d805;
   /* Blue */
   --color-codex-titulos-cuaternario: #FFFFFF;
   /* Gray Coffee */
 
-  --color-codex-iconos-primary: #5ED331;
+  --color-codex-iconos-primary: #60d805;
   /* Green */
-  --color-codex-iconos-primary-variante1: #E7F8E0;
-  --color-codex-iconos-primary-variante2: #B8EBA2;
-  --color-codex-iconos-primary-variante3: #429422;
-  --color-codex-iconos-primary-variante4: #34741B;
-  --color-codex-iconos-secondary: #1A3A30;
+  --color-codex-iconos-primary-variante1: #f9fafc;
+  --color-codex-iconos-primary-variante2: #f9fafc;
+  --color-codex-iconos-primary-variante3: #255b01;
+  --color-codex-iconos-primary-variante4: #255b01;
+  --color-codex-iconos-secondary: #255b01;
   /* Black */
   --color-codex-iconos-secondary-variante1: #E8EBEA;
   --color-codex-iconos-secondary-variante2: #BAC4C1;
   --color-codex-iconos-secondary-variante3: #6A7B78;
   --color-codex-iconos-secondary-variante4: #536B64;
   --color-codex-iconos-secondary-variante5: #314E45;
-  --color-codex-iconos-terciario: #4CC02A;
+  --color-codex-iconos-terciario: #60d805;
   /* Blue */
-  --color-codex-iconos-terciario-variante1: #E4F6DF;
-  --color-codex-iconos-terciario-variante2: #C0E9B4;
-  --color-codex-iconos-terciario-variante3: #41A324;
-  --color-codex-iconos-terciario-variante4: #317D1B;
-  --color-codex-iconos-terciario-variante5: #266015;
-  --color-codex-iconos-terciario-variante6: #1B430F;
+  --color-codex-iconos-terciario-variante1: #f9fafc;
+  --color-codex-iconos-terciario-variante2: #f9fafc;
+  --color-codex-iconos-terciario-variante3: #255b01;
+  --color-codex-iconos-terciario-variante4: #255b01;
+  --color-codex-iconos-terciario-variante5: #255b01;
+  --color-codex-iconos-terciario-variante6: #255b01;
   --color-codex-iconos-cuaternario: #FFFFFF;
   /* Gray Coffee */
   --color-codex-iconos-cuaternario-variante1: #F2F5F3;
@@ -226,27 +226,27 @@
   --color-codex-iconos-cuaternario-variante3: #8A9A93;
   --color-codex-iconos-cuaternario-variante4: #6B7A74;
 
-  --color-codex-hover-primary: #5ED331;
+  --color-codex-hover-primary: #60d805;
   /* Green */
-  --color-codex-hover-primary-variante1: #E7F8E0;
-  --color-codex-hover-primary-variante2: #B8EBA2;
-  --color-codex-hover-primary-variante3: #429422;
-  --color-codex-hover-primary-variante4: #34741B;
-  --color-codex-hover-secondary: #1A3A30;
+  --color-codex-hover-primary-variante1: #f9fafc;
+  --color-codex-hover-primary-variante2: #f9fafc;
+  --color-codex-hover-primary-variante3: #255b01;
+  --color-codex-hover-primary-variante4: #255b01;
+  --color-codex-hover-secondary: #255b01;
   /* Black */
   --color-codex-hover-secondary-variante1: #E8EBEA;
   --color-codex-hover-secondary-variante2: #BAC4C1;
   --color-codex-hover-secondary-variante3: #6A7B78;
   --color-codex-hover-secondary-variante4: #536B64;
   --color-codex-hover-secondary-variante5: #314E45;
-  --color-codex-hover-terciario: #4CC02A;
+  --color-codex-hover-terciario: #60d805;
   /*    Blue */
-  --color-codex-hover-terciario-variante1: #E4F6DF;
-  --color-codex-hover-terciario-variante2: #C0E9B4;
-  --color-codex-hover-terciario-variante3: #41A324;
-  --color-codex-hover-terciario-variante4: #317D1B;
-  --color-codex-hover-terciario-variante5: #266015;
-  --color-codex-hover-terciario-variante6: #1B430F;
+  --color-codex-hover-terciario-variante1: #f9fafc;
+  --color-codex-hover-terciario-variante2: #f9fafc;
+  --color-codex-hover-terciario-variante3: #255b01;
+  --color-codex-hover-terciario-variante4: #255b01;
+  --color-codex-hover-terciario-variante5: #333333;
+  --color-codex-hover-terciario-variante6: #255b01;
   --color-codex-hover-cuaternario: #FFFFFF;
   /* Gray Coffee */
   --color-codex-hover-cuaternario-variante1: #F2F5F3;
@@ -310,13 +310,13 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: var(--codex-primary, #5ED331);
+  background-color: var(--codex-primary, #60d805);
   border-radius: 999px;
   opacity: 0.5;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #429422;
+  background-color: #255b01;
 }
 
 ::-webkit-scrollbar-track {
@@ -327,113 +327,110 @@
   --radius: 0.125rem; /* 2px — Brand Manual default */
 
   /* ---- Climate Rebrand — Light Theme ----
-     Sourced from Phil's commercial stills (screenshots, not exact brand
-     spec): deep Forest Green, bright Lime Green, and white. "Black" in the
-     3-color brief reads as Forest Green standing in for near-black text,
-     not a literal #000 — no true black appears anywhere in the reference
-     stills. Revisit if exact hex values ever come from the design team. */
+     Brand palette: Green #60d805, Dark green #255b01, Green-grey #34534a,
+     Black #000000, Light grey #f9fafc, White #ffffff. */
 
   /* Surfaces */
-  --background: #FFFFFF;   /* White — main page background */
-  --foreground: #1A3A30;   /* Forest Green — all text */
+  --background: #ffffff;   /* White — main page background */
+  --foreground: #000000;   /* Black — all text */
 
-  --card: #F5F8F6;         /* faint green-white — cards, sidebars */
-  --card-foreground: #1A3A30;
-  --popover: #F5F8F6;
-  --popover-foreground: #1A3A30;
+  --card: #f9fafc;         /* Light grey — cards, sidebars */
+  --card-foreground: #000000;
+  --popover: #f9fafc;
+  --popover-foreground: #000000;
 
-  /* Primary CTA — Lime Green */
-  --primary: #5ED331;
-  --primary-foreground: #1A3A30;
+  /* Primary CTA — Green */
+  --primary: #60d805;
+  --primary-foreground: #000000;
 
-  /* Secondary CTA — Forest Green */
-  --secondary: #1A3A30;
-  --secondary-foreground: #FFFFFF;
+  /* Secondary CTA — Dark green */
+  --secondary: #255b01;
+  --secondary-foreground: #ffffff;
 
-  /* Active states — Lime Green */
-  --accent: #5ED331;
-  --accent-foreground: #1A3A30;
+  /* Active states — Green */
+  --accent: #60d805;
+  --accent-foreground: #000000;
 
-  /* Soft callouts — pale Lime wash */
-  --muted: #E8F7E0;
-  --muted-foreground: #5B6B63;
+  /* Soft callouts */
+  --muted: #f9fafc;
+  --muted-foreground: #34534a;
 
   /* Destructive */
   --destructive: #c0392b;
 
   /* Structure */
-  --border: #DCE5DF;
-  --input: #DCE5DF;
-  --ring: #5ED331; /* Lime focus ring */
+  --border: color-mix(in srgb, #34534a 15%, white);
+  --input: color-mix(in srgb, #34534a 15%, white);
+  --ring: #60d805; /* Green focus ring */
 
   /* Charts — brand palette */
-  --chart-1: #5ED331;   /* Lime Green */
-  --chart-2: #1A3A30;   /* Forest Green */
-  --chart-3: #8FE070;   /* light Lime */
-  --chart-4: #0D251E;   /* dark Forest */
-  --chart-5: #DCE5DF;   /* neutral */
+  --chart-1: #60d805;   /* Green */
+  --chart-2: #255b01;   /* Dark green */
+  --chart-3: #34534a;   /* Green-grey */
+  --chart-4: color-mix(in srgb, #60d805 45%, white);   /* light Green */
+  --chart-5: color-mix(in srgb, #255b01 45%, white);   /* light Dark green */
 
-  --chartcodex-1: #5ED331;
-  --chartcodex-2: #1A3A30;
-  --chartcodex-3: #8FE070;
-  --chartcodex-4: #0D251E;
-  --chartcodex-5: #DCE5DF;
+  --chartcodex-1: #60d805;
+  --chartcodex-2: #255b01;
+  --chartcodex-3: #34534a;
+  --chartcodex-4: color-mix(in srgb, #60d805 45%, white);
+  --chartcodex-5: color-mix(in srgb, #255b01 45%, white);
 
   /* Sidebar */
-  --sidebar: #F5F8F6;
-  --sidebar-foreground: #1A3A30;
-  --sidebar-primary: #1A3A30;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #E8F7E0;
-  --sidebar-accent-foreground: #1A3A30;
-  --sidebar-border: #DCE5DF;
-  --sidebar-ring: #5ED331;
+  --sidebar: #f9fafc;
+  --sidebar-foreground: #000000;
+  --sidebar-primary: #255b01;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: color-mix(in srgb, #60d805 15%, white);
+  --sidebar-accent-foreground: #000000;
+  --sidebar-border: color-mix(in srgb, #34534a 15%, white);
+  --sidebar-ring: #60d805;
 }
 
 .dark {
-  /* Climate Rebrand — Dark Mode. Near-black-green surfaces rather than a
-     generic black, so dark mode still reads as this brand, not a default
-     theme — same "one brand system, two modes" approach as before. */
-  --background: #0E1F1A;
-  --foreground: #F4F7F5;
+  /* Neutral charcoal grays for every surface — green appears only as a
+     restrained accent (primary/accent/ring + the sidebar's active-item
+     wash), not as a tint on the background itself. */
+  --background: #1a1a1a;
+  --foreground: #e8e8e8;
 
-  --card: #16302A;
-  --card-foreground: #F4F7F5;
-  --popover: #16302A;
-  --popover-foreground: #F4F7F5;
+  --card: #242424;
+  --card-foreground: #e8e8e8;
+  --popover: #242424;
+  --popover-foreground: #e8e8e8;
 
-  --primary: #5ED331;
-  --primary-foreground: #0E1F1A;
+  --primary: #255b01;
+  --primary-foreground: #f5f5f5;
 
-  --secondary: #2C5C4C;
-  --secondary-foreground: #FFFFFF;
+  --secondary: #3a3a3a;
+  --secondary-foreground: #f5f5f5;
 
-  --accent: #5ED331;
-  --accent-foreground: #0E1F1A;
+  --accent: #255b01;
+  --accent-foreground: #f5f5f5;
 
-  --muted: rgba(94,211,49,0.12);
-  --muted-foreground: #9FB3AA;
+  --muted: rgba(150,150,150,0.12);
+  --muted-foreground: #a3a3a3;
 
   --destructive: #e05252;
 
-  --border: rgba(244,247,245,0.12);
-  --input: rgba(244,247,245,0.10);
-  --ring: #5ED331;
+  --border: rgba(200,200,200,0.14);
+  --input: rgba(200,200,200,0.10);
+  --ring: #255b01;
 
-  --chart-1: #5ED331;
-  --chart-2: #2C5C4C;
-  --chart-3: #8FE070;
-  --chart-4: #F4F7F5;
-  --chart-5: rgba(244,247,245,0.3);
+  --chart-1: #255b01;
+  --chart-2: #3a3a3a;
+  --chart-3: #5a5a5a;
+  --chart-4: #e8e8e8;
+  --chart-5: rgba(200,200,200,0.3);
 
-  --sidebar: #0B1815;
-  --sidebar-foreground: #F4F7F5;
-  --sidebar-primary: #2C5C4C;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: rgba(94,211,49,0.15);
-  --sidebar-accent-foreground: #F4F7F5;
-  --sidebar-border: rgba(244,247,245,0.10);
-  --sidebar-ring: #5ED331;
+  --sidebar: #171717;
+  --sidebar-foreground: #e8e8e8;
+  --sidebar-primary: #3a3a3a;
+  --sidebar-primary-foreground: #f5f5f5;
+  --sidebar-accent: rgba(37,91,1,0.18);
+  --sidebar-accent-foreground: #e8e8e8;
+  --sidebar-border: rgba(200,200,200,0.10);
+  --sidebar-ring: #255b01;
 }
 
 @layer base {
@@ -441,10 +438,16 @@
     @apply border-border outline-ring/50;
   }
 
+  html {
+    /* Root rem baseline — nudges every Tailwind text-* utility app-wide
+       up a notch, on top of the per-component size bumps elsewhere. */
+    font-size: 17px;
+  }
+
   body {
     @apply bg-background text-foreground;
     font-family: "Source Sans 3", Arial, sans-serif;
-    font-size: 16px;
+    font-size: 17px;
     line-height: 1.65;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -522,7 +525,7 @@ body {
   border: 1px solid var(--border) !important;
 }
 .swal2-icon.swal2-warning { border-color: var(--primary); color: var(--primary); }
-.swal2-icon.swal2-error { border-color: #c0392b; color: #c0392b; }
+.swal2-icon.swal2-error { border-color: var(--destructive); color: var(--destructive); }
 .swal2-icon.swal2-success [class^='swal2-success-line'] { background-color: var(--secondary); }
 .swal2-icon.swal2-success .swal2-success-ring { border-color: color-mix(in srgb, var(--secondary) 30%, transparent); }
 .swal2-timer-progress-bar { background: var(--secondary); }

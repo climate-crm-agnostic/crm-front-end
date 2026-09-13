@@ -27,7 +27,7 @@ export const FeatureGate = ({ feature, children }) => {
         className="flex h-16 w-16 items-center justify-center rounded-2xl shadow-md"
         style={{ backgroundColor: "#F5F0E8", border: "1px solid var(--border)" }}
       >
-        <Lock className="h-7 w-7" style={{ color: "#1A3A30" }} />
+        <Lock className="h-7 w-7" style={{ color: "var(--secondary)" }} />
       </div>
 
       <div className="space-y-2 max-w-sm">
@@ -55,7 +55,7 @@ export const FeatureGate = ({ feature, children }) => {
           color: "var(--secondary-foreground)",
           textDecoration: "none",
         }}
-        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#14302A")}
+        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--secondary) 80%, black)")}
         onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "var(--secondary)")}
       >
         Contact us to upgrade
