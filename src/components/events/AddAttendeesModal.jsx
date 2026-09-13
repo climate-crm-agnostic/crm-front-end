@@ -140,6 +140,7 @@ export const AddAttendeesModal = ({ eventId, onClose, onDone }) => {
                                     )}
                                 </div>
                                 <input className="h-9 px-2 rounded-md text-sm" style={inputStyle} placeholder="Company" value={a.company} onChange={(e) => setManualField(idx, "company", e.target.value)} />
+                                <input className="h-9 px-2 rounded-md text-sm" style={inputStyle} placeholder="Job title" value={a.job_title} onChange={(e) => setManualField(idx, "job_title", e.target.value)} />
                             </div>
                             <div className="mt-2">
                                 <PhoneInput value={a.phone} onChange={(v) => setManualField(idx, "phone", v)} defaultCountry="US" placeholder="Phone number" />
