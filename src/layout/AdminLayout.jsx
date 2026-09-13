@@ -53,7 +53,7 @@ function AdminLayoutContent() {
                         <Separator orientation="vertical" className="data-[orientation=vertical]:h-4 bg-border" />
                         {pageTitle && (
                             <span
-                                className="text-sm font-medium hidden sm:block text-muted-foreground"
+                                className="text-base font-medium hidden sm:block text-muted-foreground"
                                 style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}
                             >
                                 {pageTitle}
@@ -62,7 +62,7 @@ function AdminLayoutContent() {
                     </div>
                 </header>
 
-                <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+                <div className="flex flex-1 min-w-0 flex-col gap-4 p-4 pt-0 overflow-x-hidden">
                     <Outlet />
                 </div>
             </SidebarInset>
@@ -89,7 +89,7 @@ function ChatToasts() {
                         pointerEvents: 'auto', cursor: 'pointer',
                         background: 'var(--card)',
                         border: '1px solid var(--border)',
-                        borderLeft: '3px solid #1A3A30',
+                        borderLeft: '3px solid #255b01',
                         borderRadius: 10,
                         padding: '10px 14px',
                         boxShadow: '0 4px 20px rgba(0,0,0,0.14)',

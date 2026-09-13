@@ -106,7 +106,7 @@ export const UserDetail = () => {
                 <Button variant="ghost" size="sm" onClick={() => navigate("/users")}>
                     <ArrowLeft className="h-4 w-4 mr-1" /> Users
                 </Button>
-                <h1 className="text-2xl font-bold tracking-tight">
+                <h1 className="text-2xl font-bold tracking-tight" style={{ color: "var(--secondary)" }}>
                     {isNew ? "New User" : `Edit — ${form.username}`}
                 </h1>
                 {!isNew && (
@@ -116,36 +116,36 @@ export const UserDetail = () => {
                 )}
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4 bg-card border border-border rounded-lg shadow-sm p-6">
                 <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
+                    <div className="space-y-2">
                         <Label htmlFor="first_name">First name</Label>
                         <Input id="first_name" name="first_name" value={form.first_name} onChange={handleChange} />
                     </div>
-                    <div className="space-y-1">
+                    <div className="space-y-2">
                         <Label htmlFor="last_name">Last name</Label>
                         <Input id="last_name" name="last_name" value={form.last_name} onChange={handleChange} />
                     </div>
                 </div>
 
-                <div className="space-y-1">
+                <div className="space-y-2">
                     <Label htmlFor="username">Username <span className="text-destructive">*</span></Label>
                     <Input id="username" name="username" value={form.username} onChange={handleChange} required />
                 </div>
 
-                <div className="space-y-1">
+                <div className="space-y-2">
                     <Label htmlFor="email">Email <span className="text-destructive">*</span></Label>
                     <Input id="email" name="email" type="email" value={form.email} onChange={handleChange} required={isNew} />
                 </div>
 
-                <div className="space-y-1">
+                <div className="space-y-2">
                     <Label htmlFor="group">Role</Label>
                     <select
                         id="group"
                         name="group"
                         value={form.group}
                         onChange={handleChange}
-                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs transition-colors outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
                     >
                         <option value="">— No role —</option>
                         {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
@@ -153,13 +153,13 @@ export const UserDetail = () => {
                 </div>
 
                 {isNew && (
-                    <div className="space-y-1">
+                    <div className="space-y-2">
                         <Label htmlFor="password">Password <span className="text-destructive">*</span></Label>
                         <Input id="password" name="password" type="password" value={form.password} onChange={handleChange} required />
                     </div>
                 )}
 
-                <div className="flex gap-3 pt-2">
+                <div className="flex gap-3 pt-4 border-t border-border">
                     <Button type="submit" disabled={saving}>
                         {saving ? "Saving..." : isNew ? "Create User" : "Save Changes"}
                     </Button>

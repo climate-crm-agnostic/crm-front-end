@@ -1,8 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
-import { ClipboardList, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from "lucide-react";
+import { ClipboardList, ChevronDown, ChevronUp } from "lucide-react";
 import Swal from "sweetalert2";
 import { getAuditLogs } from "@/services/auditLogService";
 import { DateInput } from "@/components/ui/date-input";
+import { PaginationFooter, PageSizeSelect } from "@/components/PaginationControls";
+
+const PAGE_SIZE_OPTIONS = [10, 25, 50];
 
 const ACTION_STYLE = {
     CREATE: { bg: "rgba(94,106,67,0.12)",   border: "rgba(94,106,67,0.4)",   text: "#14302A" },
@@ -43,7 +46,7 @@ const ChangesCell = ({ changes }) => {
             <button
                 onClick={() => setOpen(v => !v)}
                 className="flex items-center gap-1 text-xs font-medium transition-colors"
-                style={{ color: "#1A3A30" }}
+                style={{ color: "var(--secondary)" }}
             >
                 {keys.length} field{keys.length > 1 ? "s" : ""}
                 {open ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
@@ -63,7 +66,7 @@ const ChangesCell = ({ changes }) => {
                                     <span style={{ color: "#9b3a10", textDecoration: "line-through" }}>{String(before).slice(0, 60)}</span>
                                 )}
                                 {before !== null && <span style={{ color: "var(--muted-foreground)" }}> → </span>}
-                                <span style={{ color: "#14302A" }}>{String(after ?? "").slice(0, 80)}</span>
+                                <span style={{ color: "var(--secondary)" }}>{String(after ?? "").slice(0, 80)}</span>
                             </div>
                         );
                     })}
@@ -82,18 +85,20 @@ export const AuditLog = () => {
     const [dateFrom, setDateFrom] = useState("");
     const [dateTo, setDateTo]     = useState("");
     const [page, setPage]         = useState(1);
+    const [pageSize, setPageSizeState] = useState(PAGE_SIZE_OPTIONS[0]);
+    const setPageSize = (size) => { setPageSizeState(size); setPage(1); };
 
     const load = useCallback(async () => {
         setLoading(true);
         try {
-            const result = await getAuditLogs({ model, date_from: dateFrom, date_to: dateTo, page, page_size: 50 });
+            const result = await getAuditLogs({ model, date_from: dateFrom, date_to: dateTo, page, page_size: pageSize });
             setData(result);
         } catch {
             Swal.fire({ icon: "error", title: "Error", text: "Could not load audit logs.", toast: true, position: "top-end", showConfirmButton: false, timer: 3000 });
         } finally {
             setLoading(false);
         }
-    }, [model, dateFrom, dateTo, page]);
+    }, [model, dateFrom, dateTo, page, pageSize]);
 
     useEffect(() => { load(); }, [load]);
 
@@ -114,10 +119,10 @@ export const AuditLog = () => {
                         className="flex h-10 w-10 items-center justify-center rounded-lg"
                         style={{ backgroundColor: "rgba(94,106,67,0.12)", border: "1px solid rgba(94,106,67,0.3)" }}
                     >
-                        <ClipboardList className="h-5 w-5" style={{ color: "#1A3A30" }} />
+                        <ClipboardList className="h-5 w-5" style={{ color: "var(--secondary)" }} />
                     </div>
                     <div>
-                        <p className="text-base font-semibold" style={{ color: "var(--foreground)" }}>Audit Log</p>
+                        <p className="text-base font-semibold" style={{ color: "var(--secondary)" }}>Audit Log</p>
                         <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
                             All changes made to CRM records, indexed by actor and model.
                         </p>
@@ -132,7 +137,7 @@ export const AuditLog = () => {
                     <select
                         value={model}
                         onChange={e => { setModel(e.target.value); setPage(1); }}
-                        className="h-9 rounded-md border px-2.5 text-sm bg-white focus:outline-none"
+                        className="h-9 rounded-md border px-2.5 text-sm bg-card focus:outline-none"
                         style={{ borderColor: "var(--border)", color: "var(--foreground)", minWidth: 160 }}
                     >
                         <option value="">All models</option>
@@ -159,8 +164,8 @@ export const AuditLog = () => {
                     type="submit"
                     className="h-9 px-4 rounded-md text-sm font-semibold transition-colors"
                     style={{ backgroundColor: "var(--secondary)", color: "var(--secondary-foreground)" }}
-                    onMouseEnter={e => e.currentTarget.style.backgroundColor = "#14302A"}
-                    onMouseLeave={e => e.currentTarget.style.backgroundColor = "#1A3A30"}
+                    onMouseEnter={e => e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--secondary) 80%, black)"}
+                    onMouseLeave={e => e.currentTarget.style.backgroundColor = "var(--secondary)"}
                 >
                     Filter
                 </button>
@@ -174,6 +179,9 @@ export const AuditLog = () => {
                         Clear
                     </button>
                 )}
+                <div className="ml-auto">
+                    <PageSizeSelect pageSize={pageSize} setPageSize={setPageSize} pageSizeOptions={PAGE_SIZE_OPTIONS} />
+                </div>
             </form>
 
             {/* Table */}
@@ -206,7 +214,7 @@ export const AuditLog = () => {
                                 key={entry.id}
                                 style={{
                                     borderBottom: i < data.results.length - 1 ? "1px solid var(--border)" : "none",
-                                    backgroundColor: i % 2 === 0 ? "#fff" : "rgba(251,247,239,0.5)",
+                                    backgroundColor: i % 2 === 0 ? "var(--background)" : "var(--muted)",
                                 }}
                             >
                                 <td className="px-4 py-3 text-xs whitespace-nowrap" style={{ color: "var(--muted-foreground)" }}>
@@ -235,28 +243,15 @@ export const AuditLog = () => {
 
             {/* Pagination */}
             {data && data.total_pages > 1 && (
-                <div className="flex items-center justify-between">
-                    <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
-                        {data.count} entries — page {data.page} of {data.total_pages}
-                    </p>
-                    <div className="flex gap-2">
-                        <button
-                            disabled={page <= 1}
-                            onClick={() => setPage(p => p - 1)}
-                            className="flex items-center gap-1 h-8 px-3 rounded-md text-sm font-medium disabled:opacity-40 transition-colors"
-                            style={{ border: "1px solid var(--border)", color: "var(--foreground)", backgroundColor: "#fff" }}
-                        >
-                            <ChevronLeft className="h-4 w-4" /> Prev
-                        </button>
-                        <button
-                            disabled={page >= data.total_pages}
-                            onClick={() => setPage(p => p + 1)}
-                            className="flex items-center gap-1 h-8 px-3 rounded-md text-sm font-medium disabled:opacity-40 transition-colors"
-                            style={{ border: "1px solid var(--border)", color: "var(--foreground)", backgroundColor: "#fff" }}
-                        >
-                            Next <ChevronRight className="h-4 w-4" />
-                        </button>
-                    </div>
+                <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
+                    <PaginationFooter
+                        currentPage={page}
+                        setCurrentPage={setPage}
+                        totalPages={data.total_pages}
+                        startRecord={data.count ? (page - 1) * pageSize + 1 : 0}
+                        endRecord={data.count ? Math.min(page * pageSize, data.count) : 0}
+                        bordered={false}
+                    />
                 </div>
             )}
         </div>

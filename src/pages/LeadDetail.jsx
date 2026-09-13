@@ -22,6 +22,7 @@ import { DateInput } from "../components/ui/date-input";
 import Swal from "sweetalert2";
 import { usePagination } from "../hooks/usePagination";
 import { PaginationFooter } from "../components/PaginationControls";
+import { Modal } from "../components/Modal";
 
 export const LeadDetail = () => {
     const { id } = useParams();
@@ -541,7 +542,7 @@ export const LeadDetail = () => {
                             onValueChange={handleStageChange}
                             disabled={changingStage}
                         >
-                            <SelectTrigger className="h-9 w-[180px]" style={{ backgroundColor: "#fff", borderColor: "var(--border)", color: "var(--foreground)" }}>
+                            <SelectTrigger className="h-9 w-[180px]" style={{ backgroundColor: "var(--card)", borderColor: "var(--border)", color: "var(--foreground)" }}>
                                 <SelectValue placeholder="Stage" />
                             </SelectTrigger>
                             <SelectContent>
@@ -642,7 +643,7 @@ export const LeadDetail = () => {
                                 style={{
                                     width: "100%", height: "36px", padding: "0 12px",
                                     borderRadius: "6px", border: "1px solid var(--border)",
-                                    backgroundColor: isAutoName ? "var(--card)" : "#fff",
+                                    backgroundColor: isAutoName ? "var(--card)" : "var(--background)",
                                     color: isAutoName ? "var(--muted-foreground)" : "var(--foreground)",
                                     fontSize: "14px", cursor: isAutoName ? "default" : "text",
                                     outline: "none", boxSizing: "border-box",
@@ -985,7 +986,7 @@ export const LeadDetail = () => {
                             {images.length > 0 ? (
                                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                                     {images.map((imgUrl, idx) => (
-                                        <div key={idx} className="relative aspect-square bg-gray-100 rounded-md overflow-hidden border group">
+                                        <div key={idx} className="relative aspect-square bg-muted rounded-md overflow-hidden border group">
                                             <img src={imgUrl} alt={`Uploaded ${idx}`} className="w-full h-full object-cover" />
                                             <a href={imgUrl} target="_blank" rel="noreferrer" className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-medium">
                                                 View
@@ -1022,39 +1023,41 @@ export const LeadDetail = () => {
             </div>
 
             {/* Move to Lost modal */}
-            {showLostModal && (
-                <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.45)", zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
-                    <div style={{ backgroundColor: "#fff", borderRadius: 8, padding: 32, width: "100%", maxWidth: 440, boxShadow: "0 8px 32px rgba(0,0,0,0.18)" }}>
-                        <p style={{ fontSize: 18, fontWeight: 700, color: "#1a1a1a", marginBottom: 8 }}>Move to Lost</p>
-                        <p style={{ fontSize: 13, color: "var(--muted-foreground)", marginBottom: 20 }}>
+            <Modal
+                isOpen={showLostModal}
+                onClose={() => setShowLostModal(false)}
+                title="Move to Lost"
+                showFooter={false}
+            >
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="lost_reason">
                             Please provide a reason for marking <strong>{name}</strong> as lost.
-                        </p>
-                        <textarea
+                        </Label>
+                        <Textarea
+                            id="lost_reason"
                             autoFocus
                             rows={4}
                             placeholder="e.g. Not interested, budget constraints, chose a competitor…"
                             value={lostReason}
                             onChange={(e) => setLostReason(e.target.value)}
-                            style={{ width: "100%", padding: "8px 10px", border: "1px solid var(--border)", borderRadius: 4, fontSize: 14, fontFamily: "inherit", resize: "vertical", boxSizing: "border-box", outline: "none" }}
                         />
-                        <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 20 }}>
-                            <button
-                                type="button"
-                                onClick={() => setShowLostModal(false)}
-                                style={{ height: 36, padding: "0 16px", borderRadius: 6, border: "1px solid var(--border)", background: "transparent", color: "var(--muted-foreground)", fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
-                                Cancel
-                            </button>
-                            <button
-                                type="button"
-                                onClick={handleMoveToLost}
-                                disabled={!lostReason.trim() || movingToLost}
-                                style={{ height: 36, padding: "0 16px", borderRadius: 6, border: "none", backgroundColor: !lostReason.trim() || movingToLost ? "#f5a0a0" : "#b91c1c", color: "#fff", fontSize: 13, fontWeight: 600, cursor: !lostReason.trim() || movingToLost ? "not-allowed" : "pointer" }}>
-                                {movingToLost ? "Saving…" : "Confirm"}
-                            </button>
-                        </div>
+                    </div>
+                    <div className="flex justify-end gap-2 pt-4 border-t" style={{ borderColor: "var(--border)" }}>
+                        <Button type="button" variant="outline" onClick={() => setShowLostModal(false)}>
+                            Cancel
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            onClick={handleMoveToLost}
+                            disabled={!lostReason.trim() || movingToLost}
+                        >
+                            {movingToLost ? "Saving…" : "Confirm"}
+                        </Button>
                     </div>
                 </div>
-            )}
+            </Modal>
         </div>
     );
 };

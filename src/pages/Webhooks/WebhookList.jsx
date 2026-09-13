@@ -84,7 +84,7 @@ export const WebhookList = () => {
             text: "You won't be able to revert this!",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#1A3A30',
+            confirmButtonColor: 'var(--secondary)',
             cancelButtonColor: 'var(--muted-foreground)',
             confirmButtonText: 'Yes, delete it!'
         });
@@ -134,12 +134,12 @@ export const WebhookList = () => {
                         className="flex h-10 w-10 items-center justify-center rounded-lg"
                         style={{ backgroundColor: "rgba(94,106,67,0.12)", border: "1px solid rgba(94,106,67,0.3)" }}
                     >
-                        <Webhook className="h-5 w-5" style={{ color: "#1A3A30" }} />
+                        <Webhook className="h-5 w-5" style={{ color: "var(--secondary)" }} />
                     </div>
                     <div>
                         <p
                             className="text-base font-semibold"
-                            style={{ color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+                            style={{ color: "var(--secondary)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
                         >
                             Webhooks
                         </p>
@@ -165,8 +165,8 @@ export const WebhookList = () => {
                         <button
                             className="flex items-center gap-2 h-10 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
                             style={{ backgroundColor: "var(--secondary)", color: "var(--secondary-foreground)" }}
-                            onMouseEnter={e => e.currentTarget.style.backgroundColor = "#14302A"}
-                            onMouseLeave={e => e.currentTarget.style.backgroundColor = "#1A3A30"}
+                            onMouseEnter={e => e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--secondary) 80%, black)"}
+                            onMouseLeave={e => e.currentTarget.style.backgroundColor = "var(--secondary)"}
                         >
                             <Plus className="h-4 w-4" />
                             Add Webhook
@@ -190,7 +190,7 @@ export const WebhookList = () => {
                     </span>
                     <span
                         className="ml-2 text-xs font-medium px-2 py-0.5 rounded-full"
-                        style={{ backgroundColor: "rgba(94,106,67,0.12)", color: "#1A3A30", border: "1px solid rgba(94,106,67,0.3)" }}
+                        style={{ backgroundColor: "rgba(94,106,67,0.12)", color: "var(--secondary)", border: "1px solid rgba(94,106,67,0.3)" }}
                     >
                         {webhooks.length}
                     </span>
@@ -233,7 +233,7 @@ export const WebhookList = () => {
                                     >
                                         <td className="px-4 py-2.5">
                                             <div className="flex items-center gap-2">
-                                                <Activity className="h-4 w-4 shrink-0" style={{ color: "#1A3A30" }} />
+                                                <Activity className="h-4 w-4 shrink-0" style={{ color: "var(--secondary)" }} />
                                                 <span className="font-medium">{webhook.name}</span>
                                             </div>
                                         </td>
@@ -281,7 +281,7 @@ export const WebhookList = () => {
                                                 <Link to={`/webhook/${webhook.id}`}>
                                                     <button
                                                         className="flex h-8 w-8 items-center justify-center rounded-md transition-colors cursor-pointer"
-                                                        style={{ color: "#1A3A30" }}
+                                                        style={{ color: "var(--secondary)" }}
                                                         onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(94,106,67,0.1)"}
                                                         onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
                                                         title="Edit"
@@ -291,7 +291,7 @@ export const WebhookList = () => {
                                                 </Link>
                                                 <button
                                                     className="flex h-8 w-8 items-center justify-center rounded-md transition-colors cursor-pointer"
-                                                    style={{ color: "#c0392b" }}
+                                                    style={{ color: "var(--destructive)" }}
                                                     onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(192,57,43,0.08)"}
                                                     onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
                                                     onClick={() => handleDelete(webhook.id)}

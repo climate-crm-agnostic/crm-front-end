@@ -13,8 +13,8 @@ const HINT = "var(--muted-foreground)";
 const LINEN = "var(--background)";
 const OAT = "var(--card)";
 const PEBBLE = "var(--border)";
-const OLIVE = "#1A3A30";
-const APRICOT = "#5ED331";
+const OLIVE = "var(--secondary)";
+const APRICOT = "var(--primary)";
 
 const TYPE_LABELS = {
     text: "Text", number: "Number", date: "Date",
@@ -131,7 +131,7 @@ function AttributeManager({ pipeline }) {
 
     const inputStyle = {
         width: "100%", padding: "6px 10px", border: `1px solid ${PEBBLE}`,
-        borderRadius: "6px", backgroundColor: "#fff", color: INK,
+        borderRadius: "6px", backgroundColor: "var(--card)", color: INK,
         fontFamily: FONT, fontSize: "13px", outline: "none", boxSizing: "border-box",
     };
 
@@ -182,7 +182,7 @@ function AttributeManager({ pipeline }) {
                     )}
 
                     {/* Add / Edit form */}
-                    <div style={{ backgroundColor: "#fff", border: `1px solid ${PEBBLE}`, borderRadius: "8px", padding: "12px" }}>
+                    <div style={{ backgroundColor: "var(--card)", border: `1px solid ${PEBBLE}`, borderRadius: "8px", padding: "12px" }}>
                         <p style={{ fontSize: "12px", fontWeight: 600, color: INK, marginBottom: "10px", fontFamily: FONT }}>
                             {editingId ? "Edit Field" : "Add Field"}
                         </p>
@@ -385,7 +385,7 @@ function ValidationRuleManager({ pipeline }) {
 
     const inputStyle = {
         width: "100%", padding: "6px 10px", border: `1px solid ${PEBBLE}`,
-        borderRadius: "6px", backgroundColor: "#fff", color: INK,
+        borderRadius: "6px", backgroundColor: "var(--card)", color: INK,
         fontFamily: FONT, fontSize: "13px", outline: "none", boxSizing: "border-box",
     };
 
@@ -434,7 +434,7 @@ function ValidationRuleManager({ pipeline }) {
                     )}
 
                     {/* Add / Edit form */}
-                    <div style={{ backgroundColor: "#fff", border: `1px solid ${PEBBLE}`, borderRadius: "8px", padding: "12px" }}>
+                    <div style={{ backgroundColor: "var(--card)", border: `1px solid ${PEBBLE}`, borderRadius: "8px", padding: "12px" }}>
                         <p style={{ fontSize: "12px", fontWeight: 600, color: INK, marginBottom: "10px", fontFamily: FONT }}>
                             {editingId ? "Edit Rule" : "Add Rule"}
                         </p>
@@ -616,7 +616,7 @@ export const Pipeline = () => {
                         <Columns className="h-5 w-5" style={{ color: OLIVE }} />
                     </div>
                     <div>
-                        <p className="text-base font-semibold" style={{ color: INK, fontFamily: FONT }}>Pipelines</p>
+                        <p className="text-base font-semibold" style={{ color: OLIVE, fontFamily: FONT }}>Pipelines</p>
                         <p className="text-sm" style={{ color: HINT }}>Manage your sales pipelines and stages</p>
                     </div>
                 </div>
@@ -624,7 +624,7 @@ export const Pipeline = () => {
                     onClick={handleCreateClick}
                     className="flex items-center gap-2 h-10 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
                     style={{ backgroundColor: OLIVE, color: LINEN }}
-                    onMouseEnter={e => e.currentTarget.style.backgroundColor = "#14302A"}
+                    onMouseEnter={e => e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--secondary) 80%, black)"}
                     onMouseLeave={e => e.currentTarget.style.backgroundColor = OLIVE}
                 >
                     <Plus size={16} /> New Pipeline
@@ -737,7 +737,7 @@ export const Pipeline = () => {
                 </div>
             )}
 
-            <PipelineModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+            <PipelineModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingPipeline ? "Edit Pipeline" : "Create New Pipeline"}>
                 <PipelineForm initialData={editingPipeline} onPipelineSaved={handleSaved} />
             </PipelineModal>
         </div>

@@ -1,29 +1,11 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { X } from 'lucide-react';
-
-const inputClass = {
-    backgroundColor: "var(--background)",
-    border: "1px solid var(--border)",
-    color: "var(--foreground)",
-    borderRadius: "6px",
-    padding: "8px 10px",
-    fontSize: "14px",
-    width: "100%",
-    fontFamily: '"Source Sans 3", Arial, sans-serif',
-    outline: "none",
-};
-
-const labelClass = {
-    display: "block",
-    fontSize: "11px",
-    fontWeight: 600,
-    textTransform: "uppercase",
-    letterSpacing: "0.06em",
-    color: "var(--muted-foreground)",
-    marginBottom: "5px",
-    fontFamily: '"Source Sans 3", Arial, sans-serif',
-};
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { Textarea } from '../ui/textarea';
+import { Checkbox } from '../ui/checkbox';
+import { Button } from '../ui/button';
 
 export const AttributeForm = ({ entity, onSubmit, onCancel, isLoading, initialData = null, defaultOrder = 1, supportsUnique = false }) => {
     const isEdit = !!initialData;
@@ -38,13 +20,15 @@ export const AttributeForm = ({ entity, onSubmit, onCancel, isLoading, initialDa
         };
     };
 
-    const { register, handleSubmit, watch, formState: { errors }, reset } = useForm({
+    const { register, handleSubmit, watch, setValue, formState: { errors }, reset } = useForm({
         defaultValues: getDefaultValues()
     });
 
     React.useEffect(() => { reset(getDefaultValues()); }, [initialData, reset]);
 
     const selectedType = watch("type");
+    const isRequired = watch("is_required");
+    const isUnique = watch("is_unique");
 
     const handleFormSubmit = (data) => {
         let payload = { ...data, is_required: data.is_required === true };
@@ -67,7 +51,7 @@ export const AttributeForm = ({ entity, onSubmit, onCancel, isLoading, initialDa
         >
             {/* Header */}
             <div className="flex justify-between items-center mb-2">
-                <p style={{ fontSize: "15px", fontWeight: 600, color: "var(--foreground)" }}>
+                <p className="text-lg font-semibold" style={{ color: "var(--secondary)" }}>
                     {isEdit ? 'Edit Attribute' : `Add Attribute — ${entity}`}
                 </p>
                 <button
@@ -83,59 +67,55 @@ export const AttributeForm = ({ entity, onSubmit, onCancel, isLoading, initialDa
             </div>
 
             {/* Name */}
-            <div>
-                <label style={labelClass}>Name (Key)</label>
-                <input
+            <div className="space-y-2">
+                <Label htmlFor="name">Name (Key)</Label>
+                <Input
+                    id="name"
                     {...register("name", { required: "Name is required" })}
-                    style={{ ...inputClass, opacity: isEdit ? 0.6 : 1, cursor: isEdit ? "not-allowed" : "text" }}
                     placeholder="e.g. industry_sector"
                     disabled={isEdit}
-                    onFocus={e => !isEdit && (e.target.style.borderColor = "#1A3A30")}
-                    onBlur={e => e.target.style.borderColor = "var(--border)"}
                 />
-                {errors.name && <span style={{ color: "#c0392b", fontSize: "11px" }}>{errors.name.message}</span>}
-                <p style={{ fontSize: "11px", color: "var(--muted-foreground)", marginTop: "3px" }}>
+                {errors.name && <span className="text-sm" style={{ color: "var(--destructive)" }}>{errors.name.message}</span>}
+                <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
                     Internal identifier (unique, no spaces). Cannot be changed after creation.
                 </p>
             </div>
 
             {/* Label */}
-            <div>
-                <label style={labelClass}>Label (Display Name)</label>
-                <input
+            <div className="space-y-2">
+                <Label htmlFor="label">Label (Display Name)</Label>
+                <Input
+                    id="label"
                     {...register("label", { required: "Label is required" })}
-                    style={inputClass}
                     placeholder="e.g. Industry Sector"
-                    onFocus={e => e.target.style.borderColor = "#1A3A30"}
-                    onBlur={e => e.target.style.borderColor = "var(--border)"}
                 />
-                {errors.label && <span style={{ color: "#c0392b", fontSize: "11px" }}>{errors.label.message}</span>}
+                {errors.label && <span className="text-sm" style={{ color: "var(--destructive)" }}>{errors.label.message}</span>}
             </div>
 
             {/* Order */}
-            <div>
-                <label style={labelClass}>Display Order</label>
-                <input
+            <div className="space-y-2">
+                <Label htmlFor="order">Display Order</Label>
+                <Input
+                    id="order"
                     type="number"
                     min="1"
                     {...register("order", { required: "Order is required", valueAsNumber: true, min: { value: 1, message: "Minimum value is 1" } })}
-                    style={inputClass}
-                    onFocus={e => e.target.style.borderColor = "#1A3A30"}
-                    onBlur={e => e.target.style.borderColor = "var(--border)"}
                 />
-                {errors.order && <span style={{ color: "#c0392b", fontSize: "11px" }}>{errors.order.message}</span>}
-                <p style={{ fontSize: "11px", color: "var(--muted-foreground)", marginTop: "3px" }}>
+                {errors.order && <span className="text-sm" style={{ color: "var(--destructive)" }}>{errors.order.message}</span>}
+                <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
                     Controls the position of this field in forms. Lower numbers appear first.
                 </p>
             </div>
 
             {/* Type */}
-            <div>
-                <label style={labelClass}>Type</label>
+            <div className="space-y-2">
+                <Label htmlFor="type">Type</Label>
                 <select
+                    id="type"
                     {...register("type", { required: "Type is required" })}
-                    style={{ ...inputClass, opacity: isEdit ? 0.6 : 1, cursor: isEdit ? "not-allowed" : "pointer", appearance: "auto" }}
                     disabled={isEdit}
+                    className="flex h-9 w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+                    style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}
                 >
                     <option value="text">Text</option>
                     <option value="number">Number</option>
@@ -149,82 +129,63 @@ export const AttributeForm = ({ entity, onSubmit, onCancel, isLoading, initialDa
 
             {/* List options */}
             {selectedType === 'list' && (
-                <div>
-                    <label style={labelClass}>List Options (comma separated)</label>
-                    <textarea
+                <div className="space-y-2">
+                    <Label htmlFor="list_values">List Options (comma separated)</Label>
+                    <Textarea
+                        id="list_values"
                         {...register("list_values", { required: "List options are required" })}
-                        style={{ ...inputClass, height: "80px", resize: "vertical" }}
+                        className="h-20 min-h-[80px]"
                         placeholder="Option 1, Option 2, Option 3"
-                        onFocus={e => e.target.style.borderColor = "#1A3A30"}
-                        onBlur={e => e.target.style.borderColor = "var(--border)"}
                     />
-                    {errors.list_values && <span style={{ color: "#c0392b", fontSize: "11px" }}>{errors.list_values.message}</span>}
+                    {errors.list_values && <span className="text-sm" style={{ color: "var(--destructive)" }}>{errors.list_values.message}</span>}
                 </div>
             )}
 
             {/* Description */}
-            <div>
-                <label style={labelClass}>Description</label>
-                <textarea
+            <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                    id="description"
                     {...register("description")}
-                    style={{ ...inputClass, height: "72px", resize: "vertical" }}
+                    className="h-18 min-h-[72px]"
                     placeholder="Describe what this attribute is for..."
-                    onFocus={e => e.target.style.borderColor = "#1A3A30"}
-                    onBlur={e => e.target.style.borderColor = "var(--border)"}
                 />
             </div>
 
             {/* Required checkbox */}
             <div className="flex items-center gap-2">
-                <input
-                    type="checkbox"
+                <Checkbox
                     id="is_required"
-                    {...register("is_required")}
-                    style={{ accentColor: "#1A3A30", width: "14px", height: "14px", cursor: "pointer" }}
+                    checked={!!isRequired}
+                    onCheckedChange={(checked) => setValue("is_required", checked === true)}
                 />
-                <label htmlFor="is_required" style={{ fontSize: "13px", fontWeight: 500, color: "var(--foreground)", cursor: "pointer" }}>
+                <Label htmlFor="is_required" className="cursor-pointer">
                     Required Field
-                </label>
+                </Label>
             </div>
 
             {/* Unique checkbox */}
             {supportsUnique && (
                 <div className="flex items-center gap-2">
-                    <input
-                        type="checkbox"
+                    <Checkbox
                         id="is_unique"
-                        {...register("is_unique")}
-                        style={{ accentColor: "#1A3A30", width: "14px", height: "14px", cursor: "pointer" }}
+                        checked={!!isUnique}
+                        onCheckedChange={(checked) => setValue("is_unique", checked === true)}
                     />
-                    <label htmlFor="is_unique" style={{ fontSize: "13px", fontWeight: 500, color: "var(--foreground)", cursor: "pointer" }}>
+                    <Label htmlFor="is_unique" className="cursor-pointer">
                         Unique — no two leads can share this value
-                    </label>
+                    </Label>
                 </div>
             )}
 
             {/* Actions */}
-            <div className="flex justify-end gap-2 pt-2" style={{ borderTop: "1px solid var(--border)" }}>
-                <button
-                    type="button"
-                    onClick={onCancel}
-                    disabled={isLoading}
-                    className="h-9 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
-                    style={{ border: "1px solid var(--border)", backgroundColor: "transparent", color: "var(--muted-foreground)" }}
-                    onMouseEnter={e => e.currentTarget.style.backgroundColor = "var(--card)"}
-                    onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
-                >
+            <div className="flex justify-end gap-2 pt-4 border-t" style={{ borderColor: "var(--border)" }}>
+                <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
                     Cancel
-                </button>
-                <button
-                    type="submit"
-                    disabled={isLoading}
-                    className="h-9 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
-                    style={{ backgroundColor: isLoading ? "#14302A" : "var(--secondary)", color: "var(--secondary-foreground)", opacity: isLoading ? 0.7 : 1 }}
-                    onMouseEnter={e => !isLoading && (e.currentTarget.style.backgroundColor = "#14302A")}
-                    onMouseLeave={e => !isLoading && (e.currentTarget.style.backgroundColor = "var(--secondary)")}
-                >
+                </Button>
+                <Button type="submit" disabled={isLoading}>
                     {isLoading ? 'Saving...' : 'Save Attribute'}
-                </button>
+                </Button>
             </div>
         </form>
     );

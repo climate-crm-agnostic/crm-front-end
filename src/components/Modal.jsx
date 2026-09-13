@@ -28,7 +28,7 @@ export const Modal = ({
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border px-6 py-4">
-          <h1 id="modal-title" className="text-lg font-semibold">
+          <h1 id="modal-title" className="text-lg font-semibold" style={{ color: "var(--secondary)" }}>
             {title}
           </h1>
           <button

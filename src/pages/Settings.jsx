@@ -5,6 +5,8 @@ import { Label } from "../components/ui/label";
 import { Button } from "../components/ui/button";
 import { Switch } from "../components/ui/switch";
 import { Badge } from "../components/ui/badge";
+import { Card, CardHeader } from "../components/SectionCard";
+import { CreditCard, Plug } from "lucide-react";
 import Swal from "sweetalert2";
 
 const SecretField = ({ label, maskedValue, fieldKey, pendingValues, onChange }) => {
@@ -22,7 +24,7 @@ const SecretField = ({ label, maskedValue, fieldKey, pendingValues, onChange }) 
 
     return (
         <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">{label}</Label>
+            <Label className="text-sm text-muted-foreground">{label}</Label>
             {editing ? (
                 <div className="flex gap-2">
                     <Input
@@ -31,13 +33,13 @@ const SecretField = ({ label, maskedValue, fieldKey, pendingValues, onChange }) 
                         placeholder="Enter new value..."
                         value={pendingValues[fieldKey] ?? ""}
                         onChange={(e) => onChange(fieldKey, e.target.value)}
-                        className="font-mono text-sm"
+                        className="font-mono text-base"
                     />
                     <Button variant="ghost" size="sm" onClick={handleCancel}>Cancel</Button>
                 </div>
             ) : (
                 <div className="flex items-center gap-2">
-                    <code className="flex-1 text-sm bg-muted px-3 py-2 rounded border font-mono text-muted-foreground">
+                    <code className="flex-1 text-base bg-muted px-3 py-2 rounded border font-mono text-muted-foreground">
                         {maskedValue || <span className="italic">Not configured</span>}
                     </code>
                     <Button variant="outline" size="sm" onClick={handleEdit}>Change</Button>
@@ -100,29 +102,34 @@ export const Settings = () => {
     if (loading) return <div className="p-10 flex justify-center">Loading...</div>;
 
     return (
-        <div className="min-h-screen bg-background">
-            <div className="sticky top-0 z-10 border-b px-6 py-4 flex items-center justify-between bg-card shadow-sm">
-                <div>
-                    <h1 className="text-3xl font-semibold">Integrations</h1>
-                    <p className="text-sm text-muted-foreground">Configure third-party services</p>
+        <div className="max-w-2xl mx-auto py-6 space-y-4" style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+
+            <div className="flex items-center justify-between px-1">
+                <div className="flex items-center gap-3 min-w-0">
+                    <div
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+                        style={{ backgroundColor: "rgba(94,106,67,0.12)", border: "1px solid rgba(94,106,67,0.3)" }}
+                    >
+                        <Plug className="h-5 w-5" style={{ color: "var(--secondary)" }} />
+                    </div>
+                    <div className="min-w-0">
+                        <p className="text-base font-semibold truncate" style={{ color: "var(--secondary)" }}>Integrations</p>
+                        <p className="text-sm truncate" style={{ color: "var(--muted-foreground)" }}>Configure third-party services</p>
+                    </div>
                 </div>
                 <Button onClick={handleSave} disabled={saving || !hasPending}>
                     {saving ? "Saving..." : "Save Changes"}
                 </Button>
             </div>
 
-            <div className="p-6 max-w-3xl mx-auto space-y-8">
-
-                {/* ── Stripe ─────────────────────────────────────────── */}
-                <section className="bg-card border rounded-lg shadow-sm overflow-hidden">
-                    <div className="flex items-center justify-between px-6 py-4 border-b bg-muted/30">
-                        <div className="flex items-center gap-3">
-                            <div>
-                                <h2 className="font-semibold text-base">Stripe</h2>
-                                <p className="text-xs text-muted-foreground">Accept card payments via Stripe Invoices</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-2">
+            {/* ── Stripe ─────────────────────────────────────────── */}
+            <Card>
+                <CardHeader
+                    icon={CreditCard}
+                    title="Stripe"
+                    accentColor="var(--secondary)"
+                    right={
+                        <>
                             <Badge variant={settings?.stripe_enabled ? "default" : "outline"}>
                                 {settings?.stripe_enabled ? "Enabled" : "Disabled"}
                             </Badge>
@@ -130,46 +137,48 @@ export const Settings = () => {
                                 checked={!!settings?.stripe_enabled}
                                 onCheckedChange={(v) => handleToggle("stripe_enabled", v)}
                             />
-                        </div>
-                    </div>
-                    <div className="px-6 py-5 space-y-4">
-                        <SecretField
-                            label="Secret Key (sk_live_... or sk_test_...)"
-                            maskedValue={settings?.stripe_secret_key_masked}
-                            fieldKey="stripe_secret_key"
-                            pendingValues={pending}
-                            onChange={handleChange}
-                        />
-                        <SecretField
-                            label="Publishable Key (pk_live_... or pk_test_...)"
-                            maskedValue={settings?.stripe_publishable_key_masked}
-                            fieldKey="stripe_publishable_key"
-                            pendingValues={pending}
-                            onChange={handleChange}
-                        />
-                        <SecretField
-                            label="Webhook Secret (whsec_...)"
-                            maskedValue={settings?.stripe_webhook_secret_masked}
-                            fieldKey="stripe_webhook_secret"
-                            pendingValues={pending}
-                            onChange={handleChange}
-                        />
-                        <div className="text-xs text-muted-foreground bg-muted/40 rounded p-3 border space-y-2">
-                            <p className="font-semibold text-foreground">Stripe Webhook Setup</p>
-                            <p>
-                                <span className="font-medium text-foreground">Option 1 — Built-in (automatic):</span> Register the CRM's own endpoint in your Stripe Dashboard to automatically update invoice status on payment:
-                            </p>
-                            <code className="block font-mono bg-muted px-2 py-1 rounded">https://yourcrm.com/stripe/events/</code>
-                            <p>
-                                <span className="font-medium text-foreground">Option 2 — Custom integration:</span> Point Stripe to your own backend server. Your server receives the event, authenticates with the CRM API using a token, and updates the invoice via <code className="font-mono">PATCH /api/invoices/&#123;id&#125;/</code>.
-                                Use this when you need custom logic (ERP sync, notifications, etc.).
-                            </p>
-                            <p>Events to listen: <code className="font-mono">invoice.paid</code>, <code className="font-mono">invoice.payment_failed</code></p>
-                        </div>
-                    </div>
-                </section>
+                        </>
+                    }
+                />
+                <div className="px-6 py-5 space-y-4">
+                    <p className="text-sm text-muted-foreground -mt-1">Accept card payments via Stripe Invoices</p>
 
-            </div>
+                    <SecretField
+                        label="Secret Key (sk_live_... or sk_test_...)"
+                        maskedValue={settings?.stripe_secret_key_masked}
+                        fieldKey="stripe_secret_key"
+                        pendingValues={pending}
+                        onChange={handleChange}
+                    />
+                    <SecretField
+                        label="Publishable Key (pk_live_... or pk_test_...)"
+                        maskedValue={settings?.stripe_publishable_key_masked}
+                        fieldKey="stripe_publishable_key"
+                        pendingValues={pending}
+                        onChange={handleChange}
+                    />
+                    <SecretField
+                        label="Webhook Secret (whsec_...)"
+                        maskedValue={settings?.stripe_webhook_secret_masked}
+                        fieldKey="stripe_webhook_secret"
+                        pendingValues={pending}
+                        onChange={handleChange}
+                    />
+                    <div className="text-sm text-muted-foreground bg-muted/40 rounded p-3 border space-y-2">
+                        <p className="font-semibold text-foreground">Stripe Webhook Setup</p>
+                        <p>
+                            <span className="font-medium text-foreground">Option 1 — Built-in (automatic):</span> Register the CRM's own endpoint in your Stripe Dashboard to automatically update invoice status on payment:
+                        </p>
+                        <code className="block font-mono bg-muted px-2 py-1 rounded">https://yourcrm.com/stripe/events/</code>
+                        <p>
+                            <span className="font-medium text-foreground">Option 2 — Custom integration:</span> Point Stripe to your own backend server. Your server receives the event, authenticates with the CRM API using a token, and updates the invoice via <code className="font-mono">PATCH /api/invoices/&#123;id&#125;/</code>.
+                            Use this when you need custom logic (ERP sync, notifications, etc.).
+                        </p>
+                        <p>Events to listen: <code className="font-mono">invoice.paid</code>, <code className="font-mono">invoice.payment_failed</code></p>
+                    </div>
+                </div>
+            </Card>
+
         </div>
     );
 };

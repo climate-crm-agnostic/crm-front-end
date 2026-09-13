@@ -22,7 +22,7 @@ const HINT = "var(--muted-foreground)";
 const LINEN = "var(--background)";
 const OAT = "var(--card)";
 const PEBBLE = "var(--border)";
-const OLIVE = "#1A3A30";
+const OLIVE = "var(--secondary)";
 
 const TYPE_COLORS = {
     text:     { bg: "rgba(94,106,67,0.10)",  border: "rgba(94,106,67,0.35)",  color: "#14302A" },
@@ -78,7 +78,7 @@ const SortableAttrCard = ({ attr, onEdit, onDelete }) => {
         <div
             ref={setNodeRef}
             style={style}
-            className="group/item flex items-center justify-between p-3 rounded-lg transition-all bg-white border"
+            className="group/item flex items-center justify-between p-3 rounded-lg transition-all bg-card border"
             onMouseEnter={e => {
                 if (!isDragging) {
                     e.currentTarget.style.borderColor = OLIVE;
@@ -120,7 +120,7 @@ const SortableAttrCard = ({ attr, onEdit, onDelete }) => {
                         {attr.label}
                     </p>
                     {attr.is_required && (
-                        <span className="text-[9px] font-bold" style={{ color: "#c0392b" }} title="Required">●</span>
+                        <span className="text-[9px] font-bold" style={{ color: "var(--destructive)" }} title="Required">●</span>
                     )}
                 </div>
                 <div className="flex items-center gap-2 mt-1">
@@ -142,7 +142,7 @@ const SortableAttrCard = ({ attr, onEdit, onDelete }) => {
                 <button
                     onClick={() => onDelete(attr.id)}
                     className="flex h-7 w-7 items-center justify-center rounded-md transition-colors cursor-pointer"
-                    style={{ color: "#c0392b" }}
+                    style={{ color: "var(--destructive)" }}
                     onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(192,57,43,0.08)"}
                     onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
                 >
@@ -158,7 +158,7 @@ const PipelineColumn = ({ pipeline, attributes, onAdd, onEdit, onDelete, onDragE
 
     return (
         <div
-            className="flex-shrink-0 w-[85vw] md:w-[360px] flex flex-col rounded-2xl h-full border bg-white overflow-hidden shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
+            className="flex-shrink-0 w-[85vw] md:w-[360px] flex flex-col rounded-2xl h-full border bg-card overflow-hidden shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
             style={{ borderColor: PEBBLE }}
         >
             {/* Column header */}
@@ -194,7 +194,7 @@ const PipelineColumn = ({ pipeline, attributes, onAdd, onEdit, onDelete, onDragE
             </div>
 
             {/* Attribute list with drag-and-drop */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-2.5 bg-slate-50/50">
+            <div className="flex-1 overflow-y-auto p-4 space-y-2.5 bg-muted/50">
                 {attributes.length === 0 ? (
                     <div
                         className="h-32 flex flex-col items-center justify-center rounded-xl border-2 border-dashed m-1"
@@ -383,7 +383,7 @@ export const PipelineAttributesAdmin = () => {
                         <SlidersHorizontal className="h-6 w-6" style={{ color: OLIVE }} />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-black tracking-tight" style={{ color: INK }}>
+                        <h1 className="text-2xl font-black tracking-tight" style={{ color: OLIVE }}>
                             Pipeline Attributes
                         </h1>
                         <p className="text-xs flex items-center gap-2 mt-1" style={{ color: HINT }}>
@@ -407,7 +407,7 @@ export const PipelineAttributesAdmin = () => {
                 {/* Scroll buttons — static, not hover-triggered */}
                 <button
                     onClick={() => document.getElementById('attr-scroll-container').scrollBy({ left: -400, behavior: 'smooth' })}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 z-20 h-10 w-10 flex items-center justify-center rounded-full hidden md:flex bg-white border"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 z-20 h-10 w-10 flex items-center justify-center rounded-full hidden md:flex bg-card border"
                     style={{ borderColor: PEBBLE, color: OLIVE }}
                 >
                     <ChevronLeft size={18} />
@@ -415,7 +415,7 @@ export const PipelineAttributesAdmin = () => {
 
                 <button
                     onClick={() => document.getElementById('attr-scroll-container').scrollBy({ left: 400, behavior: 'smooth' })}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 z-20 h-10 w-10 flex items-center justify-center rounded-full hidden md:flex bg-white border"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 z-20 h-10 w-10 flex items-center justify-center rounded-full hidden md:flex bg-card border"
                     style={{ borderColor: PEBBLE, color: OLIVE }}
                 >
                     <ChevronRight size={18} />

@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Save, Trash2, Info, Plus, Filter, Copy, Check } from "lucide-react";
+import { ArrowLeft, Save, Trash2, Info, Plus, Filter, Copy, Check, Webhook } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -329,7 +329,7 @@ export const WebhookDetail = () => {
             text: "Changing the model will clear existing conditions. Are you sure?",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#1A3A30',
+            confirmButtonColor: 'var(--secondary)',
             cancelButtonColor: '#d33',
             confirmButtonText: 'Yes, change it!'
         });
@@ -479,7 +479,7 @@ export const WebhookDetail = () => {
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
-            cancelButtonColor: '#1A3A30',
+            cancelButtonColor: 'var(--secondary)',
             confirmButtonText: 'Yes, delete it!'
         });
 
@@ -513,17 +513,23 @@ export const WebhookDetail = () => {
     if (loading) return <div className="p-8 text-center">Loading...</div>;
 
     return (
-        <div className="p-6 max-w-6xl mx-auto space-y-6">
+        <div className="p-6 max-w-6xl mx-auto space-y-6" style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 min-w-0">
                     <Button variant="ghost" size="icon" onClick={() => navigate("/webhook")}>
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
-                    <div>
-                        <h1 className="text-3xl font-bold tracking-tight">
+                    <div
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+                        style={{ backgroundColor: "rgba(94,106,67,0.12)", border: "1px solid rgba(94,106,67,0.3)" }}
+                    >
+                        <Webhook className="h-5 w-5" style={{ color: "var(--secondary)" }} />
+                    </div>
+                    <div className="min-w-0">
+                        <p className="text-base font-semibold truncate" style={{ color: "var(--secondary)" }}>
                             {isNew ? "New Webhook" : "Edit Webhook"}
-                        </h1>
-                        <p className="text-muted-foreground mr-2">
+                        </p>
+                        <p className="text-sm truncate" style={{ color: "var(--muted-foreground)" }}>
                             Configure how your webhook requests are sent.
                         </p>
                     </div>
