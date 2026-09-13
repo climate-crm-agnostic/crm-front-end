@@ -66,16 +66,7 @@ export const Login = ({ className, ...props }) => {
 
             {/* Brand mark */}
             <div className="flex flex-col items-center gap-4">
-              <div
-                className="flex h-14 w-14 items-center justify-center rounded-lg shadow-md"
-                style={{ backgroundColor: "var(--secondary)" }}
-              >
-                <svg viewBox="0 0 24 24" fill="none" className="h-7 w-7 text-white" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                  <path d="M2 17l10 5 10-5" />
-                  <path d="M2 12l10 5 10-5" />
-                </svg>
-              </div>
+              <img src="/climate.svg" alt="Climate by CodeX" className="h-16 w-auto" />
               <div className="text-center">
                 <h1
                   className="text-3xl font-semibold text-foreground"
@@ -85,7 +76,7 @@ export const Login = ({ className, ...props }) => {
                 </h1>
                 <p className="text-sm mt-1.5 text-muted-foreground">
                   Sign in to your{" "}
-                  <span className="font-bold" style={{ color: "#5ED331" }}>CodeX CRM</span>{" "}
+                  <span className="font-bold" style={{ color: "var(--primary)" }}>CodeX CRM</span>{" "}
                   workspace
                 </p>
               </div>
@@ -158,13 +149,13 @@ export const Login = ({ className, ...props }) => {
                   disabled={loading}
                   className="w-full mt-1 h-11 rounded-md font-semibold text-sm transition-all duration-200 active:scale-[0.99] flex items-center justify-center gap-2 shadow-sm"
                   style={{
-                    backgroundColor: loading ? "#34741B" : "var(--primary)",
+                    backgroundColor: loading ? "var(--secondary)" : "var(--primary)",
                     color: "var(--primary-foreground)",
                     fontFamily: '"Source Sans 3", Arial, sans-serif',
                     letterSpacing: "0.02em",
                     cursor: loading ? "not-allowed" : "pointer",
                   }}
-                  onMouseEnter={e => !loading && (e.currentTarget.style.backgroundColor = "#34741B")}
+                  onMouseEnter={e => !loading && (e.currentTarget.style.backgroundColor = "var(--secondary)")}
                   onMouseLeave={e => !loading && (e.currentTarget.style.backgroundColor = "var(--primary)")}
                 >
                   {loading ? (
@@ -225,13 +216,13 @@ export const Login = ({ className, ...props }) => {
                   disabled={loading}
                   className="w-full mt-1 h-11 rounded-md font-semibold text-sm transition-all duration-200 active:scale-[0.99] flex items-center justify-center gap-2 shadow-sm"
                   style={{
-                    backgroundColor: loading ? "#34741B" : "var(--primary)",
+                    backgroundColor: loading ? "var(--secondary)" : "var(--primary)",
                     color: "var(--primary-foreground)",
                     fontFamily: '"Source Sans 3", Arial, sans-serif',
                     letterSpacing: "0.02em",
                     cursor: loading ? "not-allowed" : "pointer",
                   }}
-                  onMouseEnter={e => !loading && (e.currentTarget.style.backgroundColor = "#34741B")}
+                  onMouseEnter={e => !loading && (e.currentTarget.style.backgroundColor = "var(--secondary)")}
                   onMouseLeave={e => !loading && (e.currentTarget.style.backgroundColor = "var(--primary)")}
                 >
                   {loading ? (
@@ -267,12 +258,12 @@ export const Login = ({ className, ...props }) => {
         {/* Right — Branding */}
         <div
           className="hidden lg:flex flex-col relative justify-center p-14 overflow-hidden"
-          style={{ backgroundColor: "#1A3A30" }}
+          style={{ backgroundColor: "var(--secondary)" }}
         >
           {/* Decorative elements */}
-          <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, #1A3A30 0%, #234238 50%, #0D251E 100%)" }} />
+          <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, var(--secondary) 0%, #234238 50%, var(--secondary) 100%)" }} />
           <div className="absolute top-[-60px] right-[-60px] h-72 w-72 rounded-full blur-3xl" style={{ backgroundColor: "rgba(94,211,49,0.15)" }} />
-          <div className="absolute bottom-[-40px] left-[-30px] h-56 w-56 rounded-full blur-3xl" style={{ backgroundColor: "rgba(143,224,112,0.08)" }} />
+          <div className="absolute bottom-[-40px] left-[-30px] h-56 w-56 rounded-full blur-3xl" style={{ backgroundColor: "rgba(96,216,5,0.08)" }} />
 
           {/* Subtle grid */}
           <div className="absolute inset-0 opacity-[0.025]" style={{
@@ -285,9 +276,9 @@ export const Login = ({ className, ...props }) => {
             {/* Badge */}
             <div
               className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-widest"
-              style={{ backgroundColor: "rgba(94,211,49,0.2)", border: "1px solid rgba(94,211,49,0.4)", color: "#5ED331" }}
+              style={{ backgroundColor: "rgba(94,211,49,0.2)", border: "1px solid rgba(94,211,49,0.4)", color: "var(--primary)" }}
             >
-              <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ backgroundColor: "#5ED331" }} />
+              <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ backgroundColor: "var(--primary)" }} />
               Climate by CodeX
             </div>
 
@@ -298,7 +289,7 @@ export const Login = ({ className, ...props }) => {
                 style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', fontStyle: "italic", color: "#FFFFFF", letterSpacing: "-0.015em", lineHeight: 1.1 }}
               >
                 Manage smarter.<br />
-                <span style={{ color: "#5ED331" }}>Grow faster.</span>
+                <span style={{ color: "var(--primary)" }}>Grow faster.</span>
               </h2>
               <p className="text-base leading-relaxed" style={{ color: "#b8b0a8", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
                 A unified platform to manage clients, leads, and operations — all in one place.
@@ -308,9 +299,9 @@ export const Login = ({ className, ...props }) => {
             {/* Features */}
             <div className="space-y-5">
               {[
-                { icon: Briefcase, color: "rgba(94,211,49,0.22)", border: "rgba(94,211,49,0.4)", iconColor: "#5ED331", title: "Sales Pipeline", desc: "Track leads from first contact to closed deal with full visibility." },
-                { icon: Users, color: "rgba(143,224,112,0.18)", border: "rgba(143,224,112,0.35)", iconColor: "#8FE070", title: "Client Management", desc: "Keep every client interaction, service record, and follow-up organized." },
-                { icon: Zap, color: "rgba(94,211,49,0.22)", border: "rgba(94,211,49,0.4)", iconColor: "#5ED331", title: "Unified Operations", desc: "Connect Sales, Operations, and Finance in one real-time workspace." },
+                { icon: Briefcase, color: "rgba(94,211,49,0.22)", border: "rgba(94,211,49,0.4)", iconColor: "var(--primary)", title: "Sales Pipeline", desc: "Track leads from first contact to closed deal with full visibility." },
+                { icon: Users, color: "rgba(96,216,5,0.18)", border: "rgba(96,216,5,0.35)", iconColor: "var(--primary)", title: "Client Management", desc: "Keep every client interaction, service record, and follow-up organized." },
+                { icon: Zap, color: "rgba(94,211,49,0.22)", border: "rgba(94,211,49,0.4)", iconColor: "var(--primary)", title: "Unified Operations", desc: "Connect Sales, Operations, and Finance in one real-time workspace." },
               ].map(({ icon: Icon, color, border, iconColor, title, desc }) => (
                 <div key={title} className="flex gap-4 group">
                   <div
@@ -335,7 +326,7 @@ export const Login = ({ className, ...props }) => {
               >
                 "Technology that takes your business to the next level."
               </blockquote>
-              <p className="text-xs mt-2 font-semibold uppercase tracking-widest" style={{ color: "#5ED331" }}>
+              <p className="text-xs mt-2 font-semibold uppercase tracking-widest" style={{ color: "var(--primary)" }}>
                 — Climate by CodeX
               </p>
             </div>

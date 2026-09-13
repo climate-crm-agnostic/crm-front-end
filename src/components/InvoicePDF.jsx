@@ -8,7 +8,7 @@ import {
     Font,
 } from "@react-pdf/renderer";
 
-const BRAND_GREEN = "#1A3A30";
+const BRAND_GREEN = "#255b01";
 const GREY = "#6B7280";
 const LIGHT_GREY = "#F3F4F6";
 const BORDER = "#E5E7EB";

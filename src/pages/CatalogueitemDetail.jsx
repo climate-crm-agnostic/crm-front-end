@@ -235,7 +235,7 @@ export const CatalogueitemDetail = () => {
             text: "You won't be able to revert this!",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#1A3A30',
+            confirmButtonColor: 'var(--secondary)',
             cancelButtonColor: '#d33',
             confirmButtonText: 'Yes, delete it!'
         });
@@ -535,7 +535,7 @@ export const CatalogueitemDetail = () => {
                             {images.length > 0 ? (
                                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                                     {images.map((imgUrl, idx) => (
-                                        <div key={idx} className="relative aspect-square bg-gray-100 rounded-md overflow-hidden border">
+                                        <div key={idx} className="relative aspect-square bg-muted rounded-md overflow-hidden border">
                                             <img src={imgUrl} alt={`Product ${idx}`} className="w-full h-full object-cover" />
                                         </div>
                                     ))}

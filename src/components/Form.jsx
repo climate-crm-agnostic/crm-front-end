@@ -143,7 +143,7 @@ export function Form({
         return (
           <div key={name} className="space-y-2">
             {label ? (
-              <Label htmlFor={name} className="text-sm text-codex-secondary dark:text-codex-texto-terciario-variante1">
+              <Label htmlFor={name} className="text-base text-codex-secondary dark:text-codex-texto-terciario-variante1">
                 {label}
                 {required ? <span className="text-destructive"> *</span> : null}
               </Label>
@@ -235,7 +235,7 @@ export function Form({
                 )}
 
             {hint ? (
-              <p className="text-xs text-muted-foreground">{hint}</p>
+              <p className="text-sm text-muted-foreground">{hint}</p>
             ) : null}
           </div>
         );
@@ -246,7 +246,7 @@ export function Form({
           <div className="p-4 border border-codex-bordes-secondary-variante2 dark:border-codex-bordes-secondary-variante4 rounded-xl space-y-4">
 
             <div className="flex items-center justify-between">
-              <Label className="text-sm font-medium text-codex-secondary dark:text-codex-texto-terciario-variante1">
+              <Label className="text-base font-medium text-codex-secondary dark:text-codex-texto-terciario-variante1">
                 Is selector?
               </Label>
 
@@ -283,7 +283,7 @@ export function Form({
                       key={index}
                       className="flex items-center bg-codex-fondo-primary-variante1 dark:bg-codex-fondo-terciario-variante5 text-codex-cards-primary dark:text-codex-texto-terciario-variante1 px-3 py-1 rounded-full border border-primary/20 shadow-sm"
                     >
-                      <span className="text-sm">{item}</span>
+                      <span className="text-base">{item}</span>
                       <button
                         type="button"
                         onClick={() => removeValue(index)}
@@ -295,7 +295,7 @@ export function Form({
                   ))}
 
                   {valuesList.length === 0 && (
-                    <p className="text-sm text-codex-cards-secondary-variante3 dark:text-codex-texto-terciario-variante2">
+                    <p className="text-base text-codex-cards-secondary-variante3 dark:text-codex-texto-terciario-variante2">
                       No values added.
                     </p>
                   )}

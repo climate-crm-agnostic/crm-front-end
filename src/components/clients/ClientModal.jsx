@@ -326,13 +326,13 @@ export const ClientModal = ({ isOpen, onClose, onClientSaved, clientToEdit = nul
                         {images.length > 0 ? (
                             <div className="grid grid-cols-3 gap-2">
                                 {images.map((imgUrl, idx) => (
-                                    <div key={idx} className="relative aspect-square bg-gray-100 rounded-md overflow-hidden border">
+                                    <div key={idx} className="relative aspect-square bg-muted rounded-md overflow-hidden border">
                                         <img src={imgUrl} alt={`Uploaded ${idx}`} className="w-full h-full object-cover" />
                                     </div>
                                 ))}
                             </div>
                         ) : (
-                            <p className="text-sm text-gray-500 italic">No images uploaded yet.</p>
+                            <p className="text-sm text-muted-foreground italic">No images uploaded yet.</p>
                         )}
 
                         {/* Upload Input */}

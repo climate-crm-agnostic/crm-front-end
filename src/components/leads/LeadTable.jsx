@@ -60,7 +60,7 @@ export const LeadTable = ({ selectedPipelineId, onLeadClick, refreshTrigger }) =
 
     return (
         <div className="flex-1 min-h-0 flex flex-col p-2">
-            <div className="bg-brand-oat p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
+            <div className="bg-card p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
                 {loading ? (
                     <div className="h-24 rounded-lg animate-pulse m-2" style={{ backgroundColor: "var(--border)" }} />
                 ) : (

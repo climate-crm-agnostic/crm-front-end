@@ -38,7 +38,7 @@ export const LeadCard = ({ lead, salesUsers = [], clientsById = {}, onDragStart,
                     fontFamily: '"Source Sans 3", Arial, sans-serif',
                 }}
                 onMouseEnter={e => {
-                    e.currentTarget.style.borderColor = "#1A3A30";
+                    e.currentTarget.style.borderColor = "var(--secondary)";
                     e.currentTarget.style.boxShadow = "0 4px 12px rgba(94,106,67,0.10)";
                     e.currentTarget.style.transform = "translateY(-1px)";
                 }}

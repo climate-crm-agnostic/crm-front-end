@@ -34,7 +34,7 @@ const MENU_CONFIG = [
         icon: "ShieldCheck",
         items: [
             { title: "Attributes",  url: "/attribute",           icon: "SlidersHorizontal", permission: "app.add_attribute" },
-            { title: "Lead Fields", url: "/attribute-pipeline",  icon: "SlidersHorizontal", permission: "app.add_pipeline" },
+            { title: "Lead Fields", url: "/attribute-pipeline",  icon: "FormInput", permission: "app.add_pipeline" },
             { title: "Webhooks",    url: "/webhook",             icon: "Webhook",           permission: "app.add_webhook", feature: "webhooks" },
             { title: "Audit Log",   url: "/audit-log",           icon: "ClipboardList",     permission: "auth.add_user",   feature: "audit_trail" },
             { title: "Users",       url: "/users",               icon: "Users",             permission: "auth.add_user" },

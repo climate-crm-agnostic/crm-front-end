@@ -2,14 +2,15 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { getMyAIUsage } from "@/services/aiService";
 import { User, Building2, Bot, CheckCircle2, XCircle, Infinity } from "lucide-react";
+import { Card, CardHeader } from "@/components/SectionCard";
 
 const TIER_COLORS = {
     free_trial: { bg: "var(--card)", text: "var(--muted-foreground)", border: "var(--border)" },
     basic:      { bg: "var(--card)", text: "var(--muted-foreground)", border: "var(--border)" },
-    full:       { bg: "#E7F8E0", text: "#1A3A30", border: "#5ED331" },
-    full_plus:  { bg: "#E7F8E0", text: "#1A3A30", border: "#1A3A30" },
-    business:   { bg: "#E8F7E0", text: "#c04a00", border: "#5ED331" },
-    enterprise: { bg: "#E7F8E0", text: "#3a4a20", border: "#1A3A30" },
+    full:       { bg: "var(--muted)", text: "var(--secondary)", border: "var(--primary)" },
+    full_plus:  { bg: "var(--muted)", text: "var(--secondary)", border: "var(--secondary)" },
+    business:   { bg: "var(--muted)", text: "#c04a00", border: "var(--primary)" },
+    enterprise: { bg: "var(--muted)", text: "var(--muted-foreground)", border: "var(--secondary)" },
 };
 
 const FEATURE_LABELS = {
@@ -23,47 +24,9 @@ const FEATURE_LABELS = {
     max_pipelines: "Max Pipelines",
 };
 
-function Card({ children, style }) {
-    return (
-        <div
-            style={{
-                backgroundColor: "var(--card)",
-                border: "1px solid var(--border)",
-                borderRadius: "8px",
-                boxShadow: "0 1px 3px rgba(46,42,38,0.06)",
-                ...style,
-            }}
-        >
-            {children}
-        </div>
-    );
-}
-
-function CardHeader({ icon: Icon, title, accentColor = "#1A3A30" }) {
-    return (
-        <div
-            className="flex items-center gap-3 px-6 py-4 border-b"
-            style={{ borderColor: "var(--border)" }}
-        >
-            <div
-                className="flex h-8 w-8 items-center justify-center rounded-lg"
-                style={{ backgroundColor: accentColor }}
-            >
-                <Icon className="h-4 w-4 text-white" />
-            </div>
-            <h2
-                className="text-sm font-semibold"
-                style={{ color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
-            >
-                {title}
-            </h2>
-        </div>
-    );
-}
-
 function QuotaBar({ used, limit }) {
     const pct = limit > 0 ? Math.min((used / limit) * 100, 100) : 0;
-    const barColor = pct >= 90 ? "#c04a00" : pct >= 70 ? "#5ED331" : "#1A3A30";
+    const barColor = pct >= 90 ? "#c04a00" : pct >= 70 ? "var(--primary)" : "var(--secondary)";
 
     return (
         <div className="space-y-2">
@@ -135,7 +98,7 @@ export const MyInfo = () => {
                                     <span
                                         key={g}
                                         className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full"
-                                        style={{ backgroundColor: "#E7F8E0", color: "#1A3A30", border: "1px solid #5ED331" }}
+                                        style={{ backgroundColor: "var(--muted)", color: "var(--secondary)", border: "1px solid var(--primary)" }}
                                     >
                                         <Building2 className="h-3 w-3" />
                                         {g}
@@ -149,7 +112,7 @@ export const MyInfo = () => {
 
             {/* ── Plan / Tier ── */}
             <Card>
-                <CardHeader icon={Building2} title="Current Plan" accentColor="#5ED331" />
+                <CardHeader icon={Building2} title="Current Plan" accentColor="var(--primary)" />
                 <div className="px-6 py-5 space-y-4">
                     <div className="flex items-center gap-3">
                         <span
@@ -162,9 +125,9 @@ export const MyInfo = () => {
                             <span
                                 className="text-xs px-2 py-0.5 rounded-full font-medium"
                                 style={{
-                                    backgroundColor: plan.is_active ? "#E7F8E0" : "#E8F7E0",
-                                    color: plan.is_active ? "#1A3A30" : "#c04a00",
-                                    border: `1px solid ${plan.is_active ? "#5ED331" : "#5ED331"}`,
+                                    backgroundColor: plan.is_active ? "var(--muted)" : "var(--muted)",
+                                    color: plan.is_active ? "var(--secondary)" : "#c04a00",
+                                    border: `1px solid ${plan.is_active ? "var(--primary)" : "var(--primary)"}`,
                                 }}
                             >
                                 {plan.is_active ? "Active" : "Inactive"}
@@ -196,7 +159,7 @@ export const MyInfo = () => {
                                     return (
                                         <div key={key} className="flex items-center gap-2">
                                             {enabled
-                                                ? <CheckCircle2 className="h-3.5 w-3.5 shrink-0" style={{ color: "#1A3A30" }} />
+                                                ? <CheckCircle2 className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--secondary)" }} />
                                                 : <XCircle className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--border)" }} />
                                             }
                                             <span className="text-xs" style={{ color: enabled ? "var(--foreground)" : "var(--muted-foreground)" }}>
@@ -215,7 +178,7 @@ export const MyInfo = () => {
             {/* ── AI Usage ── */}
             {isFeatureEnabled("ai") && (
                 <Card>
-                    <CardHeader icon={Bot} title="Chett AI — Daily Quota" accentColor="#5ED331" />
+                    <CardHeader icon={Bot} title="Chett AI — Daily Quota" accentColor="var(--primary)" />
                     <div className="px-6 py-5">
                         {usageLoading ? (
                             <div className="h-12 animate-pulse rounded" style={{ backgroundColor: "var(--border)" }} />
@@ -223,7 +186,7 @@ export const MyInfo = () => {
                             <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>Usage data unavailable.</p>
                         ) : aiUsage.unlimited ? (
                             <div className="flex items-center gap-3">
-                                <Infinity className="h-6 w-6" style={{ color: "#1A3A30" }} />
+                                <Infinity className="h-6 w-6" style={{ color: "var(--secondary)" }} />
                                 <div>
                                     <p className="font-semibold" style={{ color: "var(--foreground)" }}>Unlimited queries</p>
                                     <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>

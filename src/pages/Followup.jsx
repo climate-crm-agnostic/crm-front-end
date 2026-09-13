@@ -83,7 +83,7 @@ export const Followup = () => {
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
-            cancelButtonColor: '#1A3A30',
+            cancelButtonColor: 'var(--secondary)',
             confirmButtonText: 'Yes, delete it!'
         });
 
@@ -132,7 +132,7 @@ export const Followup = () => {
                     <Button variant="ghost" className="mb-2 pl-0 hover:bg-transparent hover:text-primary" onClick={() => navigate("/service")}>
                         <ArrowLeft className="mr-2 h-4 w-4" /> Back to Services
                     </Button>
-                    <h1 className="text-3xl font-bold tracking-tight text-codex-texto-primary dark:text-codex-texto-dark-primary">
+                    <h1 className="text-4xl font-bold tracking-tight text-codex-texto-primary dark:text-codex-texto-dark-primary">
                         Follow Ups
                     </h1>
                     <p className="text-sm text-muted-foreground">
@@ -146,7 +146,7 @@ export const Followup = () => {
                 </div>
             </div>
 
-            <div className="bg-brand-oat p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
+            <div className="bg-card p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
                 <Table
                     data={followups}
                     columns={columns}

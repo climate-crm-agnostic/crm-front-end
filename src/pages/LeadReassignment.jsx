@@ -69,28 +69,28 @@ export const LeadReassignment = () => {
 
     return (
         <div className="p-6 space-y-6" style={FONT}>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col items-center text-center gap-3 max-w-lg mx-auto">
                 <div
                     className="flex h-10 w-10 items-center justify-center rounded-lg"
                     style={{ backgroundColor: "rgba(94,106,67,0.12)", border: "1px solid rgba(94,106,67,0.3)" }}
                 >
-                    <Users className="h-5 w-5" style={{ color: "#1A3A30" }} />
+                    <Users className="h-5 w-5" style={{ color: "var(--secondary)" }} />
                 </div>
                 <div>
-                    <p className="text-base font-semibold" style={{ color: "var(--foreground)" }}>Lead Reassignment</p>
-                    <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
+                    <p className="text-lg font-semibold" style={{ color: "var(--foreground)" }}>Lead Reassignment</p>
+                    <p className="text-base" style={{ color: "var(--muted-foreground)" }}>
                         Move every lead owned by one user to another — e.g. after an employee leaves.
                     </p>
                 </div>
             </div>
 
-            <div className="max-w-lg rounded-xl p-6 space-y-5" style={{ border: "1px solid var(--border)", backgroundColor: "var(--background)" }}>
+            <div className="max-w-lg mx-auto rounded-xl p-6 space-y-5" style={{ border: "1px solid var(--border)", backgroundColor: "var(--background)" }}>
                 <div className="space-y-1.5">
-                    <label className="text-xs font-medium" style={{ color: "var(--muted-foreground)" }}>From</label>
+                    <label className="text-sm font-medium" style={{ color: "var(--muted-foreground)" }}>From</label>
                     <select
                         value={fromUserId}
                         onChange={e => handleFromChange(e.target.value)}
-                        className="w-full h-10 rounded-md border px-3 text-sm bg-white focus:outline-none"
+                        className="w-full h-11 rounded-md border px-3 text-base bg-card focus:outline-none"
                         style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
                     >
                         <option value="">Select a user...</option>
@@ -99,18 +99,18 @@ export const LeadReassignment = () => {
                         ))}
                     </select>
                     {fromUserId && (
-                        <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
+                        <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
                             {loadingPreview ? "Checking assigned leads..." : `${previewCount ?? 0} lead(s) currently assigned`}
                         </p>
                     )}
                 </div>
 
                 <div className="space-y-1.5">
-                    <label className="text-xs font-medium" style={{ color: "var(--muted-foreground)" }}>To</label>
+                    <label className="text-sm font-medium" style={{ color: "var(--muted-foreground)" }}>To</label>
                     <select
                         value={toUserId}
                         onChange={e => setToUserId(e.target.value)}
-                        className="w-full h-10 rounded-md border px-3 text-sm bg-white focus:outline-none"
+                        className="w-full h-11 rounded-md border px-3 text-base bg-card focus:outline-none"
                         style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
                     >
                         <option value="">Select a user...</option>
@@ -123,7 +123,7 @@ export const LeadReassignment = () => {
                 <button
                     onClick={handleReassign}
                     disabled={!fromUserId || !toUserId || reassigning || previewCount === 0}
-                    className="w-full h-10 rounded-md text-sm font-semibold transition-colors disabled:opacity-50 cursor-pointer"
+                    className="w-full h-11 rounded-md text-base font-semibold transition-colors disabled:opacity-50 cursor-pointer"
                     style={{ backgroundColor: "var(--secondary)", color: "var(--secondary-foreground)" }}
                 >
                     {reassigning ? "Reassigning..." : "Reassign Leads"}

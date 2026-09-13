@@ -132,7 +132,7 @@ export const DateInput = ({
                             right: 8,
                             background: "transparent",
                             border: "none",
-                            color: "#5B6B63",
+                            color: "var(--muted-foreground)",
                             cursor: disabled ? "default" : "pointer",
                             display: "flex",
                         }}
@@ -143,9 +143,9 @@ export const DateInput = ({
                 <PopoverContent
                     align="start"
                     className="w-auto p-2"
-                    style={{ backgroundColor: "#fff", border: "1px solid #DCE5DF" }}
+                    style={{ backgroundColor: "var(--card)", border: "1px solid #34534a33" }}
                 >
-                    <div style={{ "--rdp-accent-color": "#1A3A30", "--rdp-accent-background-color": "#F5F8F6" }}>
+                    <div style={{ "--rdp-accent-color": "var(--secondary)", "--rdp-accent-background-color": "var(--muted)" }}>
                         <DayPicker
                             mode="single"
                             selected={isoToDate(value)}

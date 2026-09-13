@@ -78,7 +78,7 @@ export const Asset = () => {
             text: "You won't be able to revert this!",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#1A3A30',
+            confirmButtonColor: 'var(--secondary)',
             cancelButtonColor: '#d33',
             confirmButtonText: 'Yes, delete it!'
         });
@@ -148,7 +148,7 @@ export const Asset = () => {
         <div className="h-full flex flex-col p-2 w-full">
             <div className="flex justify-between items-center mb-2">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-codex-texto-primary dark:text-codex-texto-dark-primary">
+                    <h1 className="text-4xl font-bold tracking-tight text-codex-texto-primary dark:text-codex-texto-dark-primary">
                         Assets
                     </h1>
                     <p className="text-sm text-muted-foreground">
@@ -162,7 +162,7 @@ export const Asset = () => {
                 </div>
             </div>
 
-            <div className="bg-brand-oat p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
+            <div className="bg-card p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
                 <TableSummary
                     data={items}
                     stats={stats}

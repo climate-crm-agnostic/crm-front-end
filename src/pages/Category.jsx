@@ -72,7 +72,7 @@ export const Category = () => {
             text: "You won't be able to revert this!",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#1A3A30',
+            confirmButtonColor: 'var(--secondary)',
             cancelButtonColor: '#d33',
             confirmButtonText: 'Yes, delete it!'
         });
@@ -111,7 +111,7 @@ export const Category = () => {
         <div className="h-full flex flex-col p-2 w-full">
             <div className="flex justify-between items-center mb-2">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-codex-texto-primary dark:text-codex-texto-dark-primary">
+                    <h1 className="text-4xl font-bold tracking-tight text-codex-texto-primary dark:text-codex-texto-dark-primary">
                         Categories
                     </h1>
                     <p className="text-sm text-muted-foreground">
@@ -122,7 +122,7 @@ export const Category = () => {
                     <button
                         onClick={handleExportExcel}
                         className="flex items-center gap-2 h-9 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
-                        style={{ backgroundColor: "var(--card)", border: "1px solid #1A3A30", color: "#1A3A30" }}
+                        style={{ backgroundColor: "var(--card)", border: "1px solid var(--secondary)", color: "var(--secondary)" }}
                         onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(94,106,67,0.15)"}
                         onMouseLeave={e => e.currentTarget.style.backgroundColor = "var(--card)"}
                     >
@@ -134,7 +134,7 @@ export const Category = () => {
                 </div>
             </div>
 
-            <div className="bg-brand-oat p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
+            <div className="bg-card p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
                 <Table
                     data={categories}
                     columns={columns}

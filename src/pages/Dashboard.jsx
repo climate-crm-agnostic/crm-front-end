@@ -18,14 +18,14 @@ const fetchCount = async (endpoint) => {
 
 // Brand Manual accent configs per card
 const CARD_ACCENTS = {
-    Leads:    { bar: "#5ED331", badge: { bg: "#E8F7E0", text: "#1A3A30" }, link: "#5ED331", icon: { bg: "#5ED331" } },
-    Clients:  { bar: "#2C5C4C", badge: { bg: "#E7F8E0", text: "#1A3A30" }, link: "#2C5C4C", icon: { bg: "#2C5C4C" } },
-    Invoices: { bar: "#4CC02A", badge: { bg: "#E7F8E0", text: "#1A3A30" }, link: "#34741B", icon: { bg: "#4CC02A" } },
+    Leads:    { bar: "var(--primary)", badge: { bg: "var(--muted)", text: "var(--secondary)" }, link: "var(--primary)", icon: { bg: "var(--primary)" } },
+    Clients:  { bar: "var(--muted-foreground)", badge: { bg: "var(--muted)", text: "var(--secondary)" }, link: "var(--muted-foreground)", icon: { bg: "var(--muted-foreground)" } },
+    Invoices: { bar: "var(--primary)", badge: { bg: "var(--muted)", text: "var(--secondary)" }, link: "var(--secondary)", icon: { bg: "var(--primary)" } },
     Assets:   { bar: "var(--border)", badge: { bg: "var(--card)", text: "var(--muted-foreground)" }, link: "var(--muted-foreground)", icon: { bg: "var(--muted-foreground)" } },
 };
 
 const TASK_COLORS = {
-    lead:    { dot: "#1A3A30", bg: "#E7F8E0", text: "#1A3A30", label: "Lead" },
+    lead:    { dot: "var(--secondary)", bg: "var(--muted)", text: "var(--secondary)", label: "Lead" },
     client:  { dot: "#3B82F6", bg: "#dbeafe", text: "#1d4ed8", label: "Client" },
     service: { dot: "#7C3AED", bg: "#ede9fe", text: "#5b21b6", label: "Service" },
 };
@@ -309,12 +309,12 @@ const TaskCalendar = ({ tasks, navigate }) => {
 const ChettPromoCard = ({ navigate }) => (
     <div
         className="relative overflow-hidden rounded-xl p-5 flex items-center justify-between gap-4 cursor-pointer transition-transform hover:-translate-y-0.5"
-        style={{ backgroundColor: "#1A3A30" }}
+        style={{ backgroundColor: "var(--secondary)" }}
         onClick={() => navigate("/chett-ai")}
     >
         <div className="flex items-center gap-4 min-w-0">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg" style={{ backgroundColor: "rgba(94,211,49,0.18)", border: "1px solid rgba(94,211,49,0.35)" }}>
-                <Bot className="h-5 w-5" style={{ color: "#5ED331" }} />
+                <Bot className="h-5 w-5" style={{ color: "var(--primary)" }} />
             </div>
             <div className="min-w-0">
                 <p className="text-sm font-semibold italic" style={{ color: "#FFFFFF", fontFamily: '"Cormorant Garamond", Georgia, serif' }}>
@@ -327,7 +327,7 @@ const ChettPromoCard = ({ navigate }) => (
         </div>
         <button
             className="shrink-0 h-9 px-4 rounded-lg text-sm font-semibold cursor-pointer"
-            style={{ backgroundColor: "#5ED331", color: "var(--primary-foreground)" }}
+            style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
             onClick={(e) => { e.stopPropagation(); navigate("/chett-ai"); }}
         >
             Open Chett
@@ -335,7 +335,7 @@ const ChettPromoCard = ({ navigate }) => (
     </div>
 );
 
-const STAGE_COLORS = ["#5ED331", "#4CC02A", "#1A3A30", "var(--border)", "var(--muted-foreground)", "#34741B"];
+const STAGE_COLORS = ["var(--primary)", "var(--primary)", "var(--secondary)", "var(--border)", "var(--muted-foreground)", "var(--secondary)"];
 
 const LeadsByPipeline = ({ pipelineName, totalLeads, stageCounts, byResponsible, loading, navigate }) => {
     const maxCount = Math.max(1, ...stageCounts.map((s) => s.count));
@@ -345,7 +345,7 @@ const LeadsByPipeline = ({ pipelineName, totalLeads, stageCounts, byResponsible,
                 <p className="text-sm font-bold text-foreground">{pipelineName || "—"}</p>
                 <span
                     className="text-xs font-semibold px-2 py-0.5 rounded-full"
-                    style={{ backgroundColor: "#E7F8E0", border: "1px solid #5ED331", color: "#1A3A30" }}
+                    style={{ backgroundColor: "var(--muted)", border: "1px solid var(--primary)", color: "var(--secondary)" }}
                 >
                     {totalLeads} lead{totalLeads === 1 ? "" : "s"}
                 </span>
@@ -585,9 +585,9 @@ export const Dashboard = () => {
                         </h1>
                         <span
                             className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-widest rounded-full px-2 py-0.5"
-                            style={{ backgroundColor: "#E7F8E0", border: "1px solid #5ED331", color: "#1A3A30" }}
+                            style={{ backgroundColor: "var(--muted)", border: "1px solid var(--primary)", color: "var(--secondary)" }}
                         >
-                            <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ backgroundColor: "#5ED331" }} />
+                            <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ backgroundColor: "var(--primary)" }} />
                             Live
                         </span>
                     </div>

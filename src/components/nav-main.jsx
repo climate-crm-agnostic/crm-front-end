@@ -17,8 +17,8 @@ import {
 } from "@/components/ui/sidebar"
 import { useLocation } from "react-router-dom";
 
-const OLIVE = "#1A3A30";
-const ACTIVE_BORDER = "3px solid #1A3A30";
+const OLIVE = "var(--secondary)";
+const ACTIVE_BORDER = "3px solid var(--secondary)";
 
 export function NavMain({ items }) {
   const location = useLocation();
