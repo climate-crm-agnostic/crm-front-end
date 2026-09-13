@@ -628,7 +628,7 @@ export const EventCreate = () => {
                             <table className="w-full text-sm">
                                 <thead>
                                     <tr style={{ backgroundColor: GREEN }}>
-                                        {["First name", "Last name", "Email", "Phone", "Company", "Source"].map((h) => (
+                                        {["First name", "Last name", "Email", "Phone", "Company", "Job title", "Source"].map((h) => (
                                             <th key={h} className="px-3 py-2 text-xs font-semibold text-left" style={{ color: "#FBF7EF" }}>{h}</th>
                                         ))}
                                     </tr>
@@ -641,6 +641,7 @@ export const EventCreate = () => {
                                             <td className="px-3 py-1.5">{a.email}</td>
                                             <td className="px-3 py-1.5">{a.phone}</td>
                                             <td className="px-3 py-1.5">{a.company}</td>
+                                            <td className="px-3 py-1.5">{a.job_title}</td>
                                             <td className="px-3 py-1.5">
                                                 <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: "#F2EBDD", color: "#6b6560" }}>{a.source}</span>
                                             </td>

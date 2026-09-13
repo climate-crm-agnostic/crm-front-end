@@ -366,8 +366,8 @@ export const EventDetail = () => {
                         <table className="w-full text-sm">
                             <thead>
                                 <tr style={{ backgroundColor: GREEN }}>
-                                    {["Name", "Email", "Phone", "Company", "Source", "Status", "Actions"].map((h, i) => (
-                                        <th key={h} className="px-4 py-2 text-xs font-semibold" style={{ color: "#FBF7EF", textAlign: i === 6 ? "center" : "left" }}>{h}</th>
+                                    {["Name", "Email", "Phone", "Company", "Job title", "Source", "Status", "Actions"].map((h, i) => (
+                                        <th key={h} className="px-4 py-2 text-xs font-semibold" style={{ color: "#FBF7EF", textAlign: i === 7 ? "center" : "left" }}>{h}</th>
                                     ))}
                                 </tr>
                             </thead>
@@ -378,6 +378,7 @@ export const EventDetail = () => {
                                         <td className="px-4 py-2" style={{ color: "#6b6560" }}>{a.email || "—"}</td>
                                         <td className="px-4 py-2" style={{ color: "#6b6560" }}>{a.phone || "—"}</td>
                                         <td className="px-4 py-2" style={{ color: "#6b6560" }}>{a.company || "—"}</td>
+                                        <td className="px-4 py-2" style={{ color: "#6b6560" }}>{a.job_title || "—"}</td>
                                         <td className="px-4 py-2">
                                             <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: "#F2EBDD", color: "#6b6560" }}>{a.source}</span>
                                         </td>
