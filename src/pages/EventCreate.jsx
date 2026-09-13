@@ -294,7 +294,7 @@ export const EventCreate = () => {
     const disabledStyle = { backgroundColor: "#F0ECE3", color: "#9b948e", cursor: "not-allowed" };
 
     return (
-        <div className="p-4 sm:p-6 w-full max-w-5xl mx-auto space-y-6" style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+        <div className="p-4 sm:p-6 w-full max-w-3xl mx-auto space-y-6" style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
             {/* Header */}
             <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg" style={{ backgroundColor: "rgba(94,106,67,0.12)", border: "1px solid rgba(94,106,67,0.3)" }}>

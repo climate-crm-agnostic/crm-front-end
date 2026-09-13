@@ -302,6 +302,12 @@ export const EventRegister = () => {
                         <UserPlus className="h-4 w-4" /> Register another attendee
                     </button>
                 ) : null}
+
+                {event?.modality === "virtual" && event?.virtual_url && (
+                    <p className="text-xs mt-4" style={{ color: "#9b948e" }}>
+                        You can join now with the button above, or later using the link we sent to your email.
+                    </p>
+                )}
             </div>
         );
     }
