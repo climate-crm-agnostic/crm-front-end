@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle, Check, Clock, FunctionSquare, Layers, X } from "lucide-react";
 import { evaluateFormula, getFormulaCatalogue } from "../../services/formulaService";
 import { coerceAttributeValue } from "../../utils/attributeTypes";
+import { SearchableSelect } from "../ui/searchable-select";
 
 const INK = "#2E2A26";
 const MUTED = "#6b6560";
@@ -241,15 +242,18 @@ const StatusLine = ({ status, error }) => {
     );
 };
 
+// An action picker rather than a value one: choosing inserts into the formula
+// and the control goes straight back to its label, so it never shows a
+// selection. Searchable because the function list alone is ~35 entries long.
 const Picker = ({ label, options, onPick }) => (
-    <select
-        value=""
-        onChange={(e) => { if (e.target.value) onPick(e.target.value); }}
-        style={{ ...control, appearance: "auto", maxWidth: 260 }}
-    >
-        <option value="">{label}…</option>
-        {options.map((option) => (
-            <option key={option.value + option.label} value={option.value}>{option.label}</option>
-        ))}
-    </select>
+    <div style={{ maxWidth: 260, minWidth: 180, flex: "1 1 180px" }}>
+        <SearchableSelect
+            value=""
+            onChange={(value) => { if (value) onPick(value); }}
+            options={options.map((o) => ({ ...o, value: o.value, label: o.label }))}
+            allowClear={false}
+            triggerLabel={`${label}…`}
+            contentClassName="w-80"
+        />
+    </div>
 );

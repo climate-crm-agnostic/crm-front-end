@@ -1,8 +1,8 @@
 import * as React from "react"
 import * as SelectPrimitive from "@radix-ui/react-select"
-import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react"
+import { CheckIcon, ChevronDownIcon, ChevronUpIcon, Search } from "lucide-react"
 
-import { cn } from "@/lib/utils"
+import { cn, foldForSearch } from "@/lib/utils"
 
 function Select({
   ...props
@@ -46,20 +46,53 @@ function SelectTrigger({
   );
 }
 
+// Past this many options a dropdown stops being scannable and grows a filter
+// box. Same threshold the attribute system already uses to decide when a
+// `list` field becomes searchable, so the two behave alike.
+const SEARCH_THRESHOLD = 8;
+
+// Text of an option, for filtering. Children are arbitrary JSX (a flag, a
+// coloured dot, a name), so this walks them rather than assuming a string.
+const optionText = (node) => {
+  if (node === null || node === undefined || typeof node === "boolean") return "";
+  if (typeof node === "string" || typeof node === "number") return String(node);
+  if (Array.isArray(node)) return node.map(optionText).join(" ");
+  return optionText(node.props?.children);
+};
+
 function SelectContent({
   className,
   children,
   position = "popper",
+  // Escape hatches: `searchable` forces the filter on or off regardless of how
+  // many options there are, `searchPlaceholder` renames it.
+  searchable,
+  searchPlaceholder = "Search...",
   ...props
 }) {
+  const [query, setQuery] = React.useState("");
+
+  const items = React.Children.toArray(children);
+  const showSearch = searchable ?? items.length > SEARCH_THRESHOLD;
+
+  const visible = React.useMemo(() => {
+    const q = foldForSearch(query.trim());
+    if (!q) return items;
+    return items.filter((child) => foldForSearch(optionText(child)).includes(q));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [children, query]);
+
   return (
     <SelectPrimitive.Portal>
       <SelectPrimitive.Content
         data-slot="select-content"
         className={cn(
           `
-          data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 relative z-50 max-h-(--radix-select-content-available-height) min-w-[8rem] origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md border shadow-md
+          data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 relative z-50 min-w-[8rem] origin-(--radix-select-content-transform-origin) overflow-x-hidden rounded-md border shadow-md
           `,
+          // Capped rather than "as tall as the viewport allows", which is what
+          // made a list of 60 minutes or 240 countries fill the screen.
+          "max-h-80 overflow-y-auto",
           position === "popper" &&
           "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
           className
@@ -67,11 +100,36 @@ function SelectContent({
         position={position}
         style={{ backgroundColor: "#fff", borderColor: "#D8D2C4", color: "#2E2A26", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
         {...props}>
+        {showSearch && (
+          // Radix owns the keyboard inside Content for its own type-to-jump, so
+          // the keystrokes have to be kept from reaching it or every letter
+          // would move the highlight instead of typing. autoFocus is refused
+          // for the same reason: Content pulls focus back on open, and fighting
+          // it makes the first character disappear — one click into the box is
+          // the honest trade.
+          <div
+            className="flex items-center gap-2 border-b px-3 py-2"
+            style={{ borderColor: "#D8D2C4" }}
+            onKeyDown={(event) => event.stopPropagation()}
+          >
+            <Search className="h-3.5 w-3.5 shrink-0 opacity-50" />
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder={searchPlaceholder}
+              className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+            />
+          </div>
+        )}
         <SelectScrollUpButton />
         <SelectPrimitive.Viewport
           className={cn("p-1", position === "popper" &&
             "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)] scroll-my-1")}>
-          {children}
+          {showSearch && visible.length === 0 ? (
+            <p className="px-2 py-6 text-center text-sm text-muted-foreground">No matches</p>
+          ) : (
+            showSearch ? visible : children
+          )}
         </SelectPrimitive.Viewport>
         <SelectScrollDownButton />
       </SelectPrimitive.Content>
