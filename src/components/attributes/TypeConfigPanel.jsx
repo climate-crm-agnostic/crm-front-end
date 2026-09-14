@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { COUNTRY_LIST } from "../../utils/phoneCountries";
 import { localeOptions } from "../../utils/locales";
+import { SearchableSelect } from "../ui/searchable-select";
 
 const labelStyle = {
     display: "block", fontSize: 11, fontWeight: 600, textTransform: "uppercase",
@@ -214,29 +215,37 @@ const Control = ({ spec, optionKey, value, onChange, currencies }) => {
                 </select>
             );
 
+        // The three long lists (150+ currencies, 240+ countries, 30 locales)
+        // get a searchable picker rather than a native <select>: an OS dropdown
+        // that long is a scroll hunt, and typing to jump only matches the first
+        // letters of the label.
         case "currency_code":
             return (
-                <select value={value ?? ""} onChange={(e) => onChange(e.target.value || null)}
-                        style={{ ...inputStyle, appearance: "auto" }}>
-                    {currencies.map((c) => (
-                        <option key={c.code} value={c.code}>
-                            {c.flag} {c.code} — {c.name}
-                        </option>
-                    ))}
-                </select>
+                <SearchableSelect
+                    value={value ?? ""}
+                    onChange={(v) => onChange(v || null)}
+                    allowClear={false}
+                    placeholder="Select a currency"
+                    options={currencies.map((c) => ({
+                        value: c.code,
+                        label: `${c.flag} ${c.code} — ${c.name}`,
+                    }))}
+                />
             );
 
         case "country_code":
             return (
-                <select value={value ?? ""} onChange={(e) => onChange(e.target.value || null)}
-                        style={{ ...inputStyle, appearance: "auto" }}>
-                    <option value="">Follow the viewer's browser</option>
-                    {COUNTRY_LIST.map((c) => (
-                        <option key={c.code} value={c.code}>
-                            {c.flag} {c.name} (+{c.callingCode})
-                        </option>
-                    ))}
-                </select>
+                <SearchableSelect
+                    value={value ?? ""}
+                    onChange={(v) => onChange(v || null)}
+                    placeholder="Follow the viewer's browser"
+                    options={COUNTRY_LIST.map((c) => ({
+                        value: c.code,
+                        label: `${c.flag} ${c.name} (+${c.callingCode})`,
+                        // Findable by ISO code without showing it on the row.
+                        keywords: c.code,
+                    }))}
+                />
             );
 
         case "country_list":
@@ -269,13 +278,16 @@ const Control = ({ spec, optionKey, value, onChange, currencies }) => {
             // it actually produces, so choosing one is reading rather than
             // knowing what a BCP-47 tag does to a thousands separator.
             return (
-                <select value={value ?? ""} onChange={(e) => onChange(e.target.value || null)}
-                        style={{ ...inputStyle, appearance: "auto" }}>
-                    <option value="">Follow the viewer's browser</option>
-                    {localeOptions(value).map((o) => (
-                        <option key={o.value} value={o.value} title={o.title}>{o.label}</option>
-                    ))}
-                </select>
+                <SearchableSelect
+                    value={value ?? ""}
+                    onChange={(v) => onChange(v || null)}
+                    placeholder="Follow the viewer's browser"
+                    options={localeOptions(value).map((o) => ({
+                        value: o.value,
+                        label: o.label,
+                        keywords: o.title,
+                    }))}
+                />
             );
 
         default:

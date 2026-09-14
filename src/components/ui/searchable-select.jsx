@@ -4,14 +4,28 @@ import { Popover, PopoverContent, PopoverTrigger } from "./popover";
 import { Button } from "./button";
 import { cn } from "../../lib/utils";
 
+// Lowercased and stripped of accents, so "colon" finds "Costa Rican Colón" and
+// "mexico" finds "México". Nobody reaches for the accented key to search.
+const fold = (text) =>
+    String(text).normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+
 /**
  * Single-select with a type-to-filter box, for lists long enough that a plain
  * dropdown stops being usable. Options are the canonical
  * {value,label,color,is_active} objects; retired ones are not offered but a
  * value already pointing at one still renders with its label.
+ *
+ * An option may also carry `keywords`, matched by the filter but never shown —
+ * so a country can be found by typing "CR" without "CR" cluttering the row.
+ *
+ * `triggerLabel`, `triggerClassName` and `contentClassName` exist for the
+ * narrow-trigger case (the phone input's country picker is 92px wide and shows
+ * a flag and a dialling code, while its list needs room for country names).
+ * All three default to the plain full-width behaviour.
  */
 export const SearchableSelect = ({
     id, value, onChange, options = [], placeholder = "Select...", disabled, allowClear = true,
+    triggerLabel, triggerClassName, contentClassName,
 }) => {
     const [open, setOpen] = useState(false);
     const [query, setQuery] = useState("");
@@ -23,9 +37,9 @@ export const SearchableSelect = ({
         [options],
     );
     const filtered = useMemo(() => {
-        const q = query.trim().toLowerCase();
+        const q = fold(query.trim());
         if (!q) return selectable;
-        return selectable.filter((o) => String(o.label).toLowerCase().includes(q));
+        return selectable.filter((o) => fold(`${o.label} ${o.keywords || ""}`).includes(q));
     }, [selectable, query]);
 
     const current = options.find((o) => o.value === value);
@@ -40,15 +54,17 @@ export const SearchableSelect = ({
                     role="combobox"
                     aria-expanded={open}
                     disabled={disabled}
-                    className="w-full justify-between font-normal"
+                    className={cn("w-full justify-between font-normal", triggerClassName)}
                 >
                     <span className={cn("truncate", !current && "text-muted-foreground")}>
-                        {current ? current.label : placeholder}
+                        {current ? (triggerLabel ?? current.label) : (triggerLabel ?? placeholder)}
                     </span>
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    <ChevronsUpDown className="ml-1 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+            <PopoverContent
+                className={cn("w-[var(--radix-popover-trigger-width)] p-0", contentClassName)}
+                align="start">
                 <div className="flex items-center gap-2 border-b px-3 py-2">
                     <Search className="h-3.5 w-3.5 shrink-0 opacity-50" />
                     <input

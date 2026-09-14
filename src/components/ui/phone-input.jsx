@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { AsYouType, parsePhoneNumberFromString } from "libphonenumber-js/min";
 import { Input } from "./input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
+import { SearchableSelect } from "./searchable-select";
 import { COUNTRY_LIST, guessDefaultCountry } from "@/utils/phoneCountries";
 
 // Same wire-format/display-format split as date-input.jsx and
@@ -83,20 +83,25 @@ export const PhoneInput = ({
 
     return (
         <div className="flex gap-1.5">
-            <Select value={country} onValueChange={handleCountryChange} disabled={disabled}>
-                <SelectTrigger className="w-[92px] shrink-0 px-2" aria-label="Country">
-                    <SelectValue>
-                        {selectedCountry ? `${selectedCountry.flag} +${selectedCountry.callingCode}` : country}
-                    </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                    {countries.map((c) => (
-                        <SelectItem key={c.code} value={c.code}>
-                            {c.flag} {c.name} (+{c.callingCode})
-                        </SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
+            {/* Searchable: the unrestricted list is 240 countries, which is a
+                scroll hunt in a plain dropdown. The trigger stays narrow (flag
+                and dialling code) while the list gets room for the names. */}
+            <SearchableSelect
+                value={country}
+                onChange={handleCountryChange}
+                disabled={disabled}
+                allowClear={false}
+                triggerClassName="w-[92px] shrink-0 px-2"
+                contentClassName="w-72"
+                triggerLabel={selectedCountry
+                    ? `${selectedCountry.flag} +${selectedCountry.callingCode}`
+                    : country}
+                options={countries.map((c) => ({
+                    value: c.code,
+                    label: `${c.flag} ${c.name} (+${c.callingCode})`,
+                    keywords: c.code,
+                }))}
+            />
             <Input
                 id={id}
                 type="tel"
