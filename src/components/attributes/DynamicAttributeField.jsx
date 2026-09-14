@@ -21,9 +21,11 @@ import { formatAttributeValue, normalizeOptions, selectableOptions } from "../..
  *
  * Each branch now reads the type's `format_config`, so the same `list` type can
  * be a dropdown, a radio group, buttons, or a searchable picker depending on how
- * the admin configured it. Anything the widget cannot enforce (ranges, patterns,
- * domains) is still checked by the backend; the config here is about making the
- * right value easy to enter, not about being the validation.
+ * the admin configured it. The backend remains the only authority on whether a
+ * value is acceptable; the config here is about making the right value easy to
+ * enter. Numeric ranges are the one thing echoed back as you type (see
+ * WithRangeNote) — not to enforce them, but because a bound that only speaks up
+ * when you press Save reads as if it were never applied at all.
  *
  * `onChange` always receives the new raw value directly (not an event) —
  * callers do `onChange={(v) => handleAttributeChange(attr.name, v)}`.
@@ -181,15 +183,17 @@ export const DynamicAttributeField = ({ attr, value, onChange, idPrefix, disable
 
     if (attr.type === "currency") {
         return (
-            <CurrencyInput
-                id={id} value={value ?? ""} onChange={onChange} disabled={disabled}
-                currencyCode={config.currency_code}
-                symbol={config.symbol}
-                symbolPosition={config.symbol_position}
-                locale={config.locale}
-                decimals={config.decimals}
-                placeholder={attr.placeholder}
-            />
+            <WithRangeNote attr={attr} value={value}>
+                <CurrencyInput
+                    id={id} value={value ?? ""} onChange={onChange} disabled={disabled}
+                    currencyCode={config.currency_code}
+                    symbol={config.symbol}
+                    symbolPosition={config.symbol_position}
+                    locale={config.locale}
+                    decimals={config.decimals}
+                    placeholder={attr.placeholder}
+                />
+            </WithRangeNote>
         );
     }
 
@@ -209,21 +213,24 @@ export const DynamicAttributeField = ({ attr, value, onChange, idPrefix, disable
 
     if (attr.type === "percentage") {
         return (
-            <div className="relative">
-                <Input
-                    id={id} type="number" placeholder={placeholder} value={value ?? ""}
-                    disabled={disabled} className="pr-7"
-                    min={config.min ?? undefined} max={config.max ?? undefined}
-                    onChange={(e) => onChange(e.target.value)}
-                />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">%</span>
-            </div>
+            <WithRangeNote attr={attr} value={value}>
+                <div className="relative">
+                    <Input
+                        id={id} type="number" placeholder={placeholder} value={value ?? ""}
+                        disabled={disabled} className="pr-7"
+                        min={config.min ?? undefined} max={config.max ?? undefined}
+                        onChange={(e) => onChange(e.target.value)}
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">%</span>
+                </div>
+            </WithRangeNote>
         );
     }
 
     if (attr.type === "number") {
         const { prefix, suffix } = config;
         return (
+            <WithRangeNote attr={attr} value={value}>
             <div className="relative">
                 {prefix && (
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">
@@ -244,6 +251,7 @@ export const DynamicAttributeField = ({ attr, value, onChange, idPrefix, disable
                     </span>
                 )}
             </div>
+            </WithRangeNote>
         );
     }
 
@@ -262,6 +270,45 @@ export const DynamicAttributeField = ({ attr, value, onChange, idPrefix, disable
             minLength={config.min_length ?? undefined} maxLength={config.max_length ?? undefined}
             onChange={(e) => onChange(e.target.value)}
         />
+    );
+};
+
+/**
+ * The message the API would return for a numeric value out of range, worded
+ * exactly as _check_number in app/attributes/validators.py words it, so the
+ * sentence someone reads while typing is the sentence they would otherwise
+ * have met on save.
+ *
+ * This does not gate anything: the backend stays the only authority on whether
+ * a value is acceptable. It only stops the rejection being a surprise — an
+ * `<input type="number" min max>` does not refuse out-of-range typing, it only
+ * constrains the spinner, which is what made the range look decorative.
+ */
+const rangeMessage = (attr, value) => {
+    if (value === "" || value === null || value === undefined) return null;
+    const num = Number(value);
+    if (Number.isNaN(num)) return null;
+
+    const config = attr.format_config || {};
+    const label = attr.label || attr.name;
+    if (config.allow_negative === false && num < 0) return `'${label}' cannot be negative.`;
+    if (config.min !== null && config.min !== undefined && num < config.min) {
+        return `'${label}' must be at least ${config.min}.`;
+    }
+    if (config.max !== null && config.max !== undefined && num > config.max) {
+        return `'${label}' must be at most ${config.max}.`;
+    }
+    return null;
+};
+
+const WithRangeNote = ({ attr, value, children }) => {
+    const message = rangeMessage(attr, value);
+    if (!message) return children;
+    return (
+        <div className="flex flex-col gap-1">
+            {children}
+            <span className="text-[11px]" style={{ color: "#b4453c" }}>{message}</span>
+        </div>
     );
 };
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Input } from "./input";
-import { currencySymbol, resolveCurrencyDecimals } from "@/utils/attributeTypes";
+import { currencySymbol, resolveCurrencyDecimals, safeLocale } from "@/utils/attributeTypes";
 
 // Keeps only digits and a single decimal point — anything else the user
 // types (a second ".", a stray comma, letters) is dropped rather than
@@ -66,7 +66,7 @@ export const CurrencyInput = ({
             setText("");
             return;
         }
-        setText(num.toLocaleString(locale || undefined, {
+        setText(num.toLocaleString(safeLocale(locale), {
             minimumFractionDigits: resolvedDecimals,
             maximumFractionDigits: resolvedDecimals,
         }));

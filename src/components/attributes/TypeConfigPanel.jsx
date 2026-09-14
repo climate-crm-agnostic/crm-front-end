@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { COUNTRY_LIST } from "../../utils/phoneCountries";
+import { localeOptions } from "../../utils/locales";
 
 const labelStyle = {
     display: "block", fontSize: 11, fontWeight: 600, textTransform: "uppercase",
@@ -62,7 +63,8 @@ const OPTION_LABELS = {
 const OPTION_HINTS = {
     currency_code: "Sets the symbol and decimal places automatically.",
     symbol: "Leave empty to use the currency's own symbol.",
-    locale: "e.g. es-CR for 1.234,56 — leave empty to follow the viewer.",
+    locale: "Only the separators — the currency is set above. Leave it on "
+        + "\"follow the viewer\" and each person sees their own country's format.",
     mask: "# digit · A letter · @ letter or digit. e.g. (###) ###-####",
     pattern: "Advanced. Only for formats a mask cannot express.",
     require_valid: "Off by default so numbers imported without a country prefix stay editable.",
@@ -70,6 +72,17 @@ const OPTION_HINTS = {
     searchable: "Leave unset to turn on automatically past 8 options.",
     allow_other: "Lets someone type a value that is not in the list.",
     display_mode: "How a stored number maps to a percent shown on screen.",
+};
+
+// Hints that only make sense for one type. Percentage is the case that bites:
+// min/max are checked against the value as *stored*, so in 0-1 mode the bound
+// for "no more than 100%" is 1, not 100 — for every other numeric type stored
+// and displayed are the same number and the note would just be noise.
+const TYPE_OPTION_HINTS = {
+    percentage: {
+        min: "Against the stored value: 0-1 mode means 0.5, not 50.",
+        max: "Against the stored value: 0-1 mode means 1, not 100.",
+    },
 };
 
 // Per-value overrides for an enum's option text, keyed by option key. Falls
@@ -82,6 +95,8 @@ const ENUM_VALUE_LABELS = {
         "0-1": "0–1 (a stored 0.15 is 15%)",
     },
 };
+
+const hintFor = (type, key) => TYPE_OPTION_HINTS[type]?.[key] || OPTION_HINTS[key];
 
 const humanize = (key) =>
     OPTION_LABELS[key] || key.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase());
@@ -129,9 +144,9 @@ export const TypeConfigPanel = ({ typeMeta, config, onChange, currencies }) => {
                             currencies={currencies}
                             onChange={(v) => set(key, v)}
                         />
-                        {OPTION_HINTS[key] && (
+                        {hintFor(typeMeta?.value, key) && (
                             <p style={{ fontSize: 11, color: "#9b948e", marginTop: 3 }}>
-                                {OPTION_HINTS[key]}
+                                {hintFor(typeMeta?.value, key)}
                             </p>
                         )}
                     </div>
@@ -232,6 +247,20 @@ const Control = ({ spec, optionKey, value, onChange, currencies }) => {
             return (
                 <input type="date" value={value ?? ""}
                        onChange={(e) => onChange(e.target.value || null)} style={inputStyle} />
+            );
+
+        case "locale":
+            // A picker rather than a text box: every option carries the number
+            // it actually produces, so choosing one is reading rather than
+            // knowing what a BCP-47 tag does to a thousands separator.
+            return (
+                <select value={value ?? ""} onChange={(e) => onChange(e.target.value || null)}
+                        style={{ ...inputStyle, appearance: "auto" }}>
+                    <option value="">Follow the viewer's browser</option>
+                    {localeOptions(value).map((o) => (
+                        <option key={o.value} value={o.value} title={o.title}>{o.label}</option>
+                    ))}
+                </select>
             );
 
         default:

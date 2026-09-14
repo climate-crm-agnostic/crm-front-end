@@ -149,12 +149,29 @@ export const resolveCurrencyDecimals = (currencyCode) => {
     return 2;
 };
 
+// A locale out of an attribute's config cannot be trusted at render time.
+// The attribute modal previews the field as the admin types, so this sees
+// "es-ES " (trailing space) or a half-typed "e" long before the backend gets
+// a chance to reject it — and Intl throws a RangeError on a malformed tag,
+// which takes the whole form down with it. Anything Intl won't accept falls
+// back to the viewer's own locale, which is what an empty config means too.
+export const safeLocale = (locale) => {
+    const tag = typeof locale === "string" ? locale.trim() : "";
+    if (!tag) return undefined;
+    try {
+        Intl.getCanonicalLocales(tag);
+        return tag;
+    } catch {
+        return undefined;
+    }
+};
+
 export const formatCurrency = (value, config = {}) => {
     const num = Number(value);
     if (Number.isNaN(num)) return String(value);
     const code = config.currency_code || "USD";
     const decimals = config.decimals ?? resolveCurrencyDecimals(code);
-    const locale = config.locale || undefined;
+    const locale = safeLocale(config.locale);
 
     const amount = num.toLocaleString(locale, {
         minimumFractionDigits: decimals,
@@ -191,13 +208,13 @@ export const formatAttributeValue = (attr, rawValue) => {
             const display = config.display_mode === "0-1" ? num * 100 : num;
             // config.locale, not undefined: the server formats merge fields
             // with it, and the two have to agree (see format_cases.json).
-            return `${display.toLocaleString(config.locale || undefined, { maximumFractionDigits: decimals })}%`;
+            return `${display.toLocaleString(safeLocale(config.locale), { maximumFractionDigits: decimals })}%`;
         }
         case "number": {
             const num = Number(rawValue);
             if (Number.isNaN(num)) return String(rawValue);
             const body = config.thousands_separator
-                ? num.toLocaleString(config.locale || undefined, {
+                ? num.toLocaleString(safeLocale(config.locale), {
                     maximumFractionDigits: config.decimals ?? 20,
                 })
                 : String(num);
