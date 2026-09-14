@@ -334,6 +334,7 @@ export const AttributeForm = ({
                                     siblings={siblings.filter((a) => a.name !== draft.name)}
                                     entity={rollupEntity}
                                     error={errors.formula}
+                                    formatConfig={draft.format_config}
                                 />
                                 {/* A calculated field still renders through its
                                     output type, so it needs that type's display

@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Check, ChevronsUpDown, Search, X } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "./popover";
 import { Button } from "./button";
-import { cn } from "../../lib/utils";
+import { cn, foldForSearch } from "../../lib/utils";
 
 /**
  * Multi-select for the `multiselect` attribute type. The stored value is an
@@ -97,10 +97,14 @@ const PopoverPicker = ({ id, selected, options, onToggle, placeholder, disabled 
     const [open, setOpen] = useState(false);
     const [query, setQuery] = useState("");
 
+    // Accent- and keyword-aware, same as SearchableSelect: "mexico" has to
+    // find "México", and a country has to be findable by its ISO code without
+    // that code being printed on the row.
     const filtered = useMemo(() => {
-        const q = query.trim().toLowerCase();
+        const q = foldForSearch(query.trim());
         if (!q) return options;
-        return options.filter((o) => String(o.label).toLowerCase().includes(q));
+        return options.filter(
+            (o) => foldForSearch(`${o.label} ${o.keywords || ""}`).includes(q));
     }, [options, query]);
 
     return (

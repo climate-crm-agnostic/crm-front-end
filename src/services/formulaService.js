@@ -4,11 +4,15 @@ import { API_URL, getHeaders } from './api';
 // stores the value. There is deliberately no second implementation in
 // JavaScript: a preview that can disagree with what gets saved is worse than
 // a preview that costs a request. See ATTRIBUTES_SPEC.md §6.6.
-export const evaluateFormula = async ({ formula, values, self, type }) => {
+export const evaluateFormula = async ({ formula, values, self, type, formatConfig }) => {
     const response = await fetch(`${API_URL}/attributes/evaluate/`, {
         method: 'POST',
         headers: getHeaders(),
-        body: JSON.stringify({ formula, values: values || {}, self: self || {}, type }),
+        body: JSON.stringify({
+            formula, values: values || {}, self: self || {}, type,
+            // So the preview rounds to the same decimals the stored value will.
+            format_config: formatConfig || {},
+        }),
     });
     if (!response.ok) throw new Error('Could not evaluate the formula');
     return response.json();

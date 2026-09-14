@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle, Check, Clock, FunctionSquare, Layers, X } from "lucide-react";
 import { evaluateFormula, getFormulaCatalogue } from "../../services/formulaService";
+import { coerceAttributeValue } from "../../utils/attributeTypes";
 
 const INK = "#2E2A26";
 const MUTED = "#6b6560";
@@ -30,7 +31,7 @@ const control = {
  * so a key is inserted rather than typed from memory.
  */
 export const FormulaEditor = ({
-    formula, onChange, outputType, siblings = [], error, entity,
+    formula, onChange, outputType, siblings = [], error, entity, formatConfig,
 }) => {
     const [functions, setFunctions] = useState([]);
     const [rollupSources, setRollupSources] = useState([]);
@@ -54,15 +55,33 @@ export const FormulaEditor = ({
         return [...new Set(found.map((m) => m[1]))];
     }, [formula]);
 
+    // The sample boxes are plain text inputs, so "0.05" arrives as a string —
+    // and the evaluator concatenates with `+` when either side is text (that is
+    // how text formulas work), which turned 1 + "0.05" into "10.05" and showed
+    // a preview of 904.95 for a formula that stores 4.95. A real record never
+    // reaches the evaluator that way: the form coerces by the field's type
+    // before saving and the API rejects a string in a numeric field outright.
+    // Coerce the same way here, with the same function the form uses.
+    const typedSampleValues = useMemo(() => {
+        const typed = {};
+        for (const [name, raw] of Object.entries(sampleValues)) {
+            const sibling = siblings.find((a) => a.name === name);
+            typed[name] = sibling ? coerceAttributeValue(sibling, raw) : raw;
+        }
+        return typed;
+    }, [sampleValues, siblings]);
+
     useEffect(() => {
         if (!formula || !formula.trim()) { setStatus(null); return; }
         const timer = setTimeout(() => {
-            evaluateFormula({ formula, values: sampleValues, type: outputType })
+            evaluateFormula({
+                formula, values: typedSampleValues, type: outputType, formatConfig,
+            })
                 .then(setStatus)
                 .catch(() => setStatus({ valid: false, error: "Could not reach the server." }));
         }, 400);
         return () => clearTimeout(timer);
-    }, [formula, sampleValues, outputType]);
+    }, [formula, typedSampleValues, outputType, formatConfig]);
 
     const insert = (text) => {
         const el = textareaRef.current;

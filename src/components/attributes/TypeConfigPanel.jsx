@@ -2,6 +2,7 @@ import { useState } from "react";
 import { COUNTRY_LIST } from "../../utils/phoneCountries";
 import { localeOptions } from "../../utils/locales";
 import { SearchableSelect } from "../ui/searchable-select";
+import { MultiSelect } from "../ui/multi-select";
 
 const labelStyle = {
     display: "block", fontSize: 11, fontWeight: 600, textTransform: "uppercase",
@@ -248,13 +249,21 @@ const Control = ({ spec, optionKey, value, onChange, currencies }) => {
                 />
             );
 
+        // A picker rather than a comma-separated box: the set of countries is
+        // known and finite, so there is nothing to type freehand — and an ISO
+        // code typed from memory ("UK" for the United Kingdom, which is GB) is
+        // accepted silently and then matches nothing.
         case "country_list":
             return (
-                <TokenList
-                    value={value}
-                    placeholder="CR, PA, NI — empty means every country"
-                    transform={(v) => v.toUpperCase()}
-                    onChange={onChange}
+                <MultiSelect
+                    value={Array.isArray(value) ? value : []}
+                    onChange={(codes) => onChange(codes.length ? codes : null)}
+                    placeholder="Every country"
+                    options={COUNTRY_LIST.map((c) => ({
+                        value: c.code,
+                        label: `${c.flag} ${c.name} (+${c.callingCode})`,
+                        keywords: c.code,
+                    }))}
                 />
             );
 

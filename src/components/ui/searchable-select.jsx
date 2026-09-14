@@ -2,12 +2,7 @@ import { useMemo, useState } from "react";
 import { Check, ChevronsUpDown, Search } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "./popover";
 import { Button } from "./button";
-import { cn } from "../../lib/utils";
-
-// Lowercased and stripped of accents, so "colon" finds "Costa Rican Colón" and
-// "mexico" finds "México". Nobody reaches for the accented key to search.
-const fold = (text) =>
-    String(text).normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+import { cn, foldForSearch } from "../../lib/utils";
 
 /**
  * Single-select with a type-to-filter box, for lists long enough that a plain
@@ -37,9 +32,10 @@ export const SearchableSelect = ({
         [options],
     );
     const filtered = useMemo(() => {
-        const q = fold(query.trim());
+        const q = foldForSearch(query.trim());
         if (!q) return selectable;
-        return selectable.filter((o) => fold(`${o.label} ${o.keywords || ""}`).includes(q));
+        return selectable.filter(
+            (o) => foldForSearch(`${o.label} ${o.keywords || ""}`).includes(q));
     }, [selectable, query]);
 
     const current = options.find((o) => o.value === value);
