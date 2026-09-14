@@ -326,6 +326,7 @@ export const AttributeForm = ({
                             )}
 
                             {draft.is_calculated ? (
+                                <>
                                 <FormulaEditor
                                     formula={draft.formula}
                                     onChange={(formula) => set({ formula })}
@@ -334,6 +335,32 @@ export const AttributeForm = ({
                                     entity={rollupEntity}
                                     error={errors.formula}
                                 />
+                                {/* A calculated field still renders through its
+                                    output type, so it needs that type's display
+                                    settings — the entry and validation ones are
+                                    filtered out, nothing types into this. */}
+                                <div className="mt-4 pt-4" style={{ borderTop: `1px solid ${PEBBLE}` }}>
+                                    <p style={{
+                                        fontSize: 11, fontWeight: 600, textTransform: "uppercase",
+                                        letterSpacing: "0.06em", color: MUTED, marginBottom: 8,
+                                    }}>
+                                        How the result is shown
+                                    </p>
+                                    <TypeConfigPanel
+                                        typeMeta={typeMeta}
+                                        config={draft.format_config}
+                                        currencies={CURRENCY_LIST}
+                                        onChange={(format_config) => set({ format_config })}
+                                        displayOnly
+                                    />
+                                    <p style={{ fontSize: 11, color: HINT, marginTop: 8 }}>
+                                        The result is rounded to these decimals before it is
+                                        stored, not just when displayed — so a formula reading
+                                        this field reads the rounded number. Leave a number's
+                                        decimals empty to keep the full value.
+                                    </p>
+                                </div>
+                                </>
                             ) : (
                             <>
                             {usesOptions && (

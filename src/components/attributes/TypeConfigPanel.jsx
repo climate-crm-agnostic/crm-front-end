@@ -96,6 +96,17 @@ const ENUM_VALUE_LABELS = {
     },
 };
 
+// Options that change how a stored value is *rendered*, as opposed to how it
+// is entered or validated. A calculated field is never typed into and skips
+// validation entirely, so only these mean anything for one — offering it a
+// `min` or a `mask` would be configuration that silently does nothing.
+const DISPLAY_ONLY_OPTIONS = new Set([
+    "decimals", "thousands_separator", "prefix", "suffix",
+    "currency_code", "symbol", "symbol_position", "locale",
+    "display_mode", "display_format", "open_in_new_tab",
+    "true_label", "false_label",
+]);
+
 const hintFor = (type, key) => TYPE_OPTION_HINTS[type]?.[key] || OPTION_HINTS[key];
 
 const humanize = (key) =>
@@ -112,14 +123,18 @@ const enumLabel = (value) =>
  * makes it appear in this panel with no JSX change. Only the wording and a few
  * richer controls (currency and country pickers) are curated above.
  */
-export const TypeConfigPanel = ({ typeMeta, config, onChange, currencies }) => {
+export const TypeConfigPanel = ({ typeMeta, config, onChange, currencies,
+                                  displayOnly = false }) => {
     const schema = typeMeta?.config_schema || {};
-    const keys = Object.keys(schema);
+    const keys = Object.keys(schema)
+        .filter((key) => !displayOnly || DISPLAY_ONLY_OPTIONS.has(key));
 
     if (keys.length === 0) {
         return (
             <p style={{ fontSize: 12, color: "#9b948e" }}>
-                This type has no extra settings.
+                {displayOnly
+                    ? "This type has nothing to configure about how its value is shown."
+                    : "This type has no extra settings."}
             </p>
         );
     }
