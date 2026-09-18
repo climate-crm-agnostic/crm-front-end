@@ -22,7 +22,7 @@ const buttonVariants = cva(
         secondary:
           "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
         terciary:
-          `bg-codex-botones-primary text-codex-texto-secondary-variante1 hover:bg-codex-botones-primary-variante2 hover:text-codex-texto-primary-variante3 shadow-xs
+          `bg-codex-botones-primary text-primary-foreground hover:bg-codex-botones-primary-variante2 hover:text-codex-texto-primary-variante3 shadow-xs
            dark:bg-codex-botones-primary-variante4 dark:text-codex-texto-secondary-variante1 dark:hover:bg-codex-botones-primary-variante4/80 cursor-pointer
           `,
         ghost:
@@ -31,7 +31,7 @@ const buttonVariants = cva(
         paginacion:
           "border bg-background shadow-xs hover:bg-secondary/90 hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
         paginacionNoActive:
-          `hover:bg-codex-botones-primary hover:text-codex-texto-secondary-variante1 bg-codex-botones-primary-variante2 text-codex-texto-primary-variante3 shadow-xs
+          `hover:bg-codex-botones-primary hover:text-primary-foreground bg-codex-botones-primary-variante2 text-codex-texto-primary-variante3 shadow-xs
            dark:hover:bg-codex-botones-primary-variante4 dark:hover:text-codex-texto-secondary-variante1 dark:bg-codex-botones-primary-variante3 dark:text-codex-texto-primary-variante1 cursor-pointer
           `,
 

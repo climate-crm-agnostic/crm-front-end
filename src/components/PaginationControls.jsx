@@ -74,7 +74,7 @@ export const PaginationFooter = ({
                         <Button
                             key={page}
                             variant={isActive ? "terciary" : "paginacionNoActive"}
-                            className={isActive ? "text-codex-cards-secondary-variante1 h-9 px-3" : "h-9 px-3"}
+                            className="h-9 px-3"
                             onClick={() => setCurrentPage(page)}
                         >
                             {page}
