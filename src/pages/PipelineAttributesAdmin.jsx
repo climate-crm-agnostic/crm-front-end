@@ -383,7 +383,7 @@ export const PipelineAttributesAdmin = () => {
                         <SlidersHorizontal className="h-6 w-6" style={{ color: OLIVE }} />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-black tracking-tight" style={{ color: OLIVE }}>
+                        <h1 className="text-2xl font-semibold" style={{ color: OLIVE }}>
                             Pipeline Attributes
                         </h1>
                         <p className="text-xs flex items-center gap-2 mt-1" style={{ color: HINT }}>

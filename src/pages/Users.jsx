@@ -99,7 +99,7 @@ export const Users = () => {
         <div className="p-6 space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-4xl font-bold tracking-tight">Users</h1>
+                    <h1 className="text-4xl font-bold tracking-tight text-codex-texto-primary dark:text-codex-texto-dark-primary">Users</h1>
                     <p className="text-muted-foreground text-sm mt-1">Manage your team members and their roles.</p>
                 </div>
                 <Button onClick={() => navigate("/users/new")}>
