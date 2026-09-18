@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { TableSummary } from "../components/TableSummary";
 import { Button } from "../components/ui/button";
+import { DateInput } from "../components/ui/date-input";
 import { Plus, Download, MoreHorizontal, SquarePen, OctagonX } from "lucide-react";
 import { getInvoices, deleteInvoice, getInvoiceAttributes, exportInvoicesExcel } from "../services/invoiceService";
 import { getClients } from "../services/clientService";
@@ -37,7 +38,20 @@ export const Invoice = () => {
     const [invoices, setInvoices] = useState([]);
     const [loading, setLoading] = useState(true);
     const [attributes, setAttributes] = useState([]);
+    const [dateFrom, setDateFrom] = useState("");
+    const [dateTo, setDateTo] = useState("");
     const navigate = useNavigate();
+
+    // Filters by issue_date (ISO "yyyy-mm-dd" strings sort/compare lexicographically).
+    const dateFilteredInvoices = useMemo(() => {
+        if (!dateFrom && !dateTo) return invoices;
+        return invoices.filter((inv) => {
+            if (!inv.issue_date) return false;
+            if (dateFrom && inv.issue_date < dateFrom) return false;
+            if (dateTo && inv.issue_date > dateTo) return false;
+            return true;
+        });
+    }, [invoices, dateFrom, dateTo]);
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -165,9 +179,9 @@ export const Invoice = () => {
         }
     };
 
-    const totalInvoiced = invoices.reduce((sum, inv) => sum + (Number(inv.total) || 0), 0);
-    const outstanding = invoices.reduce((sum, inv) => sum + (Number(inv.balance_due) || 0), 0);
-    const overdueCount = invoices.filter((inv) => inv.status === "overdue").length;
+    const totalInvoiced = dateFilteredInvoices.reduce((sum, inv) => sum + (Number(inv.total) || 0), 0);
+    const outstanding = dateFilteredInvoices.reduce((sum, inv) => sum + (Number(inv.balance_due) || 0), 0);
+    const overdueCount = dateFilteredInvoices.filter((inv) => inv.status === "overdue").length;
 
     const stats = [
         { label: "Total invoiced", value: `$${totalInvoiced.toLocaleString(undefined, { maximumFractionDigits: 0 })}` },
@@ -240,7 +254,7 @@ export const Invoice = () => {
 
             <div className="bg-card p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
                 <TableSummary
-                    data={invoices}
+                    data={dateFilteredInvoices}
                     stats={stats}
                     statusField="status"
                     statusTabs={STATUS_TABS}
@@ -248,6 +262,32 @@ export const Invoice = () => {
                     searchKeys={["invoice_number", "status", "client_name"]}
                     loading={loading}
                     emptyLabel="No invoices yet."
+                    headerActions={
+                        <div className="flex items-center gap-2">
+                            <DateInput
+                                value={dateFrom}
+                                onChange={(e) => setDateFrom(e.target.value)}
+                                placeholder="From"
+                                className="w-[130px]"
+                            />
+                            <span className="text-sm text-muted-foreground">to</span>
+                            <DateInput
+                                value={dateTo}
+                                onChange={(e) => setDateTo(e.target.value)}
+                                placeholder="To"
+                                className="w-[130px]"
+                            />
+                            {(dateFrom || dateTo) && (
+                                <button
+                                    type="button"
+                                    onClick={() => { setDateFrom(""); setDateTo(""); }}
+                                    className="text-xs underline text-muted-foreground cursor-pointer"
+                                >
+                                    Clear
+                                </button>
+                            )}
+                        </div>
+                    }
                 />
             </div>
         </div>
