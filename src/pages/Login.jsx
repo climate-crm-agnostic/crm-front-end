@@ -291,7 +291,7 @@ export const Login = ({ className, ...props }) => {
                 Manage smarter.<br />
                 <span style={{ color: "var(--primary)" }}>Grow faster.</span>
               </h2>
-              <p className="text-base leading-relaxed" style={{ color: "#b8b0a8", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+              <p className="text-base leading-relaxed" style={{ color: "#e6e2dc", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
                 A unified platform to manage clients, leads, and operations — all in one place.
               </p>
             </div>
@@ -312,7 +312,7 @@ export const Login = ({ className, ...props }) => {
                   </div>
                   <div>
                     <h3 className="text-sm font-semibold" style={{ color: "#FFFFFF", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>{title}</h3>
-                    <p className="text-sm mt-0.5 leading-relaxed" style={{ color: "#b0a89e", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>{desc}</p>
+                    <p className="text-sm mt-0.5 leading-relaxed" style={{ color: "#e6e2dc", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>{desc}</p>
                   </div>
                 </div>
               ))}
@@ -322,7 +322,7 @@ export const Login = ({ className, ...props }) => {
             <div className="pt-8" style={{ borderTop: "1px solid rgba(251,247,239,0.15)" }}>
               <blockquote
                 className="text-sm leading-relaxed"
-                style={{ fontFamily: '"Libre Baskerville", Georgia, serif', fontStyle: "italic", color: "#c8bfb5" }}
+                style={{ fontFamily: '"Libre Baskerville", Georgia, serif', fontStyle: "italic", color: "#f0ece6" }}
               >
                 "Technology that takes your business to the next level."
               </blockquote>
