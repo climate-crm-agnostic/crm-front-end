@@ -6,7 +6,7 @@ import { Button } from "../components/ui/button";
 import { Switch } from "../components/ui/switch";
 import { Badge } from "../components/ui/badge";
 import { Card, CardHeader } from "../components/SectionCard";
-import { CreditCard, Plug } from "lucide-react";
+import { CreditCard } from "lucide-react";
 import Swal from "sweetalert2";
 
 const SecretField = ({ label, maskedValue, fieldKey, pendingValues, onChange }) => {
@@ -23,8 +23,8 @@ const SecretField = ({ label, maskedValue, fieldKey, pendingValues, onChange }) 
     };
 
     return (
-        <div className="space-y-1">
-            <Label className="text-sm text-muted-foreground">{label}</Label>
+        <div className="space-y-2">
+            <Label>{label}</Label>
             {editing ? (
                 <div className="flex gap-2">
                     <Input
@@ -35,14 +35,14 @@ const SecretField = ({ label, maskedValue, fieldKey, pendingValues, onChange }) 
                         onChange={(e) => onChange(fieldKey, e.target.value)}
                         className="font-mono text-base"
                     />
-                    <Button variant="ghost" size="sm" onClick={handleCancel}>Cancel</Button>
+                    <Button variant="outline" onClick={handleCancel}>Cancel</Button>
                 </div>
             ) : (
                 <div className="flex items-center gap-2">
-                    <code className="flex-1 text-base bg-muted px-3 py-2 rounded border font-mono text-muted-foreground">
+                    <code className="flex-1 h-9 flex items-center text-sm bg-muted px-3 rounded-md border font-mono text-muted-foreground">
                         {maskedValue || <span className="italic">Not configured</span>}
                     </code>
-                    <Button variant="outline" size="sm" onClick={handleEdit}>Change</Button>
+                    <Button variant="outline" onClick={handleEdit}>Change</Button>
                 </div>
             )}
         </div>
@@ -97,29 +97,36 @@ export const Settings = () => {
         }
     };
 
+    const handleDiscard = async () => {
+        setPending({});
+        try {
+            setSettings(await getSettings());
+        } catch {
+            Swal.fire("Error", "Could not reload settings.", "error");
+        }
+    };
+
     const hasPending = Object.keys(pending).length > 0;
 
     if (loading) return <div className="p-10 flex justify-center">Loading...</div>;
 
     return (
-        <div className="max-w-2xl mx-auto py-6 space-y-4" style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+        <div className="max-w-3xl mx-auto py-6 space-y-6" style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
 
-            <div className="flex items-center justify-between px-1">
-                <div className="flex items-center gap-3 min-w-0">
-                    <div
-                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
-                        style={{ backgroundColor: "rgba(94,106,67,0.12)", border: "1px solid rgba(94,106,67,0.3)" }}
-                    >
-                        <Plug className="h-5 w-5" style={{ color: "var(--secondary)" }} />
-                    </div>
-                    <div className="min-w-0">
-                        <p className="text-base font-semibold truncate" style={{ color: "var(--secondary)" }}>Integrations</p>
-                        <p className="text-sm truncate" style={{ color: "var(--muted-foreground)" }}>Configure third-party services</p>
-                    </div>
+            <div className="flex items-center justify-between gap-4 px-1">
+                <div className="min-w-0">
+                    <h1 className="text-2xl font-semibold">Settings</h1>
+                    <p className="text-sm text-muted-foreground">Configure third-party integrations</p>
                 </div>
-                <Button onClick={handleSave} disabled={saving || !hasPending}>
-                    {saving ? "Saving..." : "Save Changes"}
-                </Button>
+                <div className="flex items-center gap-3 shrink-0">
+                    {hasPending && <span className="text-sm text-muted-foreground">Unsaved changes</span>}
+                    <Button variant="outline" onClick={handleDiscard} disabled={saving || !hasPending}>
+                        Discard
+                    </Button>
+                    <Button onClick={handleSave} disabled={saving || !hasPending}>
+                        {saving ? "Saving..." : "Save Changes"}
+                    </Button>
+                </div>
             </div>
 
             {/* ── Stripe ─────────────────────────────────────────── */}
@@ -140,8 +147,8 @@ export const Settings = () => {
                         </>
                     }
                 />
-                <div className="px-6 py-5 space-y-4">
-                    <p className="text-sm text-muted-foreground -mt-1">Accept card payments via Stripe Invoices</p>
+                <div className="px-6 py-5 space-y-5">
+                    <p className="text-sm text-muted-foreground">Accept card payments via Stripe Invoices</p>
 
                     <SecretField
                         label="Secret Key (sk_live_... or sk_test_...)"
@@ -164,7 +171,7 @@ export const Settings = () => {
                         pendingValues={pending}
                         onChange={handleChange}
                     />
-                    <div className="text-sm text-muted-foreground bg-muted/40 rounded p-3 border space-y-2">
+                    <div className="text-sm text-muted-foreground bg-muted/40 rounded-lg p-4 border space-y-2">
                         <p className="font-semibold text-foreground">Stripe Webhook Setup</p>
                         <p>
                             <span className="font-medium text-foreground">Option 1 — Built-in (automatic):</span> Register the CRM's own endpoint in your Stripe Dashboard to automatically update invoice status on payment:

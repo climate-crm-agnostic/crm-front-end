@@ -3,6 +3,10 @@ import { getSales } from "../services/salesService";
 import { getLeads, reassignLeads } from "../services/leadService";
 import { Users } from "lucide-react";
 import Swal from "sweetalert2";
+import { Button } from "../components/ui/button";
+import { Label } from "../components/ui/label";
+import { Card, CardHeader } from "../components/SectionCard";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "../components/ui/select";
 
 const FONT = { fontFamily: '"Source Sans 3", Arial, sans-serif' };
 
@@ -68,67 +72,60 @@ export const LeadReassignment = () => {
     };
 
     return (
-        <div className="p-6 space-y-6" style={FONT}>
-            <div className="flex flex-col items-center text-center gap-3 max-w-lg mx-auto">
-                <div
-                    className="flex h-10 w-10 items-center justify-center rounded-lg"
-                    style={{ backgroundColor: "rgba(94,106,67,0.12)", border: "1px solid rgba(94,106,67,0.3)" }}
-                >
-                    <Users className="h-5 w-5" style={{ color: "var(--secondary)" }} />
-                </div>
-                <div>
-                    <p className="text-lg font-semibold" style={{ color: "var(--foreground)" }}>Lead Reassignment</p>
-                    <p className="text-base" style={{ color: "var(--muted-foreground)" }}>
-                        Move every lead owned by one user to another — e.g. after an employee leaves.
-                    </p>
-                </div>
+        <div className="max-w-2xl mx-auto py-6 space-y-4" style={FONT}>
+            <div className="px-1">
+                <h1 className="text-2xl font-semibold">Lead Reassignment</h1>
+                <p className="text-sm text-muted-foreground">
+                    Move every lead owned by one user to another — e.g. after an employee leaves.
+                </p>
             </div>
 
-            <div className="max-w-lg mx-auto rounded-xl p-6 space-y-5" style={{ border: "1px solid var(--border)", backgroundColor: "var(--background)" }}>
-                <div className="space-y-1.5">
-                    <label className="text-sm font-medium" style={{ color: "var(--muted-foreground)" }}>From</label>
-                    <select
-                        value={fromUserId}
-                        onChange={e => handleFromChange(e.target.value)}
-                        className="w-full h-11 rounded-md border px-3 text-base bg-card focus:outline-none"
-                        style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
-                    >
-                        <option value="">Select a user...</option>
-                        {salesUsers.map(u => (
-                            <option key={u.id} value={u.id}>{u.name || u.username}</option>
-                        ))}
-                    </select>
-                    {fromUserId && (
-                        <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
-                            {loadingPreview ? "Checking assigned leads..." : `${previewCount ?? 0} lead(s) currently assigned`}
-                        </p>
-                    )}
-                </div>
+            <Card>
+                <CardHeader icon={Users} title="Reassign Leads" />
+                <div className="px-6 py-5 space-y-5">
+                    <div className="space-y-2">
+                        <Label>From</Label>
+                        <Select value={fromUserId} onValueChange={handleFromChange}>
+                            <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select a user..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {salesUsers.map(u => (
+                                    <SelectItem key={u.id} value={String(u.id)}>{u.name || u.username}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        {fromUserId && (
+                            <p className="text-sm text-muted-foreground">
+                                {loadingPreview ? "Checking assigned leads..." : `${previewCount ?? 0} lead(s) currently assigned`}
+                            </p>
+                        )}
+                    </div>
 
-                <div className="space-y-1.5">
-                    <label className="text-sm font-medium" style={{ color: "var(--muted-foreground)" }}>To</label>
-                    <select
-                        value={toUserId}
-                        onChange={e => setToUserId(e.target.value)}
-                        className="w-full h-11 rounded-md border px-3 text-base bg-card focus:outline-none"
-                        style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
-                    >
-                        <option value="">Select a user...</option>
-                        {salesUsers.filter(u => String(u.id) !== String(fromUserId)).map(u => (
-                            <option key={u.id} value={u.id}>{u.name || u.username}</option>
-                        ))}
-                    </select>
-                </div>
+                    <div className="space-y-2">
+                        <Label>To</Label>
+                        <Select value={toUserId} onValueChange={setToUserId}>
+                            <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select a user..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {salesUsers.filter(u => String(u.id) !== String(fromUserId)).map(u => (
+                                    <SelectItem key={u.id} value={String(u.id)}>{u.name || u.username}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
 
-                <button
-                    onClick={handleReassign}
-                    disabled={!fromUserId || !toUserId || reassigning || previewCount === 0}
-                    className="w-full h-11 rounded-md text-base font-semibold transition-colors disabled:opacity-50 cursor-pointer"
-                    style={{ backgroundColor: "var(--secondary)", color: "var(--secondary-foreground)" }}
-                >
-                    {reassigning ? "Reassigning..." : "Reassign Leads"}
-                </button>
-            </div>
+                    <div className="flex justify-end">
+                        <Button
+                            onClick={handleReassign}
+                            disabled={!fromUserId || !toUserId || reassigning || previewCount === 0}
+                        >
+                            {reassigning ? "Reassigning..." : "Reassign Leads"}
+                        </Button>
+                    </div>
+                </div>
+            </Card>
         </div>
     );
 };
