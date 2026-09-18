@@ -17,8 +17,6 @@ const MENU_CONFIG = [
         icon: "Wallet",
         items: [
             { title: "Invoices",   url: "/invoice",   icon: "Receipt",    permission: "app.add_invoice" },
-            { title: "Catalogue",  url: "/catalogue", icon: "Package",    permission: "app.add_catalogueitem" },
-            { title: "Inventory",  url: "/inventory", icon: "Warehouse",  permission: "app.add_inventory",  feature: "inventory" },
         ],
     },
     {
@@ -26,7 +24,9 @@ const MENU_CONFIG = [
         icon: "Wrench",
         items: [
             { title: "Assets",            url: "/asset",           icon: "Laptop",        permission: "app.add_asset",           feature: "assets" },
-            { title: "Team Chat",         url: "/chat",            icon: "MessageCircle", feature: "chat" },
+            { title: "Catalogue",         url: "/catalogue",       icon: "Package",       permission: "app.add_catalogueitem" },
+            { title: "Inventory",         url: "/inventory",       icon: "Warehouse",     permission: "app.add_inventory",       feature: "inventory" },
+            { title: "Chat",              url: "/chat",            icon: "MessageCircle", feature: ["chat", "ai"] },
         ],
     },
     {
@@ -64,7 +64,13 @@ export const useMenu = () => {
                 items: group.items.filter(item => {
                     if (item.superuserOnly && !isSuperuser) return false;
                     if (item.permission && !isSuperuser && !permissions.has(item.permission)) return false;
-                    if (item.feature && !isFeatureEnabled(item.feature)) return false;
+                    if (item.feature) {
+                        // A feature can be a single name, or an array meaning
+                        // "show if ANY of these are enabled" (e.g. Chat: visible
+                        // to plans with chat OR ai, since it hosts both tabs).
+                        const features = Array.isArray(item.feature) ? item.feature : [item.feature];
+                        if (!features.some((f) => isFeatureEnabled(f))) return false;
+                    }
                     return true;
                 }),
             }))

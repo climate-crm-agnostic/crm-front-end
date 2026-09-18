@@ -244,7 +244,7 @@ const Bubble = ({ role, content }) => {
 
 // ── Main page ─────────────────────────────────────────────────────────────
 
-export const ChettAI = () => {
+export const ChettAI = ({ embedded = false } = {}) => {
     // Conversations sidebar
     const [conversations, setConversations] = useState([]);
     const [convLoading, setConvLoading] = useState(true);
@@ -378,10 +378,10 @@ export const ChettAI = () => {
             {/* Full-bleed container that overrides AdminLayout's p-4 */}
             <div style={{
                 display: "flex",
-                margin: "-1rem",
-                marginTop: 0,
-                height: "calc(100vh - 3rem)",
                 overflow: "hidden",
+                ...(embedded
+                    ? { height: "100%" }
+                    : { margin: "-1rem", marginTop: 0, height: "calc(100vh - 3rem)" }),
             }}>
 
                 {/* ── Left sidebar ─────────────────────────────────────── */}

@@ -274,7 +274,7 @@ const NewGroupModal = ({ onClose, onCreated }) => {
 
 // ── Main page ─────────────────────────────────────────────────────────────
 
-export const Chat = () => {
+export const Chat = ({ embedded = false } = {}) => {
     const { user } = useAuth();
     const { clearAll } = useChatNotifications();
 
@@ -442,8 +442,11 @@ export const Chat = () => {
             {showGroupModal && <NewGroupModal onClose={() => setShowGroupModal(false)} onCreated={handleRoomCreated} />}
 
             <div style={{
-                display: 'flex', margin: '-1rem', marginTop: 0,
-                height: 'calc(100vh - 3rem)', overflow: 'hidden',
+                display: 'flex',
+                overflow: 'hidden',
+                ...(embedded
+                    ? { height: '100%' }
+                    : { margin: '-1rem', marginTop: 0, height: 'calc(100vh - 3rem)' }),
             }}>
 
                 {/* ── Left sidebar ──────────────────────────────────── */}

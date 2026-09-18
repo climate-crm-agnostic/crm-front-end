@@ -3,7 +3,7 @@
 import { React, useState } from "react"
 import { Link, useLocation } from "react-router-dom"
 import * as Icons from "lucide-react"
-import { LayoutDashboard, Bot, ChevronRight } from "lucide-react"
+import { LayoutDashboard, ChevronRight } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
@@ -31,13 +31,10 @@ import { useAuth } from "@/context/AuthContext"
 export function AppSidebar({ ...props }) {
 
   const { menu } = useMenu();
-  const { user, isFeatureEnabled } = useAuth();
+  const { user } = useAuth();
   const { open, setOpen, isMobile } = useSidebar();
   const location = useLocation();
   const isDashboardActive = location.pathname === "/";
-  const isChettActive = location.pathname.startsWith("/chett-ai");
-  const canSeeChett = isFeatureEnabled("ai") &&
-    (user?.is_superuser === true || (user?.permissions || []).includes("app.view_aiconversation"));
 
   // Which hubs are expanded — seeded once from whichever hub contains the
   // page you loaded on, then driven entirely by clicks from there.
@@ -133,24 +130,6 @@ export function AppSidebar({ ...props }) {
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-
-              {canSeeChett && (
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    asChild
-                    tooltip="Chett AI"
-                    isActive={isChettActive}
-                    style={isChettActive ? {
-                      backgroundColor: "var(--sidebar-accent)",
-                    } : {}}
-                  >
-                    <Link to="/chett-ai" style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
-                      <Bot className="size-5" style={{ color: isChettActive ? "var(--secondary)" : undefined }} />
-                      <span className="font-medium text-foreground">Chett AI</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
