@@ -162,15 +162,10 @@ export const WebhookList = () => {
                         </SelectContent>
                     </Select>
                     <Link to={`/webhook/new?model=${selectedModel}`}>
-                        <button
-                            className="flex items-center gap-2 h-10 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
-                            style={{ backgroundColor: "var(--secondary)", color: "var(--secondary-foreground)" }}
-                            onMouseEnter={e => e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--secondary) 80%, black)"}
-                            onMouseLeave={e => e.currentTarget.style.backgroundColor = "var(--secondary)"}
-                        >
+                        <Button className="h-10">
                             <Plus className="h-4 w-4" />
                             Add Webhook
-                        </button>
+                        </Button>
                     </Link>
                 </div>
             </div>

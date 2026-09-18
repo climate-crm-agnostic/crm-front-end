@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import Swal from "sweetalert2";
 import { getUser, createUser, updateUser, resetUserPassword } from "@/services/userService";
@@ -106,7 +107,7 @@ export const UserDetail = () => {
                 <Button variant="ghost" size="sm" onClick={() => navigate("/users")}>
                     <ArrowLeft className="h-4 w-4 mr-1" /> Users
                 </Button>
-                <h1 className="text-2xl font-bold tracking-tight" style={{ color: "var(--secondary)" }}>
+                <h1 className="text-2xl font-semibold" style={{ color: "var(--secondary)" }}>
                     {isNew ? "New User" : `Edit — ${form.username}`}
                 </h1>
                 {!isNew && (
@@ -140,16 +141,18 @@ export const UserDetail = () => {
 
                 <div className="space-y-2">
                     <Label htmlFor="group">Role</Label>
-                    <select
-                        id="group"
-                        name="group"
-                        value={form.group}
-                        onChange={handleChange}
-                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs transition-colors outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+                    <Select
+                        value={form.group || "none"}
+                        onValueChange={(v) => handleChange({ target: { name: "group", value: v === "none" ? "" : v } })}
                     >
-                        <option value="">— No role —</option>
-                        {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
-                    </select>
+                        <SelectTrigger id="group" className="w-full">
+                            <SelectValue placeholder="— No role —" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="none">— No role —</SelectItem>
+                            {ROLES.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
                 </div>
 
                 {isNew && (

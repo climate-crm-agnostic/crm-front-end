@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import React, { useState, useEffect, useRef } from "react";
 import { LeadBoard } from "../components/leads/LeadBoard";
 import { LeadTable } from "../components/leads/LeadTable";
@@ -196,16 +197,10 @@ export const Lead = () => {
                     >
                         <Upload className="h-4 w-4" /> Import Excel
                     </button>
-                    <button
-                        onClick={() => navigate("/lead/new", { state: { pipelineId: selectedPipelineId } })}
-                        className="flex items-center gap-2 h-10 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer shrink-0"
-                        style={{ backgroundColor: "var(--secondary)", color: "var(--secondary-foreground)" }}
-                        onMouseEnter={e => e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--secondary) 80%, black)"}
-                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "var(--secondary)"}
-                    >
+                    <Button className="shrink-0 h-10" onClick={() => navigate("/lead/new", { state: { pipelineId: selectedPipelineId } })}>
                         <Plus className="h-4 w-4" />
                         New Opportunity
-                    </button>
+                    </Button>
                 </div>
             </div>
 
@@ -422,21 +417,16 @@ export const Lead = () => {
                             >
                                 {importResult ? 'Close' : 'Cancel'}
                             </button>
-                            <button
-                                onClick={handleImport}
-                                disabled={
+                            <Button onClick={handleImport} disabled={
                                     !importPipelineId ||
                                     !selectedFile ||
                                     importing ||
                                     !!importResult ||
                                     (!isNewClient && !importClientId) ||
                                     (isNewClient && !newClientName.trim())
-                                }
-                                className="h-9 px-5 rounded-lg text-sm font-semibold text-white transition-colors cursor-pointer disabled:opacity-50"
-                                style={{ backgroundColor: "var(--secondary)" }}
-                            >
+                                }>
                                 {importing ? 'Importing...' : 'Import'}
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>

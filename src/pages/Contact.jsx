@@ -350,14 +350,9 @@ export const Contact = () => {
                             >
                                 {importResult ? 'Close' : 'Cancel'}
                             </button>
-                            <button
-                                onClick={handleImport}
-                                disabled={!selectedClientId || !selectedFile || importing}
-                                className="h-9 px-5 rounded-lg text-sm font-semibold text-white transition-colors cursor-pointer disabled:opacity-50"
-                                style={{ backgroundColor: "var(--secondary)" }}
-                            >
+                            <Button onClick={handleImport} disabled={!selectedClientId || !selectedFile || importing}>
                                 {importing ? 'Importing...' : 'Import'}
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>

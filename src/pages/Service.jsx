@@ -266,16 +266,9 @@ export const Service = () => {
                         ))}
                     </SelectContent>
                 </Select>
-                <button
-                    onClick={handleSearch}
-                    disabled={!selectedClient || loading}
-                    className="flex items-center gap-2 h-9 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
-                    style={{ backgroundColor: "var(--secondary)", color: "var(--secondary-foreground)", opacity: (!selectedClient || loading) ? 0.5 : 1 }}
-                    onMouseEnter={e => (!selectedClient && !loading) && (e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--secondary) 80%, black)")}
-                    onMouseLeave={e => (e.currentTarget.style.backgroundColor = "var(--secondary)")}
-                >
+                <Button onClick={handleSearch} disabled={!selectedClient || loading}>
                     <Search className="h-4 w-4" /> Search
-                </button>
+                </Button>
                 <button
                     onClick={openImportModal}
                     className="flex items-center gap-2 h-9 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer bg-card"
@@ -285,15 +278,9 @@ export const Service = () => {
                 >
                     <Upload className="h-4 w-4" /> Import Excel
                 </button>
-                <button
-                    onClick={() => navigate("/service/new", { state: { clientId: selectedClient } })}
-                    className="flex items-center gap-2 h-9 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
-                    style={{ backgroundColor: "var(--secondary)", color: "var(--secondary-foreground)" }}
-                    onMouseEnter={e => e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--secondary) 80%, black)"}
-                    onMouseLeave={e => e.currentTarget.style.backgroundColor = "var(--secondary)"}
-                >
+                <Button onClick={() => navigate("/service/new", { state: { clientId: selectedClient } })}>
                     <Plus className="h-4 w-4" /> Add Service
-                </button>
+                </Button>
             </div>
 
             <div className="bg-card p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
@@ -445,14 +432,9 @@ export const Service = () => {
                             >
                                 {importResult ? 'Close' : 'Cancel'}
                             </button>
-                            <button
-                                onClick={handleImport}
-                                disabled={!importClientId || !selectedFile || importing}
-                                className="h-9 px-5 rounded-lg text-sm font-semibold text-white transition-colors cursor-pointer disabled:opacity-50"
-                                style={{ backgroundColor: "var(--secondary)" }}
-                            >
+                            <Button onClick={handleImport} disabled={!importClientId || !selectedFile || importing}>
                                 {importing ? 'Importing...' : 'Import'}
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>

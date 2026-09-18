@@ -10,6 +10,7 @@ import {
     DropdownMenuTrigger,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuSeparator,
 } from "../components/ui/dropdown-menu";
 import Swal from "sweetalert2";
 
@@ -200,16 +201,19 @@ export const Client = () => {
             </div>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <button className="h-8 w-8 flex items-center justify-center rounded-md cursor-pointer text-muted-foreground">
+                    <Button variant="terciary" size="icon" className="h-8 w-8 rounded-md">
                         <MoreHorizontal className="h-4 w-4" />
-                    </button>
+                    </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" side="bottom" sideOffset={4} className="w-48">
                     <DropdownMenuItem onClick={() => handleEdit(client)}>
-                        <SquarePen className="w-4 h-4" /> Edit
+                        <SquarePen className="w-6 h-6 text-codex-iconos-primary dark:text-codex-iconos-primary-variante1" />
+                        Edit
                     </DropdownMenuItem>
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem className="hover:text-destructive focus:text-destructive" onClick={() => handleDelete(client)}>
-                        <OctagonX className="w-4 h-4" /> Delete
+                        <OctagonX className="w-6 h-6 text-destructive focus:text-destructive" />
+                        Delete
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
@@ -375,14 +379,9 @@ export const Client = () => {
                             >
                                 {importResult ? 'Close' : 'Cancel'}
                             </button>
-                            <button
-                                onClick={handleImport}
-                                disabled={!selectedFile || importing}
-                                className="h-9 px-5 rounded-lg text-sm font-semibold text-white transition-colors cursor-pointer disabled:opacity-50"
-                                style={{ backgroundColor: "var(--secondary)" }}
-                            >
+                            <Button onClick={handleImport} disabled={!selectedFile || importing}>
                                 {importing ? 'Importing...' : 'Import'}
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>

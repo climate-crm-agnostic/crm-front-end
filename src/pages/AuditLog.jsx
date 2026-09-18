@@ -3,6 +3,8 @@ import { ClipboardList, ChevronDown, ChevronUp } from "lucide-react";
 import Swal from "sweetalert2";
 import { getAuditLogs } from "@/services/auditLogService";
 import { DateInput } from "@/components/ui/date-input";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PaginationFooter, PageSizeSelect } from "@/components/PaginationControls";
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
@@ -134,17 +136,20 @@ export const AuditLog = () => {
             <form onSubmit={handleFilter} className="flex flex-wrap gap-3 items-end">
                 <div className="flex flex-col gap-1">
                     <label className="text-xs font-medium" style={{ color: "var(--muted-foreground)" }}>Model</label>
-                    <select
-                        value={model}
-                        onChange={e => { setModel(e.target.value); setPage(1); }}
-                        className="h-9 rounded-md border px-2.5 text-sm bg-card focus:outline-none"
-                        style={{ borderColor: "var(--border)", color: "var(--foreground)", minWidth: 160 }}
+                    <Select
+                        value={model || "all"}
+                        onValueChange={(v) => { setModel(v === "all" ? "" : v); setPage(1); }}
                     >
-                        <option value="">All models</option>
-                        {availableModels.map(m => (
-                            <option key={m} value={m}>{MODEL_LABELS[m] || m}</option>
-                        ))}
-                    </select>
+                        <SelectTrigger className="h-9" style={{ minWidth: 160 }}>
+                            <SelectValue placeholder="All models" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All models</SelectItem>
+                            {availableModels.map(m => (
+                                <SelectItem key={m} value={m}>{MODEL_LABELS[m] || m}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                 </div>
                 <div className="flex flex-col gap-1" style={{ width: 160 }}>
                     <label className="text-xs font-medium" style={{ color: "var(--muted-foreground)" }}>From</label>
@@ -160,15 +165,7 @@ export const AuditLog = () => {
                         onChange={e => { setDateTo(e.target.value); setPage(1); }}
                     />
                 </div>
-                <button
-                    type="submit"
-                    className="h-9 px-4 rounded-md text-sm font-semibold transition-colors"
-                    style={{ backgroundColor: "var(--secondary)", color: "var(--secondary-foreground)" }}
-                    onMouseEnter={e => e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--secondary) 80%, black)"}
-                    onMouseLeave={e => e.currentTarget.style.backgroundColor = "var(--secondary)"}
-                >
-                    Filter
-                </button>
+                <Button type="submit">Filter</Button>
                 {(model || dateFrom || dateTo) && (
                     <button
                         type="button"
