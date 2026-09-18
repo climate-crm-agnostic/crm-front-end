@@ -208,7 +208,7 @@ export const ContactModal = ({ isOpen, onClose, onContactSaved, contactToEdit = 
         >
             <div className="space-y-4 max-h-[80vh] overflow-y-auto p-1">
                 {error && (
-                    <div className="p-3 text-sm text-red-500 bg-red-50 rounded-md">
+                    <div className="p-3 text-sm text-red-500 bg-red-50 dark:bg-red-950/30 rounded-md">
                         {error}
                     </div>
                 )}
