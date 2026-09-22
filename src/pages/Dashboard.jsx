@@ -16,17 +16,17 @@ const fetchCount = async (endpoint) => {
 
 // Brand Manual accent configs per card
 const CARD_ACCENTS = {
-    Leads:    { bar: "#F29B6B", badge: { bg: "#FFDCC8", text: "#2E2A26" }, link: "#F29B6B", icon: { bg: "#F29B6B" } },
-    Clients:  { bar: "#5E6A43", badge: { bg: "#e8edde", text: "#5E6A43" }, link: "#5E6A43", icon: { bg: "#5E6A43" } },
-    Invoices: { bar: "#B8C76A", badge: { bg: "#f0f4dc", text: "#5E6A43" }, link: "#8f9a3e", icon: { bg: "#B8C76A" } },
-    Assets:   { bar: "#D8D2C4", badge: { bg: "#F2EBDD", text: "#6b6560" }, link: "#6b6560", icon: { bg: "#6b6560" } },
+    Leads:    { bar: "var(--primary)", badge: { bg: "var(--muted)", text: "var(--foreground)" }, link: "var(--primary-text)", icon: { bg: "var(--primary)", fg: "var(--primary-foreground)" } },
+    Clients:  { bar: "var(--secondary-text)", badge: { bg: "var(--sidebar-accent)", text: "var(--secondary-text)" }, link: "var(--secondary-text)", icon: { bg: "var(--secondary)", fg: "var(--secondary-foreground)" } },
+    Invoices: { bar: "var(--accent)", badge: { bg: "var(--sidebar-accent)", text: "var(--secondary-text)" }, link: "var(--secondary-text)", icon: { bg: "var(--accent)", fg: "var(--accent-foreground)" } },
+    Assets:   { bar: "var(--border)", badge: { bg: "var(--card)", text: "var(--muted-foreground)" }, link: "var(--muted-foreground)", icon: { bg: "var(--muted-foreground)", fg: "var(--background)" } },
 };
 
 const TASK_COLORS = {
-    lead:    { dot: "#5E6A43", bg: "#e8edde", text: "#5E6A43", label: "Lead" },
-    client:  { dot: "#3B82F6", bg: "#dbeafe", text: "#1d4ed8", label: "Client" },
-    service: { dot: "#7C3AED", bg: "#ede9fe", text: "#5b21b6", label: "Service" },
-    task:    { dot: "#c0622a", bg: "#FFDCC8", text: "#c0622a", label: "Task" },
+    lead:    { dot: "var(--secondary)", fg: "var(--secondary-foreground)", bg: "var(--sidebar-accent)", text: "var(--secondary-text)", label: "Lead" },
+    client:  { dot: "#3B82F6", fg: "#fff", bg: "#dbeafe", text: "#1d4ed8", label: "Client" },
+    service: { dot: "#7C3AED", fg: "#fff", bg: "#ede9fe", text: "#5b21b6", label: "Service" },
+    task:    { dot: "#c0622a", fg: "#fff", bg: "var(--muted)", text: "#c0622a", label: "Task" },
 };
 
 const ENTITY_PATHS = { lead: "/lead", client: "/client", service: "/service", task: "/task" };
@@ -45,8 +45,8 @@ const TaskRow = ({ task, navigate }) => {
     return (
         <div
             onClick={() => navigate(path)}
-            className="px-4 py-3 flex items-start gap-3 cursor-pointer hover:bg-gray-50 transition-colors"
-            style={{ backgroundColor: "#FAFAF8" }}
+            className="px-4 py-3 flex items-start gap-3 cursor-pointer hover:bg-muted transition-colors"
+            style={{ backgroundColor: "var(--card)" }}
         >
             <span
                 className="mt-0.5 shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full"
@@ -55,7 +55,7 @@ const TaskRow = ({ task, navigate }) => {
                 {colors.label}
             </span>
             <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate" style={{ color: "#2E2A26" }}>{task.task}</p>
+                <p className="text-sm font-medium truncate" style={{ color: "var(--foreground)" }}>{task.task}</p>
                 <p className="text-xs mt-0.5" style={{ color: "#9b948e" }}>{task.entity_name}</p>
             </div>
             <ArrowUpRight className="h-3.5 w-3.5 shrink-0 mt-0.5" style={{ color: "#9b948e" }} />
@@ -82,7 +82,7 @@ const TaskListModal = ({ isOpen, entityType, tasks, onClose, navigate }) => {
                     No pending tasks assigned to you.
                 </p>
             ) : (
-                <div className="rounded-lg overflow-hidden divide-y divide-gray-100" style={{ border: "1px solid #D8D2C4" }}>
+                <div className="rounded-lg overflow-hidden divide-y divide-border" style={{ border: "1px solid var(--border)" }}>
                     {tasks.map(task => (
                         <TaskRow key={task.id} task={task} navigate={goToTask} />
                     ))}
@@ -92,7 +92,7 @@ const TaskListModal = ({ isOpen, entityType, tasks, onClose, navigate }) => {
                 <button
                     onClick={() => goToTask(ENTITY_PATHS[entityType])}
                     className="mt-4 flex items-center gap-1.5 text-xs font-semibold hover:gap-2.5 transition-all cursor-pointer"
-                    style={{ color: colors?.text ?? "#5E6A43" }}
+                    style={{ color: colors?.text ?? "var(--secondary-text)" }}
                 >
                     <span>View all {colors?.label}s</span>
                     <ArrowUpRight className="h-3.5 w-3.5" />
@@ -109,13 +109,13 @@ const StatCard = ({ title, count, icon: Icon, href, loading, navigate }) => {
         <div
             className="group relative overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-0.5"
             style={{
-                backgroundColor: "#F2EBDD",
-                border: "1px solid #D8D2C4",
+                backgroundColor: "var(--card)",
+                border: "1px solid var(--border)",
                 borderRadius: "8px",
-                boxShadow: "0 1px 3px rgba(46,42,38,0.06)",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
             }}
-            onMouseEnter={e => e.currentTarget.style.boxShadow = "0 8px 24px rgba(46,42,38,0.12)"}
-            onMouseLeave={e => e.currentTarget.style.boxShadow = "0 1px 3px rgba(46,42,38,0.06)"}
+            onMouseEnter={e => e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.12)"}
+            onMouseLeave={e => e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.06)"}
             onClick={() => navigate(href)}
         >
             {/* Top accent bar */}
@@ -128,11 +128,11 @@ const StatCard = ({ title, count, icon: Icon, href, loading, navigate }) => {
                         className="flex h-10 w-10 items-center justify-center rounded-lg"
                         style={{ backgroundColor: accent.icon.bg }}
                     >
-                        <Icon className="h-5 w-5" style={{ color: "#FBF7EF" }} />
+                        <Icon className="h-5 w-5" style={{ color: accent.icon.fg }} />
                     </div>
                     <span
                         className="text-xs font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full"
-                        style={{ backgroundColor: accent.badge.bg, color: accent.badge.text, border: `1px solid ${accent.bar}30` }}
+                        style={{ backgroundColor: accent.badge.bg, color: accent.badge.text, border: `1px solid color-mix(in srgb, ${accent.bar} 19%, transparent)` }}
                     >
                         Active
                     </span>
@@ -142,16 +142,16 @@ const StatCard = ({ title, count, icon: Icon, href, loading, navigate }) => {
                 <div>
                     <p
                         className="text-xs font-semibold uppercase tracking-widest mb-1.5"
-                        style={{ color: "#6b6560", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+                        style={{ color: "var(--muted-foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
                     >
                         {title}
                     </p>
                     {loading ? (
-                        <div className="h-10 w-24 rounded animate-pulse" style={{ backgroundColor: "#D8D2C4" }} />
+                        <div className="h-10 w-24 rounded animate-pulse" style={{ backgroundColor: "var(--border)" }} />
                     ) : (
                         <span
                             className="text-4xl font-bold"
-                            style={{ color: "#2E2A26", fontFamily: '"Source Sans 3", Arial, sans-serif', letterSpacing: "-0.02em" }}
+                            style={{ color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif', letterSpacing: "-0.02em" }}
                         >
                             {count ?? "—"}
                         </span>
@@ -163,7 +163,7 @@ const StatCard = ({ title, count, icon: Icon, href, loading, navigate }) => {
                     className="flex items-center gap-1.5 text-xs font-semibold pt-3 group-hover:gap-2.5 transition-all"
                     style={{
                         color: accent.link,
-                        borderTop: "1px solid #D8D2C4",
+                        borderTop: "1px solid var(--border)",
                         fontFamily: '"Source Sans 3", Arial, sans-serif',
                     }}
                 >
@@ -178,16 +178,16 @@ const StatCard = ({ title, count, icon: Icon, href, loading, navigate }) => {
 const TaskKpiCard = ({ title, count, color, entityKey, onOpenModal, loading }) => (
     <div
         className="group relative overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-0.5"
-        style={{ backgroundColor: "#F2EBDD", border: "1px solid #D8D2C4", borderRadius: "8px", boxShadow: "0 1px 3px rgba(46,42,38,0.06)" }}
-        onMouseEnter={e => e.currentTarget.style.boxShadow = "0 8px 24px rgba(46,42,38,0.12)"}
-        onMouseLeave={e => e.currentTarget.style.boxShadow = "0 1px 3px rgba(46,42,38,0.06)"}
+        style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)", borderRadius: "8px", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}
+        onMouseEnter={e => e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.12)"}
+        onMouseLeave={e => e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.06)"}
         onClick={() => onOpenModal(entityKey)}
     >
         <div className="absolute top-0 left-0 right-0 h-1" style={{ backgroundColor: color.dot }} />
         <div className="relative p-5 flex flex-col gap-4 pt-6">
             <div className="flex items-start justify-between">
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg" style={{ backgroundColor: color.dot }}>
-                    <ClipboardList className="h-4 w-4" style={{ color: "#FBF7EF" }} />
+                    <ClipboardList className="h-4 w-4" style={{ color: color.fg }} />
                 </div>
                 <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
                     style={{ backgroundColor: color.bg, color: color.text }}>
@@ -195,13 +195,13 @@ const TaskKpiCard = ({ title, count, color, entityKey, onOpenModal, loading }) =
                 </span>
             </div>
             <div>
-                <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: "#6b6560", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+                <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: "var(--muted-foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
                     {title}
                 </p>
                 {loading ? (
-                    <div className="h-9 w-16 rounded animate-pulse" style={{ backgroundColor: "#D8D2C4" }} />
+                    <div className="h-9 w-16 rounded animate-pulse" style={{ backgroundColor: "var(--border)" }} />
                 ) : (
-                    <span className="text-3xl font-bold" style={{ color: "#2E2A26", fontFamily: '"Source Sans 3", Arial, sans-serif', letterSpacing: "-0.02em" }}>
+                    <span className="text-3xl font-bold" style={{ color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif', letterSpacing: "-0.02em" }}>
                         {count}
                     </span>
                 )}
@@ -256,19 +256,19 @@ const TaskCalendar = ({ tasks, navigate }) => {
     const selectedTasks = selectedDay ? tasks.filter(t => normalizeDate(t.date) === selectedDay) : [];
 
     return (
-        <div className="rounded-xl p-5" style={{ backgroundColor: "#F2EBDD", border: "1px solid #D8D2C4" }}>
+        <div className="rounded-xl p-5" style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)" }}>
 
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-bold" style={{ color: "#2E2A26", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+                <h3 className="text-sm font-bold" style={{ color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
                     {MONTHS[current.month]} {current.year}
                 </h3>
                 <div className="flex gap-1">
-                    <button onClick={prevMonth} className="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-[#D8D2C4] transition-colors cursor-pointer">
-                        <ChevronLeft className="h-4 w-4" style={{ color: "#6b6560" }} />
+                    <button onClick={prevMonth} className="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-[var(--border)] transition-colors cursor-pointer">
+                        <ChevronLeft className="h-4 w-4" style={{ color: "var(--muted-foreground)" }} />
                     </button>
-                    <button onClick={nextMonth} className="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-[#D8D2C4] transition-colors cursor-pointer">
-                        <ChevronRight className="h-4 w-4" style={{ color: "#6b6560" }} />
+                    <button onClick={nextMonth} className="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-[var(--border)] transition-colors cursor-pointer">
+                        <ChevronRight className="h-4 w-4" style={{ color: "var(--muted-foreground)" }} />
                     </button>
                 </div>
             </div>
@@ -283,10 +283,10 @@ const TaskCalendar = ({ tasks, navigate }) => {
             </div>
 
             {/* Calendar grid */}
-            <div className="grid grid-cols-7 gap-px" style={{ backgroundColor: "#D8D2C4", borderRadius: "8px", overflow: "hidden" }}>
+            <div className="grid grid-cols-7 gap-px" style={{ backgroundColor: "var(--border)", borderRadius: "8px", overflow: "hidden" }}>
                 {cells.map((cell, i) => {
                     if (!cell) return (
-                        <div key={i} className="py-2 px-1 min-h-[52px]" style={{ backgroundColor: "#F2EBDD", opacity: 0.4 }} />
+                        <div key={i} className="py-2 px-1 min-h-[52px]" style={{ backgroundColor: "var(--card)", opacity: 0.4 }} />
                     );
 
                     const isToday = cell.dateStr === todayStr;
@@ -301,17 +301,17 @@ const TaskCalendar = ({ tasks, navigate }) => {
                             onClick={() => hasTasks && setSelectedDay(isSelected ? null : cell.dateStr)}
                             className="py-2 px-1 min-h-[52px] flex flex-col items-center gap-1 transition-colors"
                             style={{
-                                backgroundColor: isSelected ? "#e8edde" : "#F2EBDD",
+                                backgroundColor: isSelected ? "var(--sidebar-accent)" : "var(--card)",
                                 cursor: hasTasks ? "pointer" : "default",
                             }}
-                            onMouseEnter={e => hasTasks && !isSelected && (e.currentTarget.style.backgroundColor = "#EDE8DC")}
-                            onMouseLeave={e => hasTasks && !isSelected && (e.currentTarget.style.backgroundColor = "#F2EBDD")}
+                            onMouseEnter={e => hasTasks && !isSelected && (e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--foreground) 6%, transparent)")}
+                            onMouseLeave={e => hasTasks && !isSelected && (e.currentTarget.style.backgroundColor = "var(--card)")}
                         >
                             <span
                                 className="text-xs font-semibold h-6 w-6 flex items-center justify-center rounded-full"
                                 style={{
-                                    color: isToday ? "#FBF7EF" : "#2E2A26",
-                                    backgroundColor: isToday ? "#5E6A43" : "transparent",
+                                    color: isToday ? "var(--background)" : "var(--foreground)",
+                                    backgroundColor: isToday ? "var(--secondary)" : "transparent",
                                     fontFamily: '"Source Sans 3", Arial, sans-serif',
                                 }}
                             >
@@ -336,14 +336,14 @@ const TaskCalendar = ({ tasks, navigate }) => {
 
             {/* Selected day task panel */}
             {selectedDay && selectedTasks.length > 0 && (
-                <div className="mt-4 rounded-lg overflow-hidden" style={{ border: "1px solid #D8D2C4" }}>
-                    <div className="px-4 py-2.5 flex items-center justify-between" style={{ backgroundColor: "#EDE8DC", borderBottom: "1px solid #D8D2C4" }}>
-                        <span className="text-xs font-semibold" style={{ color: "#2E2A26" }}>
+                <div className="mt-4 rounded-lg overflow-hidden" style={{ border: "1px solid var(--border)" }}>
+                    <div className="px-4 py-2.5 flex items-center justify-between" style={{ backgroundColor: "var(--muted)", borderBottom: "1px solid var(--border)" }}>
+                        <span className="text-xs font-semibold" style={{ color: "var(--foreground)" }}>
                             Tasks for {new Date(selectedDay + 'T00:00:00').toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
                         </span>
-                        <button onClick={() => setSelectedDay(null)} className="text-xs text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
+                        <button onClick={() => setSelectedDay(null)} className="text-xs text-muted-foreground hover:text-gray-600 cursor-pointer">✕</button>
                     </div>
-                    <div className="divide-y divide-gray-100">
+                    <div className="divide-y divide-border">
                         {selectedTasks.map(task => (
                             <TaskRow key={task.id} task={task} navigate={navigate} />
                         ))}
@@ -366,23 +366,25 @@ const TaskCalendar = ({ tasks, navigate }) => {
 
 // ─── Pipeline report ────────────────────────────────────────────────────────
 
-const STAGE_PALETTE = ["#5E6A43", "#F29B6B", "#B8C76A", "#6b8560", "#9b948e", "#D8D2C4", "#a0856a"];
+// --accent equals --primary in the current palette, so the old citron hex
+// fills that slot instead — otherwise two stages in the cycle would match.
+const STAGE_PALETTE = ["var(--secondary-text)", "var(--primary)", "#B8C76A", "#6b8560", "#9b948e", "var(--border)", "#a0856a"];
 
 const PipelineReportCard = ({ pipeline }) => {
     const maxCount = Math.max(...pipeline.orderedStages.map(s => pipeline.byStage[s] || 0), 1);
     return (
-        <div style={{ backgroundColor: "#F2EBDD", border: "1px solid #D8D2C4", borderRadius: 8, overflow: "hidden", boxShadow: "0 1px 3px rgba(46,42,38,0.06)" }}>
-            <div style={{ borderBottom: "1px solid #D8D2C4", padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <p style={{ fontSize: 14, fontWeight: 700, color: "#2E2A26", fontFamily: '"Source Sans 3", Arial, sans-serif', margin: 0 }}>
+        <div style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)", borderRadius: 8, overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+            <div style={{ borderBottom: "1px solid var(--border)", padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <p style={{ fontSize: 14, fontWeight: 700, color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif', margin: 0 }}>
                     {pipeline.name}
                 </p>
-                <span style={{ fontSize: 11, fontWeight: 600, color: "#5E6A43", backgroundColor: "#e8edde", border: "1px solid #B8C76A", borderRadius: 99, padding: "2px 10px" }}>
+                <span style={{ fontSize: 11, fontWeight: 600, color: "var(--secondary-text)", backgroundColor: "var(--sidebar-accent)", border: "1px solid var(--primary-text)", borderRadius: 99, padding: "2px 10px" }}>
                     {pipeline.total} lead{pipeline.total !== 1 ? "s" : ""}
                 </span>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
                 {/* By stage */}
-                <div style={{ padding: "16px 20px", borderRight: "1px solid #D8D2C4" }}>
+                <div style={{ padding: "16px 20px", borderRight: "1px solid var(--border)" }}>
                     <p style={{ fontSize: 10, fontWeight: 700, color: "#9b948e", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12, fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
                         By Stage
                     </p>
@@ -394,10 +396,10 @@ const PipelineReportCard = ({ pipeline }) => {
                             return (
                                 <div key={stage}>
                                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                                        <span style={{ fontSize: 12, color: "#2E2A26", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>{stage}</span>
-                                        <span style={{ fontSize: 12, fontWeight: 700, color: "#2E2A26", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>{count}</span>
+                                        <span style={{ fontSize: 12, color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>{stage}</span>
+                                        <span style={{ fontSize: 12, fontWeight: 700, color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>{count}</span>
                                     </div>
-                                    <div style={{ height: 7, backgroundColor: "#E8E3DA", borderRadius: 4 }}>
+                                    <div style={{ height: 7, backgroundColor: "var(--border)", borderRadius: 4 }}>
                                         <div style={{ height: 7, width: `${pct}%`, backgroundColor: color, borderRadius: 4, transition: "width 0.5s ease" }} />
                                     </div>
                                 </div>
@@ -413,17 +415,17 @@ const PipelineReportCard = ({ pipeline }) => {
                     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                         {pipeline.orderedUsers.map(([userName, data]) => (
                             <div key={userName} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-                                <div style={{ width: 26, height: 26, borderRadius: "50%", backgroundColor: "#5E6A43", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
-                                    <span style={{ fontSize: 11, fontWeight: 700, color: "#FBF7EF" }}>
+                                <div style={{ width: 26, height: 26, borderRadius: "50%", backgroundColor: "var(--secondary)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
+                                    <span style={{ fontSize: 11, fontWeight: 700, color: "var(--secondary-foreground)" }}>
                                         {userName.charAt(0).toUpperCase()}
                                     </span>
                                 </div>
                                 <div style={{ flex: 1, minWidth: 0 }}>
                                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                                        <span style={{ fontSize: 12, color: "#2E2A26", fontFamily: '"Source Sans 3", Arial, sans-serif', overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                        <span style={{ fontSize: 12, color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif', overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                             {userName}
                                         </span>
-                                        <span style={{ fontSize: 12, fontWeight: 700, color: "#2E2A26", fontFamily: '"Source Sans 3", Arial, sans-serif', marginLeft: 8, flexShrink: 0 }}>
+                                        <span style={{ fontSize: 12, fontWeight: 700, color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif', marginLeft: 8, flexShrink: 0 }}>
                                             {data.total}
                                         </span>
                                     </div>
@@ -596,14 +598,14 @@ export const Dashboard = () => {
     const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
 
     return (
-        <div className="h-full flex flex-col w-full transition-colors duration-300" style={{ backgroundColor: "#FBF7EF" }}>
+        <div className="h-full flex flex-col w-full transition-colors duration-300" style={{ backgroundColor: "var(--background)" }}>
 
             {/* Page header */}
             <header
                 className="sticky top-0 z-30 w-full px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                 style={{
-                    backgroundColor: "rgba(251,247,239,0.85)",
-                    borderBottom: "1px solid #D8D2C4",
+                    backgroundColor: "color-mix(in srgb, var(--background) 85%, transparent)",
+                    borderBottom: "1px solid var(--border)",
                     backdropFilter: "blur(12px)",
                     WebkitBackdropFilter: "blur(12px)",
                 }}
@@ -612,27 +614,27 @@ export const Dashboard = () => {
                     <div className="flex items-center gap-2.5">
                         <h1
                             className="text-2xl font-semibold"
-                            style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', fontStyle: "italic", color: "#2E2A26", letterSpacing: "-0.01em" }}
+                            style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', fontStyle: "italic", color: "var(--foreground)", letterSpacing: "-0.01em" }}
                         >
                             Dashboard
                         </h1>
                         <span
                             className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-widest rounded-full px-2 py-0.5"
-                            style={{ backgroundColor: "#e8edde", border: "1px solid #B8C76A", color: "#5E6A43" }}
+                            style={{ backgroundColor: "var(--sidebar-accent)", border: "1px solid var(--primary-text)", color: "var(--secondary-text)" }}
                         >
-                            <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ backgroundColor: "#B8C76A" }} />
+                            <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ backgroundColor: "var(--accent)" }} />
                             Live
                         </span>
                     </div>
-                    <p className="text-sm mt-0.5" style={{ color: "#6b6560", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+                    <p className="text-sm mt-0.5" style={{ color: "var(--muted-foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
                         {greeting},{" "}
-                        <span className="font-semibold" style={{ color: "#2E2A26" }}>{user?.username || "User"}</span>
+                        <span className="font-semibold" style={{ color: "var(--foreground)" }}>{user?.username || "User"}</span>
                         {user?.groups?.[0] && <span style={{ color: "#9b948e" }}> · {user.groups[0]}</span>}
                     </p>
                 </div>
                 <p
                     className="text-xs hidden sm:block"
-                    style={{ color: "#6b6560", fontFamily: '"Source Sans 3", Arial, sans-serif', letterSpacing: "0.04em" }}
+                    style={{ color: "var(--muted-foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif', letterSpacing: "0.04em" }}
                 >
                     {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
                 </p>
@@ -668,7 +670,7 @@ export const Dashboard = () => {
                                     value={reportClientFilter}
                                     onChange={e => setReportClientFilter(e.target.value)}
                                     className="appearance-none pl-3 pr-7 py-1.5 rounded-full text-xs font-semibold focus:outline-none cursor-pointer"
-                                    style={{ border: "1px solid #D8D2C4", backgroundColor: "#F2EBDD", color: "#2E2A26" }}
+                                    style={{ border: "1px solid var(--border)", backgroundColor: "var(--card)", color: "var(--foreground)" }}
                                 >
                                     <option value="">All Clients</option>
                                     {reportClients.map(c => (
@@ -680,7 +682,7 @@ export const Dashboard = () => {
                         {reportLoading ? (
                             <div className="space-y-3">
                                 {[1, 2].map(i => (
-                                    <div key={i} className="h-40 rounded-xl animate-pulse" style={{ backgroundColor: "#E8E3DA" }} />
+                                    <div key={i} className="h-40 rounded-xl animate-pulse" style={{ backgroundColor: "var(--border)" }} />
                                 ))}
                             </div>
                         ) : pipelineReport.length === 0 ? (
@@ -715,7 +717,7 @@ export const Dashboard = () => {
                         Task Calendar
                     </p>
                     {tasksLoading ? (
-                        <div className="h-64 rounded-xl animate-pulse" style={{ backgroundColor: "#E8E3DA" }} />
+                        <div className="h-64 rounded-xl animate-pulse" style={{ backgroundColor: "var(--border)" }} />
                     ) : (
                         <TaskCalendar tasks={taskData.tasks} navigate={navigate} />
                     )}

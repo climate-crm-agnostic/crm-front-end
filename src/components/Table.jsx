@@ -99,7 +99,7 @@ export const Table = ({
           {lista.map((item, i) => (
             <span
               key={i}
-              className="px-2 py-0.5 bg-codex-fondo-primary-variante1 dark:bg-codex-fondo-primary-variante4 text-codex-cards-primary dark:text-codex-texto-primary-variante1 rounded-full text-xs border border-primary/20"
+              className="px-2 py-0.5 bg-codex-fondo-primary-variante1 dark:bg-codex-fondo-primary-variante4 text-codex-cards-primary dark:text-codex-texto-primary-variante1 rounded-full text-xs border border-primary-text/20"
             >
               {item}
             </span>
@@ -112,10 +112,10 @@ export const Table = ({
       return (
         <div className="flex items-center justify-center gap-2">
           <div
-            className="w-5 h-5 rounded-full border border-gray-300 shadow-sm"
+            className="w-5 h-5 rounded-full border border-border shadow-sm"
             style={{ backgroundColor: val }}
           ></div>
-          <span className="text-xs text-gray-500">{val}</span>
+          <span className="text-xs text-muted-foreground">{val}</span>
         </div>
       );
     }
@@ -234,16 +234,16 @@ export const Table = ({
                   maxWidth: "320px",
                   paddingLeft: "12px",
                   paddingRight: "36px",
-                  backgroundColor: "#fff",
-                  border: "1px solid #D8D2C4",
+                  backgroundColor: "var(--background)",
+                  border: "1px solid var(--border)",
                   borderRadius: "6px",
-                  color: "#2E2A26",
+                  color: "var(--foreground)",
                   fontSize: "14px",
                   fontFamily: '"Source Sans 3", Arial, sans-serif',
                   outline: "none",
                 }}
-                onFocus={e => e.target.style.borderColor = "#5E6A43"}
-                onBlur={e => e.target.style.borderColor = "#D8D2C4"}
+                onFocus={e => e.target.style.borderColor = "var(--secondary-text)"}
+                onBlur={e => e.target.style.borderColor = "var(--border)"}
               />
               {searchTerm ? (
                 <button
@@ -261,7 +261,7 @@ export const Table = ({
 
         {/* Select de shadcn */}
         <div className="flex items-center gap-2 sm:justify-end">
-          <span className="text-sm" style={{ color: "#6b6560", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>Rows per page</span>
+          <span className="text-sm" style={{ color: "var(--muted-foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>Rows per page</span>
           <Select
             value={String(pageSize)}
             onValueChange={(v) => {
@@ -271,7 +271,7 @@ export const Table = ({
           >
             <SelectTrigger
               className="w-[88px] h-9"
-              style={{ backgroundColor: "#fff", border: "1px solid #D8D2C4", color: "#2E2A26", fontFamily: '"Source Sans 3", Arial, sans-serif', fontSize: "14px" }}
+              style={{ backgroundColor: "var(--background)", border: "1px solid var(--border)", color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif', fontSize: "14px" }}
             >
               <SelectValue placeholder={pageSize} />
             </SelectTrigger>
@@ -289,12 +289,12 @@ export const Table = ({
       {/* Tabla */}
       <div
         className="flex-1 overflow-auto mt-4 relative"
-        style={{ borderRadius: "8px", border: "1px solid #D8D2C4", backgroundColor: "#FBF7EF" }}
+        style={{ borderRadius: "8px", border: "1px solid var(--border)", backgroundColor: "var(--background)" }}
       >
         <div className="min-w-full inline-block align-middle">
           <table className="w-full text-sm">
             <thead>
-              <tr style={{ backgroundColor: "#5E6A43" }}>
+              <tr style={{ backgroundColor: "var(--secondary)" }}>
                 {visibleCols.map((col) => {
                   const canSort = col.key !== "_actions";
                   const isSorted = sortKey === col.key ? sortDir : null;
@@ -303,8 +303,8 @@ export const Table = ({
                       key={col.key}
                       style={{
                         ...(col.width ? { width: col.width } : {}),
-                        backgroundColor: "#5E6A43",
-                        color: "#FBF7EF",
+                        backgroundColor: "var(--secondary)",
+                        color: "var(--secondary-foreground)",
                         position: "sticky",
                         top: 0,
                         zIndex: 10,
@@ -328,14 +328,14 @@ export const Table = ({
                 })}
               </tr>
             </thead>
-            <tbody style={{ color: "#2E2A26" }}>
+            <tbody style={{ color: "var(--foreground)" }}>
               {currentData.length ? (
                 currentData.map((row, idx) => (
                   <tr
                     key={row.id_rol ?? row.id ?? idx}
-                    style={{ borderBottom: "1px solid #D8D2C4" }}
+                    style={{ borderBottom: "1px solid var(--border)" }}
                     className="transition-colors"
-                    onMouseEnter={e => e.currentTarget.style.backgroundColor = "#F2EBDD"}
+                    onMouseEnter={e => e.currentTarget.style.backgroundColor = "var(--card)"}
                     onMouseLeave={e => e.currentTarget.style.backgroundColor = ""}
                   >
                     {visibleCols.map((col) => (
@@ -371,11 +371,11 @@ export const Table = ({
       </div>
 
       {/* Paginación */}
-      <div className="mt-auto px-4 py-2 text-xs" style={{ borderTop: "1px solid #D8D2C4" }}>
+      <div className="mt-auto px-4 py-2 text-xs" style={{ borderTop: "1px solid var(--border)" }}>
         <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
-          <div className="text-center sm:text-left" style={{ color: "#6b6560", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
-            <span className="font-semibold" style={{ color: "#2E2A26" }}>{startRecord}</span> -{" "}
-            <span className="font-semibold" style={{ color: "#2E2A26" }}>{endRecord}</span>{" "}
+          <div className="text-center sm:text-left" style={{ color: "var(--muted-foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+            <span className="font-semibold" style={{ color: "var(--foreground)" }}>{startRecord}</span> -{" "}
+            <span className="font-semibold" style={{ color: "var(--foreground)" }}>{endRecord}</span>{" "}
             (Page {currentPage} of {totalPages})
           </div>
           <div className="flex items-center justify-center gap-1 overflow-x-auto max-w-full">

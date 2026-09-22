@@ -36,7 +36,7 @@ function SelectTrigger({
         "flex w-fit items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className
       )}
-      style={{ backgroundColor: "#fff", borderColor: "#D8D2C4", color: "#2E2A26", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+      style={{ backgroundColor: "var(--background)", borderColor: "var(--border)", color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
       {...props}>
       {children}
       <SelectPrimitive.Icon asChild>
@@ -98,7 +98,7 @@ function SelectContent({
           className
         )}
         position={position}
-        style={{ backgroundColor: "#fff", borderColor: "#D8D2C4", color: "#2E2A26", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+        style={{ backgroundColor: "var(--background)", borderColor: "var(--border)", color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
         {...props}>
         {showSearch && (
           // Radix owns the keyboard inside Content for its own type-to-jump, so
@@ -109,7 +109,7 @@ function SelectContent({
           // the honest trade.
           <div
             className="flex items-center gap-2 border-b px-3 py-2"
-            style={{ borderColor: "#D8D2C4" }}
+            style={{ borderColor: "var(--border)" }}
             onKeyDown={(event) => event.stopPropagation()}
           >
             <Search className="h-3.5 w-3.5 shrink-0 opacity-50" />
@@ -159,7 +159,7 @@ function SelectItem({
       data-slot="select-item"
       className={cn(
         `relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2
-        hover:bg-[#F2EBDD] focus:bg-[#F2EBDD] focus:text-[#2E2A26]
+        hover:bg-[var(--card)] focus:bg-[var(--card)] focus:text-[var(--foreground)]
         `,
         className
       )}

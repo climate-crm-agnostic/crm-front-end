@@ -144,7 +144,7 @@ export const TeamDetail = () => {
 
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 max-w-3xl mx-auto w-full">
                 {error && (
-                    <div className="p-4 text-sm text-red-500 bg-red-50 rounded-md border border-red-200">
+                    <div className="p-4 text-sm text-red-500 bg-red-50 dark:bg-red-500/15 rounded-md border border-red-200 dark:border-red-500/30">
                         {error}
                     </div>
                 )}
@@ -188,7 +188,7 @@ export const TeamDetail = () => {
                                         <Button
                                             variant="ghost" size="sm"
                                             onClick={() => handleRemoveMember(m.id)}
-                                            className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                                            className="h-6 w-6 p-0 text-red-500 hover:text-red-700 dark:hover:text-red-300"
                                         >
                                             &times;
                                         </Button>

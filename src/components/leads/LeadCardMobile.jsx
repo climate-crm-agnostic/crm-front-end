@@ -46,14 +46,14 @@ export const LeadCardMobile = ({ lead, stages = [], salesUsers = [], clientsById
             onClick={() => onClick?.(lead)}
             className="cursor-pointer active:scale-[0.98] transition-transform rounded-xl p-3.5"
             style={{
-                backgroundColor: "#FBF7EF",
-                border: "1px solid #D8D2C4",
+                backgroundColor: "var(--background)",
+                border: "1px solid var(--border)",
                 fontFamily: '"Source Sans 3", Arial, sans-serif',
             }}
         >
             {/* Lead name */}
             <div className="flex items-start justify-between gap-2 mb-2.5">
-                <p className="text-sm font-bold leading-tight" style={{ color: "#2E2A26" }}>
+                <p className="text-sm font-bold leading-tight" style={{ color: "var(--foreground)" }}>
                     {lead.name}
                 </p>
                 <button
@@ -71,15 +71,15 @@ export const LeadCardMobile = ({ lead, stages = [], salesUsers = [], clientsById
             <div className="flex items-center gap-2 flex-wrap mb-3">
                 <div
                     className="flex items-center gap-1.5 px-2 py-1 rounded-md"
-                    style={{ backgroundColor: "#F2EBDD", border: "1px solid #D8D2C4" }}
+                    style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)" }}
                 >
                     <div
                         className="h-5 w-5 rounded-full flex items-center justify-center text-[9px] font-black shrink-0"
-                        style={{ backgroundColor: "#5E6A43", color: "#FBF7EF" }}
+                        style={{ backgroundColor: "var(--secondary)", color: "var(--secondary-foreground)" }}
                     >
                         {responsibleName.charAt(0).toUpperCase()}
                     </div>
-                    <span className="text-[11px] font-semibold" style={{ color: "#2E2A26" }}>
+                    <span className="text-[11px] font-semibold" style={{ color: "var(--foreground)" }}>
                         {responsibleName}
                     </span>
                 </div>
@@ -92,7 +92,7 @@ export const LeadCardMobile = ({ lead, stages = [], salesUsers = [], clientsById
             </div>
 
             {/* Date + stage move */}
-            <div className="flex items-center justify-between gap-2 pt-2.5" style={{ borderTop: "1px solid #F2EBDD" }}>
+            <div className="flex items-center justify-between gap-2 pt-2.5" style={{ borderTop: "1px solid var(--card)" }}>
                 <div className="flex items-center gap-1" style={{ color: "#9b948e" }}>
                     <Calendar className="w-3 h-3" />
                     <span className="text-[11px] font-medium">
@@ -104,7 +104,7 @@ export const LeadCardMobile = ({ lead, stages = [], salesUsers = [], clientsById
                         value={currentStage}
                         onChange={handleStageChange}
                         className="appearance-none pl-2.5 pr-6 py-1 rounded-full text-[11px] font-semibold focus:outline-none cursor-pointer"
-                        style={{ border: "1px solid #D8D2C4", backgroundColor: "#F2EBDD", color: "#5E6A43" }}
+                        style={{ border: "1px solid var(--border)", backgroundColor: "var(--card)", color: "var(--secondary-text)" }}
                     >
                         {stages.map(s => (
                             <option key={s.name} value={s.name}>{s.name}</option>

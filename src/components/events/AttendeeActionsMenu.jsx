@@ -56,7 +56,7 @@ export const AttendeeActionsMenu = ({ attendee, canResend, resendReason, onResen
                 onClick={() => setOpen((o) => !o)}
                 title="Actions"
                 className="inline-flex h-8 w-8 items-center justify-center rounded-md cursor-pointer"
-                style={{ color: "#6b6560", backgroundColor: open ? "rgba(94,106,67,0.1)" : "transparent" }}
+                style={{ color: "var(--muted-foreground)", backgroundColor: open ? "rgba(37,91,1,0.1)" : "transparent" }}
             >
                 <MoreVertical className="h-4 w-4" />
             </button>
@@ -69,7 +69,7 @@ export const AttendeeActionsMenu = ({ attendee, canResend, resendReason, onResen
                         className="fixed z-[101] rounded-lg py-1"
                         style={{
                             top: pos.top, left: pos.left, width: MENU_WIDTH,
-                            backgroundColor: "#FFFFFF", border: "1px solid #D8D2C4",
+                            backgroundColor: "var(--background)", border: "1px solid var(--border)",
                             boxShadow: "0 8px 24px rgba(0,0,0,0.14)",
                         }}
                     >
@@ -78,8 +78,8 @@ export const AttendeeActionsMenu = ({ attendee, canResend, resendReason, onResen
                             disabled={!canResend}
                             title={resendReason}
                             className={itemBase}
-                            style={{ color: canResend ? "#2E2A26" : "#c9c3b6", cursor: canResend ? "pointer" : "not-allowed" }}
-                            onMouseEnter={(e) => { if (canResend) e.currentTarget.style.backgroundColor = "#F5F0E8"; }}
+                            style={{ color: canResend ? "var(--foreground)" : "color-mix(in srgb, var(--muted-foreground) 45%, transparent)", cursor: canResend ? "pointer" : "not-allowed" }}
+                            onMouseEnter={(e) => { if (canResend) e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--foreground) 6%, transparent)"; }}
                             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
                         >
                             <Send className="h-4 w-4" /> Resend invitation
@@ -87,8 +87,8 @@ export const AttendeeActionsMenu = ({ attendee, canResend, resendReason, onResen
                         <button
                             onClick={() => { setOpen(false); onEdit(attendee); }}
                             className={`${itemBase} cursor-pointer`}
-                            style={{ color: "#2E2A26" }}
-                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#F5F0E8")}
+                            style={{ color: "var(--foreground)" }}
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--foreground) 6%, transparent)")}
                             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
                         >
                             <Pencil className="h-4 w-4" /> Edit
@@ -97,7 +97,7 @@ export const AttendeeActionsMenu = ({ attendee, canResend, resendReason, onResen
                             onClick={() => { setOpen(false); onDelete(attendee); }}
                             className={`${itemBase} cursor-pointer`}
                             style={{ color: "#B0592E" }}
-                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#FBEEE9")}
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--destructive) 10%, var(--background))")}
                             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
                         >
                             <Trash2 className="h-4 w-4" /> Delete

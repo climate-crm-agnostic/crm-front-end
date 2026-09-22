@@ -12,12 +12,12 @@ import { useAuth } from "../context/AuthContext";
 import Swal from 'sweetalert2';
 
 const STATUS_LABELS = { todo: "To Do", in_progress: "In Progress", done: "Done" };
-const PRIORITY_COLORS = { low: "#9b948e", medium: "#c0622a", high: "#c0392b" };
+const PRIORITY_COLORS = { low: "#9b948e", medium: "#c0622a", high: "var(--destructive)" };
 
 const Pill = ({ label, color }) => (
     <span
         className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold"
-        style={{ backgroundColor: `${color}1f`, border: `1px solid ${color}66`, color }}
+        style={{ backgroundColor: `color-mix(in srgb, ${color} 12%, transparent)`, border: `1px solid color-mix(in srgb, ${color} 40%, transparent)`, color }}
     >
         {label}
     </span>
@@ -88,7 +88,7 @@ export const Tasks = () => {
     const handleDelete = async (id) => {
         const result = await Swal.fire({
             title: 'Are you sure?', icon: 'warning', showCancelButton: true,
-            confirmButtonColor: '#5E6A43', cancelButtonColor: '#9b948e', confirmButtonText: 'Yes, delete it!'
+            confirmButtonColor: 'var(--secondary)', cancelButtonColor: '#9b948e', confirmButtonText: 'Yes, delete it!'
         });
         if (!result.isConfirmed) return;
         try {
@@ -120,7 +120,7 @@ export const Tasks = () => {
             <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 border">
-                        <ListTodo className="h-5 w-5 text-primary" />
+                        <ListTodo className="h-5 w-5 text-primary-text" />
                     </div>
                     <div>
                         <p className="text-base font-semibold">Tasks</p>
@@ -210,9 +210,9 @@ const TaskListView = ({ tasks, onStatusChange, onDelete }) => {
             <div className="overflow-auto">
                 <table className="w-full text-sm">
                     <thead>
-                        <tr style={{ backgroundColor: "#5E6A43" }}>
+                        <tr style={{ backgroundColor: "var(--secondary)" }}>
                             {["Title", "Assignee", "Status", "Priority", "Due", "Actions"].map((h, i) => (
-                                <th key={h} className="px-4 py-2.5 text-xs font-semibold text-left" style={{ color: "#FBF7EF", textAlign: i === 5 ? "right" : "left" }}>
+                                <th key={h} className="px-4 py-2.5 text-xs font-semibold text-left" style={{ color: "var(--secondary-foreground)", textAlign: i === 5 ? "right" : "left" }}>
                                     {h}
                                 </th>
                             ))}
@@ -238,7 +238,7 @@ const TaskListView = ({ tasks, onStatusChange, onDelete }) => {
                                 <td className="px-4 py-2.5"><Pill label={t.priority} color={PRIORITY_COLORS[t.priority]} /></td>
                                 <td className="px-4 py-2.5 text-muted-foreground">{t.due_date || "—"}</td>
                                 <td className="px-4 py-2.5 text-right">
-                                    <Button variant="ghost" size="sm" onClick={() => onDelete(t.id)} className="h-8 w-8 p-0 text-red-500 hover:text-red-700">
+                                    <Button variant="ghost" size="sm" onClick={() => onDelete(t.id)} className="h-8 w-8 p-0 text-red-500 hover:text-red-700 dark:hover:text-red-300">
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
                                 </td>
@@ -303,7 +303,7 @@ const TaskGanttView = ({ tasks, projects }) => {
                                         className="absolute h-full rounded"
                                         style={{
                                             left: `${leftPct}%`, width: `${widthPct}%`,
-                                            backgroundColor: PRIORITY_COLORS[t.priority] || "#5E6A43",
+                                            backgroundColor: PRIORITY_COLORS[t.priority] || "var(--secondary)",
                                         }}
                                         title={`${t.start_date || t.due_date} → ${t.due_date}`}
                                     />

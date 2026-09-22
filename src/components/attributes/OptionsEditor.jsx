@@ -2,14 +2,16 @@ import { GripVertical, Plus, Trash2 } from "lucide-react";
 import { normalizeOptions } from "../../utils/attributeTypes";
 
 // Brand palette, so option colours stay coherent with the rest of the CRM.
+// Note: --accent equals --primary in the current palette, so it's skipped here
+// in favor of the old citron tone — otherwise two swatches would be identical.
 const SWATCHES = [
-    "#5E6A43", "#B8C76A", "#F29B6B", "#c0392b", "#356a80",
-    "#6b3fa0", "#c0622a", "#6b6560", null,
+    "var(--secondary)", "#B8C76A", "var(--primary)", "var(--destructive)", "#356a80",
+    "#6b3fa0", "#c0622a", "var(--muted-foreground)", null,
 ];
 
 const labelStyle = {
     display: "block", fontSize: 11, fontWeight: 600, textTransform: "uppercase",
-    letterSpacing: "0.06em", color: "#6b6560", marginBottom: 5,
+    letterSpacing: "0.06em", color: "var(--muted-foreground)", marginBottom: 5,
 };
 
 /**
@@ -56,7 +58,7 @@ export const OptionsEditor = ({ value, onChange, error, lockedValues }) => {
 
             {options.length === 0 && (
                 <p className="rounded-md border border-dashed px-3 py-4 text-center text-xs"
-                   style={{ borderColor: "#D8D2C4", color: "#9b948e" }}>
+                   style={{ borderColor: "var(--border)", color: "#9b948e" }}>
                     No options yet — a select field needs at least one.
                 </p>
             )}
@@ -67,14 +69,14 @@ export const OptionsEditor = ({ value, onChange, error, lockedValues }) => {
                         key={index}
                         className="flex items-center gap-1.5 rounded-md px-1.5 py-1"
                         style={{
-                            border: "1px solid #D8D2C4",
-                            backgroundColor: option.is_active ? "#fff" : "#F2EBDD",
+                            border: "1px solid var(--border)",
+                            backgroundColor: option.is_active ? "var(--background)" : "var(--card)",
                             opacity: option.is_active ? 1 : 0.65,
                         }}
                     >
                         <div className="flex flex-col">
                             <button type="button" onClick={() => move(index, -1)}
-                                    className="leading-none" style={{ color: "#D8D2C4" }}
+                                    className="leading-none" style={{ color: "var(--border)" }}
                                     title="Move up" disabled={index === 0}>
                                 <GripVertical size={12} />
                             </button>
@@ -95,7 +97,7 @@ export const OptionsEditor = ({ value, onChange, error, lockedValues }) => {
                             }}
                             placeholder="Option label"
                             className="min-w-0 flex-1 bg-transparent text-sm outline-none"
-                            style={{ color: "#2E2A26" }}
+                            style={{ color: "var(--foreground)" }}
                         />
 
                         <div className="flex shrink-0 items-center gap-0.5">
@@ -109,8 +111,8 @@ export const OptionsEditor = ({ value, onChange, error, lockedValues }) => {
                                     style={{
                                         backgroundColor: swatch || "transparent",
                                         border: swatch
-                                            ? `2px solid ${option.color === swatch ? "#2E2A26" : "transparent"}`
-                                            : `1px dashed ${option.color ? "#D8D2C4" : "#2E2A26"}`,
+                                            ? `2px solid ${option.color === swatch ? "var(--foreground)" : "transparent"}`
+                                            : `1px dashed ${option.color ? "var(--border)" : "var(--foreground)"}`,
                                     }}
                                 />
                             ))}
@@ -124,15 +126,15 @@ export const OptionsEditor = ({ value, onChange, error, lockedValues }) => {
                                 ? "Retire — keeps existing records valid, hides it from new ones"
                                 : "Bring back"}
                             style={{
-                                border: "1px solid #D8D2C4",
-                                color: option.is_active ? "#5E6A43" : "#9b948e",
+                                border: "1px solid var(--border)",
+                                color: option.is_active ? "var(--secondary-text)" : "#9b948e",
                             }}
                         >
                             {option.is_active ? "Active" : "Retired"}
                         </button>
 
                         <button type="button" onClick={() => remove(index)}
-                                className="shrink-0" style={{ color: "#c0392b" }} title="Delete">
+                                className="shrink-0" style={{ color: "var(--destructive)" }} title="Delete">
                             <Trash2 size={13} />
                         </button>
                     </div>
@@ -143,12 +145,12 @@ export const OptionsEditor = ({ value, onChange, error, lockedValues }) => {
                 type="button"
                 onClick={add}
                 className="flex items-center justify-center gap-1 rounded-md py-1.5 text-xs font-semibold"
-                style={{ border: "1px dashed #D8D2C4", color: "#5E6A43" }}
+                style={{ border: "1px dashed var(--border)", color: "var(--secondary-text)" }}
             >
                 <Plus size={12} /> Add option
             </button>
 
-            {error && <span style={{ color: "#c0392b", fontSize: 11 }}>{error}</span>}
+            {error && <span style={{ color: "var(--destructive)", fontSize: 11 }}>{error}</span>}
 
             <p style={{ fontSize: 11, color: "#9b948e" }}>
                 A new option's key follows what you type. Once saved, renaming changes only

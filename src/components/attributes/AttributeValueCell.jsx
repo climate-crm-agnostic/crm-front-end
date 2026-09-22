@@ -21,7 +21,7 @@ export const AttributeValueCell = ({ attr, value }) => {
                 target={openInNewTab ? "_blank" : undefined}
                 rel={openInNewTab ? "noopener noreferrer" : undefined}
                 className="underline"
-                style={{ color: "#5E6A43" }}
+                style={{ color: "var(--secondary-text)" }}
                 onClick={(e) => e.stopPropagation()}
             >
                 {text}

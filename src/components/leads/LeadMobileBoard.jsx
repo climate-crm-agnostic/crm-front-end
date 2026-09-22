@@ -35,11 +35,11 @@ export const LeadMobileBoard = ({ stages, leads, salesUsers, clientsById, onLead
             {/* Stage chips */}
             <div
                 className="flex gap-2 overflow-x-auto px-4 py-3 shrink-0"
-                style={{ scrollbarWidth: "none", borderBottom: "1px solid #D8D2C4" }}
+                style={{ scrollbarWidth: "none", borderBottom: "1px solid var(--border)" }}
             >
                 {stages.map(stage => {
                     const isActive = stage.name === activeStage;
-                    const stageColor = stage.color || "#5E6A43";
+                    const stageColor = stage.color || "var(--secondary)";
                     const count = leadsByStage[stage.name]?.length || 0;
                     return (
                         <button
@@ -47,19 +47,19 @@ export const LeadMobileBoard = ({ stages, leads, salesUsers, clientsById, onLead
                             onClick={() => setActiveStage(stage.name)}
                             className="flex items-center gap-1.5 shrink-0 px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors cursor-pointer"
                             style={{
-                                backgroundColor: isActive ? stageColor : "#F2EBDD",
-                                color: isActive ? "#FBF7EF" : "#2E2A26",
-                                border: `1px solid ${isActive ? stageColor : "#D8D2C4"}`,
+                                backgroundColor: isActive ? stageColor : "var(--card)",
+                                color: isActive ? "var(--background)" : "var(--foreground)",
+                                border: `1px solid ${isActive ? stageColor : "var(--border)"}`,
                             }}
                         >
                             <span
                                 className="h-1.5 w-1.5 rounded-full shrink-0"
-                                style={{ backgroundColor: isActive ? "#FBF7EF" : stageColor }}
+                                style={{ backgroundColor: isActive ? "var(--background)" : stageColor }}
                             />
                             {stage.name}
                             <span
                                 className="text-[10px] font-bold px-1.5 rounded-full tabular-nums"
-                                style={{ backgroundColor: isActive ? "rgba(251,247,239,0.25)" : "rgba(94,106,67,0.12)" }}
+                                style={{ backgroundColor: isActive ? "color-mix(in srgb, var(--background) 25%, transparent)" : "rgba(37,91,1,0.12)" }}
                             >
                                 {count}
                             </span>
@@ -73,7 +73,7 @@ export const LeadMobileBoard = ({ stages, leads, salesUsers, clientsById, onLead
                 {currentLeads.length === 0 ? (
                     <div
                         className="h-28 flex flex-col items-center justify-center rounded-xl"
-                        style={{ border: "1.5px dashed #D8D2C4" }}
+                        style={{ border: "1.5px dashed var(--border)" }}
                     >
                         <p className="text-xs uppercase tracking-widest font-bold" style={{ color: "#9b948e" }}>
                             Empty Stage

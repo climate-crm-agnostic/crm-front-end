@@ -319,9 +319,9 @@ const CalculatedValue = ({ id, attr, value }) => {
             id={id}
             title={attr.formula ? `Formula: ${attr.formula}` : undefined}
             className="flex h-9 items-center gap-2 rounded-md px-3"
-            style={{ backgroundColor: "#F2EBDD", border: "1px dashed #D8D2C4", color: "#2E2A26" }}
+            style={{ backgroundColor: "var(--card)", border: "1px dashed var(--border)", color: "var(--foreground)" }}
         >
-            <FunctionSquare size={13} style={{ color: "#5E6A43", flexShrink: 0 }} />
+            <FunctionSquare size={13} style={{ color: "var(--secondary-text)", flexShrink: 0 }} />
             <span className="truncate text-sm">
                 {rendered || <span style={{ color: "#9b948e" }}>Calculated on save</span>}
             </span>
@@ -341,9 +341,9 @@ const OptionButtons = ({ id, options, value, onChange, disabled, variant = "butt
                     onClick={() => onChange(selected ? "" : opt.value)}
                     className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-colors"
                     style={{
-                        backgroundColor: selected ? (opt.color || "#5E6A43") : "transparent",
-                        color: selected ? "#FBF7EF" : "#2E2A26",
-                        border: `1px solid ${opt.color || "#D8D2C4"}`,
+                        backgroundColor: selected ? (opt.color || "var(--secondary)") : "transparent",
+                        color: selected ? "var(--background)" : "var(--foreground)",
+                        border: `1px solid ${opt.color || "var(--border)"}`,
                         opacity: disabled ? 0.6 : 1,
                     }}
                 >
@@ -351,8 +351,8 @@ const OptionButtons = ({ id, options, value, onChange, disabled, variant = "butt
                         <span
                             className="h-2 w-2 rounded-full"
                             style={{
-                                border: `1px solid ${selected ? "#FBF7EF" : "#9b948e"}`,
-                                backgroundColor: selected ? "#FBF7EF" : "transparent",
+                                border: `1px solid ${selected ? "var(--background)" : "#9b948e"}`,
+                                backgroundColor: selected ? "var(--background)" : "transparent",
                             }}
                         />
                     )}

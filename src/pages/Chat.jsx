@@ -68,8 +68,8 @@ const TaskIcon = () => (
 
 const Avatar = ({ username, size = 28 }) => {
     const initials = username?.slice(0, 2).toUpperCase() || '?';
-    const colors = ['#5E6A43', '#8B7355', '#4A6741', '#7B6652', '#3D5C3A'];
-    const color = colors[username?.charCodeAt(0) % colors.length] || '#5E6A43';
+    const colors = ['var(--secondary)', '#8B7355', '#4A6741', '#7B6652', '#3D5C3A'];
+    const color = colors[username?.charCodeAt(0) % colors.length] || 'var(--secondary)';
     return (
         <div style={{
             width: size, height: size, borderRadius: '50%',
@@ -218,7 +218,7 @@ const NewTaskModal = ({ assignee, onClose, onCreated }) => {
                     <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted-foreground)', display: 'flex' }}><XIcon /></button>
                 </div>
 
-                {error && <p style={{ fontSize: 12, color: '#c0392b', marginBottom: 10 }}>{error}</p>}
+                {error && <p style={{ fontSize: 12, color: 'var(--destructive)', marginBottom: 10 }}>{error}</p>}
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     <input
@@ -817,7 +817,7 @@ const RoomItem = ({ room, active, unread, onClick }) => (
         display: 'flex', alignItems: 'center', gap: 10,
         padding: '8px 8px', borderRadius: 8, cursor: 'pointer',
         background: active ? 'var(--accent)' : 'transparent',
-        borderLeft: active ? '3px solid var(--primary)' : '3px solid transparent',
+        borderLeft: active ? '3px solid var(--primary-text)' : '3px solid transparent',
         transition: 'background 0.12s',
     }}
         onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'var(--muted)'; }}

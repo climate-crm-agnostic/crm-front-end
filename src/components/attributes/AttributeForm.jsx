@@ -9,16 +9,16 @@ import { AttributePreview } from './AttributePreview';
 import { OptionsEditor } from './OptionsEditor';
 import { FormulaEditor } from './FormulaEditor';
 
-const INK = "#2E2A26";
-const MUTED = "#6b6560";
+const INK = "var(--foreground)";
+const MUTED = "var(--muted-foreground)";
 const HINT = "#9b948e";
-const OAT = "#F2EBDD";
-const PEBBLE = "#D8D2C4";
-const OLIVE = "#5E6A43";
+const OAT = "var(--card)";
+const PEBBLE = "var(--border)";
+const OLIVE = "var(--secondary)";
 const FONT = '"Source Sans 3", Arial, sans-serif';
 
 const inputStyle = {
-    backgroundColor: "#fff", border: `1px solid ${PEBBLE}`, color: INK,
+    backgroundColor: "var(--background)", border: `1px solid ${PEBBLE}`, color: INK,
     borderRadius: 6, padding: "8px 10px", fontSize: 14, width: "100%",
     fontFamily: FONT, outline: "none",
 };
@@ -29,7 +29,7 @@ const labelStyle = {
 };
 
 const SECTION = {
-    border: `1px solid ${PEBBLE}`, borderRadius: 10, padding: 14, backgroundColor: "#fff",
+    border: `1px solid ${PEBBLE}`, borderRadius: 10, padding: 14, backgroundColor: "var(--background)",
 };
 
 const sectionTitle = (n, text) => (
@@ -37,7 +37,7 @@ const sectionTitle = (n, text) => (
         fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em",
         color: HINT, marginBottom: 10,
     }}>
-        <span style={{ color: OLIVE }}>{n}</span> &nbsp;{text}
+        <span style={{ color: "var(--secondary-text)" }}>{n}</span> &nbsp;{text}
     </p>
 );
 
@@ -311,7 +311,7 @@ export const AttributeForm = ({
                                             is_required: false,
                                             is_unique: false,
                                         })}
-                                        style={{ accentColor: OLIVE, width: 14, height: 14, marginTop: 2 }}
+                                        style={{ accentColor: "var(--secondary-text)", width: 14, height: 14, marginTop: 2 }}
                                     />
                                     <span>
                                         <span style={{ display: "block", fontSize: 13, fontWeight: 600, color: INK }}>
@@ -425,7 +425,7 @@ export const AttributeForm = ({
             {/* ── Type-change confirmation ───────────────────────────────── */}
             {typeChange && (
                 <div className="shrink-0 rounded-lg p-3 mb-2"
-                     style={{ backgroundColor: "rgba(242,155,107,0.12)", border: "1px solid #F29B6B" }}>
+                     style={{ backgroundColor: "rgba(96,216,5,0.12)", border: "1px solid var(--primary-text)" }}>
                     <div className="flex gap-2">
                         <AlertTriangle size={16} style={{ color: "#c0622a", flexShrink: 0, marginTop: 2 }} />
                         <div className="flex-1">
@@ -446,7 +446,7 @@ export const AttributeForm = ({
                             <div className="flex gap-2 mt-2">
                                 <button type="button" onClick={confirmTypeChange}
                                         className="h-7 px-3 rounded-md text-xs font-semibold cursor-pointer"
-                                        style={{ backgroundColor: "#c0622a", color: "#FBF7EF" }}>
+                                        style={{ backgroundColor: "#c0622a", color: "#fff" }}>
                                     Change type
                                 </button>
                                 <button type="button" onClick={() => setTypeChange(null)}
@@ -469,7 +469,7 @@ export const AttributeForm = ({
                 </button>
                 <button type="submit" disabled={isLoading}
                         className="h-9 px-4 rounded-lg text-sm font-semibold cursor-pointer"
-                        style={{ backgroundColor: isLoading ? "#4a5535" : OLIVE, color: "#FBF7EF",
+                        style={{ backgroundColor: isLoading ? "color-mix(in srgb, var(--secondary) 80%, black)" : OLIVE, color: "var(--secondary-foreground)",
                                  opacity: isLoading ? 0.7 : 1 }}>
                     {isLoading ? 'Saving…' : 'Save field'}
                 </button>
@@ -487,9 +487,9 @@ const TypeCard = ({ type, selected, onClick }) => {
             title={type.label}
             className="flex flex-col items-center gap-1 rounded-lg px-1 py-2 transition-colors cursor-pointer"
             style={{
-                border: `1px solid ${selected ? OLIVE : PEBBLE}`,
-                backgroundColor: selected ? "rgba(94,106,67,0.10)" : "#fff",
-                color: selected ? OLIVE : MUTED,
+                border: `1px solid ${selected ? "var(--secondary-text)" : PEBBLE}`,
+                backgroundColor: selected ? "rgba(37,91,1,0.10)" : "#fff",
+                color: selected ? "var(--secondary-text)" : MUTED,
             }}
         >
             <Icon size={15} />
@@ -506,7 +506,7 @@ const Toggle = ({ checked, label, hint, onChange, disabled }) => (
                     cursor: disabled ? "not-allowed" : "pointer" }}>
         <input type="checkbox" checked={!!checked} disabled={disabled}
                onChange={(e) => onChange(e.target.checked)}
-               style={{ accentColor: OLIVE, width: 14, height: 14, marginTop: 2 }} />
+               style={{ accentColor: "var(--secondary-text)", width: 14, height: 14, marginTop: 2 }} />
         <span>
             <span style={{ display: "block", fontSize: 13, fontWeight: 600, color: INK }}>{label}</span>
             <span style={{ display: "block", fontSize: 11, color: HINT }}>{hint}</span>
@@ -514,7 +514,7 @@ const Toggle = ({ checked, label, hint, onChange, disabled }) => (
     </label>
 );
 
-const Err = ({ children }) => <span style={{ color: "#c0392b", fontSize: 11 }}>{children}</span>;
+const Err = ({ children }) => <span style={{ color: "var(--destructive)", fontSize: 11 }}>{children}</span>;
 const Hint = ({ children }) => <p style={{ fontSize: 11, color: HINT, marginTop: 3 }}>{children}</p>;
 
 // Only options the current type declares survive — carrying a previous type's

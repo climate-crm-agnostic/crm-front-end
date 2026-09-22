@@ -72,26 +72,26 @@ export const LeadReassignment = () => {
             <div className="flex items-center gap-3">
                 <div
                     className="flex h-10 w-10 items-center justify-center rounded-lg"
-                    style={{ backgroundColor: "rgba(94,106,67,0.12)", border: "1px solid rgba(94,106,67,0.3)" }}
+                    style={{ backgroundColor: "rgba(37,91,1,0.12)", border: "1px solid rgba(37,91,1,0.3)" }}
                 >
-                    <Users className="h-5 w-5" style={{ color: "#5E6A43" }} />
+                    <Users className="h-5 w-5" style={{ color: "var(--secondary-text)" }} />
                 </div>
                 <div>
-                    <p className="text-base font-semibold" style={{ color: "#2E2A26" }}>Lead Reassignment</p>
+                    <p className="text-base font-semibold" style={{ color: "var(--foreground)" }}>Lead Reassignment</p>
                     <p className="text-sm" style={{ color: "#9b948e" }}>
                         Move every lead owned by one user to another — e.g. after an employee leaves.
                     </p>
                 </div>
             </div>
 
-            <div className="max-w-lg rounded-xl p-6 space-y-5" style={{ border: "1px solid #D8D2C4", backgroundColor: "#FBF7EF" }}>
+            <div className="max-w-lg rounded-xl p-6 space-y-5" style={{ border: "1px solid var(--border)", backgroundColor: "var(--background)" }}>
                 <div className="space-y-1.5">
                     <label className="text-xs font-medium" style={{ color: "#9b948e" }}>From</label>
                     <select
                         value={fromUserId}
                         onChange={e => handleFromChange(e.target.value)}
-                        className="w-full h-10 rounded-md border px-3 text-sm bg-white focus:outline-none"
-                        style={{ borderColor: "#D8D2C4", color: "#2E2A26" }}
+                        className="w-full h-10 rounded-md border px-3 text-sm bg-background focus:outline-none"
+                        style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
                     >
                         <option value="">Select a user...</option>
                         {salesUsers.map(u => (
@@ -110,8 +110,8 @@ export const LeadReassignment = () => {
                     <select
                         value={toUserId}
                         onChange={e => setToUserId(e.target.value)}
-                        className="w-full h-10 rounded-md border px-3 text-sm bg-white focus:outline-none"
-                        style={{ borderColor: "#D8D2C4", color: "#2E2A26" }}
+                        className="w-full h-10 rounded-md border px-3 text-sm bg-background focus:outline-none"
+                        style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
                     >
                         <option value="">Select a user...</option>
                         {salesUsers.filter(u => String(u.id) !== String(fromUserId)).map(u => (
@@ -124,7 +124,7 @@ export const LeadReassignment = () => {
                     onClick={handleReassign}
                     disabled={!fromUserId || !toUserId || reassigning || previewCount === 0}
                     className="w-full h-10 rounded-md text-sm font-semibold transition-colors disabled:opacity-50 cursor-pointer"
-                    style={{ backgroundColor: "#5E6A43", color: "#FBF7EF" }}
+                    style={{ backgroundColor: "var(--secondary)", color: "var(--secondary-foreground)" }}
                 >
                     {reassigning ? "Reassigning..." : "Reassign Leads"}
                 </button>

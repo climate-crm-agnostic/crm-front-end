@@ -171,7 +171,7 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
 
     if (loading) {
         return (
-            <div className="p-10 text-center" style={{ color: "#6b6560", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+            <div className="p-10 text-center" style={{ color: "var(--muted-foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
                 Loading board...
             </div>
         );
@@ -181,12 +181,12 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
         return (
             <div className="flex flex-col items-center justify-center p-10 h-full" style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
                 <div className="text-center mb-8">
-                    <h3 className="text-lg font-semibold mb-2" style={{ color: "#2E2A26" }}>No active pipeline found</h3>
+                    <h3 className="text-lg font-semibold mb-2" style={{ color: "var(--foreground)" }}>No active pipeline found</h3>
                     <p className="text-sm mb-6" style={{ color: "#9b948e" }}>Configure your first pipeline to start managing leads.</p>
                     <Link
                         to="/pipeline"
                         className="px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
-                        style={{ backgroundColor: "#5E6A43", color: "#FBF7EF" }}
+                        style={{ backgroundColor: "var(--secondary)", color: "var(--secondary-foreground)" }}
                     >
                         Manage Pipelines
                     </Link>
@@ -203,7 +203,7 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
             {/* Pipeline selector toolbar */}
             <div
                 className="px-4 sm:px-5 py-2.5 flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-3 shrink-0"
-                style={{ borderBottom: "1px solid #D8D2C4", backgroundColor: "#FBF7EF" }}
+                style={{ borderBottom: "1px solid var(--border)", backgroundColor: "var(--background)" }}
             >
                 <div className="flex items-center gap-2">
                     <span
@@ -218,9 +218,9 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
                             onChange={(e) => setSelectedPipelineId(e.target.value)}
                             className="appearance-none w-full pl-3 pr-7 py-1.5 rounded-full text-xs font-semibold focus:outline-none cursor-pointer transition-colors"
                             style={{
-                                border: "1px solid #D8D2C4",
-                                backgroundColor: "#F2EBDD",
-                                color: "#2E2A26",
+                                border: "1px solid var(--border)",
+                                backgroundColor: "var(--card)",
+                                color: "var(--foreground)",
                                 minWidth: "160px",
                             }}
                         >
@@ -243,9 +243,9 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
                             checked={myLeadsOnly}
                             onChange={(e) => setMyLeadsOnly(e.target.checked)}
                             className="h-3.5 w-3.5 rounded cursor-pointer"
-                            style={{ accentColor: "#5E6A43" }}
+                            style={{ accentColor: "var(--secondary-text)" }}
                         />
-                        <span className="text-xs font-semibold whitespace-nowrap" style={{ color: "#2E2A26" }}>My Leads</span>
+                        <span className="text-xs font-semibold whitespace-nowrap" style={{ color: "var(--foreground)" }}>My Leads</span>
                     </label>
 
                     <div className="relative flex-1 min-w-0 sm:flex-none sm:w-[220px]">
@@ -260,7 +260,7 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
                             onChange={(e) => setSearchTerm(e.target.value)}
                             placeholder="Search leads by name..."
                             className="w-full pl-8 pr-3 py-1.5 rounded-full text-xs focus:outline-none transition-colors"
-                            style={{ border: "1px solid #D8D2C4", backgroundColor: "#FBF7EF", color: "#2E2A26" }}
+                            style={{ border: "1px solid var(--border)", backgroundColor: "var(--background)", color: "var(--foreground)" }}
                         />
                     </div>
                 </div>
@@ -270,14 +270,14 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
             <button
                 onClick={scrollLeft}
                 className="hidden md:flex absolute left-2 top-1/2 z-20 h-9 w-9 items-center justify-center rounded-full opacity-0 group-hover/board:opacity-100 transition-opacity"
-                style={{ backgroundColor: "#FBF7EF", border: "1px solid #D8D2C4", color: "#5E6A43", boxShadow: "0 2px 8px rgba(0,0,0,0.10)" }}
+                style={{ backgroundColor: "var(--background)", border: "1px solid var(--border)", color: "var(--secondary-text)", boxShadow: "0 2px 8px rgba(0,0,0,0.10)" }}
             >
                 <ChevronLeft size={18} />
             </button>
             <button
                 onClick={scrollRight}
                 className="hidden md:flex absolute right-2 top-1/2 z-20 h-9 w-9 items-center justify-center rounded-full opacity-0 group-hover/board:opacity-100 transition-opacity"
-                style={{ backgroundColor: "#FBF7EF", border: "1px solid #D8D2C4", color: "#5E6A43", boxShadow: "0 2px 8px rgba(0,0,0,0.10)" }}
+                style={{ backgroundColor: "var(--background)", border: "1px solid var(--border)", color: "var(--secondary-text)", boxShadow: "0 2px 8px rgba(0,0,0,0.10)" }}
             >
                 <ChevronRight size={18} />
             </button>
@@ -299,10 +299,10 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
             <div
                 ref={scrollContainerRef}
                 className="hidden md:flex gap-4 overflow-x-auto pb-4 px-4 h-full mt-3 scroll-smooth"
-                style={{ scrollbarWidth: "thin", scrollbarColor: "#D8D2C4 transparent" }}
+                style={{ scrollbarWidth: "thin", scrollbarColor: "var(--border) transparent" }}
             >
                 {stages.map((stage, index) => {
-                    const stageColor = stage.color || "#5E6A43";
+                    const stageColor = stage.color || "var(--secondary)";
                     const stageLeads = filteredLeads.filter(l => {
                         const matchesStage = l.stage === stage.name || l.stage_id === stage.id;
                         if (index === 0 && !l.stage && !l.stage_id) return true;
@@ -314,9 +314,9 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
                             key={stage.name}
                             className="flex-shrink-0 w-72 flex flex-col rounded-xl h-full transition-all"
                             style={{
-                                border: "1px solid #D8D2C4",
+                                border: "1px solid var(--border)",
                                 borderTop: `4px solid ${stageColor}`,
-                                backgroundColor: "#FBF7EF",
+                                backgroundColor: "var(--background)",
                             }}
                             onDragOver={handleDragOver}
                             onDrop={(e) => handleDrop(e, stage.name)}
@@ -324,7 +324,7 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
                             {/* Column header */}
                             <div
                                 className="px-4 py-3 flex items-center justify-between shrink-0 rounded-t-lg"
-                                style={{ backgroundColor: "#F2EBDD", borderBottom: "1px solid #D8D2C4" }}
+                                style={{ backgroundColor: "var(--card)", borderBottom: "1px solid var(--border)" }}
                             >
                                 <div className="flex items-center gap-2">
                                     <div
@@ -333,7 +333,7 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
                                     />
                                     <h3
                                         className="font-black text-[10px] uppercase tracking-widest"
-                                        style={{ color: "#2E2A26" }}
+                                        style={{ color: "var(--foreground)" }}
                                     >
                                         {stage.name}
                                     </h3>
@@ -341,9 +341,9 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
                                 <span
                                     className="text-[10px] font-bold px-2 py-0.5 rounded-full tabular-nums"
                                     style={{
-                                        backgroundColor: "rgba(94,106,67,0.12)",
-                                        border: "1px solid rgba(94,106,67,0.25)",
-                                        color: "#5E6A43",
+                                        backgroundColor: "rgba(37,91,1,0.12)",
+                                        border: "1px solid rgba(37,91,1,0.25)",
+                                        color: "var(--secondary-text)",
                                     }}
                                 >
                                     {stageLeads.length}
@@ -366,7 +366,7 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
                                 {stageLeads.length === 0 && (
                                     <div
                                         className="h-20 flex flex-col items-center justify-center rounded-lg mx-1"
-                                        style={{ border: "1.5px dashed #D8D2C4" }}
+                                        style={{ border: "1.5px dashed var(--border)" }}
                                     >
                                         <p className="text-[9px] uppercase tracking-widest font-bold" style={{ color: "#9b948e" }}>
                                             Empty Stage

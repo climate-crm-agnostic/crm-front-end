@@ -104,7 +104,7 @@ export const PipelineForm = ({ onPipelineSaved, initialData = null }) => {
                                             }
                                         })}
                                         placeholder="Stage Name"
-                                        className="w-full p-1.5 text-sm bg-transparent border-b border-transparent focus:border-primary focus:outline-none transition-colors"
+                                        className="w-full p-1.5 text-sm bg-transparent border-b border-transparent focus:border-primary-text focus:outline-none transition-colors"
                                     />
                                     {errors.stages?.[index]?.name && <span className="text-red-500 text-[10px]">{errors.stages[index].name.message}</span>}
                                 </div>

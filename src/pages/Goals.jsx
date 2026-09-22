@@ -83,7 +83,7 @@ export const Goals = () => {
         <div className="p-6 space-y-6">
             <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 border">
-                    <Target className="h-5 w-5 text-primary" />
+                    <Target className="h-5 w-5 text-primary-text" />
                 </div>
                 <div>
                     <p className="text-base font-semibold">Goals</p>

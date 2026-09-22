@@ -12,7 +12,7 @@ import {
 } from "@/services/eventService";
 import { PhoneInput } from "@/components/ui/phone-input";
 
-const GREEN = "#5E6A43";
+const GREEN = "var(--secondary)";
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 // 24-hour time options for the hour/minute selects. We drive time with our own
@@ -288,20 +288,20 @@ export const EventCreate = () => {
     };
 
     // ── UI ────────────────────────────────────────────────────────────────
-    const labelStyle = { color: "#2E2A26", fontSize: 13, fontWeight: 600 };
+    const labelStyle = { color: "var(--foreground)", fontSize: 13, fontWeight: 600 };
     const inputCls = "w-full h-10 px-3 rounded-lg text-sm";
-    const inputStyle = { border: "1px solid #D8D2C4", backgroundColor: "#FFFFFF", color: "#2E2A26" };
-    const disabledStyle = { backgroundColor: "#F0ECE3", color: "#9b948e", cursor: "not-allowed" };
+    const inputStyle = { border: "1px solid var(--border)", backgroundColor: "var(--background)", color: "var(--foreground)" };
+    const disabledStyle = { backgroundColor: "var(--muted)", color: "#9b948e", cursor: "not-allowed" };
 
     return (
         <div className="p-4 sm:p-6 w-full max-w-3xl mx-auto space-y-6" style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
             {/* Header */}
             <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg" style={{ backgroundColor: "rgba(94,106,67,0.12)", border: "1px solid rgba(94,106,67,0.3)" }}>
-                    <CalendarDays className="h-5 w-5" style={{ color: GREEN }} />
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg" style={{ backgroundColor: "rgba(37,91,1,0.12)", border: "1px solid rgba(37,91,1,0.3)" }}>
+                    <CalendarDays className="h-5 w-5" style={{ color: "var(--secondary-text)" }} />
                 </div>
                 <div>
-                    <p className="text-base font-semibold" style={{ color: "#2E2A26" }}>New Event</p>
+                    <p className="text-base font-semibold" style={{ color: "var(--foreground)" }}>New Event</p>
                     <p className="text-sm" style={{ color: "#9b948e" }}>Follow the steps to configure your event.</p>
                 </div>
             </div>
@@ -314,21 +314,21 @@ export const EventCreate = () => {
                             <div
                                 className="flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold"
                                 style={{
-                                    backgroundColor: i < step ? GREEN : i === step ? GREEN : "#F2EBDD",
-                                    color: i <= step ? "#FBF7EF" : "#9b948e",
-                                    border: `1px solid ${i <= step ? GREEN : "#D8D2C4"}`,
+                                    backgroundColor: i < step ? GREEN : i === step ? GREEN : "var(--card)",
+                                    color: i <= step ? "var(--background)" : "#9b948e",
+                                    border: `1px solid ${i <= step ? "var(--secondary-text)" : "var(--border)"}`,
                                 }}
                             >
                                 {i < step ? <Check className="h-3.5 w-3.5" /> : i + 1}
                             </div>
-                            <span className="text-xs font-medium hidden sm:block" style={{ color: i === step ? "#2E2A26" : "#9b948e" }}>{s}</span>
+                            <span className="text-xs font-medium hidden sm:block" style={{ color: i === step ? "var(--foreground)" : "#9b948e" }}>{s}</span>
                         </div>
-                        {i < STEPS.length - 1 && <div className="flex-1 h-px" style={{ backgroundColor: "#D8D2C4" }} />}
+                        {i < STEPS.length - 1 && <div className="flex-1 h-px" style={{ backgroundColor: "var(--border)" }} />}
                     </div>
                 ))}
             </div>
 
-            <div className="rounded-xl p-6" style={{ border: "1px solid #D8D2C4", backgroundColor: "#FBF7EF" }}>
+            <div className="rounded-xl p-6" style={{ border: "1px solid var(--border)", backgroundColor: "var(--background)" }}>
                 {/* STEP 1 — Pipeline */}
                 {step === 0 && (
                     <div className="space-y-4">
@@ -353,20 +353,20 @@ export const EventCreate = () => {
                         {checkingPrereq && <p className="text-sm" style={{ color: "#9b948e" }}>Checking pipeline…</p>}
 
                         {prereqError && (
-                            <div className="flex items-start gap-2 p-3 rounded-lg" style={{ backgroundColor: "#FBEEE9", border: "1px solid #E4B9A8" }}>
+                            <div className="flex items-start gap-2 p-3 rounded-lg" style={{ backgroundColor: "color-mix(in srgb, var(--destructive) 10%, var(--background))", border: "1px solid color-mix(in srgb, var(--destructive) 35%, var(--background))" }}>
                                 <AlertTriangle className="h-4 w-4 mt-0.5" style={{ color: "#B0592E" }} />
-                                <p className="text-sm" style={{ color: "#8a3f1e" }}>{prereqError}</p>
+                                <p className="text-sm" style={{ color: "var(--destructive)" }}>{prereqError}</p>
                             </div>
                         )}
 
                         {pipelineFields.length > 0 && !prereqError && (
-                            <div className="p-3 rounded-lg" style={{ backgroundColor: "rgba(94,106,67,0.08)", border: "1px solid rgba(94,106,67,0.25)" }}>
-                                <p className="text-xs font-semibold mb-2" style={{ color: GREEN }}>
+                            <div className="p-3 rounded-lg" style={{ backgroundColor: "rgba(37,91,1,0.08)", border: "1px solid rgba(37,91,1,0.25)" }}>
+                                <p className="text-xs font-semibold mb-2" style={{ color: "var(--secondary-text)" }}>
                                     The public form will ask for these {pipelineFields.length} field(s):
                                 </p>
                                 <div className="flex flex-wrap gap-1.5">
                                     {pipelineFields.map((f) => (
-                                        <span key={f.id} className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: "#FFFFFF", border: "1px solid #D8D2C4", color: "#2E2A26" }}>
+                                        <span key={f.id} className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: "var(--background)", border: "1px solid var(--border)", color: "var(--foreground)" }}>
                                             {f.label}{f.is_required ? " *" : ""}
                                         </span>
                                     ))}
@@ -401,9 +401,9 @@ export const EventCreate = () => {
                                         onClick={() => setForm({ ...form, modality: v })}
                                         className="flex items-center gap-2 h-10 px-4 rounded-lg text-sm font-medium cursor-pointer"
                                         style={{
-                                            border: `1px solid ${form.modality === v ? GREEN : "#D8D2C4"}`,
-                                            backgroundColor: form.modality === v ? "rgba(94,106,67,0.12)" : "#FFFFFF",
-                                            color: form.modality === v ? GREEN : "#6b6560",
+                                            border: `1px solid ${form.modality === v ? "var(--secondary-text)" : "var(--border)"}`,
+                                            backgroundColor: form.modality === v ? "rgba(37,91,1,0.12)" : "#FFFFFF",
+                                            color: form.modality === v ? "var(--secondary-text)" : "var(--muted-foreground)",
                                         }}
                                     >
                                         <Icon className="h-4 w-4" /> {label}
@@ -434,7 +434,7 @@ export const EventCreate = () => {
                                         onClick={toggleEndDate}
                                         disabled={!form.start_date}
                                         className="text-xs font-semibold cursor-pointer"
-                                        style={{ color: !form.start_date ? "#c9c3b6" : GREEN }}
+                                        style={{ color: !form.start_date ? "color-mix(in srgb, var(--muted-foreground) 45%, transparent)" : "var(--secondary-text)" }}
                                     >
                                         {form.has_end_date ? "Remove end date" : "Add end date"}
                                     </button>
@@ -472,7 +472,7 @@ export const EventCreate = () => {
                                     onClick={toggleCustomize}
                                     disabled={!form.start_date}
                                     className="text-xs font-semibold cursor-pointer"
-                                    style={{ color: !form.start_date ? "#c9c3b6" : GREEN }}
+                                    style={{ color: !form.start_date ? "color-mix(in srgb, var(--muted-foreground) 45%, transparent)" : "var(--secondary-text)" }}
                                 >
                                     {form.customize_hours ? "Use default hours" : "Customize hours"}
                                 </button>
@@ -492,7 +492,7 @@ export const EventCreate = () => {
                                     const selStyle = { ...inputStyle, ...(locked ? disabledStyle : {}) };
                                     return (
                                         <div key={key}>
-                                            <label className="text-xs" style={{ color: "#6b6560" }}>{label}</label>
+                                            <label className="text-xs" style={{ color: "var(--muted-foreground)" }}>{label}</label>
                                             <div className="flex items-center gap-1.5">
                                                 <select
                                                     className="h-10 px-2 rounded-lg text-sm flex-1"
@@ -504,7 +504,7 @@ export const EventCreate = () => {
                                                 >
                                                     {HOURS_24.map((h) => <option key={h} value={h}>{h}</option>)}
                                                 </select>
-                                                <span className="text-sm" style={{ color: "#6b6560" }}>:</span>
+                                                <span className="text-sm" style={{ color: "var(--muted-foreground)" }}>:</span>
                                                 <select
                                                     className="h-10 px-2 rounded-lg text-sm flex-1"
                                                     style={selStyle}
@@ -535,14 +535,14 @@ export const EventCreate = () => {
                     <div className="space-y-5">
                         <div className="flex items-start justify-between gap-4">
                             <div className="min-w-0">
-                                <p className="text-sm font-semibold" style={{ color: "#2E2A26" }}>Participantes / Attendees</p>
+                                <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Participantes / Attendees</p>
                                 <p className="text-xs" style={{ color: "#9b948e" }}>Add manually or upload an Excel file. At least one is required.</p>
                             </div>
                             <button
                                 type="button"
                                 onClick={downloadAttendeeTemplate}
                                 className="flex items-center gap-2 h-9 px-3 rounded-lg text-xs font-semibold cursor-pointer shrink-0 whitespace-nowrap"
-                                style={{ border: `1px solid ${GREEN}`, color: GREEN, backgroundColor: "#FFFFFF" }}
+                                style={{ border: `1px solid var(--secondary-text)`, color: "var(--secondary-text)", backgroundColor: "var(--background)" }}
                             >
                                 <Download className="h-4 w-4" /> Download template
                             </button>
@@ -551,11 +551,11 @@ export const EventCreate = () => {
                         {/* Manual entry — one card per attendee (fits all base fields) */}
                         <div className="space-y-3">
                             {manualAttendees.map((a, idx) => (
-                                <div key={idx} className="p-3 rounded-lg" style={{ border: "1px solid #E7E1D4", backgroundColor: "#FFFFFF" }}>
+                                <div key={idx} className="p-3 rounded-lg" style={{ border: "1px solid var(--border)", backgroundColor: "var(--background)" }}>
                                     <div className="flex items-center justify-between mb-2">
                                         <span className="text-xs font-semibold" style={{ color: "#9b948e" }}>Attendee {idx + 1}</span>
                                         {manualAttendees.length > 1 && (
-                                            <button type="button" className="cursor-pointer" style={{ color: "#c0392b" }} onClick={() => removeManualRow(idx)} title="Remove">
+                                            <button type="button" className="cursor-pointer" style={{ color: "var(--destructive)" }} onClick={() => removeManualRow(idx)} title="Remove">
                                                 <Trash2 className="h-4 w-4" />
                                             </button>
                                         )}
@@ -567,13 +567,13 @@ export const EventCreate = () => {
                                             <input
                                                 type="email"
                                                 className="h-9 px-2 rounded-md text-sm w-full"
-                                                style={{ ...inputStyle, borderColor: attendeeErrors[idx]?.email ? "#c0392b" : "#D8D2C4" }}
+                                                style={{ ...inputStyle, borderColor: attendeeErrors[idx]?.email ? "var(--destructive)" : "var(--border)" }}
                                                 placeholder="Email"
                                                 value={a.email}
                                                 onChange={(e) => handleManualChange(idx, "email", e.target.value)}
                                             />
                                             {attendeeErrors[idx]?.email && (
-                                                <p className="text-[11px] mt-0.5" style={{ color: "#c0392b" }}>{attendeeErrors[idx].email}</p>
+                                                <p className="text-[11px] mt-0.5" style={{ color: "var(--destructive)" }}>{attendeeErrors[idx].email}</p>
                                             )}
                                         </div>
                                         <input className="h-9 px-2 rounded-md text-sm" style={inputStyle} placeholder="Company" value={a.company} onChange={(e) => handleManualChange(idx, "company", e.target.value)} />
@@ -589,20 +589,20 @@ export const EventCreate = () => {
                                     </div>
                                 </div>
                             ))}
-                            <button type="button" onClick={addManualRow} className="flex items-center gap-1.5 text-xs font-semibold cursor-pointer mt-1" style={{ color: GREEN }}>
+                            <button type="button" onClick={addManualRow} className="flex items-center gap-1.5 text-xs font-semibold cursor-pointer mt-1" style={{ color: "var(--secondary-text)" }}>
                                 <Plus className="h-3.5 w-3.5" /> Add another
                             </button>
                         </div>
 
                         {/* Excel upload */}
-                        <div className="p-4 rounded-lg" style={{ border: "1px dashed #D8D2C4", backgroundColor: "#F5F0E8" }}>
-                            <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer" style={{ color: GREEN }}>
+                        <div className="p-4 rounded-lg" style={{ border: "1px dashed var(--border)", backgroundColor: "var(--muted)" }}>
+                            <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer" style={{ color: "var(--secondary-text)" }}>
                                 <Upload className="h-4 w-4" />
                                 {uploading ? "Reading file…" : "Upload attendees from Excel (.xlsx)"}
                                 <input type="file" accept=".xlsx" className="hidden" onChange={handleExcelUpload} disabled={uploading} />
                             </label>
                             {excelRows.length > 0 && (
-                                <p className="text-xs mt-2" style={{ color: GREEN }}>{excelRows.length} valid row(s) loaded from Excel.</p>
+                                <p className="text-xs mt-2" style={{ color: "var(--secondary-text)" }}>{excelRows.length} valid row(s) loaded from Excel.</p>
                             )}
                             {excelErrors.length > 0 && (
                                 <div className="mt-2 text-xs" style={{ color: "#B0592E" }}>
@@ -612,7 +612,7 @@ export const EventCreate = () => {
                             )}
                         </div>
 
-                        <p className="text-sm font-semibold" style={{ color: "#2E2A26" }}>
+                        <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
                             Total attendees: {allAttendees().length}
                         </p>
                     </div>
@@ -621,21 +621,21 @@ export const EventCreate = () => {
                 {/* STEP 4 — Preview */}
                 {step === 3 && (
                     <div className="space-y-3">
-                        <p className="text-sm font-semibold" style={{ color: "#2E2A26" }}>
+                        <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
                             Review the attendees before loading them ({allAttendees().length})
                         </p>
-                        <div className="overflow-auto rounded-lg" style={{ border: "1px solid #D8D2C4", maxHeight: 320 }}>
+                        <div className="overflow-auto rounded-lg" style={{ border: "1px solid var(--border)", maxHeight: 320 }}>
                             <table className="w-full text-sm">
                                 <thead>
                                     <tr style={{ backgroundColor: GREEN }}>
                                         {["First name", "Last name", "Email", "Phone", "Company", "Job title", "Source"].map((h) => (
-                                            <th key={h} className="px-3 py-2 text-xs font-semibold text-left" style={{ color: "#FBF7EF" }}>{h}</th>
+                                            <th key={h} className="px-3 py-2 text-xs font-semibold text-left" style={{ color: "var(--secondary-foreground)" }}>{h}</th>
                                         ))}
                                     </tr>
                                 </thead>
-                                <tbody style={{ color: "#2E2A26" }}>
+                                <tbody style={{ color: "var(--foreground)" }}>
                                     {allAttendees().map((a, i) => (
-                                        <tr key={i} style={{ borderBottom: "1px solid #D8D2C4" }}>
+                                        <tr key={i} style={{ borderBottom: "1px solid var(--border)" }}>
                                             <td className="px-3 py-1.5">{a.first_name}</td>
                                             <td className="px-3 py-1.5">{a.last_name}</td>
                                             <td className="px-3 py-1.5">{a.email}</td>
@@ -643,7 +643,7 @@ export const EventCreate = () => {
                                             <td className="px-3 py-1.5">{a.company}</td>
                                             <td className="px-3 py-1.5">{a.job_title}</td>
                                             <td className="px-3 py-1.5">
-                                                <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: "#F2EBDD", color: "#6b6560" }}>{a.source}</span>
+                                                <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: "var(--card)", color: "var(--muted-foreground)" }}>{a.source}</span>
                                             </td>
                                         </tr>
                                     ))}
@@ -656,8 +656,8 @@ export const EventCreate = () => {
                 {/* STEP 5 — Confirm */}
                 {step === 4 && (
                     <div className="space-y-3">
-                        <p className="text-sm font-semibold" style={{ color: "#2E2A26" }}>Confirm & create</p>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm" style={{ color: "#2E2A26" }}>
+                        <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Confirm & create</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm" style={{ color: "var(--foreground)" }}>
                             <div><span style={{ color: "#9b948e" }}>Event: </span>{form.name}</div>
                             <div><span style={{ color: "#9b948e" }}>Modality: </span>{form.modality === "virtual" ? "Virtual" : "In Person"}</div>
                             <div><span style={{ color: "#9b948e" }}>Pipeline: </span>{pipelines.find((p) => p.id === pipelineId)?.name}</div>
@@ -672,9 +672,9 @@ export const EventCreate = () => {
                                 <div className="col-span-2 break-all"><span style={{ color: "#9b948e" }}>Join URL: </span>{form.virtual_url.trim()}</div>
                             )}
                         </div>
-                        <div className="flex items-start gap-2 p-3 rounded-lg" style={{ backgroundColor: "rgba(94,106,67,0.08)", border: "1px solid rgba(94,106,67,0.25)" }}>
-                            <Check className="h-4 w-4 mt-0.5" style={{ color: GREEN }} />
-                            <p className="text-xs" style={{ color: "#4a5535" }}>
+                        <div className="flex items-start gap-2 p-3 rounded-lg" style={{ backgroundColor: "rgba(37,91,1,0.08)", border: "1px solid rgba(37,91,1,0.25)" }}>
+                            <Check className="h-4 w-4 mt-0.5" style={{ color: "var(--secondary-text)" }} />
+                            <p className="text-xs" style={{ color: "var(--secondary-text)" }}>
                                 On confirm: attendees are loaded, the event goes live, invitation emails (with a calendar .ics) are sent, and a public registration link + QR are generated.
                             </p>
                         </div>
@@ -682,12 +682,12 @@ export const EventCreate = () => {
                 )}
 
                 {/* Nav buttons */}
-                <div className="flex items-center justify-between mt-6 pt-4" style={{ borderTop: "1px solid #D8D2C4" }}>
+                <div className="flex items-center justify-between mt-6 pt-4" style={{ borderTop: "1px solid var(--border)" }}>
                     <button
                         type="button"
                         onClick={step === 0 ? () => navigate("/event") : back}
                         className="flex items-center gap-1.5 h-10 px-4 rounded-lg text-sm font-semibold cursor-pointer"
-                        style={{ border: "1px solid #D8D2C4", color: "#6b6560", backgroundColor: "#FFFFFF" }}
+                        style={{ border: "1px solid var(--border)", color: "var(--muted-foreground)", backgroundColor: "var(--background)" }}
                     >
                         <ChevronLeft className="h-4 w-4" /> {step === 0 ? "Cancel" : "Back"}
                     </button>
@@ -698,7 +698,7 @@ export const EventCreate = () => {
                             onClick={next}
                             disabled={!canNext()}
                             className="flex items-center gap-1.5 h-10 px-5 rounded-lg text-sm font-semibold cursor-pointer"
-                            style={{ backgroundColor: canNext() ? GREEN : "#c9c3b6", color: "#FBF7EF" }}
+                            style={{ backgroundColor: canNext() ? GREEN : "color-mix(in srgb, var(--muted-foreground) 45%, var(--background))", color: "var(--secondary-foreground)" }}
                         >
                             Next <ChevronRight className="h-4 w-4" />
                         </button>
@@ -708,7 +708,7 @@ export const EventCreate = () => {
                             onClick={submit}
                             disabled={submitting}
                             className="flex items-center gap-1.5 h-10 px-5 rounded-lg text-sm font-semibold cursor-pointer"
-                            style={{ backgroundColor: GREEN, color: "#FBF7EF", opacity: submitting ? 0.7 : 1 }}
+                            style={{ backgroundColor: GREEN, color: "var(--secondary-foreground)", opacity: submitting ? 0.7 : 1 }}
                         >
                             {submitting ? "Creating…" : "Create event"}
                         </button>

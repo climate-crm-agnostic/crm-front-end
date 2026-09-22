@@ -302,7 +302,7 @@ export const ClientDetail = () => {
 
             <div className="flex-1 p-6 max-w-6xl mx-auto w-full">
                 {error && (
-                    <div className="p-4 mb-6 text-sm text-red-500 bg-red-50 rounded-md border border-red-200">
+                    <div className="p-4 mb-6 text-sm text-red-500 bg-red-50 dark:bg-red-500/15 rounded-md border border-red-200 dark:border-red-500/30">
                         {error}
                     </div>
                 )}
@@ -426,7 +426,7 @@ export const ClientDetail = () => {
                             {images.length > 0 ? (
                                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                                     {images.map((img, idx) => (
-                                        <div key={img.path || idx} className="relative aspect-square bg-gray-100 rounded-md overflow-hidden border group">
+                                        <div key={img.path || idx} className="relative aspect-square bg-muted rounded-md overflow-hidden border group">
                                             <img src={img.url} alt={`Uploaded ${idx}`} className="w-full h-full object-cover" />
                                             <a href={img.url} target="_blank" rel="noreferrer" className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-medium">
                                                 View

@@ -6,7 +6,7 @@ import {
     downloadAttendeeTemplate, previewAttendeesExcel, approveAttendees,
 } from "@/services/eventService";
 
-const GREEN = "#5E6A43";
+const GREEN = "var(--secondary)";
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 const emptyRow = () => ({ first_name: "", last_name: "", email: "", phone: "", company: "", job_title: "" });
@@ -25,7 +25,7 @@ export const AddAttendeesModal = ({ eventId, onClose, onDone }) => {
     const [uploading, setUploading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
 
-    const inputStyle = { border: "1px solid #D8D2C4", backgroundColor: "#FFFFFF", color: "#2E2A26" };
+    const inputStyle = { border: "1px solid var(--border)", backgroundColor: "var(--background)", color: "var(--foreground)" };
 
     const setManualField = (idx, field, value) => {
         setManual((rows) => rows.map((r, i) => (i === idx ? { ...r, [field]: value } : r)));
@@ -89,13 +89,13 @@ export const AddAttendeesModal = ({ eventId, onClose, onDone }) => {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: "rgba(0,0,0,0.4)" }}>
-            <div className="w-full max-w-lg rounded-2xl p-6 space-y-4 max-h-[90vh] overflow-auto" style={{ backgroundColor: "#FBF7EF", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+            <div className="w-full max-w-lg rounded-2xl p-6 space-y-4 max-h-[90vh] overflow-auto" style={{ backgroundColor: "var(--background)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
                 <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
-                        <h2 className="text-lg font-semibold" style={{ color: "#2E2A26" }}>Add attendees</h2>
+                        <h2 className="text-lg font-semibold" style={{ color: "var(--foreground)" }}>Add attendees</h2>
                         <p className="text-xs" style={{ color: "#9b948e" }}>Add manually or upload an Excel file. Each new attendee is emailed their invitation.</p>
                     </div>
-                    <button type="button" onClick={onClose} className="shrink-0 cursor-pointer" style={{ color: "#6b6560" }} title="Close">
+                    <button type="button" onClick={onClose} className="shrink-0 cursor-pointer" style={{ color: "var(--muted-foreground)" }} title="Close">
                         <X className="h-5 w-5" />
                     </button>
                 </div>
@@ -105,7 +105,7 @@ export const AddAttendeesModal = ({ eventId, onClose, onDone }) => {
                         type="button"
                         onClick={downloadAttendeeTemplate}
                         className="flex items-center gap-2 h-9 px-3 rounded-lg text-xs font-semibold cursor-pointer whitespace-nowrap"
-                        style={{ border: `1px solid ${GREEN}`, color: GREEN, backgroundColor: "#FFFFFF" }}
+                        style={{ border: `1px solid var(--secondary-text)`, color: "var(--secondary-text)", backgroundColor: "var(--background)" }}
                     >
                         <Download className="h-4 w-4" /> Download template
                     </button>
@@ -114,11 +114,11 @@ export const AddAttendeesModal = ({ eventId, onClose, onDone }) => {
                 {/* Manual entry — one card per attendee */}
                 <div className="space-y-3">
                     {manual.map((a, idx) => (
-                        <div key={idx} className="p-3 rounded-lg" style={{ border: "1px solid #E7E1D4", backgroundColor: "#FFFFFF" }}>
+                        <div key={idx} className="p-3 rounded-lg" style={{ border: "1px solid var(--border)", backgroundColor: "var(--background)" }}>
                             <div className="flex items-center justify-between mb-2">
                                 <span className="text-xs font-semibold" style={{ color: "#9b948e" }}>Attendee {idx + 1}</span>
                                 {manual.length > 1 && (
-                                    <button type="button" className="cursor-pointer" style={{ color: "#c0392b" }} onClick={() => removeRow(idx)} title="Remove">
+                                    <button type="button" className="cursor-pointer" style={{ color: "var(--destructive)" }} onClick={() => removeRow(idx)} title="Remove">
                                         <Trash2 className="h-4 w-4" />
                                     </button>
                                 )}
@@ -130,13 +130,13 @@ export const AddAttendeesModal = ({ eventId, onClose, onDone }) => {
                                     <input
                                         type="email"
                                         className="h-9 px-2 rounded-md text-sm w-full"
-                                        style={{ ...inputStyle, borderColor: manualErrors[idx]?.email ? "#c0392b" : "#D8D2C4" }}
+                                        style={{ ...inputStyle, borderColor: manualErrors[idx]?.email ? "var(--destructive)" : "var(--border)" }}
                                         placeholder="Email"
                                         value={a.email}
                                         onChange={(e) => setManualField(idx, "email", e.target.value)}
                                     />
                                     {manualErrors[idx]?.email && (
-                                        <p className="text-[11px] mt-0.5" style={{ color: "#c0392b" }}>{manualErrors[idx].email}</p>
+                                        <p className="text-[11px] mt-0.5" style={{ color: "var(--destructive)" }}>{manualErrors[idx].email}</p>
                                     )}
                                 </div>
                                 <input className="h-9 px-2 rounded-md text-sm" style={inputStyle} placeholder="Company" value={a.company} onChange={(e) => setManualField(idx, "company", e.target.value)} />
@@ -147,20 +147,20 @@ export const AddAttendeesModal = ({ eventId, onClose, onDone }) => {
                             </div>
                         </div>
                     ))}
-                    <button type="button" onClick={addRow} className="flex items-center gap-1.5 text-xs font-semibold cursor-pointer mt-1" style={{ color: GREEN }}>
+                    <button type="button" onClick={addRow} className="flex items-center gap-1.5 text-xs font-semibold cursor-pointer mt-1" style={{ color: "var(--secondary-text)" }}>
                         <Plus className="h-3.5 w-3.5" /> Add another
                     </button>
                 </div>
 
                 {/* Excel upload */}
-                <div className="p-4 rounded-lg" style={{ border: "1px dashed #D8D2C4", backgroundColor: "#F5F0E8" }}>
-                    <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer" style={{ color: GREEN }}>
+                <div className="p-4 rounded-lg" style={{ border: "1px dashed var(--border)", backgroundColor: "var(--muted)" }}>
+                    <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer" style={{ color: "var(--secondary-text)" }}>
                         <Upload className="h-4 w-4" />
                         {uploading ? "Reading file…" : "Upload attendees from Excel (.xlsx)"}
                         <input type="file" accept=".xlsx" className="hidden" onChange={handleExcelUpload} disabled={uploading} />
                     </label>
                     {excelRows.length > 0 && (
-                        <p className="text-xs mt-2" style={{ color: GREEN }}>{excelRows.length} valid row(s) loaded from Excel.</p>
+                        <p className="text-xs mt-2" style={{ color: "var(--secondary-text)" }}>{excelRows.length} valid row(s) loaded from Excel.</p>
                     )}
                     {excelErrors.length > 0 && (
                         <div className="mt-2 text-xs" style={{ color: "#B0592E" }}>
@@ -170,13 +170,13 @@ export const AddAttendeesModal = ({ eventId, onClose, onDone }) => {
                     )}
                 </div>
 
-                <p className="text-sm font-semibold" style={{ color: "#2E2A26" }}>
+                <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
                     Total to add: {allAttendees().length}
                 </p>
 
                 <div className="flex items-center justify-end gap-2 pt-2">
-                    <button type="button" onClick={onClose} className="h-10 px-4 rounded-lg text-sm font-semibold cursor-pointer" style={{ border: "1px solid #D8D2C4", color: "#6b6560", backgroundColor: "#FFFFFF" }}>Cancel</button>
-                    <button type="button" onClick={submit} disabled={!canSubmit} className="h-10 px-5 rounded-lg text-sm font-semibold cursor-pointer" style={{ backgroundColor: canSubmit ? GREEN : "#c9c3b6", color: "#FBF7EF" }}>
+                    <button type="button" onClick={onClose} className="h-10 px-4 rounded-lg text-sm font-semibold cursor-pointer" style={{ border: "1px solid var(--border)", color: "var(--muted-foreground)", backgroundColor: "var(--background)" }}>Cancel</button>
+                    <button type="button" onClick={submit} disabled={!canSubmit} className="h-10 px-5 rounded-lg text-sm font-semibold cursor-pointer" style={{ backgroundColor: canSubmit ? GREEN : "color-mix(in srgb, var(--muted-foreground) 45%, var(--background))", color: "var(--secondary-foreground)" }}>
                         {submitting ? "Adding…" : "Add & send invitations"}
                     </button>
                 </div>

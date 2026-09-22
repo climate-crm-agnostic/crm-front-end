@@ -182,7 +182,7 @@ export const CategoryDetail = () => {
 
             <div className="flex-1 p-6 max-w-4xl mx-auto w-full">
                 {error && (
-                    <div className="p-4 mb-6 text-sm text-red-500 bg-red-50 rounded-md border border-red-200">
+                    <div className="p-4 mb-6 text-sm text-red-500 bg-red-50 dark:bg-red-500/15 rounded-md border border-red-200 dark:border-red-500/30">
                         {error}
                     </div>
                 )}

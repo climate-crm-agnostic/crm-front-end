@@ -647,7 +647,7 @@ export const LeadDetail = () => {
                                 {isNew ? "New Opportunity" : "Edit Opportunity"}
                             </h1>
                             {!isNew && isArchived && (
-                                <span className="shrink-0" style={{ fontSize: "12px", backgroundColor: "#E8E3DA", color: "#6b6560", border: "1px solid #D8D2C4", borderRadius: "12px", padding: "2px 10px", fontWeight: 600, display: "flex", alignItems: "center" }}>
+                                <span className="shrink-0" style={{ fontSize: "12px", backgroundColor: "var(--border)", color: "var(--muted-foreground)", border: "1px solid var(--border)", borderRadius: "12px", padding: "2px 10px", fontWeight: 600, display: "flex", alignItems: "center" }}>
                                     Archived
                                 </span>
                             )}
@@ -666,7 +666,7 @@ export const LeadDetail = () => {
                             onValueChange={handleStageChange}
                             disabled={changingStage}
                         >
-                            <SelectTrigger className="h-9 w-[180px]" style={{ backgroundColor: "#fff", borderColor: "#D8D2C4", color: "#2E2A26" }}>
+                            <SelectTrigger className="h-9 w-[180px]" style={{ backgroundColor: "var(--background)", borderColor: "var(--border)", color: "var(--foreground)" }}>
                                 <SelectValue placeholder="Stage" />
                             </SelectTrigger>
                             <SelectContent>
@@ -694,7 +694,7 @@ export const LeadDetail = () => {
                             type="button"
                             onClick={handleToggleArchive}
                             disabled={archiving}
-                            style={{ display: "flex", alignItems: "center", gap: "6px", height: "36px", padding: "0 14px", borderRadius: "6px", border: "1px solid #D8D2C4", backgroundColor: "transparent", color: "#6b6560", fontSize: "13px", fontWeight: 500, cursor: archiving ? "not-allowed" : "pointer", transition: "all 0.2s", opacity: archiving ? 0.6 : 1 }}>
+                            style={{ display: "flex", alignItems: "center", gap: "6px", height: "36px", padding: "0 14px", borderRadius: "6px", border: "1px solid var(--border)", backgroundColor: "transparent", color: "var(--muted-foreground)", fontSize: "13px", fontWeight: 500, cursor: archiving ? "not-allowed" : "pointer", transition: "all 0.2s", opacity: archiving ? 0.6 : 1 }}>
                             {archiving ? "Saving…" : isArchived ? "Unarchive" : "Archive"}
                         </button>
                     )}
@@ -713,7 +713,7 @@ export const LeadDetail = () => {
                             onValueChange={handleStageChange}
                             disabled={changingStage}
                         >
-                            <SelectTrigger className="h-9 flex-1 min-w-0" style={{ backgroundColor: "#fff", borderColor: "#D8D2C4", color: "#2E2A26" }}>
+                            <SelectTrigger className="h-9 flex-1 min-w-0" style={{ backgroundColor: "var(--background)", borderColor: "var(--border)", color: "var(--foreground)" }}>
                                 <SelectValue placeholder="Stage" />
                             </SelectTrigger>
                             <SelectContent>
@@ -756,7 +756,7 @@ export const LeadDetail = () => {
             {/* Scrollable Content */}
             <div className="flex-1 p-6 max-w-6xl mx-auto w-full">
                 {error && (
-                    <div className="p-4 mb-6 text-sm text-red-500 bg-red-50 rounded-md border border-red-200">
+                    <div className="p-4 mb-6 text-sm text-red-500 bg-red-50 dark:bg-red-500/15 rounded-md border border-red-200 dark:border-red-500/30">
                         {error}
                     </div>
                 )}
@@ -831,9 +831,9 @@ export const LeadDetail = () => {
                                 readOnly={isAutoName}
                                 style={{
                                     width: "100%", height: "36px", padding: "0 12px",
-                                    borderRadius: "6px", border: "1px solid #D8D2C4",
-                                    backgroundColor: isAutoName ? "#F2EBDD" : "#fff",
-                                    color: isAutoName ? "#9b948e" : "#2E2A26",
+                                    borderRadius: "6px", border: "1px solid var(--border)",
+                                    backgroundColor: isAutoName ? "var(--card)" : "var(--background)",
+                                    color: isAutoName ? "#9b948e" : "var(--foreground)",
                                     fontSize: "14px", cursor: isAutoName ? "default" : "text",
                                     outline: "none", boxSizing: "border-box",
                                 }}
@@ -965,7 +965,7 @@ export const LeadDetail = () => {
                                                     <Button
                                                         size="sm"
                                                         variant="ghost"
-                                                        className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+                                                        className="h-8 w-8 p-0 text-red-500 hover:text-red-700 dark:hover:text-red-300"
                                                         onClick={() => removeItem(index)}
                                                     >
                                                         &times;
@@ -1124,7 +1124,7 @@ export const LeadDetail = () => {
                                                 </div>
                                             </div>
                                             {(!task.user_id || !user?.id || String(task.user_id) === String(user.id)) && (
-                                                <Button variant="ghost" size="sm" onClick={() => removeTask(idx)} className="h-6 w-6 p-0 text-red-500 hover:text-red-700">
+                                                <Button variant="ghost" size="sm" onClick={() => removeTask(idx)} className="h-6 w-6 p-0 text-red-500 hover:text-red-700 dark:hover:text-red-300">
                                                     &times;
                                                 </Button>
                                             )}
@@ -1178,7 +1178,7 @@ export const LeadDetail = () => {
                             {images.length > 0 ? (
                                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                                     {images.map((img, idx) => (
-                                        <div key={img.path || idx} className="relative aspect-square bg-gray-100 rounded-md overflow-hidden border group">
+                                        <div key={img.path || idx} className="relative aspect-square bg-muted rounded-md overflow-hidden border group">
                                             <img src={img.url} alt={`Uploaded ${idx}`} className="w-full h-full object-cover" />
                                             <a href={img.url} target="_blank" rel="noreferrer" className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-medium">
                                                 View
@@ -1247,18 +1247,18 @@ export const LeadDetail = () => {
                             {/* Participated events */}
                             <div className="bg-card rounded-lg border shadow-sm overflow-hidden">
                                 <div className="px-5 py-3 border-b flex items-center gap-2">
-                                    <CalendarDays className="h-4 w-4" style={{ color: "#5E6A43" }} />
+                                    <CalendarDays className="h-4 w-4" style={{ color: "var(--secondary-text)" }} />
                                     <span className="text-sm font-semibold">Events participated</span>
-                                    <span className="ml-1 text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: "rgba(94,106,67,0.12)", color: "#5E6A43" }}>
+                                    <span className="ml-1 text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: "rgba(37,91,1,0.12)", color: "var(--secondary-text)" }}>
                                         {leadEvents.events.length}
                                     </span>
                                 </div>
                                 <div className="overflow-auto">
                                     <table className="w-full text-sm">
                                         <thead>
-                                            <tr style={{ backgroundColor: "#5E6A43" }}>
+                                            <tr style={{ backgroundColor: "var(--secondary)" }}>
                                                 {["Event", "Modality", "Status", "Registered on"].map((h) => (
-                                                    <th key={h} className="px-4 py-2 text-xs font-semibold text-left" style={{ color: "#FBF7EF" }}>{h}</th>
+                                                    <th key={h} className="px-4 py-2 text-xs font-semibold text-left" style={{ color: "var(--secondary-foreground)" }}>{h}</th>
                                                 ))}
                                             </tr>
                                         </thead>
@@ -1267,15 +1267,15 @@ export const LeadDetail = () => {
                                                 <tr key={ev.id} className="border-b">
                                                     <td className="px-4 py-2 font-medium">{ev.name}</td>
                                                     <td className="px-4 py-2">
-                                                        <span className="inline-flex items-center gap-1 text-xs" style={{ color: "#6b6560" }}>
+                                                        <span className="inline-flex items-center gap-1 text-xs" style={{ color: "var(--muted-foreground)" }}>
                                                             {ev.modality === "Virtual" ? <Video className="h-3.5 w-3.5" /> : <MapPin className="h-3.5 w-3.5" />}
                                                             {ev.modality}
                                                         </span>
                                                     </td>
                                                     <td className="px-4 py-2">
-                                                        <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: "#F2EBDD", color: "#6b6560" }}>{ev.status_label}</span>
+                                                        <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: "var(--card)", color: "var(--muted-foreground)" }}>{ev.status_label}</span>
                                                     </td>
-                                                    <td className="px-4 py-2" style={{ color: "#6b6560" }}>
+                                                    <td className="px-4 py-2" style={{ color: "var(--muted-foreground)" }}>
                                                         {ev.registered_at ? formatDateTime(ev.registered_at) : "—"}
                                                     </td>
                                                 </tr>
@@ -1303,9 +1303,9 @@ export const LeadDetail = () => {
             {/* Move to Lost modal */}
             {showLostModal && (
                 <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.45)", zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
-                    <div style={{ backgroundColor: "#fff", borderRadius: 8, padding: 32, width: "100%", maxWidth: 440, boxShadow: "0 8px 32px rgba(0,0,0,0.18)" }}>
+                    <div style={{ backgroundColor: "var(--background)", borderRadius: 8, padding: 32, width: "100%", maxWidth: 440, boxShadow: "0 8px 32px rgba(0,0,0,0.18)" }}>
                         <p style={{ fontSize: 18, fontWeight: 700, color: "#1a1a1a", marginBottom: 8 }}>Move to Lost</p>
-                        <p style={{ fontSize: 13, color: "#6b6560", marginBottom: 20 }}>
+                        <p style={{ fontSize: 13, color: "var(--muted-foreground)", marginBottom: 20 }}>
                             Please provide a reason for marking <strong>{name}</strong> as lost.
                         </p>
                         <textarea
@@ -1314,13 +1314,13 @@ export const LeadDetail = () => {
                             placeholder="e.g. Not interested, budget constraints, chose a competitor…"
                             value={lostReason}
                             onChange={(e) => setLostReason(e.target.value)}
-                            style={{ width: "100%", padding: "8px 10px", border: "1px solid #D8D2C4", borderRadius: 4, fontSize: 14, fontFamily: "inherit", resize: "vertical", boxSizing: "border-box", outline: "none" }}
+                            style={{ width: "100%", padding: "8px 10px", border: "1px solid var(--border)", borderRadius: 4, fontSize: 14, fontFamily: "inherit", resize: "vertical", boxSizing: "border-box", outline: "none" }}
                         />
                         <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 20 }}>
                             <button
                                 type="button"
                                 onClick={() => setShowLostModal(false)}
-                                style={{ height: 36, padding: "0 16px", borderRadius: 6, border: "1px solid #D8D2C4", background: "transparent", color: "#6b6560", fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
+                                style={{ height: 36, padding: "0 16px", borderRadius: 6, border: "1px solid var(--border)", background: "transparent", color: "var(--muted-foreground)", fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
                                 Cancel
                             </button>
                             <button

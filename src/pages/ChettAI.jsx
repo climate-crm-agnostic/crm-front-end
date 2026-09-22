@@ -457,7 +457,7 @@ export const ChettAI = () => {
                                             borderRadius: 7,
                                             cursor: "pointer",
                                             background: conv.id === convId ? "var(--accent)" : "transparent",
-                                            borderLeft: conv.id === convId ? "3px solid var(--primary)" : "3px solid transparent",
+                                            borderLeft: conv.id === convId ? "3px solid var(--primary-text)" : "3px solid transparent",
                                             transition: "background 0.12s",
                                             gap: 6,
                                         }}
@@ -477,7 +477,7 @@ export const ChettAI = () => {
                                                 onClick={e => e.stopPropagation()}
                                                 style={{
                                                     flex: 1, fontSize: 12, border: "none",
-                                                    borderBottom: "1px solid var(--primary)",
+                                                    borderBottom: "1px solid var(--primary-text)",
                                                     background: "transparent", outline: "none",
                                                     color: "var(--foreground)",
                                                 }}

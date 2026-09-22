@@ -45,36 +45,22 @@ export function AppSidebar({ ...props }) {
   return (
     <Sidebar collapsible="icon" {...props}>
 
-      {/* Brand mark — expanded */}
+      {/* Brand mark — expanded. climate.svg is a full wordmark (carries the
+          "Climate" name itself), so the separate text labels this used to
+          sit next to are gone — the image replaces both the icon and them. */}
       <SidebarHeader className="pb-0 bg-card">
         <div
-          className="flex items-center gap-2.5 px-3 py-2.5 group-data-[collapsible=icon]:hidden border-b border-border"
+          className="flex items-center px-3 py-2.5 group-data-[collapsible=icon]:hidden border-b border-border"
         >
-          <div
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
-            style={{ backgroundColor: "#5E6A43" }}
-          >
-            <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4 text-white" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 2L2 7l10 5 10-5-10-5z" />
-              <path d="M2 17l10 5 10-5" />
-              <path d="M2 12l10 5 10-5" />
-            </svg>
-          </div>
-          <div className="leading-none">
-            <p className="text-sm font-bold tracking-tight text-foreground" style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
-              Climate by CodeX
-            </p>
-            <p className="text-[10px] font-medium uppercase tracking-widest mt-0.5 text-muted-foreground">
-              CRM Platform
-            </p>
-          </div>
+          <img src="/climate.svg" alt="Climate by CodeX" className="h-10 w-auto" />
         </div>
 
-        {/* Icon-only logo */}
+        {/* Icon-only logo — kept as the old geometric mark rather than the
+            wordmark, which doesn't read at 8x8. */}
         <div className="hidden group-data-[collapsible=icon]:flex justify-center py-2.5 border-b border-border">
           <div
             className="flex h-8 w-8 items-center justify-center rounded-lg"
-            style={{ backgroundColor: "#5E6A43" }}
+            style={{ backgroundColor: "var(--secondary)" }}
           >
             <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4 text-white" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 2L2 7l10 5 10-5-10-5z" />
@@ -100,14 +86,11 @@ export function AppSidebar({ ...props }) {
                   asChild
                   tooltip="Dashboard"
                   isActive={isDashboardActive}
-                  style={isDashboardActive ? {
-                    backgroundColor: "var(--sidebar-accent)",
-                    borderLeft: "3px solid #5E6A43",
-                    borderRadius: "0 4px 4px 0",
-                  } : {}}
+                  className={isDashboardActive ? "shadow-[inset_3px_0_0_var(--secondary-text)] rounded-l-none group-data-[collapsible=icon]:shadow-none group-data-[collapsible=icon]:rounded-md" : undefined}
+                  style={isDashboardActive ? { backgroundColor: "var(--sidebar-accent)" } : {}}
                 >
                   <Link to="/" style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
-                    <LayoutDashboard className="size-5" style={{ color: isDashboardActive ? "#5E6A43" : undefined }} />
+                    <LayoutDashboard className="size-4" style={{ color: isDashboardActive ? "var(--secondary-text)" : undefined }} />
                     <span className="font-medium text-foreground">Dashboard</span>
                   </Link>
                 </SidebarMenuButton>

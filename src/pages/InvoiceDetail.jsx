@@ -571,7 +571,7 @@ export const InvoiceDetail = () => {
                             {stripeEnabled && !stripeInvoiceId && ['draft', 'sent'].includes(status) && (
                                 <Button
                                     variant="outline"
-                                    className="border-purple-400 text-purple-700 hover:bg-purple-50"
+                                    className="border-purple-400 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-500/15"
                                     onClick={() => handleSendToStripe()}
                                     disabled={stripeSending}
                                 >
@@ -599,21 +599,21 @@ export const InvoiceDetail = () => {
 
             <div className="flex-1 p-6 max-w-6xl mx-auto w-full">
                 {error && (
-                    <div className="p-4 mb-6 text-sm text-red-500 bg-red-50 rounded-md border border-red-200">
+                    <div className="p-4 mb-6 text-sm text-red-500 bg-red-50 dark:bg-red-500/15 rounded-md border border-red-200 dark:border-red-500/30">
                         {error}
                     </div>
                 )}
 
                 {stripeEmailPrompt && (
-                    <div className="p-4 mb-6 bg-purple-50 border border-purple-200 rounded-md flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                    <div className="p-4 mb-6 bg-purple-50 dark:bg-purple-500/15 border border-purple-200 dark:border-purple-500/30 rounded-md flex flex-col sm:flex-row items-start sm:items-center gap-3">
                         <CreditCard className="h-5 w-5 text-purple-600 shrink-0 mt-0.5 sm:mt-0" />
                         <div className="flex-1">
-                            <p className="text-sm font-medium text-purple-800 mb-1">Customer email required</p>
+                            <p className="text-sm font-medium text-purple-800 dark:text-purple-300 mb-1">Customer email required</p>
                             <p className="text-xs text-purple-600 mb-2">No email found on this invoice's contact. Enter one to send via Stripe.</p>
                             <div className="flex gap-2">
                                 <input
                                     type="email"
-                                    className="flex-1 h-9 px-3 text-sm border rounded-md border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                                    className="flex-1 h-9 px-3 text-sm border rounded-md border-purple-300 dark:border-purple-500/30 focus:outline-none focus:ring-2 focus:ring-purple-400"
                                     placeholder="customer@example.com"
                                     value={stripeEmail}
                                     onChange={e => setStripeEmail(e.target.value)}

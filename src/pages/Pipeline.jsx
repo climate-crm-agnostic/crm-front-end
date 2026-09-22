@@ -14,14 +14,14 @@ import { Plus, Edit2, Columns, ChevronDown, ChevronUp, Trash2, SlidersHorizontal
 import { ATTRIBUTE_TYPES } from "../utils/attributeTypes";
 
 const FONT = '"Source Sans 3", Arial, sans-serif';
-const INK = "#2E2A26";
-const MUTED = "#6b6560";
+const INK = "var(--foreground)";
+const MUTED = "var(--muted-foreground)";
 const HINT = "#9b948e";
-const LINEN = "#FBF7EF";
-const OAT = "#F2EBDD";
-const PEBBLE = "#D8D2C4";
-const OLIVE = "#5E6A43";
-const APRICOT = "#F29B6B";
+const LINEN = "var(--background)";
+const OAT = "var(--card)";
+const PEBBLE = "var(--border)";
+const OLIVE = "var(--secondary)";
+const APRICOT = "var(--primary)";
 
 const TYPE_LABELS = Object.fromEntries(ATTRIBUTE_TYPES.map(t => [t.value, t.label]));
 
@@ -114,7 +114,7 @@ function AttributeManager({ pipeline }) {
             </div>
 
             {error && (
-                <p className="mb-2" style={{ fontSize: 12, color: "#c0392b" }}>{error}</p>
+                <p className="mb-2" style={{ fontSize: 12, color: "var(--destructive)" }}>{error}</p>
             )}
 
             {loading ? (
@@ -129,26 +129,26 @@ function AttributeManager({ pipeline }) {
                     {attrs.map((attr) => (
                         <div key={attr.id}
                              className="flex items-center gap-2 rounded-lg px-3 py-2"
-                             style={{ border: `1px solid ${PEBBLE}`, backgroundColor: "#fff" }}>
+                             style={{ border: `1px solid ${PEBBLE}`, backgroundColor: "var(--background)" }}>
                             <span className="shrink-0 text-[9px] font-black tabular-nums rounded px-1.5 py-0.5"
-                                  style={{ backgroundColor: "rgba(94,106,67,0.12)", color: OLIVE }}>
+                                  style={{ backgroundColor: "rgba(37,91,1,0.12)", color: "var(--secondary-text)" }}>
                                 {attr.order ?? 0}
                             </span>
                             <div className="min-w-0 flex-1">
                                 <p className="truncate" style={{ fontSize: 13, fontWeight: 600, color: INK }}>
                                     {attr.label}
-                                    {attr.is_required && <span style={{ color: "#c0392b" }}> *</span>}
+                                    {attr.is_required && <span style={{ color: "var(--destructive)" }}> *</span>}
                                 </p>
                                 <p className="truncate" style={{ fontSize: 10, color: HINT, fontFamily: "ui-monospace, monospace" }}>
                                     {TYPE_LABELS[attr.type] || attr.type} · #{attr.name}
                                 </p>
                             </div>
                             <button type="button" onClick={() => { setCreating(false); setEditing(attr); }}
-                                    className="cursor-pointer" style={{ color: OLIVE }} title="Edit">
+                                    className="cursor-pointer" style={{ color: "var(--secondary-text)" }} title="Edit">
                                 <Edit2 size={13} />
                             </button>
                             <button type="button" onClick={() => handleDelete(attr.id)}
-                                    className="cursor-pointer" style={{ color: "#c0392b" }} title="Delete">
+                                    className="cursor-pointer" style={{ color: "var(--destructive)" }} title="Delete">
                                 <Trash2 size={13} />
                             </button>
                         </div>
@@ -158,7 +158,7 @@ function AttributeManager({ pipeline }) {
 
             {isFormOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto"
-                     style={{ backgroundColor: "rgba(46,42,38,0.4)" }}>
+                     style={{ backgroundColor: "rgba(0,0,0,0.4)" }}>
                     <div className="w-full max-w-4xl rounded-xl shadow-2xl p-5 relative"
                          style={{ backgroundColor: LINEN, border: `1px solid ${PEBBLE}` }}>
                         <AttributeForm
@@ -301,7 +301,7 @@ function ValidationRuleManager({ pipeline }) {
 
     const inputStyle = {
         width: "100%", padding: "6px 10px", border: `1px solid ${PEBBLE}`,
-        borderRadius: "6px", backgroundColor: "#fff", color: INK,
+        borderRadius: "6px", backgroundColor: "var(--background)", color: INK,
         fontFamily: FONT, fontSize: "13px", outline: "none", boxSizing: "border-box",
     };
 
@@ -350,7 +350,7 @@ function ValidationRuleManager({ pipeline }) {
                     )}
 
                     {/* Add / Edit form */}
-                    <div style={{ backgroundColor: "#fff", border: `1px solid ${PEBBLE}`, borderRadius: "8px", padding: "12px" }}>
+                    <div style={{ backgroundColor: "var(--background)", border: `1px solid ${PEBBLE}`, borderRadius: "8px", padding: "12px" }}>
                         <p style={{ fontSize: "12px", fontWeight: 600, color: INK, marginBottom: "10px", fontFamily: FONT }}>
                             {editingId ? "Edit Rule" : "Add Rule"}
                         </p>
@@ -423,7 +423,7 @@ function ValidationRuleManager({ pipeline }) {
                         <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "10px" }}>
                             <button
                                 onClick={addCondition}
-                                style={{ padding: "5px 10px", backgroundColor: "transparent", color: OLIVE, border: `1px dashed ${OLIVE}`, borderRadius: "6px", fontSize: "11px", fontWeight: 600, fontFamily: FONT, cursor: "pointer" }}
+                                style={{ padding: "5px 10px", backgroundColor: "transparent", color: "var(--secondary-text)", border: `1px dashed var(--secondary-text)`, borderRadius: "6px", fontSize: "11px", fontWeight: 600, fontFamily: FONT, cursor: "pointer" }}
                             >
                                 + Add condition
                             </button>
@@ -432,13 +432,13 @@ function ValidationRuleManager({ pipeline }) {
                                 <div style={{ display: "flex", gap: "4px", fontSize: "11px", fontFamily: FONT }}>
                                     <button
                                         onClick={() => setForm(p => ({ ...p, condition_logic: "AND" }))}
-                                        style={{ padding: "4px 8px", borderRadius: "6px", border: `1px solid ${form.condition_logic === "AND" ? OLIVE : PEBBLE}`, backgroundColor: form.condition_logic === "AND" ? OLIVE : "transparent", color: form.condition_logic === "AND" ? LINEN : MUTED, cursor: "pointer", fontWeight: 600 }}
+                                        style={{ padding: "4px 8px", borderRadius: "6px", border: `1px solid ${form.condition_logic === "AND" ? "var(--secondary-text)" : PEBBLE}`, backgroundColor: form.condition_logic === "AND" ? OLIVE : "transparent", color: form.condition_logic === "AND" ? LINEN : MUTED, cursor: "pointer", fontWeight: 600 }}
                                     >
                                         Match ALL (AND)
                                     </button>
                                     <button
                                         onClick={() => setForm(p => ({ ...p, condition_logic: "OR" }))}
-                                        style={{ padding: "4px 8px", borderRadius: "6px", border: `1px solid ${form.condition_logic === "OR" ? OLIVE : PEBBLE}`, backgroundColor: form.condition_logic === "OR" ? OLIVE : "transparent", color: form.condition_logic === "OR" ? LINEN : MUTED, cursor: "pointer", fontWeight: 600 }}
+                                        style={{ padding: "4px 8px", borderRadius: "6px", border: `1px solid ${form.condition_logic === "OR" ? "var(--secondary-text)" : PEBBLE}`, backgroundColor: form.condition_logic === "OR" ? OLIVE : "transparent", color: form.condition_logic === "OR" ? LINEN : MUTED, cursor: "pointer", fontWeight: 600 }}
                                     >
                                         Match ANY (OR)
                                     </button>
@@ -457,7 +457,7 @@ function ValidationRuleManager({ pipeline }) {
                         </div>
 
                         <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", color: INK, fontFamily: FONT, cursor: "pointer", marginBottom: "10px" }}>
-                            <input type="checkbox" checked={form.is_active} onChange={e => setForm(p => ({ ...p, is_active: e.target.checked }))} style={{ accentColor: OLIVE }} />
+                            <input type="checkbox" checked={form.is_active} onChange={e => setForm(p => ({ ...p, is_active: e.target.checked }))} style={{ accentColor: "var(--secondary-text)" }} />
                             Active
                         </label>
 
@@ -531,9 +531,9 @@ export const Pipeline = () => {
                 <div className="flex items-center gap-3">
                     <div
                         className="flex h-10 w-10 items-center justify-center rounded-lg"
-                        style={{ backgroundColor: "rgba(94,106,67,0.12)", border: "1px solid rgba(94,106,67,0.3)" }}
+                        style={{ backgroundColor: "rgba(37,91,1,0.12)", border: "1px solid rgba(37,91,1,0.3)" }}
                     >
-                        <Columns className="h-5 w-5" style={{ color: OLIVE }} />
+                        <Columns className="h-5 w-5" style={{ color: "var(--secondary-text)" }} />
                     </div>
                     <div>
                         <p className="text-base font-semibold" style={{ color: INK, fontFamily: FONT }}>Pipelines</p>
@@ -544,7 +544,7 @@ export const Pipeline = () => {
                     onClick={handleCreateClick}
                     className="flex items-center gap-2 h-10 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
                     style={{ backgroundColor: OLIVE, color: LINEN }}
-                    onMouseEnter={e => e.currentTarget.style.backgroundColor = "#4a5535"}
+                    onMouseEnter={e => e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--secondary) 80%, black)"}
                     onMouseLeave={e => e.currentTarget.style.backgroundColor = OLIVE}
                 >
                     <Plus size={16} /> New Pipeline
@@ -560,7 +560,7 @@ export const Pipeline = () => {
                     {pipelines.length === 0 ? (
                         <div
                             className="col-span-full text-center py-20 rounded-xl"
-                            style={{ border: "1.5px dashed #D8D2C4", color: HINT }}
+                            style={{ border: "1.5px dashed var(--border)", color: HINT }}
                         >
                             <Columns className="h-10 w-10 mx-auto mb-3 opacity-25" />
                             <p className="text-sm">No pipelines found.</p>
@@ -571,7 +571,7 @@ export const Pipeline = () => {
                             key={pipeline.id}
                             className="rounded-xl p-5 group relative transition-all"
                             style={{ backgroundColor: LINEN, border: `1px solid ${PEBBLE}` }}
-                            onMouseEnter={e => { e.currentTarget.style.borderColor = OLIVE; e.currentTarget.style.boxShadow = "0 4px 16px rgba(94,106,67,0.10)"; }}
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--secondary-text)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(37,91,1,0.10)"; }}
                             onMouseLeave={e => { e.currentTarget.style.borderColor = PEBBLE; e.currentTarget.style.boxShadow = "none"; }}
                         >
                             {/* Edit icon */}
@@ -583,9 +583,9 @@ export const Pipeline = () => {
                             >
                                 <div
                                     className="h-7 w-7 flex items-center justify-center rounded-full"
-                                    style={{ backgroundColor: "rgba(94,106,67,0.10)" }}
+                                    style={{ backgroundColor: "rgba(37,91,1,0.10)" }}
                                 >
-                                    <Edit2 size={13} style={{ color: OLIVE }} />
+                                    <Edit2 size={13} style={{ color: "var(--secondary-text)" }} />
                                 </div>
                             </button>
 
@@ -593,9 +593,9 @@ export const Pipeline = () => {
                             <div className="flex items-center gap-3 mb-4">
                                 <div
                                     className="flex h-10 w-10 items-center justify-center rounded-lg shrink-0"
-                                    style={{ backgroundColor: "rgba(94,106,67,0.10)", border: "1px solid rgba(94,106,67,0.25)" }}
+                                    style={{ backgroundColor: "rgba(37,91,1,0.10)", border: "1px solid rgba(37,91,1,0.25)" }}
                                 >
-                                    <Columns size={18} style={{ color: OLIVE }} />
+                                    <Columns size={18} style={{ color: "var(--secondary-text)" }} />
                                 </div>
                                 <p className="font-semibold text-base leading-tight" style={{ color: INK }}>{pipeline.name}</p>
                             </div>
@@ -625,7 +625,7 @@ export const Pipeline = () => {
                                 <button
                                     onClick={e => toggleAttributes(e, pipeline.id)}
                                     className="flex items-center gap-1.5 text-xs font-semibold transition-colors"
-                                    style={{ background: "none", border: "none", cursor: "pointer", color: expandedId === pipeline.id ? OLIVE : HINT, fontFamily: FONT, padding: 0 }}
+                                    style={{ background: "none", border: "none", cursor: "pointer", color: expandedId === pipeline.id ? "var(--secondary-text)" : HINT, fontFamily: FONT, padding: 0 }}
                                 >
                                     <SlidersHorizontal size={12} />
                                     Lead Fields
@@ -635,7 +635,7 @@ export const Pipeline = () => {
                                 <button
                                     onClick={e => toggleRules(e, pipeline.id)}
                                     className="flex items-center gap-1.5 text-xs font-semibold transition-colors"
-                                    style={{ background: "none", border: "none", cursor: "pointer", color: expandedRulesId === pipeline.id ? OLIVE : HINT, fontFamily: FONT, padding: 0 }}
+                                    style={{ background: "none", border: "none", cursor: "pointer", color: expandedRulesId === pipeline.id ? "var(--secondary-text)" : HINT, fontFamily: FONT, padding: 0 }}
                                 >
                                     <ShieldCheck size={12} />
                                     Stage Rules

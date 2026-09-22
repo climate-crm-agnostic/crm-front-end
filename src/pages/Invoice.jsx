@@ -157,9 +157,9 @@ export const Invoice = () => {
                     <button
                         onClick={handleExportExcel}
                         className="flex items-center gap-2 h-9 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
-                        style={{ backgroundColor: "#F2EBDD", border: "1px solid #5E6A43", color: "#5E6A43" }}
-                        onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(94,106,67,0.15)"}
-                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "#F2EBDD"}
+                        style={{ backgroundColor: "var(--card)", border: "1px solid var(--secondary-text)", color: "var(--secondary-text)" }}
+                        onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(37,91,1,0.15)"}
+                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "var(--card)"}
                     >
                         <Download className="h-4 w-4" /> Export Excel
                     </button>
@@ -169,7 +169,7 @@ export const Invoice = () => {
                 </div>
             </div>
 
-            <div className="bg-brand-oat p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
+            <div className="bg-card p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
                 <Table
                     data={invoices}
                     columns={columns}

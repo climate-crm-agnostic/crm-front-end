@@ -38,7 +38,7 @@ export const Teams = () => {
             text: "This will remove the team and its member roster.",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#5E6A43',
+            confirmButtonColor: 'var(--secondary)',
             cancelButtonColor: '#9b948e',
             confirmButtonText: 'Yes, delete it!'
         });
@@ -72,7 +72,7 @@ export const Teams = () => {
 
     if (loading) {
         return (
-            <div className="p-8 text-center" style={{ color: "#6b6560", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+            <div className="p-8 text-center" style={{ color: "var(--muted-foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
                 Loading teams...
             </div>
         );
@@ -85,14 +85,14 @@ export const Teams = () => {
                 <div className="flex items-center gap-3">
                     <div
                         className="flex h-10 w-10 items-center justify-center rounded-lg"
-                        style={{ backgroundColor: "rgba(94,106,67,0.12)", border: "1px solid rgba(94,106,67,0.3)" }}
+                        style={{ backgroundColor: "rgba(37,91,1,0.12)", border: "1px solid rgba(37,91,1,0.3)" }}
                     >
-                        <Users2 className="h-5 w-5" style={{ color: "#5E6A43" }} />
+                        <Users2 className="h-5 w-5" style={{ color: "var(--secondary-text)" }} />
                     </div>
                     <div>
                         <p
                             className="text-base font-semibold"
-                            style={{ color: "#2E2A26", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+                            style={{ color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
                         >
                             Teams
                         </p>
@@ -105,9 +105,9 @@ export const Teams = () => {
                 <Link to="/team/new">
                     <button
                         className="flex items-center gap-2 h-10 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
-                        style={{ backgroundColor: "#5E6A43", color: "#FBF7EF" }}
-                        onMouseEnter={e => e.currentTarget.style.backgroundColor = "#4a5535"}
-                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "#5E6A43"}
+                        style={{ backgroundColor: "var(--secondary)", color: "var(--secondary-foreground)" }}
+                        onMouseEnter={e => e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--secondary) 80%, black)"}
+                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "var(--secondary)"}
                     >
                         <Plus className="h-4 w-4" />
                         New Team
@@ -117,18 +117,18 @@ export const Teams = () => {
 
             <div
                 className="overflow-hidden"
-                style={{ borderRadius: "10px", border: "1px solid #D8D2C4", backgroundColor: "#FBF7EF" }}
+                style={{ borderRadius: "10px", border: "1px solid var(--border)", backgroundColor: "var(--background)" }}
             >
                 <div
                     className="px-5 py-3"
-                    style={{ borderBottom: "1px solid #D8D2C4", backgroundColor: "#F2EBDD" }}
+                    style={{ borderBottom: "1px solid var(--border)", backgroundColor: "var(--card)" }}
                 >
-                    <span className="text-sm font-semibold" style={{ color: "#2E2A26" }}>
+                    <span className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
                         All Teams
                     </span>
                     <span
                         className="ml-2 text-xs font-medium px-2 py-0.5 rounded-full"
-                        style={{ backgroundColor: "rgba(94,106,67,0.12)", color: "#5E6A43", border: "1px solid rgba(94,106,67,0.3)" }}
+                        style={{ backgroundColor: "rgba(37,91,1,0.12)", color: "var(--secondary-text)", border: "1px solid rgba(37,91,1,0.3)" }}
                     >
                         {teams.length}
                     </span>
@@ -144,13 +144,13 @@ export const Teams = () => {
                     <div className="overflow-auto">
                         <table className="w-full text-sm">
                             <thead>
-                                <tr style={{ backgroundColor: "#5E6A43" }}>
+                                <tr style={{ backgroundColor: "var(--secondary)" }}>
                                     {["Name", "Leader", "Members", "Actions"].map((h, i) => (
                                         <th
                                             key={h}
                                             className="px-4 py-2.5 text-xs font-semibold text-left"
                                             style={{
-                                                color: "#FBF7EF",
+                                                color: "var(--secondary-foreground)",
                                                 letterSpacing: "0.06em",
                                                 fontFamily: '"Source Sans 3", Arial, sans-serif',
                                                 textAlign: i === 3 ? "right" : "left",
@@ -161,21 +161,21 @@ export const Teams = () => {
                                     ))}
                                 </tr>
                             </thead>
-                            <tbody style={{ color: "#2E2A26" }}>
+                            <tbody style={{ color: "var(--foreground)" }}>
                                 {teams.map((team) => (
                                     <tr
                                         key={team.id}
-                                        style={{ borderBottom: "1px solid #D8D2C4" }}
-                                        onMouseEnter={e => e.currentTarget.style.backgroundColor = "#F2EBDD"}
+                                        style={{ borderBottom: "1px solid var(--border)" }}
+                                        onMouseEnter={e => e.currentTarget.style.backgroundColor = "var(--card)"}
                                         onMouseLeave={e => e.currentTarget.style.backgroundColor = ""}
                                     >
                                         <td className="px-4 py-2.5">
                                             <span className="font-medium">{team.name}</span>
                                         </td>
-                                        <td className="px-4 py-2.5" style={{ color: "#6b6560" }}>
+                                        <td className="px-4 py-2.5" style={{ color: "var(--muted-foreground)" }}>
                                             {team.leader?.name || "—"}
                                         </td>
-                                        <td className="px-4 py-2.5" style={{ color: "#6b6560" }}>
+                                        <td className="px-4 py-2.5" style={{ color: "var(--muted-foreground)" }}>
                                             {team.members?.length || 0}
                                         </td>
                                         <td className="px-4 py-2.5">
@@ -183,8 +183,8 @@ export const Teams = () => {
                                                 <Link to={`/team/${team.id}`}>
                                                     <button
                                                         className="flex h-8 w-8 items-center justify-center rounded-md transition-colors cursor-pointer"
-                                                        style={{ color: "#5E6A43" }}
-                                                        onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(94,106,67,0.1)"}
+                                                        style={{ color: "var(--secondary-text)" }}
+                                                        onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(37,91,1,0.1)"}
                                                         onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
                                                         title="Edit"
                                                     >
@@ -193,7 +193,7 @@ export const Teams = () => {
                                                 </Link>
                                                 <button
                                                     className="flex h-8 w-8 items-center justify-center rounded-md transition-colors cursor-pointer"
-                                                    style={{ color: "#c0392b" }}
+                                                    style={{ color: "var(--destructive)" }}
                                                     onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(192,57,43,0.08)"}
                                                     onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
                                                     onClick={() => handleDelete(team.id)}

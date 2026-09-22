@@ -6,8 +6,8 @@ import { getAuditLogs } from "@/services/auditLogService";
 import { DateInput } from "@/components/ui/date-input";
 
 const ACTION_STYLE = {
-    CREATE: { bg: "rgba(94,106,67,0.12)",   border: "rgba(94,106,67,0.4)",   text: "#4a5535" },
-    UPDATE: { bg: "rgba(242,155,107,0.12)", border: "rgba(242,155,107,0.4)", text: "#c0622a" },
+    CREATE: { bg: "rgba(37,91,1,0.12)",   border: "rgba(37,91,1,0.4)",   text: "var(--secondary-text)" },
+    UPDATE: { bg: "rgba(96,216,5,0.12)", border: "rgba(96,216,5,0.4)", text: "#c0622a" },
     DELETE: { bg: "rgba(192,98,42,0.10)",   border: "rgba(192,98,42,0.4)",   text: "#9b3a10" },
 };
 
@@ -44,7 +44,7 @@ const ChangesCell = ({ changes }) => {
             <button
                 onClick={() => setOpen(v => !v)}
                 className="flex items-center gap-1 text-xs font-medium transition-colors"
-                style={{ color: "#5E6A43" }}
+                style={{ color: "var(--secondary-text)" }}
             >
                 {keys.length} field{keys.length > 1 ? "s" : ""}
                 {open ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
@@ -52,7 +52,7 @@ const ChangesCell = ({ changes }) => {
             {open && (
                 <div
                     className="mt-1.5 rounded p-2 text-xs font-mono space-y-0.5 max-h-40 overflow-y-auto"
-                    style={{ backgroundColor: "rgba(216,210,196,0.2)", border: "1px solid #D8D2C4", color: "#2E2A26" }}
+                    style={{ backgroundColor: "rgba(52,83,74,0.2)", border: "1px solid var(--border)", color: "var(--foreground)" }}
                 >
                     {keys.map(k => {
                         const val = changes[k];
@@ -64,7 +64,7 @@ const ChangesCell = ({ changes }) => {
                                     <span style={{ color: "#9b3a10", textDecoration: "line-through" }}>{String(before).slice(0, 60)}</span>
                                 )}
                                 {before !== null && <span style={{ color: "#9b948e" }}> → </span>}
-                                <span style={{ color: "#4a5535" }}>{String(after ?? "").slice(0, 80)}</span>
+                                <span style={{ color: "var(--secondary-text)" }}>{String(after ?? "").slice(0, 80)}</span>
                             </div>
                         );
                     })}
@@ -113,12 +113,12 @@ export const AuditLog = () => {
                 <div className="flex items-center gap-3">
                     <div
                         className="flex h-10 w-10 items-center justify-center rounded-lg"
-                        style={{ backgroundColor: "rgba(94,106,67,0.12)", border: "1px solid rgba(94,106,67,0.3)" }}
+                        style={{ backgroundColor: "rgba(37,91,1,0.12)", border: "1px solid rgba(37,91,1,0.3)" }}
                     >
-                        <ClipboardList className="h-5 w-5" style={{ color: "#5E6A43" }} />
+                        <ClipboardList className="h-5 w-5" style={{ color: "var(--secondary-text)" }} />
                     </div>
                     <div>
-                        <p className="text-base font-semibold" style={{ color: "#2E2A26" }}>Audit Log</p>
+                        <p className="text-base font-semibold" style={{ color: "var(--foreground)" }}>Audit Log</p>
                         <p className="text-sm" style={{ color: "#9b948e" }}>
                             All changes made to CRM records, indexed by actor and model.
                         </p>
@@ -133,8 +133,8 @@ export const AuditLog = () => {
                     <select
                         value={model}
                         onChange={e => { setModel(e.target.value); setPage(1); }}
-                        className="h-9 rounded-md border px-2.5 text-sm bg-white focus:outline-none"
-                        style={{ borderColor: "#D8D2C4", color: "#2E2A26", minWidth: 160 }}
+                        className="h-9 rounded-md border px-2.5 text-sm bg-background focus:outline-none"
+                        style={{ borderColor: "var(--border)", color: "var(--foreground)", minWidth: 160 }}
                     >
                         <option value="">All models</option>
                         {availableModels.map(m => (
@@ -159,9 +159,9 @@ export const AuditLog = () => {
                 <button
                     type="submit"
                     className="h-9 px-4 rounded-md text-sm font-semibold transition-colors"
-                    style={{ backgroundColor: "#5E6A43", color: "#FBF7EF" }}
-                    onMouseEnter={e => e.currentTarget.style.backgroundColor = "#4a5535"}
-                    onMouseLeave={e => e.currentTarget.style.backgroundColor = "#5E6A43"}
+                    style={{ backgroundColor: "var(--secondary)", color: "var(--secondary-foreground)" }}
+                    onMouseEnter={e => e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--secondary) 80%, black)"}
+                    onMouseLeave={e => e.currentTarget.style.backgroundColor = "var(--secondary)"}
                 >
                     Filter
                 </button>
@@ -178,10 +178,10 @@ export const AuditLog = () => {
             </form>
 
             {/* Table */}
-            <div className="rounded-xl overflow-hidden" style={{ border: "1px solid #D8D2C4" }}>
+            <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
                 <table className="w-full text-sm border-collapse">
                     <thead>
-                        <tr style={{ backgroundColor: "rgba(216,210,196,0.3)", borderBottom: "1px solid #D8D2C4" }}>
+                        <tr style={{ backgroundColor: "rgba(52,83,74,0.3)", borderBottom: "1px solid var(--border)" }}>
                             {["Timestamp", "Model", "Action", "Object", "Actor", "Changes"].map(h => (
                                 <th key={h} className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wide" style={{ color: "#9b948e" }}>
                                     {h}
@@ -206,23 +206,23 @@ export const AuditLog = () => {
                             <tr
                                 key={entry.id}
                                 style={{
-                                    borderBottom: i < data.results.length - 1 ? "1px solid #D8D2C4" : "none",
-                                    backgroundColor: i % 2 === 0 ? "#fff" : "rgba(251,247,239,0.5)",
+                                    borderBottom: i < data.results.length - 1 ? "1px solid var(--border)" : "none",
+                                    backgroundColor: i % 2 === 0 ? "var(--background)" : "color-mix(in srgb, var(--background) 50%, transparent)",
                                 }}
                             >
-                                <td className="px-4 py-3 text-xs whitespace-nowrap" style={{ color: "#6b6560" }}>
+                                <td className="px-4 py-3 text-xs whitespace-nowrap" style={{ color: "var(--muted-foreground)" }}>
                                     {formatDateTime(entry.timestamp, { second: "2-digit" })}
                                 </td>
-                                <td className="px-4 py-3 text-xs font-medium" style={{ color: "#2E2A26" }}>
+                                <td className="px-4 py-3 text-xs font-medium" style={{ color: "var(--foreground)" }}>
                                     {MODEL_LABELS[entry.model] || entry.model}
                                 </td>
                                 <td className="px-4 py-3">
                                     <ActionBadge action={entry.action} />
                                 </td>
-                                <td className="px-4 py-3 text-xs max-w-[180px] truncate" style={{ color: "#2E2A26" }} title={entry.object_repr}>
+                                <td className="px-4 py-3 text-xs max-w-[180px] truncate" style={{ color: "var(--foreground)" }} title={entry.object_repr}>
                                     {entry.object_repr}
                                 </td>
-                                <td className="px-4 py-3 text-xs" style={{ color: "#6b6560" }}>
+                                <td className="px-4 py-3 text-xs" style={{ color: "var(--muted-foreground)" }}>
                                     {entry.actor || <span style={{ color: "#9b948e" }}>System</span>}
                                 </td>
                                 <td className="px-4 py-3">
@@ -245,7 +245,7 @@ export const AuditLog = () => {
                             disabled={page <= 1}
                             onClick={() => setPage(p => p - 1)}
                             className="flex items-center gap-1 h-8 px-3 rounded-md text-sm font-medium disabled:opacity-40 transition-colors"
-                            style={{ border: "1px solid #D8D2C4", color: "#2E2A26", backgroundColor: "#fff" }}
+                            style={{ border: "1px solid var(--border)", color: "var(--foreground)", backgroundColor: "var(--background)" }}
                         >
                             <ChevronLeft className="h-4 w-4" /> Prev
                         </button>
@@ -253,7 +253,7 @@ export const AuditLog = () => {
                             disabled={page >= data.total_pages}
                             onClick={() => setPage(p => p + 1)}
                             className="flex items-center gap-1 h-8 px-3 rounded-md text-sm font-medium disabled:opacity-40 transition-colors"
-                            style={{ border: "1px solid #D8D2C4", color: "#2E2A26", backgroundColor: "#fff" }}
+                            style={{ border: "1px solid var(--border)", color: "var(--foreground)", backgroundColor: "var(--background)" }}
                         >
                             Next <ChevronRight className="h-4 w-4" />
                         </button>

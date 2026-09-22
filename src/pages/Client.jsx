@@ -170,18 +170,18 @@ export const Client = () => {
                     <button
                         onClick={handleExportExcel}
                         className="flex items-center gap-2 h-9 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
-                        style={{ backgroundColor: "#F2EBDD", border: "1px solid #5E6A43", color: "#5E6A43" }}
-                        onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(94,106,67,0.15)"}
-                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "#F2EBDD"}
+                        style={{ backgroundColor: "var(--card)", border: "1px solid var(--secondary-text)", color: "var(--secondary-text)" }}
+                        onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(37,91,1,0.15)"}
+                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "var(--card)"}
                     >
                         <Download className="h-4 w-4" /> Export Excel
                     </button>
                     <button
                         onClick={openImportModal}
                         className="flex items-center gap-2 h-9 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
-                        style={{ backgroundColor: "#F2EBDD", border: "1px solid #5E6A43", color: "#5E6A43" }}
-                        onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(94,106,67,0.15)"}
-                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "#F2EBDD"}
+                        style={{ backgroundColor: "var(--card)", border: "1px solid var(--secondary-text)", color: "var(--secondary-text)" }}
+                        onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(37,91,1,0.15)"}
+                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "var(--card)"}
                     >
                         <Upload className="h-4 w-4" /> Import Excel
                     </button>
@@ -191,7 +191,7 @@ export const Client = () => {
                 </div>
             </div>
 
-            <div className="bg-brand-oat p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
+            <div className="bg-card p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
                 {availableContactTypes.length > 0 && (
                     <div className="flex items-center gap-2 px-1 pb-2">
                         <label htmlFor="client-contact-filter" className="text-xs font-medium text-muted-foreground">Filter:</label>
@@ -227,15 +227,15 @@ export const Client = () => {
             {/* Import Modal */}
             {showImportModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-[680px] max-h-[88vh] flex flex-col">
+                    <div className="bg-background rounded-xl shadow-2xl w-full max-w-[680px] max-h-[88vh] flex flex-col">
 
                         {/* Modal Header */}
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
                             <div>
-                                <h2 className="text-lg font-bold text-[#5E6A43]">Import Clients from Excel</h2>
-                                <p className="text-xs text-gray-500 mt-0.5">Upload your .xlsx file to bulk import clients</p>
+                                <h2 className="text-lg font-bold text-secondary-text">Import Clients from Excel</h2>
+                                <p className="text-xs text-muted-foreground mt-0.5">Upload your .xlsx file to bulk import clients</p>
                             </div>
-                            <button onClick={closeImportModal} className="text-gray-400 hover:text-gray-600 cursor-pointer">
+                            <button onClick={closeImportModal} className="text-muted-foreground hover:text-gray-600 cursor-pointer">
                                 <X className="h-5 w-5" />
                             </button>
                         </div>
@@ -245,23 +245,23 @@ export const Client = () => {
 
                             {/* Expected columns */}
                             <div>
-                                <p className="text-sm font-semibold text-gray-700 mb-2">Expected Excel columns:</p>
+                                <p className="text-sm font-semibold text-foreground mb-2">Expected Excel columns:</p>
                                 <div className="flex flex-wrap gap-2">
                                     {allFields.map(f => (
-                                        <span key={f.name} className="flex items-center gap-1 bg-gray-100 rounded px-2 py-0.5 text-xs font-mono text-gray-700">
+                                        <span key={f.name} className="flex items-center gap-1 bg-muted rounded px-2 py-0.5 text-xs font-mono text-foreground">
                                             {f.name}
                                             {f.required && <span className="text-red-500 font-sans font-semibold">*</span>}
                                         </span>
                                     ))}
                                 </div>
-                                <p className="text-xs text-gray-400 mt-2">
+                                <p className="text-xs text-muted-foreground mt-2">
                                     <span className="text-red-500 font-semibold">*</span> required &nbsp;·&nbsp; Column headers must match exactly.
                                 </p>
                             </div>
 
                             {/* File upload */}
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                <label className="block text-sm font-semibold text-foreground mb-1">
                                     Excel File (.xlsx) <span className="text-red-500">*</span>
                                 </label>
                                 <input
@@ -273,42 +273,42 @@ export const Client = () => {
                                 />
                                 <div
                                     onClick={() => fileInputRef.current.click()}
-                                    className="border-2 border-dashed border-gray-300 rounded-lg p-5 text-center cursor-pointer hover:border-[#5E6A43] transition-colors"
+                                    className="border-2 border-dashed border-border rounded-lg p-5 text-center cursor-pointer hover:border-secondary-text transition-colors"
                                 >
                                     {selectedFile ? (
-                                        <p className="text-sm text-[#5E6A43] font-medium">{selectedFile.name}</p>
+                                        <p className="text-sm text-secondary-text font-medium">{selectedFile.name}</p>
                                     ) : (
-                                        <p className="text-sm text-gray-400">Click to select a file</p>
+                                        <p className="text-sm text-muted-foreground">Click to select a file</p>
                                     )}
                                 </div>
                             </div>
 
                             {/* Results */}
                             {importResult && (
-                                <div className="rounded-lg border border-gray-200 overflow-hidden">
-                                    <div className={`px-4 py-3 flex items-center gap-2 ${importResult.created > 0 ? 'bg-green-50' : 'bg-yellow-50'}`}>
+                                <div className="rounded-lg border border-border overflow-hidden">
+                                    <div className={`px-4 py-3 flex items-center gap-2 ${importResult.created > 0 ? 'bg-green-50 dark:bg-green-500/15' : 'bg-yellow-50 dark:bg-yellow-500/15'}`}>
                                         {importResult.created > 0
                                             ? <CheckCircle className="h-4 w-4 text-green-600" />
                                             : <AlertCircle className="h-4 w-4 text-yellow-600" />
                                         }
-                                        <span className="text-sm font-semibold text-gray-700">
+                                        <span className="text-sm font-semibold text-foreground">
                                             {importResult.created} client(s) created successfully
                                             {importResult.errors.length > 0 && `, ${importResult.errors.length} row(s) skipped`}
                                         </span>
                                     </div>
                                     {importResult.errors.length > 0 && (
                                         <table className="w-full text-xs">
-                                            <thead className="bg-gray-50 border-t border-gray-200">
+                                            <thead className="bg-muted border-t border-border">
                                                 <tr>
-                                                    <th className="px-4 py-2 text-left font-semibold text-gray-500 w-16">Row</th>
-                                                    <th className="px-4 py-2 text-left font-semibold text-gray-500">Reason</th>
+                                                    <th className="px-4 py-2 text-left font-semibold text-muted-foreground w-16">Row</th>
+                                                    <th className="px-4 py-2 text-left font-semibold text-muted-foreground">Reason</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 {importResult.errors.map((err, i) => (
-                                                    <tr key={i} className="border-t border-gray-100">
+                                                    <tr key={i} className="border-t border-border">
                                                         <td className="px-4 py-2 text-red-500 font-medium">{err.row}</td>
-                                                        <td className="px-4 py-2 text-gray-600">{err.reason}</td>
+                                                        <td className="px-4 py-2 text-muted-foreground">{err.reason}</td>
                                                     </tr>
                                                 ))}
                                             </tbody>
@@ -319,11 +319,11 @@ export const Client = () => {
                         </div>
 
                         {/* Modal Footer */}
-                        <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
+                        <div className="px-6 py-4 border-t border-border flex justify-end gap-3">
                             <button
                                 onClick={closeImportModal}
                                 disabled={importing}
-                                className="h-9 px-4 rounded-lg text-sm font-semibold text-gray-600 border border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-50"
+                                className="h-9 px-4 rounded-lg text-sm font-semibold text-muted-foreground border border-border hover:bg-muted transition-colors cursor-pointer disabled:opacity-50"
                             >
                                 {importResult ? 'Close' : 'Cancel'}
                             </button>
@@ -331,7 +331,7 @@ export const Client = () => {
                                 onClick={handleImport}
                                 disabled={!selectedFile || importing}
                                 className="h-9 px-5 rounded-lg text-sm font-semibold text-white transition-colors cursor-pointer disabled:opacity-50"
-                                style={{ backgroundColor: "#5E6A43" }}
+                                style={{ backgroundColor: "var(--secondary)" }}
                             >
                                 {importing ? 'Importing...' : 'Import'}
                             </button>

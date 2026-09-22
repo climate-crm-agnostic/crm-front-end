@@ -59,31 +59,22 @@ export const Login = ({ className, ...props }) => {
       <div className="w-full h-screen lg:grid lg:grid-cols-2" style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
 
         {/* Left — Form */}
-        <div className="flex items-center justify-center py-12 px-8" style={{ backgroundColor: "#FBF7EF" }}>
+        <div className="flex items-center justify-center py-12 px-8" style={{ backgroundColor: "var(--background)" }}>
           {/* Green top accent bar */}
-          <div className="absolute top-0 left-0 w-1/2 h-1 lg:block hidden" style={{ backgroundColor: "#5E6A43" }} />
+          <div className="absolute top-0 left-0 w-1/2 h-1 lg:block hidden" style={{ backgroundColor: "var(--secondary)" }} />
           <div className="mx-auto grid w-full max-w-sm gap-8">
 
             {/* Brand mark */}
             <div className="flex flex-col items-center gap-4">
-              <div
-                className="flex h-14 w-14 items-center justify-center rounded-lg shadow-md"
-                style={{ backgroundColor: "#5E6A43" }}
-              >
-                <svg viewBox="0 0 24 24" fill="none" className="h-7 w-7 text-white" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                  <path d="M2 17l10 5 10-5" />
-                  <path d="M2 12l10 5 10-5" />
-                </svg>
-              </div>
+              <img src="/climate.svg" alt="Climate by CodeX" className="h-16 w-auto" />
               <div className="text-center">
                 <h1
                   className="text-3xl font-semibold"
-                  style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', fontStyle: "italic", color: "#2E2A26", letterSpacing: "-0.015em", lineHeight: 1.1 }}
+                  style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', fontStyle: "italic", color: "var(--foreground)", letterSpacing: "-0.015em", lineHeight: 1.1 }}
                 >
                   Welcome back
                 </h1>
-                <p className="text-sm mt-1.5" style={{ color: "#6b6560" }}>
+                <p className="text-sm mt-1.5" style={{ color: "var(--muted-foreground)" }}>
                   Sign into your{" "}
                   <span className="font-bold" style={{ color: "#4F8071" }}>ClimateCRM</span>{" "}
                   workspace
@@ -97,18 +88,18 @@ export const Login = ({ className, ...props }) => {
                 {error && (
                   <div
                     className="flex items-start gap-2.5 rounded-lg p-3 text-sm"
-                    style={{ backgroundColor: "#FFDCC8", border: "1px solid #F29B6B", color: "#2E2A26" }}
+                    style={{ backgroundColor: "var(--muted)", border: "1px solid var(--primary-text)", color: "var(--foreground)" }}
                   >
                     <span
                       className="mt-0.5 shrink-0 flex h-4 w-4 items-center justify-center rounded-full text-white text-xs font-bold"
-                      style={{ backgroundColor: "#F29B6B" }}
+                      style={{ backgroundColor: "var(--primary)" }}
                     >!</span>
                     <span>{error}</span>
                   </div>
                 )}
 
                 <div className="grid gap-1.5">
-                  <Label htmlFor="usuario" className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#6b6560" }}>
+                  <Label htmlFor="usuario" className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>
                     Username
                   </Label>
                   <Input
@@ -121,9 +112,9 @@ export const Login = ({ className, ...props }) => {
                     disabled={loading}
                     className="h-11 rounded-md transition-all"
                     style={{
-                      backgroundColor: "#fff",
-                      border: "1px solid #D8D2C4",
-                      color: "#2E2A26",
+                      backgroundColor: "var(--background)",
+                      border: "1px solid var(--border)",
+                      color: "var(--foreground)",
                       fontFamily: '"Source Sans 3", Arial, sans-serif',
                     }}
                   />
@@ -131,14 +122,14 @@ export const Login = ({ className, ...props }) => {
 
                 <div className="grid gap-1.5">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="password" className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#6b6560" }}>
+                    <Label htmlFor="password" className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>
                       Password
                     </Label>
                     <button
                       type="button"
                       onClick={() => setShowPass((s) => !s)}
                       className="text-xs font-medium transition-colors"
-                      style={{ color: "#F29B6B" }}
+                      style={{ color: "var(--primary-text)" }}
                       tabIndex={-1}
                     >
                       {showPass ? "Hide" : "Show"}
@@ -155,9 +146,9 @@ export const Login = ({ className, ...props }) => {
                     disabled={loading}
                     className="h-11 rounded-md transition-all"
                     style={{
-                      backgroundColor: "#fff",
-                      border: "1px solid #D8D2C4",
-                      color: "#2E2A26",
+                      backgroundColor: "var(--background)",
+                      border: "1px solid var(--border)",
+                      color: "var(--foreground)",
                       fontFamily: '"Source Sans 3", Arial, sans-serif',
                     }}
                   />
@@ -168,14 +159,14 @@ export const Login = ({ className, ...props }) => {
                   disabled={loading}
                   className="w-full mt-1 h-11 rounded-md font-semibold text-sm transition-all duration-200 active:scale-[0.99] flex items-center justify-center gap-2 shadow-sm"
                   style={{
-                    backgroundColor: loading ? "#d97c4a" : "#F29B6B",
-                    color: "#FBF7EF",
+                    backgroundColor: loading ? "color-mix(in srgb, var(--primary) 80%, black)" : "var(--primary)",
+                    color: "var(--primary-foreground)",
                     fontFamily: '"Source Sans 3", Arial, sans-serif',
                     letterSpacing: "0.02em",
                     cursor: loading ? "not-allowed" : "pointer",
                   }}
-                  onMouseEnter={e => !loading && (e.currentTarget.style.backgroundColor = "#d97c4a")}
-                  onMouseLeave={e => !loading && (e.currentTarget.style.backgroundColor = "#F29B6B")}
+                  onMouseEnter={e => !loading && (e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--primary) 80%, black)")}
+                  onMouseLeave={e => !loading && (e.currentTarget.style.backgroundColor = "var(--primary)")}
                 >
                   {loading ? (
                     <>
@@ -195,23 +186,23 @@ export const Login = ({ className, ...props }) => {
                 {error && (
                   <div
                     className="flex items-start gap-2.5 rounded-lg p-3 text-sm"
-                    style={{ backgroundColor: "#FFDCC8", border: "1px solid #F29B6B", color: "#2E2A26" }}
+                    style={{ backgroundColor: "var(--muted)", border: "1px solid var(--primary-text)", color: "var(--foreground)" }}
                   >
                     <span
                       className="mt-0.5 shrink-0 flex h-4 w-4 items-center justify-center rounded-full text-white text-xs font-bold"
-                      style={{ backgroundColor: "#F29B6B" }}
+                      style={{ backgroundColor: "var(--primary)" }}
                     >!</span>
                     <span>{error}</span>
                   </div>
                 )}
 
-                <div className="text-sm" style={{ color: "#6b6560" }}>
-                  We emailed a verification code to <strong style={{ color: "#2E2A26" }}>{user}</strong>'s address.
-                  It expires in <strong style={{ color: "#2E2A26" }}>1 minute</strong>.
+                <div className="text-sm" style={{ color: "var(--muted-foreground)" }}>
+                  We emailed a verification code to <strong style={{ color: "var(--foreground)" }}>{user}</strong>'s address.
+                  It expires in <strong style={{ color: "var(--foreground)" }}>1 minute</strong>.
                 </div>
 
                 <div className="grid gap-1.5">
-                  <Label htmlFor="code" className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#6b6560" }}>
+                  <Label htmlFor="code" className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>
                     Verification code
                   </Label>
                   <Input
@@ -227,9 +218,9 @@ export const Login = ({ className, ...props }) => {
                     disabled={loading}
                     className="h-11 rounded-md transition-all text-center tracking-[0.5em] text-lg"
                     style={{
-                      backgroundColor: "#fff",
-                      border: "1px solid #D8D2C4",
-                      color: "#2E2A26",
+                      backgroundColor: "var(--background)",
+                      border: "1px solid var(--border)",
+                      color: "var(--foreground)",
                       fontFamily: '"Source Sans 3", Arial, sans-serif',
                     }}
                   />
@@ -240,14 +231,14 @@ export const Login = ({ className, ...props }) => {
                   disabled={loading}
                   className="w-full mt-1 h-11 rounded-md font-semibold text-sm transition-all duration-200 active:scale-[0.99] flex items-center justify-center gap-2 shadow-sm"
                   style={{
-                    backgroundColor: loading ? "#d97c4a" : "#F29B6B",
-                    color: "#FBF7EF",
+                    backgroundColor: loading ? "color-mix(in srgb, var(--primary) 80%, black)" : "var(--primary)",
+                    color: "var(--primary-foreground)",
                     fontFamily: '"Source Sans 3", Arial, sans-serif',
                     letterSpacing: "0.02em",
                     cursor: loading ? "not-allowed" : "pointer",
                   }}
-                  onMouseEnter={e => !loading && (e.currentTarget.style.backgroundColor = "#d97c4a")}
-                  onMouseLeave={e => !loading && (e.currentTarget.style.backgroundColor = "#F29B6B")}
+                  onMouseEnter={e => !loading && (e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--primary) 80%, black)")}
+                  onMouseLeave={e => !loading && (e.currentTarget.style.backgroundColor = "var(--primary)")}
                 >
                   {loading ? (
                     <>
@@ -267,14 +258,14 @@ export const Login = ({ className, ...props }) => {
                   onClick={resetToCredentials}
                   disabled={loading}
                   className="text-xs font-medium text-center"
-                  style={{ color: "#6b6560" }}
+                  style={{ color: "var(--muted-foreground)" }}
                 >
                   Back to login
                 </button>
               </form>
             )}
 
-            <p className="text-center text-xs" style={{ color: "#D8D2C4" }}>
+            <p className="text-center text-xs" style={{ color: "var(--border)" }}>
               © {new Date().getFullYear()} Codex Technologies
             </p>
           </div>
@@ -283,16 +274,16 @@ export const Login = ({ className, ...props }) => {
         {/* Right — Branding */}
         <div
           className="hidden lg:flex flex-col relative justify-center p-14 overflow-hidden"
-          style={{ backgroundColor: "#2E2A26" }}
+          style={{ backgroundColor: "#000000" }}
         >
           {/* Decorative elements */}
-          <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, #2E2A26 0%, #3d3830 50%, #2a2620 100%)" }} />
-          <div className="absolute top-[-60px] right-[-60px] h-72 w-72 rounded-full blur-3xl" style={{ backgroundColor: "rgba(94,106,67,0.15)" }} />
-          <div className="absolute bottom-[-40px] left-[-30px] h-56 w-56 rounded-full blur-3xl" style={{ backgroundColor: "rgba(242,155,107,0.08)" }} />
+          <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, #000000 0%, #142b0a 50%, #000000 100%)" }} />
+          <div className="absolute top-[-60px] right-[-60px] h-72 w-72 rounded-full blur-3xl" style={{ backgroundColor: "rgba(37,91,1,0.15)" }} />
+          <div className="absolute bottom-[-40px] left-[-30px] h-56 w-56 rounded-full blur-3xl" style={{ backgroundColor: "rgba(96,216,5,0.08)" }} />
 
           {/* Subtle grid */}
           <div className="absolute inset-0 opacity-[0.025]" style={{
-            backgroundImage: "linear-gradient(rgba(251,247,239,1) 1px, transparent 1px), linear-gradient(90deg, rgba(251,247,239,1) 1px, transparent 1px)",
+            backgroundImage: "linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)",
             backgroundSize: "40px 40px"
           }} />
 
@@ -301,9 +292,9 @@ export const Login = ({ className, ...props }) => {
             {/* Badge */}
             <div
               className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-widest"
-              style={{ backgroundColor: "rgba(94,106,67,0.2)", border: "1px solid rgba(94,106,67,0.4)", color: "#B8C76A" }}
+              style={{ backgroundColor: "rgba(37,91,1,0.2)", border: "1px solid rgba(37,91,1,0.4)", color: "var(--primary-text)" }}
             >
-              <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ backgroundColor: "#B8C76A" }} />
+              <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ backgroundColor: "var(--accent)" }} />
               Climate by CodeX
             </div>
 
@@ -311,10 +302,10 @@ export const Login = ({ className, ...props }) => {
             <div className="space-y-3">
               <h2
                 className="text-5xl font-semibold leading-tight"
-                style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', fontStyle: "italic", color: "#FBF7EF", letterSpacing: "-0.015em", lineHeight: 1.1 }}
+                style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', fontStyle: "italic", color: "#ffffff", letterSpacing: "-0.015em", lineHeight: 1.1 }}
               >
                 Manage smarter.<br />
-                <span style={{ color: "#B8C76A" }}>Grow faster.</span>
+                <span style={{ color: "var(--primary-text)" }}>Grow faster.</span>
               </h2>
               <p className="text-base leading-relaxed" style={{ color: "#b8b0a8", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
                 A unified platform to manage clients, leads, and operations — all in one place.
@@ -324,9 +315,9 @@ export const Login = ({ className, ...props }) => {
             {/* Features */}
             <div className="space-y-5">
               {[
-                { icon: Briefcase, color: "rgba(94,106,67,0.25)", border: "rgba(94,106,67,0.4)", iconColor: "#B8C76A", title: "Sales Pipeline", desc: "Track leads from first contact to closed deal with full visibility." },
-                { icon: Users, color: "rgba(242,155,107,0.18)", border: "rgba(242,155,107,0.35)", iconColor: "#F29B6B", title: "Client Management", desc: "Keep every client interaction, service record, and follow-up organized." },
-                { icon: Zap, color: "rgba(184,199,106,0.18)", border: "rgba(184,199,106,0.35)", iconColor: "#B8C76A", title: "Unified Operations", desc: "Connect Sales, Operations, and Finance in one real-time workspace." },
+                { icon: Briefcase, color: "rgba(37,91,1,0.25)", border: "rgba(37,91,1,0.4)", iconColor: "var(--primary-text)", title: "Sales Pipeline", desc: "Track leads from first contact to closed deal with full visibility." },
+                { icon: Users, color: "rgba(96,216,5,0.18)", border: "rgba(96,216,5,0.35)", iconColor: "var(--primary-text)", title: "Client Management", desc: "Keep every client interaction, service record, and follow-up organized." },
+                { icon: Zap, color: "rgba(96,216,5,0.18)", border: "rgba(96,216,5,0.35)", iconColor: "var(--primary-text)", title: "Unified Operations", desc: "Connect Sales, Operations, and Finance in one real-time workspace." },
               ].map(({ icon: Icon, color, border, iconColor, title, desc }) => (
                 <div key={title} className="flex gap-4 group">
                   <div
@@ -336,7 +327,7 @@ export const Login = ({ className, ...props }) => {
                     <Icon className="h-5 w-5" style={{ color: iconColor }} />
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold" style={{ color: "#FBF7EF", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>{title}</h3>
+                    <h3 className="text-sm font-semibold" style={{ color: "#ffffff", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>{title}</h3>
                     <p className="text-sm mt-0.5 leading-relaxed" style={{ color: "#b0a89e", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>{desc}</p>
                   </div>
                 </div>
@@ -344,14 +335,14 @@ export const Login = ({ className, ...props }) => {
             </div>
 
             {/* Quote */}
-            <div className="pt-8" style={{ borderTop: "1px solid rgba(251,247,239,0.15)" }}>
+            <div className="pt-8" style={{ borderTop: "1px solid rgba(255,255,255,0.15)" }}>
               <blockquote
                 className="text-sm leading-relaxed"
                 style={{ fontFamily: '"Libre Baskerville", Georgia, serif', fontStyle: "italic", color: "#c8bfb5" }}
               >
                 "Technology that takes your business to the next level."
               </blockquote>
-              <p className="text-xs mt-2 font-semibold uppercase tracking-widest" style={{ color: "#B8C76A" }}>
+              <p className="text-xs mt-2 font-semibold uppercase tracking-widest" style={{ color: "var(--primary-text)" }}>
                 — Climate by CodeX
               </p>
             </div>

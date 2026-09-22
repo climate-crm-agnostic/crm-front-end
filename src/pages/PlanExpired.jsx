@@ -4,21 +4,21 @@ export const PlanExpired = () => {
   return (
     <div
       className="w-full min-h-screen flex items-center justify-center px-6"
-      style={{ backgroundColor: "#FBF7EF", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+      style={{ backgroundColor: "var(--background)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
     >
       {/* Top accent bar */}
       <div
         className="fixed top-0 left-0 w-full h-1"
-        style={{ backgroundColor: "#F29B6B" }}
+        style={{ backgroundColor: "var(--primary)" }}
       />
 
       <div className="flex flex-col items-center gap-8 text-center max-w-md">
         {/* Icon */}
         <div
           className="flex h-20 w-20 items-center justify-center rounded-2xl shadow-md"
-          style={{ backgroundColor: "#FFDCC8", border: "1px solid #F29B6B" }}
+          style={{ backgroundColor: "var(--muted)", border: "1px solid var(--primary-text)" }}
         >
-          <AlertTriangle className="h-9 w-9" style={{ color: "#d97c4a" }} />
+          <AlertTriangle className="h-9 w-9" style={{ color: "var(--primary-text)" }} />
         </div>
 
         {/* Copy */}
@@ -28,14 +28,14 @@ export const PlanExpired = () => {
             style={{
               fontFamily: '"Cormorant Garamond", Georgia, serif',
               fontStyle: "italic",
-              color: "#2E2A26",
+              color: "var(--foreground)",
               letterSpacing: "-0.015em",
               lineHeight: 1.1,
             }}
           >
             Access suspended
           </h1>
-          <p className="text-base leading-relaxed" style={{ color: "#6b6560" }}>
+          <p className="text-base leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
             Your CodeX CRM subscription has expired or been suspended.
             Please contact support to reactivate your account.
           </p>
@@ -46,17 +46,17 @@ export const PlanExpired = () => {
           href="mailto:support@codexacademy.co?subject=CRM Account Reactivation"
           className="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-200 shadow-sm"
           style={{
-            backgroundColor: "#F29B6B",
-            color: "#FBF7EF",
+            backgroundColor: "var(--primary)",
+            color: "var(--primary-foreground)",
             textDecoration: "none",
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#d97c4a")}
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#F29B6B")}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--primary) 80%, black)")}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "var(--primary)")}
         >
           Contact support
         </a>
 
-        <p className="text-xs" style={{ color: "#D8D2C4" }}>
+        <p className="text-xs" style={{ color: "var(--border)" }}>
           © {new Date().getFullYear()} Codex Technologies
         </p>
       </div>

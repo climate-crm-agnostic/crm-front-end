@@ -72,7 +72,7 @@ export const EmailTemplates = () => {
     const handleDelete = async (id) => {
         const result = await Swal.fire({
             title: 'Are you sure?', icon: 'warning', showCancelButton: true,
-            confirmButtonColor: '#5E6A43', cancelButtonColor: '#9b948e', confirmButtonText: 'Yes, delete it!'
+            confirmButtonColor: 'var(--secondary)', cancelButtonColor: '#9b948e', confirmButtonText: 'Yes, delete it!'
         });
         if (!result.isConfirmed) return;
         try {
@@ -133,7 +133,7 @@ export const EmailTemplates = () => {
         <div className="p-6 space-y-6">
             <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 border">
-                    <Mail className="h-5 w-5 text-primary" />
+                    <Mail className="h-5 w-5 text-primary-text" />
                 </div>
                 <div>
                     <p className="text-base font-semibold">Email Templates</p>
@@ -239,7 +239,7 @@ export const EmailTemplates = () => {
                                 <Button variant="ghost" size="sm" onClick={() => handleEdit(t)} className="h-8 w-8 p-0">
                                     <Edit className="h-4 w-4" />
                                 </Button>
-                                <Button variant="ghost" size="sm" onClick={() => handleDelete(t.id)} className="h-8 w-8 p-0 text-red-500 hover:text-red-700">
+                                <Button variant="ghost" size="sm" onClick={() => handleDelete(t.id)} className="h-8 w-8 p-0 text-red-500 hover:text-red-700 dark:hover:text-red-300">
                                     <Trash2 className="h-4 w-4" />
                                 </Button>
                             </div>

@@ -6,11 +6,11 @@ import { MultiSelect } from "../ui/multi-select";
 
 const labelStyle = {
     display: "block", fontSize: 11, fontWeight: 600, textTransform: "uppercase",
-    letterSpacing: "0.06em", color: "#6b6560", marginBottom: 5,
+    letterSpacing: "0.06em", color: "var(--muted-foreground)", marginBottom: 5,
 };
 
 const inputStyle = {
-    backgroundColor: "#fff", border: "1px solid #D8D2C4", color: "#2E2A26",
+    backgroundColor: "var(--background)", border: "1px solid var(--border)", color: "var(--foreground)",
     borderRadius: 6, padding: "8px 10px", fontSize: 14, width: "100%", outline: "none",
 };
 
@@ -182,9 +182,9 @@ const Control = ({ spec, optionKey, value, onChange, currencies }) => {
                         type="checkbox"
                         checked={value === true}
                         onChange={(e) => onChange(e.target.checked)}
-                        style={{ accentColor: "#5E6A43", width: 14, height: 14 }}
+                        style={{ accentColor: "var(--secondary-text)", width: 14, height: 14 }}
                     />
-                    <span style={{ fontSize: 13, fontWeight: 500, color: "#2E2A26" }}>
+                    <span style={{ fontSize: 13, fontWeight: 500, color: "var(--foreground)" }}>
                         {humanize(optionKey)}
                     </span>
                 </label>

@@ -4,12 +4,12 @@ import { evaluateFormula, getFormulaCatalogue } from "../../services/formulaServ
 import { coerceAttributeValue } from "../../utils/attributeTypes";
 import { SearchableSelect } from "../ui/searchable-select";
 
-const INK = "#2E2A26";
-const MUTED = "#6b6560";
+const INK = "var(--foreground)";
+const MUTED = "var(--muted-foreground)";
 const HINT = "#9b948e";
-const OAT = "#F2EBDD";
-const PEBBLE = "#D8D2C4";
-const OLIVE = "#5E6A43";
+const OAT = "var(--card)";
+const PEBBLE = "var(--border)";
+const OLIVE = "var(--secondary)";
 
 const labelStyle = {
     display: "block", fontSize: 11, fontWeight: 600, textTransform: "uppercase",
@@ -17,7 +17,7 @@ const labelStyle = {
 };
 
 const control = {
-    backgroundColor: "#fff", border: `1px solid ${PEBBLE}`, color: INK,
+    backgroundColor: "var(--background)", border: `1px solid ${PEBBLE}`, color: INK,
     borderRadius: 6, padding: "6px 8px", fontSize: 13, outline: "none",
 };
 
@@ -216,7 +216,7 @@ export const FormulaEditor = ({
 const StatusLine = ({ status, error }) => {
     if (error) {
         return (
-            <p className="flex items-start gap-1.5" style={{ fontSize: 12, color: "#c0392b" }}>
+            <p className="flex items-start gap-1.5" style={{ fontSize: 12, color: "var(--destructive)" }}>
                 <X size={13} style={{ marginTop: 1, flexShrink: 0 }} /> {error}
             </p>
         );
@@ -224,13 +224,13 @@ const StatusLine = ({ status, error }) => {
     if (!status) return null;
     if (!status.valid) {
         return (
-            <p className="flex items-start gap-1.5" style={{ fontSize: 12, color: "#c0392b" }}>
+            <p className="flex items-start gap-1.5" style={{ fontSize: 12, color: "var(--destructive)" }}>
                 <AlertTriangle size={13} style={{ marginTop: 1, flexShrink: 0 }} /> {status.error}
             </p>
         );
     }
     return (
-        <p className="flex items-start gap-1.5" style={{ fontSize: 12, color: OLIVE }}>
+        <p className="flex items-start gap-1.5" style={{ fontSize: 12, color: "var(--secondary-text)" }}>
             <Check size={13} style={{ marginTop: 1, flexShrink: 0 }} />
             Valid
             {status.dependencies?.length > 0 && (

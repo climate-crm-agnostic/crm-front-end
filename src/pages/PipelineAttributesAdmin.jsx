@@ -16,21 +16,24 @@ import {
 import Swal from "sweetalert2";
 
 const FONT = '"Source Sans 3", Arial, sans-serif';
-const INK = "#2E2A26";
-const MUTED = "#6b6560";
+const INK = "var(--foreground)";
+const MUTED = "var(--muted-foreground)";
 const HINT = "#9b948e";
-const LINEN = "#FBF7EF";
-const OAT = "#F2EBDD";
-const PEBBLE = "#D8D2C4";
-const OLIVE = "#5E6A43";
+const LINEN = "var(--background)";
+const OAT = "var(--card)";
+const PEBBLE = "var(--border)";
+const OLIVE = "var(--secondary)";
 
 const TYPE_COLORS = {
-    text:       { bg: "rgba(94,106,67,0.10)",  border: "rgba(94,106,67,0.35)",  color: "#4a5535" },
+    text:       { bg: "rgba(37,91,1,0.10)",  border: "rgba(37,91,1,0.35)",  color: "var(--secondary-text)" },
+    // boolean/percentage and list/currency keep their old, non-brand hues here
+    // (rather than the new primary green) — the rebrand only has two greens,
+    // and collapsing all four onto one would make these types indistinguishable.
     boolean:    { bg: "rgba(242,155,107,0.12)", border: "rgba(242,155,107,0.4)", color: "#c0622a" },
     list:       { bg: "rgba(184,199,106,0.12)", border: "rgba(184,199,106,0.4)", color: "#697a28" },
-    number:     { bg: "rgba(216,210,196,0.4)",  border: "#D8D2C4",               color: "#6b6560" },
-    date:       { bg: "rgba(216,210,196,0.4)",  border: "#D8D2C4",               color: "#6b6560" },
-    textarea:   { bg: "rgba(216,210,196,0.4)",  border: "#D8D2C4",               color: "#6b6560" },
+    number:     { bg: "rgba(52,83,74,0.4)",  border: "var(--border)",               color: "var(--muted-foreground)" },
+    date:       { bg: "rgba(52,83,74,0.4)",  border: "var(--border)",               color: "var(--muted-foreground)" },
+    textarea:   { bg: "rgba(52,83,74,0.4)",  border: "var(--border)",               color: "var(--muted-foreground)" },
     email:      { bg: "rgba(94,142,166,0.12)",  border: "rgba(94,142,166,0.4)",  color: "#356a80" },
     currency:   { bg: "rgba(184,199,106,0.12)", border: "rgba(184,199,106,0.4)", color: "#4a7a28" },
     phone:      { bg: "rgba(94,142,166,0.12)",  border: "rgba(94,142,166,0.4)",  color: "#356a80" },
@@ -55,11 +58,11 @@ const Modal = ({ isOpen, children, onClose }) => {
     return (
         <div
             className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto"
-            style={{ backgroundColor: "rgba(46,42,38,0.4)" }}
+            style={{ backgroundColor: "rgba(0,0,0,0.4)" }}
         >
             <div
                 className="w-full max-w-4xl rounded-xl shadow-2xl p-5 relative animate-in zoom-in-95 duration-200"
-                style={{ backgroundColor: "#FBF7EF", border: "1px solid #D8D2C4" }}
+                style={{ backgroundColor: "var(--background)", border: "1px solid var(--border)" }}
                 onClick={e => e.stopPropagation()}
             >
                 {children}
@@ -83,16 +86,16 @@ const SortableAttrCard = ({ attr, onEdit, onDelete }) => {
         <div
             ref={setNodeRef}
             style={style}
-            className="group/item flex items-center justify-between p-3 rounded-lg transition-all bg-white border"
+            className="group/item flex items-center justify-between p-3 rounded-lg transition-all bg-background border"
             onMouseEnter={e => {
                 if (!isDragging) {
-                    e.currentTarget.style.borderColor = OLIVE;
-                    e.currentTarget.style.backgroundColor = "#FBF7EF";
+                    e.currentTarget.style.borderColor = "var(--secondary-text)";
+                    e.currentTarget.style.backgroundColor = "var(--background)";
                 }
             }}
             onMouseLeave={e => {
                 e.currentTarget.style.borderColor = PEBBLE;
-                e.currentTarget.style.backgroundColor = "white";
+                e.currentTarget.style.backgroundColor = "var(--background)";
             }}
         >
             {/* Drag handle */}
@@ -110,9 +113,9 @@ const SortableAttrCard = ({ attr, onEdit, onDelete }) => {
                 className="shrink-0 mr-2 text-[9px] font-black tabular-nums flex items-center justify-center rounded"
                 style={{
                     minWidth: "18px", height: "18px",
-                    backgroundColor: "rgba(94,106,67,0.12)",
-                    border: "1px solid rgba(94,106,67,0.25)",
-                    color: OLIVE,
+                    backgroundColor: "rgba(37,91,1,0.12)",
+                    border: "1px solid rgba(37,91,1,0.25)",
+                    color: "var(--secondary-text)",
                     padding: "0 3px",
                 }}
             >
@@ -125,7 +128,7 @@ const SortableAttrCard = ({ attr, onEdit, onDelete }) => {
                         {attr.label}
                     </p>
                     {attr.is_required && (
-                        <span className="text-[9px] font-bold" style={{ color: "#c0392b" }} title="Required">●</span>
+                        <span className="text-[9px] font-bold" style={{ color: "var(--destructive)" }} title="Required">●</span>
                     )}
                 </div>
                 <div className="flex items-center gap-2 mt-1">
@@ -138,8 +141,8 @@ const SortableAttrCard = ({ attr, onEdit, onDelete }) => {
                 <button
                     onClick={() => onEdit(attr)}
                     className="flex h-7 w-7 items-center justify-center rounded-md transition-colors cursor-pointer text-olive"
-                    style={{ color: OLIVE }}
-                    onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(94,106,67,0.1)"}
+                    style={{ color: "var(--secondary-text)" }}
+                    onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(37,91,1,0.1)"}
                     onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
                 >
                     <Edit2 size={13} />
@@ -147,7 +150,7 @@ const SortableAttrCard = ({ attr, onEdit, onDelete }) => {
                 <button
                     onClick={() => onDelete(attr.id)}
                     className="flex h-7 w-7 items-center justify-center rounded-md transition-colors cursor-pointer"
-                    style={{ color: "#c0392b" }}
+                    style={{ color: "var(--destructive)" }}
                     onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(192,57,43,0.08)"}
                     onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
                 >
@@ -163,18 +166,18 @@ const PipelineColumn = ({ pipeline, attributes, onAdd, onEdit, onDelete, onDragE
 
     return (
         <div
-            className="flex-shrink-0 w-[85vw] md:w-[360px] flex flex-col rounded-2xl h-full border bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+            className="flex-shrink-0 w-[85vw] md:w-[360px] flex flex-col rounded-2xl h-full border bg-background overflow-hidden shadow-sm hover:shadow-md transition-shadow"
             style={{ borderColor: PEBBLE }}
         >
             {/* Column header */}
             <div
                 className="px-5 py-4 flex justify-between items-center shrink-0"
-                style={{ backgroundColor: OLIVE, borderBottom: `1px solid ${OLIVE}` }}
+                style={{ backgroundColor: OLIVE, borderBottom: `1px solid var(--secondary-text)` }}
             >
                 <div className="flex items-center gap-3">
                     <div
                         className="flex h-9 w-9 items-center justify-center rounded-xl text-sm font-bold uppercase shadow-inner"
-                        style={{ backgroundColor: "rgba(251,247,239,0.15)", color: LINEN }}
+                        style={{ backgroundColor: "color-mix(in srgb, var(--background) 15%, transparent)", color: LINEN }}
                     >
                         {pipeline.name.charAt(0).toUpperCase()}
                     </div>
@@ -182,7 +185,7 @@ const PipelineColumn = ({ pipeline, attributes, onAdd, onEdit, onDelete, onDragE
                         <p className="text-xs font-black uppercase tracking-widest leading-none" style={{ color: LINEN }}>
                             {pipeline.name}
                         </p>
-                        <span className="text-[9px] font-medium" style={{ color: "rgba(251,247,239,0.7)" }}>
+                        <span className="text-[9px] font-medium" style={{ color: "rgba(255,255,255,0.7)" }}>
                             {attributes.length} {attributes.length === 1 ? 'field' : 'fields'}
                         </span>
                     </div>
@@ -190,16 +193,16 @@ const PipelineColumn = ({ pipeline, attributes, onAdd, onEdit, onDelete, onDragE
                 <button
                     onClick={() => onAdd(pipeline)}
                     className="flex items-center gap-1.5 px-3.5 h-8 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer shadow-sm"
-                    style={{ backgroundColor: "rgba(251,247,239,0.2)", color: LINEN, border: "1px solid rgba(251,247,239,0.3)" }}
-                    onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(251,247,239,0.3)"}
-                    onMouseLeave={e => e.currentTarget.style.backgroundColor = "rgba(251,247,239,0.2)"}
+                    style={{ backgroundColor: "color-mix(in srgb, var(--background) 20%, transparent)", color: LINEN, border: "1px solid rgba(255,255,255,0.3)" }}
+                    onMouseEnter={e => e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--background) 30%, transparent)"}
+                    onMouseLeave={e => e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--background) 20%, transparent)"}
                 >
                     <Plus size={12} /> New
                 </button>
             </div>
 
             {/* Attribute list with drag-and-drop */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-2.5 bg-slate-50/50">
+            <div className="flex-1 overflow-y-auto p-4 space-y-2.5 bg-muted/50">
                 {attributes.length === 0 ? (
                     <div
                         className="h-32 flex flex-col items-center justify-center rounded-xl border-2 border-dashed m-1"
@@ -378,14 +381,14 @@ export const PipelineAttributesAdmin = () => {
             {/* Page header */}
             <div
                 className="shrink-0 px-8 py-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
-                style={{ borderBottom: `1px solid ${PEBBLE}`, backgroundColor: "#F2EBDD" }}
+                style={{ borderBottom: `1px solid ${PEBBLE}`, backgroundColor: "var(--card)" }}
             >
                 <div className="flex items-center gap-4">
                     <div
                         className="flex h-12 w-12 items-center justify-center rounded-2xl shadow-sm"
-                        style={{ backgroundColor: "rgba(94,106,67,0.12)", border: `1px solid rgba(94,106,67,0.3)` }}
+                        style={{ backgroundColor: "rgba(37,91,1,0.12)", border: `1px solid rgba(37,91,1,0.3)` }}
                     >
-                        <SlidersHorizontal className="h-6 w-6" style={{ color: OLIVE }} />
+                        <SlidersHorizontal className="h-6 w-6" style={{ color: "var(--secondary-text)" }} />
                     </div>
                     <div>
                         <h1 className="text-xl font-black tracking-tight" style={{ color: INK }}>
@@ -400,7 +403,7 @@ export const PipelineAttributesAdmin = () => {
                 <div className="flex items-center gap-3">
                      <span
                         className="text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-sm"
-                        style={{ backgroundColor: "rgba(94,106,67,0.1)", border: `1px solid ${PEBBLE}`, color: OLIVE }}
+                        style={{ backgroundColor: "rgba(37,91,1,0.1)", border: `1px solid ${PEBBLE}`, color: "var(--secondary-text)" }}
                     >
                         {pipelines.length} Pipelines
                     </span>
@@ -410,22 +413,22 @@ export const PipelineAttributesAdmin = () => {
             {/* Kanban board */}
             <div className="flex-1 min-h-0 overflow-hidden p-6 relative group/board">
                 {/* Scroll fade overlays */}
-                <div className="absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-[#FBF7EF] to-transparent pointer-events-none z-10 opacity-0 group-hover/board:opacity-100 transition-opacity" />
-                <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-[#FBF7EF] to-transparent pointer-events-none z-10 opacity-0 group-hover/board:opacity-100 transition-opacity" />
+                <div className="absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-[var(--background)] to-transparent pointer-events-none z-10 opacity-0 group-hover/board:opacity-100 transition-opacity" />
+                <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-[var(--background)] to-transparent pointer-events-none z-10 opacity-0 group-hover/board:opacity-100 transition-opacity" />
 
                 {/* Scroll buttons */}
                 <button
                     onClick={() => document.getElementById('attr-scroll-container').scrollBy({ left: -400, behavior: 'smooth' })}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 z-20 h-10 w-10 flex items-center justify-center rounded-full opacity-0 group-hover/board:opacity-100 transition-all hover:scale-110 hidden md:flex bg-white shadow-lg border"
-                    style={{ borderColor: PEBBLE, color: OLIVE }}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 z-20 h-10 w-10 flex items-center justify-center rounded-full opacity-0 group-hover/board:opacity-100 transition-all hover:scale-110 hidden md:flex bg-background shadow-lg border"
+                    style={{ borderColor: PEBBLE, color: "var(--secondary-text)" }}
                 >
                     <ChevronLeft size={18} />
                 </button>
 
                 <button
                     onClick={() => document.getElementById('attr-scroll-container').scrollBy({ left: 400, behavior: 'smooth' })}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 z-20 h-10 w-10 flex items-center justify-center rounded-full opacity-0 group-hover/board:opacity-100 transition-all hover:scale-110 hidden md:flex bg-white shadow-lg border"
-                    style={{ borderColor: PEBBLE, color: OLIVE }}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 z-20 h-10 w-10 flex items-center justify-center rounded-full opacity-0 group-hover/board:opacity-100 transition-all hover:scale-110 hidden md:flex bg-background shadow-lg border"
+                    style={{ borderColor: PEBBLE, color: "var(--secondary-text)" }}
                 >
                     <ChevronRight size={18} />
                 </button>

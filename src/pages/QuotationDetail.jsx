@@ -262,7 +262,7 @@ export const QuotationDetail = () => {
 
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 max-w-4xl mx-auto w-full">
                 {error && (
-                    <div className="p-4 text-sm text-red-500 bg-red-50 rounded-md border border-red-200">{error}</div>
+                    <div className="p-4 text-sm text-red-500 bg-red-50 dark:bg-red-500/15 rounded-md border border-red-200 dark:border-red-500/30">{error}</div>
                 )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-card p-6 rounded-lg border shadow-sm">
@@ -378,7 +378,7 @@ export const QuotationDetail = () => {
                                                 <td className="px-3 py-2 text-right">{Number(line.tax_rate).toFixed(2)}%</td>
                                                 <td className="px-3 py-2 text-right">{Number(line.subtotal).toFixed(2)}</td>
                                                 <td className="px-3 py-2 text-right">
-                                                    <Button variant="ghost" size="sm" onClick={() => handleDeleteLineItem(line.id)} className="h-7 w-7 p-0 text-red-500 hover:text-red-700">
+                                                    <Button variant="ghost" size="sm" onClick={() => handleDeleteLineItem(line.id)} className="h-7 w-7 p-0 text-red-500 hover:text-red-700 dark:hover:text-red-300">
                                                         <Trash2 className="h-3.5 w-3.5" />
                                                     </Button>
                                                 </td>

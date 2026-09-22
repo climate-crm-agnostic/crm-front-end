@@ -4,12 +4,12 @@ import { getMyAIUsage } from "@/services/aiService";
 import { User, Building2, Bot, CheckCircle2, XCircle, Infinity } from "lucide-react";
 
 const TIER_COLORS = {
-    free_trial: { bg: "#F2EBDD", text: "#6b6560", border: "#D8D2C4" },
-    basic:      { bg: "#F2EBDD", text: "#6b6560", border: "#D8D2C4" },
-    full:       { bg: "#e8edde", text: "#5E6A43", border: "#B8C76A" },
-    full_plus:  { bg: "#e8edde", text: "#5E6A43", border: "#5E6A43" },
-    business:   { bg: "#FFDCC8", text: "#c04a00", border: "#F29B6B" },
-    enterprise: { bg: "#f0f4dc", text: "#3a4a20", border: "#5E6A43" },
+    free_trial: { bg: "var(--card)", text: "var(--muted-foreground)", border: "var(--border)" },
+    basic:      { bg: "var(--card)", text: "var(--muted-foreground)", border: "var(--border)" },
+    full:       { bg: "var(--sidebar-accent)", text: "var(--secondary-text)", border: "var(--primary-text)" },
+    full_plus:  { bg: "var(--sidebar-accent)", text: "var(--secondary-text)", border: "var(--secondary-text)" },
+    business:   { bg: "var(--muted)", text: "#c04a00", border: "var(--primary-text)" },
+    enterprise: { bg: "var(--sidebar-accent)", text: "var(--secondary-text)", border: "var(--secondary-text)" },
 };
 
 const FEATURE_LABELS = {
@@ -27,10 +27,10 @@ function Card({ children, style }) {
     return (
         <div
             style={{
-                backgroundColor: "#F2EBDD",
-                border: "1px solid #D8D2C4",
+                backgroundColor: "var(--card)",
+                border: "1px solid var(--border)",
                 borderRadius: "8px",
-                boxShadow: "0 1px 3px rgba(46,42,38,0.06)",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
                 ...style,
             }}
         >
@@ -39,11 +39,11 @@ function Card({ children, style }) {
     );
 }
 
-function CardHeader({ icon: Icon, title, accentColor = "#5E6A43" }) {
+function CardHeader({ icon: Icon, title, accentColor = "var(--secondary)" }) {
     return (
         <div
             className="flex items-center gap-3 px-6 py-4 border-b"
-            style={{ borderColor: "#D8D2C4" }}
+            style={{ borderColor: "var(--border)" }}
         >
             <div
                 className="flex h-8 w-8 items-center justify-center rounded-lg"
@@ -53,7 +53,7 @@ function CardHeader({ icon: Icon, title, accentColor = "#5E6A43" }) {
             </div>
             <h2
                 className="text-sm font-semibold"
-                style={{ color: "#2E2A26", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+                style={{ color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
             >
                 {title}
             </h2>
@@ -63,12 +63,12 @@ function CardHeader({ icon: Icon, title, accentColor = "#5E6A43" }) {
 
 function QuotaBar({ used, limit }) {
     const pct = limit > 0 ? Math.min((used / limit) * 100, 100) : 0;
-    const barColor = pct >= 90 ? "#c04a00" : pct >= 70 ? "#F29B6B" : "#5E6A43";
+    const barColor = pct >= 90 ? "#c04a00" : pct >= 70 ? "var(--primary)" : "var(--secondary)";
 
     return (
         <div className="space-y-2">
             <div className="flex justify-between items-baseline">
-                <span className="text-2xl font-bold" style={{ color: "#2E2A26", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+                <span className="text-2xl font-bold" style={{ color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
                     {used}
                     <span className="text-sm font-normal text-muted-foreground ml-1">/ {limit} today</span>
                 </span>
@@ -76,7 +76,7 @@ function QuotaBar({ used, limit }) {
                     {pct.toFixed(0)}% used
                 </span>
             </div>
-            <div className="w-full h-2 rounded-full" style={{ backgroundColor: "#D8D2C4" }}>
+            <div className="w-full h-2 rounded-full" style={{ backgroundColor: "var(--border)" }}>
                 <div
                     className="h-2 rounded-full transition-all duration-500"
                     style={{ width: `${pct}%`, backgroundColor: barColor }}
@@ -118,15 +118,15 @@ export const MyInfo = () => {
                 <div className="px-6 py-5 flex items-center gap-5">
                     <div
                         className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-lg font-bold"
-                        style={{ backgroundColor: "#5E6A43", color: "#FBF7EF", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+                        style={{ backgroundColor: "var(--secondary)", color: "var(--secondary-foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
                     >
                         {initials}
                     </div>
                     <div className="space-y-1 min-w-0">
-                        <p className="font-semibold text-base truncate" style={{ color: "#2E2A26", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+                        <p className="font-semibold text-base truncate" style={{ color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
                             {user?.username}
                         </p>
-                        <p className="text-sm truncate" style={{ color: "#6b6560" }}>
+                        <p className="text-sm truncate" style={{ color: "var(--muted-foreground)" }}>
                             {user?.email || <span className="italic text-muted-foreground">No email on file</span>}
                         </p>
                         {user?.groups?.length > 0 && (
@@ -135,7 +135,7 @@ export const MyInfo = () => {
                                     <span
                                         key={g}
                                         className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full"
-                                        style={{ backgroundColor: "#e8edde", color: "#5E6A43", border: "1px solid #B8C76A" }}
+                                        style={{ backgroundColor: "var(--sidebar-accent)", color: "var(--secondary-text)", border: "1px solid var(--primary-text)" }}
                                     >
                                         <Building2 className="h-3 w-3" />
                                         {g}
@@ -149,7 +149,7 @@ export const MyInfo = () => {
 
             {/* ── Plan / Tier ── */}
             <Card>
-                <CardHeader icon={Building2} title="Current Plan" accentColor="#B8C76A" />
+                <CardHeader icon={Building2} title="Current Plan" accentColor="var(--accent)" />
                 <div className="px-6 py-5 space-y-4">
                     <div className="flex items-center gap-3">
                         <span
@@ -162,9 +162,9 @@ export const MyInfo = () => {
                             <span
                                 className="text-xs px-2 py-0.5 rounded-full font-medium"
                                 style={{
-                                    backgroundColor: plan.is_active ? "#e8edde" : "#FFDCC8",
-                                    color: plan.is_active ? "#5E6A43" : "#c04a00",
-                                    border: `1px solid ${plan.is_active ? "#B8C76A" : "#F29B6B"}`,
+                                    backgroundColor: plan.is_active ? "var(--sidebar-accent)" : "var(--muted)",
+                                    color: plan.is_active ? "var(--secondary-text)" : "#c04a00",
+                                    border: `1px solid ${plan.is_active ? "var(--primary-text)" : "var(--primary-text)"}`,
                                 }}
                             >
                                 {plan.is_active ? "Active" : "Inactive"}
@@ -176,11 +176,11 @@ export const MyInfo = () => {
                         <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-sm">
                             <div>
                                 <span style={{ color: "#9b948e" }}>Start date</span>
-                                <p className="font-medium" style={{ color: "#2E2A26" }}>{plan.start_date ?? "—"}</p>
+                                <p className="font-medium" style={{ color: "var(--foreground)" }}>{plan.start_date ?? "—"}</p>
                             </div>
                             <div>
                                 <span style={{ color: "#9b948e" }}>End date</span>
-                                <p className="font-medium" style={{ color: "#2E2A26" }}>{plan.end_date ?? "No expiry"}</p>
+                                <p className="font-medium" style={{ color: "var(--foreground)" }}>{plan.end_date ?? "No expiry"}</p>
                             </div>
                         </div>
                     )}
@@ -196,10 +196,10 @@ export const MyInfo = () => {
                                     return (
                                         <div key={key} className="flex items-center gap-2">
                                             {enabled
-                                                ? <CheckCircle2 className="h-3.5 w-3.5 shrink-0" style={{ color: "#5E6A43" }} />
-                                                : <XCircle className="h-3.5 w-3.5 shrink-0" style={{ color: "#D8D2C4" }} />
+                                                ? <CheckCircle2 className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--secondary-text)" }} />
+                                                : <XCircle className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--border)" }} />
                                             }
-                                            <span className="text-xs" style={{ color: enabled ? "#2E2A26" : "#9b948e" }}>
+                                            <span className="text-xs" style={{ color: enabled ? "var(--foreground)" : "#9b948e" }}>
                                                 {label}
                                                 {isLimit ? ` (${val === true ? "∞" : val})` : ""}
                                             </span>
@@ -215,17 +215,17 @@ export const MyInfo = () => {
             {/* ── AI Usage ── */}
             {isFeatureEnabled("ai") && (
                 <Card>
-                    <CardHeader icon={Bot} title="Chett AI — Daily Quota" accentColor="#F29B6B" />
+                    <CardHeader icon={Bot} title="Chett AI — Daily Quota" accentColor="var(--primary)" />
                     <div className="px-6 py-5">
                         {usageLoading ? (
-                            <div className="h-12 animate-pulse rounded" style={{ backgroundColor: "#D8D2C4" }} />
+                            <div className="h-12 animate-pulse rounded" style={{ backgroundColor: "var(--border)" }} />
                         ) : !aiUsage ? (
                             <p className="text-sm" style={{ color: "#9b948e" }}>Usage data unavailable.</p>
                         ) : aiUsage.unlimited ? (
                             <div className="flex items-center gap-3">
-                                <Infinity className="h-6 w-6" style={{ color: "#5E6A43" }} />
+                                <Infinity className="h-6 w-6" style={{ color: "var(--secondary-text)" }} />
                                 <div>
-                                    <p className="font-semibold" style={{ color: "#2E2A26" }}>Unlimited queries</p>
+                                    <p className="font-semibold" style={{ color: "var(--foreground)" }}>Unlimited queries</p>
                                     <p className="text-xs" style={{ color: "#9b948e" }}>
                                         {aiUsage.question_count} sent today
                                     </p>
@@ -236,7 +236,7 @@ export const MyInfo = () => {
                         )}
                         {aiUsage && !aiUsage.unlimited && aiUsage.ai_tier && (
                             <p className="text-xs mt-3" style={{ color: "#9b948e" }}>
-                                Tier: <span className="font-medium" style={{ color: "#6b6560" }}>{aiUsage.ai_tier}</span>
+                                Tier: <span className="font-medium" style={{ color: "var(--muted-foreground)" }}>{aiUsage.ai_tier}</span>
                             </p>
                         )}
                     </div>

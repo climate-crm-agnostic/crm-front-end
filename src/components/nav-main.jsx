@@ -17,8 +17,10 @@ import {
 } from "@/components/ui/sidebar"
 import { useLocation } from "react-router-dom";
 
-const OLIVE = "#5E6A43";
-const ACTIVE_BORDER = "3px solid #5E6A43";
+const OLIVE = "var(--secondary)";
+// Inset shadow instead of border-left so the active item keeps the same
+// icon position as the rest; the bar is dropped in the collapsed rail.
+const ACTIVE_CLASS = "shadow-[inset_3px_0_0_var(--secondary-text)] rounded-l-none group-data-[collapsible=icon]:shadow-none group-data-[collapsible=icon]:rounded-md";
 
 export function NavMain({ items }) {
   const location = useLocation();
@@ -39,11 +41,8 @@ export function NavMain({ items }) {
               <SidebarMenuButton
                 asChild
                 tooltip={item.title}
-                style={isActive ? {
-                  backgroundColor: "var(--sidebar-accent)",
-                  borderLeft: ACTIVE_BORDER,
-                  borderRadius: "0 4px 4px 0",
-                } : {}}
+                className={isActive ? ACTIVE_CLASS : undefined}
+                style={isActive ? { backgroundColor: "var(--sidebar-accent)" } : {}}
               >
                 <a
                   href={item.url || "#"}
@@ -52,7 +51,7 @@ export function NavMain({ items }) {
                   {item.icon && (
                     <Icon
                       className="size-4"
-                      style={{ color: isActive ? OLIVE : undefined }}
+                      style={{ color: isActive ? "var(--secondary-text)" : undefined }}
                     />
                   )}
                   <span className="font-medium text-foreground">{item.title}</span>
@@ -89,13 +88,13 @@ export function NavMain({ items }) {
                     <div className="flex items-center">
                       <div
                         className="p-1 rounded group-data-[collapsible=icon]:hidden"
-                        style={{ backgroundColor: "rgba(94,106,67,0.12)" }}
+                        style={{ backgroundColor: "rgba(37,91,1,0.12)" }}
                       >
-                        <Icon className="size-4" style={{ color: OLIVE }} />
+                        <Icon className="size-4" style={{ color: "var(--secondary-text)" }} />
                       </div>
                       <Icon
                         className="size-4 hidden group-data-[collapsible=icon]:block"
-                        style={{ color: OLIVE }}
+                        style={{ color: "var(--secondary-text)" }}
                       />
                     </div>
                   )}
@@ -103,7 +102,7 @@ export function NavMain({ items }) {
                     {item.title}
                   </span>
                   <ChevronRight
-                    className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 text-muted-foreground"
+                    className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 text-muted-foreground group-data-[collapsible=icon]:hidden"
                   />
                 </SidebarMenuButton>
               </CollapsibleTrigger>
@@ -119,11 +118,11 @@ export function NavMain({ items }) {
                             href={subItem.url}
                             className="flex items-center px-3 py-2 rounded transition-all"
                             style={{
-                              color: isActive ? OLIVE : undefined,
+                              color: isActive ? "var(--secondary-text)" : undefined,
                               backgroundColor: isActive ? "var(--sidebar-accent)" : "transparent",
                               fontFamily: '"Source Sans 3", Arial, sans-serif',
                               fontWeight: isActive ? 600 : 400,
-                              borderLeft: isActive ? `2px solid ${OLIVE}` : "2px solid transparent",
+                              borderLeft: isActive ? `2px solid var(--secondary-text)` : "2px solid transparent",
                             }}
                           >
                             <span>{subItem.title}</span>

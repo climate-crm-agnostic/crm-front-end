@@ -40,7 +40,7 @@ export const MultiSelect = ({
                             disabled={disabled}
                             checked={selected.includes(option.value)}
                             onChange={() => toggle(option.value)}
-                            style={{ accentColor: "#5E6A43" }}
+                            style={{ accentColor: "var(--secondary)" }}
                         />
                         {option.color && (
                             <span className="h-2.5 w-2.5 rounded-full"
@@ -72,9 +72,9 @@ export const MultiSelect = ({
                                 key={v}
                                 className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs"
                                 style={{
-                                    backgroundColor: option?.color ? `${option.color}22` : "#F2EBDD",
-                                    border: `1px solid ${option?.color || "#D8D2C4"}`,
-                                    color: "#2E2A26",
+                                    backgroundColor: option?.color ? `color-mix(in srgb, ${option.color} 13%, transparent)` : "var(--card)",
+                                    border: `1px solid ${option?.color || "var(--border)"}`,
+                                    color: "var(--foreground)",
                                 }}
                             >
                                 {option?.label ?? v}

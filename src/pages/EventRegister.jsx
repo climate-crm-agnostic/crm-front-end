@@ -6,7 +6,7 @@ import { PhoneInput } from "@/components/ui/phone-input";
 import { getPublicEvent, getEventByAttendeeToken, verifyEventCode, submitPublicRegistration, submitWalkIn } from "@/services/eventService";
 import { formatDateTime } from "@/utils/tz";
 
-const GREEN = "#5E6A43";
+const GREEN = "var(--secondary)";
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 /**
@@ -259,36 +259,36 @@ export const EventRegister = () => {
 
     // ── Layout shell ─────────────────────────────────────────────────────
     const shell = (children) => (
-        <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: "#FBF7EF", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+        <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: "var(--background)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
             <div className="w-full max-w-lg">{children}</div>
         </div>
     );
 
-    if (loading) return shell(<p className="text-center" style={{ color: "#6b6560" }}>Loading…</p>);
+    if (loading) return shell(<p className="text-center" style={{ color: "var(--muted-foreground)" }}>Loading…</p>);
 
     if (errorMsg) {
         return shell(
-            <div className="rounded-2xl p-8 text-center" style={{ border: "1px solid #D8D2C4", backgroundColor: "#FFFFFF" }}>
+            <div className="rounded-2xl p-8 text-center" style={{ border: "1px solid var(--border)", backgroundColor: "var(--background)" }}>
                 <XCircle className="h-12 w-12 mx-auto mb-4" style={{ color: "#B0592E" }} />
-                <h1 className="text-lg font-semibold mb-1" style={{ color: "#2E2A26" }}>Registration unavailable</h1>
-                <p className="text-sm" style={{ color: "#6b6560" }}>{errorMsg}</p>
+                <h1 className="text-lg font-semibold mb-1" style={{ color: "var(--foreground)" }}>Registration unavailable</h1>
+                <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>{errorMsg}</p>
             </div>
         );
     }
 
     if (done) {
         return shell(
-            <div className="rounded-2xl p-8 text-center" style={{ border: "1px solid #D8D2C4", backgroundColor: "#FFFFFF" }}>
+            <div className="rounded-2xl p-8 text-center" style={{ border: "1px solid var(--border)", backgroundColor: "var(--background)" }}>
                 <CheckCircle2 className="h-12 w-12 mx-auto mb-4" style={{ color: "#2f9e3a" }} />
-                <h1 className="text-lg font-semibold mb-1" style={{ color: "#2E2A26" }}>You're registered!</h1>
-                <p className="text-sm mb-6" style={{ color: "#6b6560" }}>Thank you for confirming your attendance to {event?.name}. We look forward to seeing you.</p>
+                <h1 className="text-lg font-semibold mb-1" style={{ color: "var(--foreground)" }}>You're registered!</h1>
+                <p className="text-sm mb-6" style={{ color: "var(--muted-foreground)" }}>Thank you for confirming your attendance to {event?.name}. We look forward to seeing you.</p>
                 {event?.modality === "virtual" && event?.virtual_url ? (
                     <a
                         href={event.virtual_url}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-lg text-sm font-semibold cursor-pointer"
-                        style={{ backgroundColor: GREEN, color: "#FBF7EF" }}
+                        style={{ backgroundColor: GREEN, color: "var(--secondary-foreground)" }}
                     >
                         <Video className="h-4 w-4" /> Join the event
                     </a>
@@ -297,7 +297,7 @@ export const EventRegister = () => {
                         type="button"
                         onClick={resetForm}
                         className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-lg text-sm font-semibold cursor-pointer"
-                        style={{ backgroundColor: GREEN, color: "#FBF7EF" }}
+                        style={{ backgroundColor: GREEN, color: "var(--secondary-foreground)" }}
                     >
                         <UserPlus className="h-4 w-4" /> Register another attendee
                     </button>
@@ -313,9 +313,9 @@ export const EventRegister = () => {
     }
 
     const inputCls = "w-full h-10 px-3 rounded-lg text-sm";
-    const inputStyle = { border: "1px solid #D8D2C4", backgroundColor: "#FFFFFF", color: "#2E2A26" };
-    const readonlyStyle = { border: "1px solid #E7E1D4", backgroundColor: "#F0ECE3", color: "#6b6560" };
-    const labelStyle = { color: "#2E2A26", fontSize: 13, fontWeight: 600, display: "block", marginBottom: 4 };
+    const inputStyle = { border: "1px solid var(--border)", backgroundColor: "var(--background)", color: "var(--foreground)" };
+    const readonlyStyle = { border: "1px solid var(--border)", backgroundColor: "var(--muted)", color: "var(--muted-foreground)" };
+    const labelStyle = { color: "var(--foreground)", fontSize: 13, fontWeight: 600, display: "block", marginBottom: 4 };
 
     const header = (
         <div className="p-6" style={{ backgroundColor: GREEN }}>
@@ -340,14 +340,14 @@ export const EventRegister = () => {
     // ── Phase 1: enter access code ───────────────────────────────────────
     if (phase === "code") {
         return shell(
-            <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid #D8D2C4", backgroundColor: "#FFFFFF" }}>
+            <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid var(--border)", backgroundColor: "var(--background)" }}>
                 {header}
                 <form className="p-6 space-y-4" onSubmit={verify}>
-                    <div className="flex items-start gap-3 p-3 rounded-lg" style={{ backgroundColor: "rgba(94,106,67,0.08)", border: "1px solid rgba(94,106,67,0.25)" }}>
-                        <KeyRound className="h-5 w-5 mt-0.5" style={{ color: GREEN }} />
+                    <div className="flex items-start gap-3 p-3 rounded-lg" style={{ backgroundColor: "rgba(37,91,1,0.08)", border: "1px solid rgba(37,91,1,0.25)" }}>
+                        <KeyRound className="h-5 w-5 mt-0.5" style={{ color: "var(--secondary-text)" }} />
                         <div>
-                            <p className="text-sm font-semibold" style={{ color: "#2E2A26" }}>Enter your registration code</p>
-                            <p className="text-xs mt-0.5" style={{ color: "#6b6560" }}>
+                            <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Enter your registration code</p>
+                            <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
                                 We emailed you a 6-digit code (format 000-000). Type it below to check in.
                             </p>
                         </div>
@@ -358,34 +358,34 @@ export const EventRegister = () => {
                             autoFocus
                             inputMode="numeric"
                             className="w-full h-14 px-3 rounded-lg text-center tracking-[0.4em] text-2xl font-bold"
-                            style={{ ...inputStyle, borderColor: codeError ? "#c0392b" : "#D8D2C4", color: "#2E2A26" }}
+                            style={{ ...inputStyle, borderColor: codeError ? "var(--destructive)" : "var(--border)", color: "var(--foreground)" }}
                             placeholder="000-000"
                             value={code}
                             onChange={(e) => setCode(formatCode(e.target.value))}
                         />
-                        {codeError && <p className="text-xs mt-1" style={{ color: "#c0392b" }}>{codeError}</p>}
+                        {codeError && <p className="text-xs mt-1" style={{ color: "var(--destructive)" }}>{codeError}</p>}
                     </div>
 
                     <button
                         type="submit"
                         disabled={verifying}
                         className="w-full h-11 rounded-lg text-sm font-semibold cursor-pointer"
-                        style={{ backgroundColor: GREEN, color: "#FBF7EF", opacity: verifying ? 0.7 : 1 }}
+                        style={{ backgroundColor: GREEN, color: "var(--secondary-foreground)", opacity: verifying ? 0.7 : 1 }}
                     >
                         {verifying ? "Checking…" : "Continue"}
                     </button>
 
                     <div className="flex items-center gap-3 py-1">
-                        <div className="flex-1 h-px" style={{ backgroundColor: "#E7E1D4" }} />
+                        <div className="flex-1 h-px" style={{ backgroundColor: "var(--border)" }} />
                         <span className="text-xs" style={{ color: "#9b948e" }}>or</span>
-                        <div className="flex-1 h-px" style={{ backgroundColor: "#E7E1D4" }} />
+                        <div className="flex-1 h-px" style={{ backgroundColor: "var(--border)" }} />
                     </div>
 
                     <button
                         type="button"
                         onClick={() => { setAttrs(initAttrs(fields)); setPhase("walkin"); }}
                         className="w-full h-11 rounded-lg text-sm font-semibold cursor-pointer flex items-center justify-center gap-2"
-                        style={{ border: `1px solid ${GREEN}`, color: GREEN, backgroundColor: "#FFFFFF" }}
+                        style={{ border: `1px solid var(--secondary-text)`, color: "var(--secondary-text)", backgroundColor: "var(--background)" }}
                     >
                         <UserPlus className="h-4 w-4" /> I don't have a code — register here
                     </button>
@@ -397,28 +397,28 @@ export const EventRegister = () => {
     // ── Walk-in: self-registration with no code ──────────────────────────
     if (phase === "walkin") {
         return shell(
-            <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid #D8D2C4", backgroundColor: "#FFFFFF" }}>
+            <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid var(--border)", backgroundColor: "var(--background)" }}>
                 {header}
                 <form className="p-6 space-y-4" onSubmit={submitWalkInForm}>
                     <button
                         type="button"
                         onClick={() => setPhase("code")}
                         className="flex items-center gap-1.5 text-xs font-medium cursor-pointer"
-                        style={{ color: "#6b6560" }}
+                        style={{ color: "var(--muted-foreground)" }}
                     >
                         <ChevronLeft className="h-3.5 w-3.5" /> I have a code
                     </button>
 
-                    <div className="flex items-start gap-3 p-3 rounded-lg" style={{ backgroundColor: "rgba(94,106,67,0.08)", border: "1px solid rgba(94,106,67,0.25)" }}>
-                        <UserPlus className="h-5 w-5 mt-0.5" style={{ color: GREEN }} />
+                    <div className="flex items-start gap-3 p-3 rounded-lg" style={{ backgroundColor: "rgba(37,91,1,0.08)", border: "1px solid rgba(37,91,1,0.25)" }}>
+                        <UserPlus className="h-5 w-5 mt-0.5" style={{ color: "var(--secondary-text)" }} />
                         <div>
-                            <p className="text-sm font-semibold" style={{ color: "#2E2A26" }}>Register for the event</p>
-                            <p className="text-xs mt-0.5" style={{ color: "#6b6560" }}>Fill in your details to check in.</p>
+                            <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Register for the event</p>
+                            <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>Fill in your details to check in.</p>
                         </div>
                     </div>
 
                     {fieldErrors._global && (
-                        <div className="p-3 rounded-lg text-sm" style={{ backgroundColor: "#FBEEE9", border: "1px solid #E4B9A8", color: "#8a3f1e" }}>
+                        <div className="p-3 rounded-lg text-sm" style={{ backgroundColor: "color-mix(in srgb, var(--destructive) 10%, var(--background))", border: "1px solid color-mix(in srgb, var(--destructive) 35%, var(--background))", color: "var(--destructive)" }}>
                             {fieldErrors._global}
                         </div>
                     )}
@@ -426,8 +426,8 @@ export const EventRegister = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label style={labelStyle}>First name *</label>
-                            <input className={inputCls} style={{ ...inputStyle, borderColor: baseErrors.first_name ? "#c0392b" : "#D8D2C4" }} value={walkBase.first_name} onChange={(e) => setWalk("first_name", e.target.value)} />
-                            {baseErrors.first_name && <p className="text-xs mt-1" style={{ color: "#c0392b" }}>{baseErrors.first_name}</p>}
+                            <input className={inputCls} style={{ ...inputStyle, borderColor: baseErrors.first_name ? "var(--destructive)" : "var(--border)" }} value={walkBase.first_name} onChange={(e) => setWalk("first_name", e.target.value)} />
+                            {baseErrors.first_name && <p className="text-xs mt-1" style={{ color: "var(--destructive)" }}>{baseErrors.first_name}</p>}
                         </div>
                         <div>
                             <label style={labelStyle}>Last name</label>
@@ -435,8 +435,8 @@ export const EventRegister = () => {
                         </div>
                         <div className="sm:col-span-2">
                             <label style={labelStyle}>Email *</label>
-                            <input type="email" className={inputCls} style={{ ...inputStyle, borderColor: baseErrors.email ? "#c0392b" : "#D8D2C4" }} value={walkBase.email} onChange={(e) => setWalk("email", e.target.value)} />
-                            {baseErrors.email && <p className="text-xs mt-1" style={{ color: "#c0392b" }}>{baseErrors.email}</p>}
+                            <input type="email" className={inputCls} style={{ ...inputStyle, borderColor: baseErrors.email ? "var(--destructive)" : "var(--border)" }} value={walkBase.email} onChange={(e) => setWalk("email", e.target.value)} />
+                            {baseErrors.email && <p className="text-xs mt-1" style={{ color: "var(--destructive)" }}>{baseErrors.email}</p>}
                         </div>
                         <div>
                             <label style={labelStyle}>Company</label>
@@ -472,7 +472,7 @@ export const EventRegister = () => {
                         type="submit"
                         disabled={submitting}
                         className="w-full h-11 rounded-lg text-sm font-semibold cursor-pointer mt-2"
-                        style={{ backgroundColor: GREEN, color: "#FBF7EF", opacity: submitting ? 0.7 : 1 }}
+                        style={{ backgroundColor: GREEN, color: "var(--secondary-foreground)", opacity: submitting ? 0.7 : 1 }}
                     >
                         {submitting ? "Submitting…" : "Register"}
                     </button>
@@ -483,11 +483,11 @@ export const EventRegister = () => {
 
     // ── Phase 2: review data (read-only) + fill lead fields ──────────────
     return shell(
-        <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid #D8D2C4", backgroundColor: "#FFFFFF" }}>
+        <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid var(--border)", backgroundColor: "var(--background)" }}>
             {header}
             <form className="p-6 space-y-4" onSubmit={submit}>
                 {fieldErrors._global && (
-                    <div className="p-3 rounded-lg text-sm" style={{ backgroundColor: "#FBEEE9", border: "1px solid #E4B9A8", color: "#8a3f1e" }}>
+                    <div className="p-3 rounded-lg text-sm" style={{ backgroundColor: "color-mix(in srgb, var(--destructive) 10%, var(--background))", border: "1px solid color-mix(in srgb, var(--destructive) 35%, var(--background))", color: "var(--destructive)" }}>
                         {fieldErrors._global}
                     </div>
                 )}
@@ -554,7 +554,7 @@ export const EventRegister = () => {
                     type="submit"
                     disabled={submitting}
                     className="w-full h-11 rounded-lg text-sm font-semibold cursor-pointer mt-2"
-                    style={{ backgroundColor: GREEN, color: "#FBF7EF", opacity: submitting ? 0.7 : 1 }}
+                    style={{ backgroundColor: GREEN, color: "var(--secondary-foreground)", opacity: submitting ? 0.7 : 1 }}
                 >
                     {submitting ? "Submitting…" : "Confirm registration"}
                 </button>

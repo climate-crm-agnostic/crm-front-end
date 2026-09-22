@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { PhoneInput } from "@/components/ui/phone-input";
 
-const GREEN = "#5E6A43";
+const GREEN = "var(--secondary)";
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 /**
@@ -49,16 +49,16 @@ export const EditAttendeeModal = ({ attendee, onClose, onSave }) => {
     };
 
     const inputCls = "w-full h-10 px-3 rounded-lg text-sm";
-    const inputStyle = { border: "1px solid #D8D2C4", backgroundColor: "#FFFFFF", color: "#2E2A26" };
-    const labelStyle = { color: "#2E2A26", fontSize: 13, fontWeight: 600, display: "block", marginBottom: 4 };
+    const inputStyle = { border: "1px solid var(--border)", backgroundColor: "var(--background)", color: "var(--foreground)" };
+    const labelStyle = { color: "var(--foreground)", fontSize: 13, fontWeight: 600, display: "block", marginBottom: 4 };
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: "rgba(0,0,0,0.4)" }}>
-            <div className="w-full max-w-md rounded-2xl p-6 space-y-4" style={{ backgroundColor: "#FBF7EF", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
-                <h2 className="text-lg font-semibold" style={{ color: "#2E2A26" }}>Edit attendee</h2>
+            <div className="w-full max-w-md rounded-2xl p-6 space-y-4" style={{ backgroundColor: "var(--background)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+                <h2 className="text-lg font-semibold" style={{ color: "var(--foreground)" }}>Edit attendee</h2>
 
                 {errors._global && (
-                    <div className="p-3 rounded-lg text-sm" style={{ backgroundColor: "#FBEEE9", border: "1px solid #E4B9A8", color: "#8a3f1e" }}>
+                    <div className="p-3 rounded-lg text-sm" style={{ backgroundColor: "color-mix(in srgb, var(--destructive) 10%, var(--background))", border: "1px solid color-mix(in srgb, var(--destructive) 35%, var(--background))", color: "var(--destructive)" }}>
                         {errors._global}
                     </div>
                 )}
@@ -66,8 +66,8 @@ export const EditAttendeeModal = ({ attendee, onClose, onSave }) => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <label style={labelStyle}>First name *</label>
-                        <input className={inputCls} style={{ ...inputStyle, borderColor: errors.first_name ? "#c0392b" : "#D8D2C4" }} value={form.first_name} onChange={(e) => set("first_name", e.target.value)} />
-                        {errors.first_name && <p className="text-xs mt-1" style={{ color: "#c0392b" }}>{errors.first_name}</p>}
+                        <input className={inputCls} style={{ ...inputStyle, borderColor: errors.first_name ? "var(--destructive)" : "var(--border)" }} value={form.first_name} onChange={(e) => set("first_name", e.target.value)} />
+                        {errors.first_name && <p className="text-xs mt-1" style={{ color: "var(--destructive)" }}>{errors.first_name}</p>}
                     </div>
                     <div>
                         <label style={labelStyle}>Last name</label>
@@ -75,8 +75,8 @@ export const EditAttendeeModal = ({ attendee, onClose, onSave }) => {
                     </div>
                     <div className="sm:col-span-2">
                         <label style={labelStyle}>Email</label>
-                        <input type="email" className={inputCls} style={{ ...inputStyle, borderColor: errors.email ? "#c0392b" : "#D8D2C4" }} value={form.email} onChange={(e) => set("email", e.target.value)} />
-                        {errors.email && <p className="text-xs mt-1" style={{ color: "#c0392b" }}>{errors.email}</p>}
+                        <input type="email" className={inputCls} style={{ ...inputStyle, borderColor: errors.email ? "var(--destructive)" : "var(--border)" }} value={form.email} onChange={(e) => set("email", e.target.value)} />
+                        {errors.email && <p className="text-xs mt-1" style={{ color: "var(--destructive)" }}>{errors.email}</p>}
                     </div>
                     <div className="sm:col-span-2">
                         <label style={labelStyle}>Company</label>
@@ -89,8 +89,8 @@ export const EditAttendeeModal = ({ attendee, onClose, onSave }) => {
                 </div>
 
                 <div className="flex items-center justify-end gap-2 pt-2">
-                    <button type="button" onClick={onClose} className="h-10 px-4 rounded-lg text-sm font-semibold cursor-pointer" style={{ border: "1px solid #D8D2C4", color: "#6b6560", backgroundColor: "#FFFFFF" }}>Cancel</button>
-                    <button type="button" onClick={submit} disabled={saving} className="h-10 px-5 rounded-lg text-sm font-semibold cursor-pointer" style={{ backgroundColor: GREEN, color: "#FBF7EF", opacity: saving ? 0.7 : 1 }}>
+                    <button type="button" onClick={onClose} className="h-10 px-4 rounded-lg text-sm font-semibold cursor-pointer" style={{ border: "1px solid var(--border)", color: "var(--muted-foreground)", backgroundColor: "var(--background)" }}>Cancel</button>
+                    <button type="button" onClick={submit} disabled={saving} className="h-10 px-5 rounded-lg text-sm font-semibold cursor-pointer" style={{ backgroundColor: GREEN, color: "var(--secondary-foreground)", opacity: saving ? 0.7 : 1 }}>
                         {saving ? "Saving…" : "Save changes"}
                     </button>
                 </div>

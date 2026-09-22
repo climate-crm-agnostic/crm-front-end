@@ -52,7 +52,7 @@ export const Periods = () => {
     const handleDelete = async (id) => {
         const result = await Swal.fire({
             title: 'Are you sure?', icon: 'warning', showCancelButton: true,
-            confirmButtonColor: '#5E6A43', cancelButtonColor: '#9b948e', confirmButtonText: 'Yes, delete it!'
+            confirmButtonColor: 'var(--secondary)', cancelButtonColor: '#9b948e', confirmButtonText: 'Yes, delete it!'
         });
         if (!result.isConfirmed) return;
         try {
@@ -92,7 +92,7 @@ export const Periods = () => {
         <div className="p-6 space-y-6">
             <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 border">
-                    <CalendarRange className="h-5 w-5 text-primary" />
+                    <CalendarRange className="h-5 w-5 text-primary-text" />
                 </div>
                 <div>
                     <p className="text-base font-semibold">Periods</p>
@@ -145,7 +145,7 @@ export const Periods = () => {
                                 <span className="text-sm font-medium">{p.name}</span>
                                 <span className="text-xs text-muted-foreground ml-2">{p.start_date} → {p.end_date}</span>
                             </div>
-                            <Button variant="ghost" size="sm" onClick={() => handleDelete(p.id)} className="h-6 w-6 p-0 text-red-500 hover:text-red-700">
+                            <Button variant="ghost" size="sm" onClick={() => handleDelete(p.id)} className="h-6 w-6 p-0 text-red-500 hover:text-red-700 dark:hover:text-red-300">
                                 <Trash2 className="h-4 w-4" />
                             </Button>
                         </div>

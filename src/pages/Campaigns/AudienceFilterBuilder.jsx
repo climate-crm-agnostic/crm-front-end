@@ -214,7 +214,7 @@ export const AudienceFilterBuilder = ({ entity = "", onEntityChange, entityLocke
 
                         <Button
                             type="button" variant="ghost" size="sm" onClick={() => removeRow(index)}
-                            className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+                            className="h-8 w-8 p-0 text-red-500 hover:text-red-700 dark:hover:text-red-300"
                         >
                             <X className="h-4 w-4" />
                         </Button>

@@ -19,7 +19,7 @@ export const ModalLeads = ({
           <h1 className="text-xl font-semibold text-white">{title}</h1>
           <button
             onClick={onClose}
-            className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition"
+            className="p-2 rounded-full bg-background/10 hover:bg-white/20 text-white transition"
             aria-label="Cerrar"
           >
             <X className="h-5 w-5" />
@@ -30,7 +30,7 @@ export const ModalLeads = ({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-0 max-h-[calc(90vh-64px)]">
           <div className="lg:col-span-2 p-6 overflow-y-auto max-h-[80vh]">
             <div className="flex items-center gap-2 mb-4">
-              <ClipboardList className="h-5 w-5 text-primary" />
+              <ClipboardList className="h-5 w-5 text-primary-text" />
               <h2 className="text-lg font-medium">Datos del Lead</h2>
             </div>
             <div className="bg-gray-50/90 dark:bg-codex-fondo-terciario-variante6/60 rounded-xl p-4">
@@ -41,7 +41,7 @@ export const ModalLeads = ({
 
           <div className="border-l p-6 overflow-y-auto bg-gray-100 dark:bg-codex-fondo-terciario-variante6">
             <div className="flex items-center gap-2 mb-4">
-              <MessageSquare className="h-5 w-5 text-primary" />
+              <MessageSquare className="h-5 w-5 text-primary-text" />
               <h2 className="text-lg font-medium">Seguimiento</h2>
             </div>
 

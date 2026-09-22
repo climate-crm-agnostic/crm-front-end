@@ -116,9 +116,9 @@ export const DateInput = ({
                 onChange={handleTextChange}
                 onBlur={handleBlur}
                 style={{
-                    backgroundColor: disabled ? "#F2EBDD" : "#fff",
-                    border: "1px solid #D8D2C4",
-                    color: "#2E2A26",
+                    backgroundColor: disabled ? "var(--card)" : "var(--background)",
+                    border: "1px solid var(--border)",
+                    color: "var(--foreground)",
                     width: "100%",
                     height: 36,
                     borderRadius: 6,
@@ -148,9 +148,9 @@ export const DateInput = ({
                 <PopoverContent
                     align="start"
                     className="w-auto p-2"
-                    style={{ backgroundColor: "#fff", border: "1px solid #D8D2C4" }}
+                    style={{ backgroundColor: "var(--background)", border: "1px solid var(--border)" }}
                 >
-                    <div style={{ "--rdp-accent-color": "#5E6A43", "--rdp-accent-background-color": "#F2EBDD" }}>
+                    <div style={{ "--rdp-accent-color": "var(--secondary)", "--rdp-accent-background-color": "var(--card)" }}>
                         <DayPicker
                             mode="single"
                             selected={isoToDate(value)}

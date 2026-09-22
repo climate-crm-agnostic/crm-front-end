@@ -117,7 +117,7 @@ export const SendEmailModal = ({ open, onClose, to: initialTo = "", subject: ini
 
                 <div className="p-6 space-y-4">
                     {error && (
-                        <div className="p-3 text-sm text-red-500 bg-red-50 rounded-md border border-red-200">{error}</div>
+                        <div className="p-3 text-sm text-red-500 bg-red-50 dark:bg-red-500/15 rounded-md border border-red-200 dark:border-red-500/30">{error}</div>
                     )}
 
                     <div className="space-y-2">

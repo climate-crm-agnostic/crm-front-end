@@ -25,9 +25,9 @@ export const FeatureGate = ({ feature, children }) => {
     >
       <div
         className="flex h-16 w-16 items-center justify-center rounded-2xl shadow-md"
-        style={{ backgroundColor: "#F5F0E8", border: "1px solid #D8D2C4" }}
+        style={{ backgroundColor: "var(--muted)", border: "1px solid var(--border)" }}
       >
-        <Lock className="h-7 w-7" style={{ color: "#5E6A43" }} />
+        <Lock className="h-7 w-7" style={{ color: "var(--secondary-text)" }} />
       </div>
 
       <div className="space-y-2 max-w-sm">
@@ -36,12 +36,12 @@ export const FeatureGate = ({ feature, children }) => {
           style={{
             fontFamily: '"Cormorant Garamond", Georgia, serif',
             fontStyle: "italic",
-            color: "#2E2A26",
+            color: "var(--foreground)",
           }}
         >
           Feature not available
         </h2>
-        <p className="text-sm leading-relaxed" style={{ color: "#6b6560" }}>
+        <p className="text-sm leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
           This module is not included in your current plan. Upgrade to unlock
           it and get access to all CodeX CRM capabilities.
         </p>
@@ -51,12 +51,12 @@ export const FeatureGate = ({ feature, children }) => {
         href="mailto:support@codexacademy.co?subject=Plan Upgrade Request"
         className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200"
         style={{
-          backgroundColor: "#5E6A43",
-          color: "#FBF7EF",
+          backgroundColor: "var(--secondary)",
+          color: "var(--secondary-foreground)",
           textDecoration: "none",
         }}
-        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#4a5535")}
-        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#5E6A43")}
+        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--secondary) 80%, black)")}
+        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "var(--secondary)")}
       >
         Contact us to upgrade
       </a>

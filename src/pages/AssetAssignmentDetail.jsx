@@ -214,7 +214,7 @@ export const AssetAssignmentDetail = () => {
 
             <div className="flex-1 p-6 max-w-6xl mx-auto w-full">
                 {error && (
-                    <div className="p-4 mb-6 text-sm text-red-500 bg-red-50 rounded-md border border-red-200">
+                    <div className="p-4 mb-6 text-sm text-red-500 bg-red-50 dark:bg-red-500/15 rounded-md border border-red-200 dark:border-red-500/30">
                         {error}
                     </div>
                 )}
@@ -227,7 +227,7 @@ export const AssetAssignmentDetail = () => {
                                 <h4 className="font-semibold text-amber-800 dark:text-amber-500">Asset is currently out</h4>
                                 <p className="text-sm text-amber-700/80 dark:text-amber-500/80">Marking it returned will restore the system quantity automatically.</p>
                             </div>
-                            <Button variant="outline" className="border-amber-300 hover:bg-amber-100" onClick={handleMarkReturned}>
+                            <Button variant="outline" className="border-amber-300 dark:border-amber-500/30 hover:bg-amber-100 dark:hover:bg-amber-500/15" onClick={handleMarkReturned}>
                                 Mark as Returned
                             </Button>
                         </div>

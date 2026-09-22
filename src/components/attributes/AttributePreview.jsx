@@ -2,7 +2,7 @@ import { DynamicAttributeField } from "./DynamicAttributeField";
 import { formatAttributeValue } from "../../utils/attributeTypes";
 
 const CARD = {
-    backgroundColor: "#fff", border: "1px solid #D8D2C4", borderRadius: 10, padding: 14,
+    backgroundColor: "var(--background)", border: "1px solid var(--border)", borderRadius: 10, padding: 14,
 };
 
 /**
@@ -39,10 +39,10 @@ export const AttributePreview = ({ draft, value, onChange, rules }) => {
 
                 <label style={{
                     display: "block", fontSize: 12, fontWeight: 600,
-                    color: "#2E2A26", marginBottom: 6,
+                    color: "var(--foreground)", marginBottom: 6,
                 }}>
                     {attr.label}
-                    {draft.is_required && <span style={{ color: "#c0392b" }}> *</span>}
+                    {draft.is_required && <span style={{ color: "var(--destructive)" }}> *</span>}
                 </label>
 
                 <DynamicAttributeField
@@ -60,11 +60,11 @@ export const AttributePreview = ({ draft, value, onChange, rules }) => {
 
                 {hasValue && (
                     <div style={{
-                        marginTop: 10, paddingTop: 10, borderTop: "1px dashed #D8D2C4",
-                        fontSize: 11, color: "#6b6560",
+                        marginTop: 10, paddingTop: 10, borderTop: "1px dashed var(--border)",
+                        fontSize: 11, color: "var(--muted-foreground)",
                     }}>
                         <span style={{ opacity: 0.7 }}>Shown in tables as </span>
-                        <strong style={{ color: "#2E2A26" }}>
+                        <strong style={{ color: "var(--foreground)" }}>
                             {formatAttributeValue(attr, value) || "—"}
                         </strong>
                     </div>
@@ -85,8 +85,8 @@ export const AttributePreview = ({ draft, value, onChange, rules }) => {
                 ) : (
                     <ul className="flex flex-col gap-1">
                         {rules.map((rule, i) => (
-                            <li key={i} className="flex gap-2" style={{ fontSize: 12, color: "#2E2A26" }}>
-                                <span style={{ color: "#5E6A43" }}>•</span>
+                            <li key={i} className="flex gap-2" style={{ fontSize: 12, color: "var(--foreground)" }}>
+                                <span style={{ color: "var(--secondary-text)" }}>•</span>
                                 <span>{rule}</span>
                             </li>
                         ))}

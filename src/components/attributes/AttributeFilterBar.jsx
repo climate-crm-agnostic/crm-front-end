@@ -6,16 +6,16 @@ import {
     RELATIVE_WINDOWS, countActiveFilters, defaultOperatorFor, operatorLabel, valueShape,
 } from "../../utils/attributeFilters";
 
-const INK = "#2E2A26";
-const MUTED = "#6b6560";
+const INK = "var(--foreground)";
+const MUTED = "var(--muted-foreground)";
 const HINT = "#9b948e";
-const OAT = "#F2EBDD";
-const PEBBLE = "#D8D2C4";
-const OLIVE = "#5E6A43";
+const OAT = "var(--card)";
+const PEBBLE = "var(--border)";
+const OLIVE = "var(--secondary)";
 const FONT = '"Source Sans 3", Arial, sans-serif';
 
 const control = {
-    backgroundColor: "#fff", border: `1px solid ${PEBBLE}`, color: INK,
+    backgroundColor: "var(--background)", border: `1px solid ${PEBBLE}`, color: INK,
     borderRadius: 6, padding: "6px 8px", fontSize: 13, outline: "none", fontFamily: FONT,
 };
 
@@ -87,16 +87,16 @@ export const AttributeFilterBar = ({ attributes = [], rows, onChange, onApply })
                     onClick={() => (rows.length ? setOpen(!open) : addRow())}
                     className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-semibold cursor-pointer"
                     style={{
-                        border: `1px solid ${activeCount ? OLIVE : PEBBLE}`,
-                        backgroundColor: activeCount ? "rgba(94,106,67,0.10)" : "transparent",
-                        color: activeCount ? OLIVE : MUTED,
+                        border: `1px solid ${activeCount ? "var(--secondary-text)" : PEBBLE}`,
+                        backgroundColor: activeCount ? "rgba(37,91,1,0.10)" : "transparent",
+                        color: activeCount ? "var(--secondary-text)" : MUTED,
                     }}
                 >
                     <Filter size={13} />
                     Filters
                     {activeCount > 0 && (
                         <span className="rounded-full px-1.5 text-[10px] font-black"
-                              style={{ backgroundColor: OLIVE, color: "#FBF7EF" }}>
+                              style={{ backgroundColor: OLIVE, color: "var(--secondary-foreground)" }}>
                             {activeCount}
                         </span>
                     )}
@@ -145,7 +145,7 @@ export const AttributeFilterBar = ({ attributes = [], rows, onChange, onApply })
                                 />
 
                                 <button type="button" onClick={() => removeRow(index)}
-                                        className="cursor-pointer" style={{ color: "#c0392b" }}
+                                        className="cursor-pointer" style={{ color: "var(--destructive)" }}
                                         title="Remove filter">
                                     <X size={14} />
                                 </button>
@@ -156,13 +156,13 @@ export const AttributeFilterBar = ({ attributes = [], rows, onChange, onApply })
                     <div className="flex items-center gap-2 pt-1">
                         <button type="button" onClick={addRow}
                                 className="inline-flex items-center gap-1 text-xs font-semibold cursor-pointer"
-                                style={{ color: OLIVE }}>
+                                style={{ color: "var(--secondary-text)" }}>
                             <Plus size={12} /> Add filter
                         </button>
                         <span className="flex-1" />
                         <button type="button" onClick={() => onApply?.(rows)}
                                 className="h-7 px-3 rounded-md text-xs font-semibold cursor-pointer"
-                                style={{ backgroundColor: OLIVE, color: "#FBF7EF" }}>
+                                style={{ backgroundColor: OLIVE, color: "var(--secondary-foreground)" }}>
                             Apply
                         </button>
                     </div>
@@ -226,8 +226,8 @@ const ValueControl = ({ attr, operator, value, onChange }) => {
                                 className="rounded-full px-2 py-0.5 text-[11px] font-medium cursor-pointer"
                                 style={{
                                     border: `1px solid ${o.color || PEBBLE}`,
-                                    backgroundColor: on ? (o.color || OLIVE) : "#fff",
-                                    color: on ? "#FBF7EF" : INK,
+                                    backgroundColor: on ? (o.color || OLIVE) : "var(--background)",
+                                    color: on ? "var(--background)" : INK,
                                 }}
                             >
                                 {o.label}

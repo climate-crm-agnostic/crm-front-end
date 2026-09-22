@@ -140,7 +140,7 @@ export const FollowupModal = ({ isOpen, onClose, onFollowupSaved, followupToEdit
         >
             <div className="space-y-4">
                 {error && (
-                    <div className="p-3 text-sm text-red-500 bg-red-50 rounded-md">
+                    <div className="p-3 text-sm text-red-500 bg-red-50 dark:bg-red-500/15 rounded-md">
                         {error}
                     </div>
                 )}

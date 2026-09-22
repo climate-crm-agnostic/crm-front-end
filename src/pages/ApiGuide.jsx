@@ -5,12 +5,14 @@ import { Badge } from "@/components/ui/badge";
 import { Copy, Terminal, Shield, Database, Layout, Webhook, ArrowLeft, Network } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
 
+// POST/PUT keep their old, non-brand hues below — the rebrand only has two
+// greens, and collapsing both onto one would make them indistinguishable.
 const METHOD_PILL = {
-    GET:    { bg: "rgba(94,106,67,0.10)",  border: "rgba(94,106,67,0.35)",  color: "#4a5535" },
+    GET:    { bg: "rgba(37,91,1,0.10)",  border: "rgba(37,91,1,0.35)",  color: "var(--secondary-text)" },
     POST:   { bg: "rgba(242,155,107,0.12)", border: "rgba(242,155,107,0.4)", color: "#c0622a" },
     PUT:    { bg: "rgba(184,199,106,0.12)", border: "rgba(184,199,106,0.4)", color: "#697a28" },
-    PATCH:  { bg: "rgba(94,106,67,0.10)",  border: "rgba(94,106,67,0.35)",  color: "#4a5535" },
-    DELETE: { bg: "rgba(192,57,43,0.10)",  border: "rgba(192,57,43,0.35)",  color: "#c0392b" },
+    PATCH:  { bg: "rgba(37,91,1,0.10)",  border: "rgba(37,91,1,0.35)",  color: "var(--secondary-text)" },
+    DELETE: { bg: "rgba(192,57,43,0.10)",  border: "rgba(192,57,43,0.35)",  color: "var(--destructive)" },
 };
 
 const MethodBadge = ({ method }) => {
@@ -24,27 +26,27 @@ const MethodBadge = ({ method }) => {
 };
 
 const EndpointBlock = ({ method, path, description, children }) => (
-    <div className="p-4 rounded-lg" style={{ backgroundColor: "#FBF7EF", border: "1px solid #D8D2C4" }}>
+    <div className="p-4 rounded-lg" style={{ backgroundColor: "var(--background)", border: "1px solid var(--border)" }}>
         <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
             <MethodBadge method={method} />
-            <code className="text-sm font-mono" style={{ color: "#5E6A43" }}>{path}</code>
+            <code className="text-sm font-mono" style={{ color: "var(--secondary-text)" }}>{path}</code>
         </div>
-        {description && <p className="text-sm mb-3" style={{ color: "#6b6560" }}>{description}</p>}
+        {description && <p className="text-sm mb-3" style={{ color: "var(--muted-foreground)" }}>{description}</p>}
         {children}
     </div>
 );
 
-const InfoBlock = ({ title, color = "#5E6A43", items }) => (
-    <div className="p-4 rounded-lg" style={{ backgroundColor: "#F2EBDD", borderLeft: `4px solid ${color}`, border: "1px solid #D8D2C4" }}>
-        <p className="text-sm font-semibold mb-2" style={{ color: "#2E2A26" }}>{title}</p>
-        <ul className="list-disc list-inside text-sm space-y-1" style={{ color: "#6b6560" }}>
+const InfoBlock = ({ title, color = "var(--secondary-text)", items }) => (
+    <div className="p-4 rounded-lg" style={{ backgroundColor: "var(--card)", borderLeft: `4px solid ${color}`, border: "1px solid var(--border)" }}>
+        <p className="text-sm font-semibold mb-2" style={{ color: "var(--foreground)" }}>{title}</p>
+        <ul className="list-disc list-inside text-sm space-y-1" style={{ color: "var(--muted-foreground)" }}>
             {items.map((item, i) => <li key={i}>{item}</li>)}
         </ul>
     </div>
 );
 
 const SectionTitle = ({ children }) => (
-    <p className="text-base font-semibold mb-1" style={{ color: "#2E2A26", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>{children}</p>
+    <p className="text-base font-semibold mb-1" style={{ color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>{children}</p>
 );
 
 export const ApiGuide = () => {
@@ -70,25 +72,25 @@ export const ApiGuide = () => {
     const tabs = ['leads','clients','contacts','services','pipelines','followups','catalogue','invoices','assets','attributes','webhooks','files'];
 
     return (
-        <div className="min-h-screen p-6 md:p-12" style={{ backgroundColor: "#FBF7EF", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+        <div className="min-h-screen p-6 md:p-12" style={{ backgroundColor: "var(--background)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
             <div className="max-w-5xl mx-auto space-y-8">
 
                 {/* Header */}
                 <div className="flex items-center justify-between flex-wrap gap-4">
                     <div className="flex items-center gap-3">
                         <div className="flex h-12 w-12 items-center justify-center rounded-xl"
-                            style={{ backgroundColor: "rgba(94,106,67,0.12)", border: "1px solid rgba(94,106,67,0.3)" }}>
-                            <Terminal className="h-6 w-6" style={{ color: "#5E6A43" }} />
+                            style={{ backgroundColor: "rgba(37,91,1,0.12)", border: "1px solid rgba(37,91,1,0.3)" }}>
+                            <Terminal className="h-6 w-6" style={{ color: "var(--secondary-text)" }} />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold tracking-tight" style={{ color: "#2E2A26" }}>API Integration Guide</p>
+                            <p className="text-2xl font-bold tracking-tight" style={{ color: "var(--foreground)" }}>API Integration Guide</p>
                             <p className="text-sm mt-0.5" style={{ color: "#9b948e" }}>Documentation for accessing CRM data programmatically.</p>
                         </div>
                     </div>
                     <button onClick={() => navigate(-1)}
                         className="flex items-center gap-2 h-9 px-3 rounded-lg text-sm font-medium transition-colors cursor-pointer"
-                        style={{ border: "1px solid #D8D2C4", backgroundColor: "transparent", color: "#6b6560" }}
-                        onMouseEnter={e => e.currentTarget.style.backgroundColor = "#F2EBDD"}
+                        style={{ border: "1px solid var(--border)", backgroundColor: "transparent", color: "var(--muted-foreground)" }}
+                        onMouseEnter={e => e.currentTarget.style.backgroundColor = "var(--card)"}
                         onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}>
                         <ArrowLeft className="h-4 w-4" /> Back
                     </button>
@@ -98,22 +100,22 @@ export const ApiGuide = () => {
                 <Card>
                     <CardHeader>
                         <div className="flex items-center gap-2">
-                            <Shield className="h-5 w-5" style={{ color: "#5E6A43" }} />
+                            <Shield className="h-5 w-5" style={{ color: "var(--secondary-text)" }} />
                             <CardTitle>Authentication</CardTitle>
                         </div>
                         <CardDescription>All API requests must be authenticated using a Token-based mechanism.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-5">
                         <div>
-                            <p className="text-sm font-semibold mb-1" style={{ color: "#2E2A26" }}>1. Obtain a Token</p>
-                            <p className="text-sm mb-2" style={{ color: "#6b6560" }}>Send a POST request with your credentials to receive an authentication token.</p>
+                            <p className="text-sm font-semibold mb-1" style={{ color: "var(--foreground)" }}>1. Obtain a Token</p>
+                            <p className="text-sm mb-2" style={{ color: "var(--muted-foreground)" }}>Send a POST request with your credentials to receive an authentication token.</p>
                             <CopyBlock text={`curl -X POST https://climatebycodex.com/api-token-auth/ \\
 -H "Content-Type: application/json" \\
 -d '{"username": "YOUR_USERNAME", "password": "YOUR_PASSWORD"}'`} />
                         </div>
                         <div>
-                            <p className="text-sm font-semibold mb-1" style={{ color: "#2E2A26" }}>2. Use the Token</p>
-                            <p className="text-sm mb-2" style={{ color: "#6b6560" }}>Include the token in the <code>Authorization</code> header of subsequent requests.</p>
+                            <p className="text-sm font-semibold mb-1" style={{ color: "var(--foreground)" }}>2. Use the Token</p>
+                            <p className="text-sm mb-2" style={{ color: "var(--muted-foreground)" }}>Include the token in the <code>Authorization</code> header of subsequent requests.</p>
                             <CopyBlock text={`Authorization: Token YOUR_TOKEN_HERE`} />
                         </div>
                     </CardContent>
@@ -123,7 +125,7 @@ export const ApiGuide = () => {
                 <Card>
                     <CardHeader>
                         <div className="flex items-center gap-2">
-                            <Database className="h-5 w-5" style={{ color: "#5E6A43" }} />
+                            <Database className="h-5 w-5" style={{ color: "var(--secondary-text)" }} />
                             <CardTitle>Resources Directory</CardTitle>
                         </div>
                         <CardDescription>Browse detailed documentation for each resource.</CardDescription>
@@ -136,11 +138,11 @@ export const ApiGuide = () => {
                                     <button key={tab} onClick={() => setActiveTab(tab)}
                                         className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium capitalize transition-colors cursor-pointer"
                                         style={{
-                                            backgroundColor: activeTab === tab ? "rgba(94,106,67,0.12)" : "transparent",
-                                            color: activeTab === tab ? "#5E6A43" : "#6b6560",
+                                            backgroundColor: activeTab === tab ? "rgba(37,91,1,0.12)" : "transparent",
+                                            color: activeTab === tab ? "var(--secondary-text)" : "var(--muted-foreground)",
                                             fontWeight: activeTab === tab ? 600 : 400,
                                         }}
-                                        onMouseEnter={e => activeTab !== tab && (e.currentTarget.style.backgroundColor = "#F2EBDD")}
+                                        onMouseEnter={e => activeTab !== tab && (e.currentTarget.style.backgroundColor = "var(--card)")}
                                         onMouseLeave={e => activeTab !== tab && (e.currentTarget.style.backgroundColor = "transparent")}
                                     >
                                         {tab === 'followups' ? 'Follow Ups' : tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -157,7 +159,7 @@ export const ApiGuide = () => {
                                         <CopyBlock text={`curl -X GET https://climatebycodex.com/api/leads/ \\\n-H "Authorization: Token YOUR_TOKEN"`} />
                                     </EndpointBlock>
                                     <EndpointBlock method="POST" path="/api/leads/">
-                                        <p className="text-sm mb-3" style={{ color: "#6b6560" }}>Create a new lead. Uses <code>attributes</code> for custom fields, <code>client_attributes</code> for future Client data, and <code>items</code> array linking catalogue items.</p>
+                                        <p className="text-sm mb-3" style={{ color: "var(--muted-foreground)" }}>Create a new lead. Uses <code>attributes</code> for custom fields, <code>client_attributes</code> for future Client data, and <code>items</code> array linking catalogue items.</p>
                                         <CopyBlock text={`{\n  "name": "New Service Lead",\n  "stage": "Prospecting",\n  "responsible": 1,\n  "attributes": { "source": "Web" },\n  "items": [{ "catalogue_item": "UUID", "quantity": 1 }]\n}`} />
                                     </EndpointBlock>
                                     <EndpointBlock method="PUT" path="/api/leads/{uuid}/" description="Update an existing lead.">
@@ -218,10 +220,10 @@ export const ApiGuide = () => {
 
                                 {activeTab === 'pipelines' && (<>
                                     <SectionTitle>Pipelines</SectionTitle>
-                                    <p className="text-sm" style={{ color: "#6b6560" }}>Manage sales processes and stages.</p>
+                                    <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>Manage sales processes and stages.</p>
                                     <EndpointBlock method="GET" path="/api/pipelines/" description="List all configured pipelines." />
                                     <EndpointBlock method="POST" path="/api/pipelines/">
-                                        <p className="text-sm mb-3" style={{ color: "#6b6560" }}>"Won" and "Lost" stages are <strong>automatically appended</strong>. Do <strong>not</strong> include them in your payload.</p>
+                                        <p className="text-sm mb-3" style={{ color: "var(--muted-foreground)" }}>"Won" and "Lost" stages are <strong>automatically appended</strong>. Do <strong>not</strong> include them in your payload.</p>
                                         <CopyBlock text={`{\n  "name": "B2B Sales",\n  "stages": [\n    {"name": "Prospecting", "color": "#6c6f73", "order": 1},\n    {"name": "Negotiation", "color": "#007bff", "order": 2}\n  ]\n}`} />
                                     </EndpointBlock>
                                     <EndpointBlock method="PUT" path="/api/pipelines/{uuid}/" description="Update a pipeline.">
@@ -234,7 +236,7 @@ export const ApiGuide = () => {
 
                                 {activeTab === 'followups' && (<>
                                     <SectionTitle>Follow Ups</SectionTitle>
-                                    <p className="text-sm" style={{ color: "#6b6560" }}>Interactions logged against a specific Service.</p>
+                                    <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>Interactions logged against a specific Service.</p>
                                     <EndpointBlock method="GET" path="/services/{service_id}/follow-ups/" description="List follow-ups for a specific service." />
                                     <EndpointBlock method="POST" path="/services/{service_id}/follow-ups/">
                                         <CopyBlock text={`{ "follow_up_date": "2025-01-15T10:00:00Z", "comment": "Sent brochure.", "attributes": { "channel": "email" } }`} />
@@ -249,7 +251,7 @@ export const ApiGuide = () => {
 
                                 {activeTab === 'catalogue' && (<>
                                     <SectionTitle>Catalogue & Categories</SectionTitle>
-                                    <p className="text-sm" style={{ color: "#6b6560" }}>Manage products, services, subscriptions, and their categories.</p>
+                                    <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>Manage products, services, subscriptions, and their categories.</p>
                                     <EndpointBlock method="GET" path="/api/categories/" description="List product and service categories." />
                                     <EndpointBlock method="POST" path="/api/categories/" description="Create a new category.">
                                         <CopyBlock text={`{ "name": "Software", "description": "Software products", "parent": null }`} />
@@ -264,13 +266,13 @@ export const ApiGuide = () => {
                                     <EndpointBlock method="DELETE" path="/api/catalogue/{uuid}/" description="Delete a catalogue item.">
                                         <CopyBlock text={`curl -X DELETE https://climatebycodex.com/api/catalogue/{uuid}/ \\\n-H "Authorization: Token YOUR_TOKEN"`} />
                                     </EndpointBlock>
-                                    <p className="text-sm font-semibold mt-4" style={{ color: "#2E2A26" }}>Base Fields Guide</p>
-                                    <InfoBlock title="Category Fields" color="#5E6A43" items={[
+                                    <p className="text-sm font-semibold mt-4" style={{ color: "var(--foreground)" }}>Base Fields Guide</p>
+                                    <InfoBlock title="Category Fields" color="var(--secondary-text)" items={[
                                         <><code>name</code>: The name of the category.</>,
                                         <><code>description</code>: Details about the category's purpose.</>,
                                         <><code>parent</code>: UUID of a parent category to create subcategories.</>,
                                     ]} />
-                                    <InfoBlock title="Catalogue Item Fields" color="#B8C76A" items={[
+                                    <InfoBlock title="Catalogue Item Fields" color="var(--accent)" items={[
                                         <><code>name</code>: The name of the product or service.</>,
                                         <><code>type</code>: product, service, or subscription.</>,
                                         <><code>base_price</code> &amp; <code>currency</code>: Standard pricing.</>,
@@ -278,7 +280,7 @@ export const ApiGuide = () => {
                                         <><code>tax_rate</code>: Default tax percentage.</>,
                                         <><code>inventory</code>: Optional link to physical stock.</>,
                                     ]} />
-                                    <InfoBlock title="Inventory Fields" color="#F29B6B" items={[
+                                    <InfoBlock title="Inventory Fields" color="var(--primary-text)" items={[
                                         <><code>sku</code>: Unique Stock Keeping Unit for tracking.</>,
                                         <><code>quantity_on_hand</code>: Current available stock.</>,
                                         <><code>reorder_level</code>: Threshold for low stock warnings.</>,
@@ -288,7 +290,7 @@ export const ApiGuide = () => {
 
                                 {activeTab === 'invoices' && (<>
                                     <SectionTitle>Invoices & Payments</SectionTitle>
-                                    <p className="text-sm" style={{ color: "#6b6560" }}>Billing, invoicing, and payment tracking.</p>
+                                    <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>Billing, invoicing, and payment tracking.</p>
                                     <EndpointBlock method="GET" path="/api/invoices/" description="List invoices." />
                                     <EndpointBlock method="POST" path="/api/invoices/" description="Create a draft invoice.">
                                         <CopyBlock text={`{ "client": "client-uuid", "status": "draft", "issue_date": "2026-02-26", "due_date": "2026-03-26", "currency": "USD" }`} />
@@ -302,15 +304,15 @@ export const ApiGuide = () => {
                                     <EndpointBlock method="POST" path="/api/invoices/{invoice_uuid}/payments/" description="Record a payment for an invoice.">
                                         <CopyBlock text={`{ "amount": "2300.00", "method": "bank_transfer", "paid_at": "2026-03-01T10:00:00Z", "reference": "WIRE-2026-001" }`} />
                                     </EndpointBlock>
-                                    <p className="text-sm font-semibold mt-4" style={{ color: "#2E2A26" }}>Base Fields Guide</p>
-                                    <InfoBlock title="Invoice Fields" color="#5E6A43" items={[
+                                    <p className="text-sm font-semibold mt-4" style={{ color: "var(--foreground)" }}>Base Fields Guide</p>
+                                    <InfoBlock title="Invoice Fields" color="var(--secondary-text)" items={[
                                         <><code>client</code> &amp; <code>contact</code>: Entities responsible for the invoice.</>,
                                         <><code>status</code>: draft, sent, paid, overdue, void.</>,
                                         <><code>issue_date</code> &amp; <code>due_date</code>: Billing timelines.</>,
                                         <><code>subtotal</code>, <code>tax_amount</code>, <code>discount</code>, <code>total</code>: Auto-calculated.</>,
                                         <><code>amount_paid</code>: Total covered by registered payments.</>,
                                     ]} />
-                                    <InfoBlock title="Invoice Line Item Fields" color="#B8C76A" items={[
+                                    <InfoBlock title="Invoice Line Item Fields" color="var(--accent)" items={[
                                         <><code>catalogue_item</code>: Optional reference to a predefined product/service.</>,
                                         <><code>description</code>: Specific details of what is being charged.</>,
                                         <><code>quantity</code> &amp; <code>unit_price</code>: Used to calculate line subtotal.</>,
@@ -320,7 +322,7 @@ export const ApiGuide = () => {
 
                                 {activeTab === 'assets' && (<>
                                     <SectionTitle>Assets</SectionTitle>
-                                    <p className="text-sm" style={{ color: "#6b6560" }}>Manage physical company assets and personnel assignments.</p>
+                                    <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>Manage physical company assets and personnel assignments.</p>
                                     <EndpointBlock method="GET" path="/api/assets/" description="List all physical assets." />
                                     <EndpointBlock method="POST" path="/api/assets/" description="Create a new asset.">
                                         <CopyBlock text={`{ "name": "MacBook Pro", "description": "2023 16-inch model", "bought_date": "2023-01-15", "price": "2000.00", "quantity": 10 }`} />
@@ -334,7 +336,7 @@ export const ApiGuide = () => {
                                 {activeTab === 'attributes' && (<>
                                     <SectionTitle>Attributes & Metadata</SectionTitle>
                                     <EndpointBlock method="GET" path="/api/attributes/{entity}/">
-                                        <p className="text-sm mb-3" style={{ color: "#6b6560" }}>
+                                        <p className="text-sm mb-3" style={{ color: "var(--muted-foreground)" }}>
                                             Get schema/attributes for an entity.<br />
                                             Options: <code>client</code>, <code>contact</code>, <code>service</code>, <code>lead</code>, <code>follow_up</code>, <code>category</code>, <code>catalogue_item</code>, <code>invoice</code>, <code>payment</code>, <code>asset</code>, <code>asset_assignment</code>.
                                         </p>
@@ -344,10 +346,10 @@ export const ApiGuide = () => {
 
                                 {activeTab === 'webhooks' && (<>
                                     <SectionTitle>Webhooks</SectionTitle>
-                                    <p className="text-sm" style={{ color: "#6b6560" }}>Automate HTTP callbacks triggered by events (CREATE, UPDATE, DELETE) on any model.</p>
+                                    <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>Automate HTTP callbacks triggered by events (CREATE, UPDATE, DELETE) on any model.</p>
                                     <EndpointBlock method="GET" path="/api/webhooks/" description="List all registered webhooks." />
                                     <EndpointBlock method="POST" path="/api/webhooks/">
-                                        <p className="text-sm mb-3" style={{ color: "#6b6560" }}>Create a new Webhook. Supports variable interpolation via <code>{'{self.field_name}'}</code> syntax in URLs, headers, and custom payloads.</p>
+                                        <p className="text-sm mb-3" style={{ color: "var(--muted-foreground)" }}>Create a new Webhook. Supports variable interpolation via <code>{'{self.field_name}'}</code> syntax in URLs, headers, and custom payloads.</p>
                                         <CopyBlock text={`{\n  "name": "Notify External System",\n  "model": "Lead",\n  "event": "CREATE",\n  "url": "https://api.external.com/hooks/{self.id}",\n  "method": "POST",\n  "is_active": true,\n  "conditions": [{ "field": "stage", "operator": "=", "value": "Moodle" }],\n  "payload": { "email": "{self.attributes.email}" }\n}`} />
                                     </EndpointBlock>
                                     <EndpointBlock method="PUT" path="/api/webhooks/{uuid}/" description="Update an existing webhook configuration." />
@@ -356,7 +358,7 @@ export const ApiGuide = () => {
 
                                 {activeTab === 'files' && (<>
                                     <SectionTitle>File Uploads</SectionTitle>
-                                    <p className="text-sm" style={{ color: "#6b6560" }}>Upload and link attachments to system records like Clients or Services via S3.</p>
+                                    <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>Upload and link attachments to system records like Clients or Services via S3.</p>
                                     <EndpointBlock method="POST" path="/api/clients/{uuid}/files/" description="Upload an image/file and attach it to a Client.">
                                         <CopyBlock text={`curl -X POST https://climatebycodex.com/api/clients/{uuid}/files/ \\\n  -H "Authorization: Token YOUR_TOKEN" \\\n  -H "Content-Type: multipart/form-data" \\\n  -F "file=@/path/to/local/image.jpg"`} />
                                     </EndpointBlock>

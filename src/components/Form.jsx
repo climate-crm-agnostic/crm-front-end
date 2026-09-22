@@ -281,7 +281,7 @@ export function Form({
                   {valuesList.map((item, index) => (
                     <div
                       key={index}
-                      className="flex items-center bg-codex-fondo-primary-variante1 dark:bg-codex-fondo-terciario-variante5 text-codex-cards-primary dark:text-codex-texto-terciario-variante1 px-3 py-1 rounded-full border border-primary/20 shadow-sm"
+                      className="flex items-center bg-codex-fondo-primary-variante1 dark:bg-codex-fondo-terciario-variante5 text-codex-cards-primary dark:text-codex-texto-terciario-variante1 px-3 py-1 rounded-full border border-primary-text/20 shadow-sm"
                     >
                       <span className="text-sm">{item}</span>
                       <button

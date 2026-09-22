@@ -10,7 +10,7 @@ import { getEmailTemplates } from "../../services/emailTemplateService";
 import { getCampaigns, createCampaign, updateCampaign, deleteCampaign, sendCampaignNow, previewRecipients, getSendProgress, getCampaignRecipients, getRecipientsConfig, saveRecipientsConfig } from "../../services/campaignService";
 import Swal from 'sweetalert2';
 
-const STATUS_COLORS = { draft: "#9b948e", sending: "#c0622a", sent: "#4a5535" };
+const STATUS_COLORS = { draft: "#9b948e", sending: "#c0622a", sent: "var(--secondary-text)" };
 
 export const CampaignList = () => {
     const [campaigns, setCampaigns] = useState([]);
@@ -213,7 +213,7 @@ export const CampaignList = () => {
     const handleDelete = async (id) => {
         const result = await Swal.fire({
             title: 'Are you sure?', icon: 'warning', showCancelButton: true,
-            confirmButtonColor: '#5E6A43', cancelButtonColor: '#9b948e', confirmButtonText: 'Yes, delete it!'
+            confirmButtonColor: 'var(--secondary)', cancelButtonColor: '#9b948e', confirmButtonText: 'Yes, delete it!'
         });
         if (!result.isConfirmed) return;
         try {
@@ -296,7 +296,7 @@ export const CampaignList = () => {
         <div className="p-6 space-y-6">
             <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 border">
-                    <Megaphone className="h-5 w-5 text-primary" />
+                    <Megaphone className="h-5 w-5 text-primary-text" />
                 </div>
                 <div>
                     <p className="text-base font-semibold">Campaigns</p>
@@ -357,7 +357,7 @@ export const CampaignList = () => {
                                     <span className="text-sm font-medium">{c.name}</span>
                                     <span
                                         className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold"
-                                        style={{ backgroundColor: `${STATUS_COLORS[c.status]}1f`, border: `1px solid ${STATUS_COLORS[c.status]}66`, color: STATUS_COLORS[c.status] }}
+                                        style={{ backgroundColor: `color-mix(in srgb, ${STATUS_COLORS[c.status]} 12%, transparent)`, border: `1px solid color-mix(in srgb, ${STATUS_COLORS[c.status]} 40%, transparent)`, color: STATUS_COLORS[c.status] }}
                                     >
                                         {c.status}
                                     </span>
@@ -410,7 +410,7 @@ export const CampaignList = () => {
                                         <Send className="h-4 w-4 mr-1" /> {sendingId === c.id ? 'Sending...' : 'Send Now'}
                                     </Button>
                                 )}
-                                <Button variant="ghost" size="sm" onClick={() => handleDelete(c.id)} className="h-8 w-8 p-0 text-red-500 hover:text-red-700">
+                                <Button variant="ghost" size="sm" onClick={() => handleDelete(c.id)} className="h-8 w-8 p-0 text-red-500 hover:text-red-700 dark:hover:text-red-300">
                                     <Trash2 className="h-4 w-4" />
                                 </Button>
                             </div>
@@ -518,7 +518,7 @@ export const CampaignList = () => {
                     {!detailsLoading && detailsData && detailsData.mode === 'outcome' && (
                         <div className="space-y-3">
                             <p className="text-sm text-muted-foreground">
-                                <strong className="text-[#4a5535]">{detailsData.sent_count}</strong> sent
+                                <strong className="text-secondary-text">{detailsData.sent_count}</strong> sent
                                 {detailsData.failed_count > 0 && <> · <strong className="text-red-600">{detailsData.failed_count}</strong> failed</>}
                                 {' '}of {detailsData.recipient_count} total.
                             </p>
@@ -536,8 +536,8 @@ export const CampaignList = () => {
                                             <span
                                                 className="shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold"
                                                 style={{
-                                                    backgroundColor: r.status === 'sent' ? '#4a55351f' : '#dc26261f',
-                                                    color: r.status === 'sent' ? '#4a5535' : '#dc2626',
+                                                    backgroundColor: r.status === 'sent' ? "rgba(37,91,1,0.12)" : '#dc26261f',
+                                                    color: r.status === 'sent' ? 'var(--secondary-text)' : '#dc2626',
                                                 }}
                                             >
                                                 {r.status}
@@ -577,7 +577,7 @@ export const CampaignList = () => {
                                         width: `${sendProgress.total > 0
                                             ? Math.min(100, Math.round(((sendProgress.sent + sendProgress.failed) / sendProgress.total) * 100))
                                             : 0}%`,
-                                        backgroundColor: sendProgress.status === 'sent' ? '#4a5535' : '#c0622a',
+                                        backgroundColor: sendProgress.status === 'sent' ? 'var(--secondary)' : '#c0622a',
                                     }}
                                 />
                             </div>
@@ -636,7 +636,7 @@ export const CampaignList = () => {
                     ) : sendPreviewData && (
                         <div className="space-y-3">
                             {sendPreviewCampaign?.template?.entity === 'client' && sendPreviewData.recipient_count === 0 ? (
-                                <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-3 text-sm text-amber-800">
+                                <div className="rounded-md border border-amber-300 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/15 px-3 py-3 text-sm text-amber-800 dark:text-amber-300">
                                     No recipients are configured yet. For client campaigns you must choose a contact
                                     (primary or secondary) for each client before sending. Close this dialog and use the
                                     <strong> Recipients </strong> button to configure contacts, then try again.

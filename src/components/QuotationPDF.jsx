@@ -7,7 +7,7 @@ import {
     StyleSheet,
 } from "@react-pdf/renderer";
 
-const BRAND_GREEN = "#5E6A43";
+const BRAND_GREEN = "var(--secondary)";
 const GREY = "#6B7280";
 const LIGHT_GREY = "#F3F4F6";
 const BORDER = "#E5E7EB";

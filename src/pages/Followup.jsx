@@ -129,7 +129,7 @@ export const Followup = () => {
         <div className="h-full flex flex-col p-2 w-full">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-2">
                 <div>
-                    <Button variant="ghost" className="mb-2 pl-0 hover:bg-transparent hover:text-primary" onClick={() => navigate("/service")}>
+                    <Button variant="ghost" className="mb-2 pl-0 hover:bg-transparent hover:text-primary-text" onClick={() => navigate("/service")}>
                         <ArrowLeft className="mr-2 h-4 w-4" /> Back to Services
                     </Button>
                     <h1 className="text-2xl font-bold tracking-tight text-codex-texto-primary dark:text-codex-texto-dark-primary">
@@ -146,7 +146,7 @@ export const Followup = () => {
                 </div>
             </div>
 
-            <div className="bg-brand-oat p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
+            <div className="bg-card p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
                 <Table
                     data={followups}
                     columns={columns}
