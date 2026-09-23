@@ -47,6 +47,10 @@ export const LeadContractPanel = ({ leadId }) => {
     const [missingFields, setMissingFields] = useState([]);
     const [fieldOverrides, setFieldOverrides] = useState({});
 
+    // "Upload PDF" — file is required before Create Contract is enabled
+    const [draftFile, setDraftFile] = useState(null);
+    const draftFileInputRef = useRef(null);
+
     const [uploading, setUploading] = useState(false);
     const fileInputRef = useRef(null);
     const [resendingId, setResendingId] = useState(null);
@@ -114,12 +118,31 @@ export const LeadContractPanel = ({ leadId }) => {
             setError("Select a template.");
             return;
         }
+        if (sourceMode === "uploaded" && !draftFile) {
+            setError("Select a PDF file.");
+            return;
+        }
 
         setCreating(true);
         try {
             const created = await createContract(leadId, payload);
-            setContract(created);
             setMissingFields([]);
+            if (sourceMode === "uploaded" && draftFile) {
+                // Two backend calls, one user action — the create endpoint is
+                // JSON-only, the file goes through the separate upload-file
+                // action right after using the id we just got back.
+                try {
+                    const res = await uploadContractFile(leadId, created.id, draftFile);
+                    setContract({ ...created, uploaded_file_url: res.uploaded_file_url });
+                } catch (uploadErr) {
+                    // Contract exists but the file didn't make it — leave the
+                    // normal post-creation "Upload PDF" button as the retry path.
+                    setContract(created);
+                    setError(uploadErr.message || "Contract created, but the PDF failed to upload. Try again below.");
+                }
+            } else {
+                setContract(created);
+            }
         } catch (e) {
             // The backend responds 400 {missing_fields: [...]} when a
             // template references Lead data this record doesn't have —
@@ -133,6 +156,22 @@ export const LeadContractPanel = ({ leadId }) => {
             setCreating(false);
         }
     };
+
+    const handleDraftFileChange = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (file.type !== "application/pdf") {
+            setError("Only PDF files are accepted.");
+            if (draftFileInputRef.current) draftFileInputRef.current.value = "";
+            return;
+        }
+        setError("");
+        setDraftFile(file);
+    };
+
+    const hasValidSigners = !requiresSignature || signers.some((s) => s.signer_name && s.signer_email && s.role_label);
+    const isSourceReady = sourceMode === "uploaded" ? !!draftFile : !!selectedTemplateId;
+    const canCreate = isSourceReady && hasValidSigners;
 
     const handleFileChange = async (e) => {
         const file = e.target.files?.[0];
@@ -217,6 +256,22 @@ export const LeadContractPanel = ({ leadId }) => {
                                     <Sparkles className="h-4 w-4 mr-1" /> Create with AI
                                 </Button>
                             </div>
+
+                            {sourceMode === "uploaded" && (
+                                <div className="space-y-2">
+                                    <Label className="text-xs">PDF File</Label>
+                                    <input
+                                        ref={draftFileInputRef}
+                                        type="file"
+                                        accept="application/pdf"
+                                        onChange={handleDraftFileChange}
+                                        className="block w-full text-sm"
+                                    />
+                                    {draftFile && (
+                                        <p className="text-xs text-muted-foreground">Selected: {draftFile.name}</p>
+                                    )}
+                                </div>
+                            )}
 
                             {sourceMode === "template_ai" && (
                                 <div className="space-y-2">
@@ -314,7 +369,7 @@ export const LeadContractPanel = ({ leadId }) => {
                                 </div>
                             )}
 
-                            <Button onClick={handleCreate} disabled={creating}>
+                            <Button onClick={handleCreate} disabled={creating || !canCreate}>
                                 {creating ? "Creating…" : "Create Contract"}
                             </Button>
                         </div>
