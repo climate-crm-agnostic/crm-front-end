@@ -265,11 +265,21 @@ export const LeadContractPanel = ({ leadId }) => {
                                         type="file"
                                         accept="application/pdf"
                                         onChange={handleDraftFileChange}
-                                        className="block w-full text-sm"
+                                        className="hidden"
                                     />
-                                    {draftFile && (
-                                        <p className="text-xs text-muted-foreground">Selected: {draftFile.name}</p>
-                                    )}
+                                    <div className="flex items-center gap-2">
+                                        <Button
+                                            type="button"
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => draftFileInputRef.current?.click()}
+                                        >
+                                            <Upload className="h-4 w-4 mr-1" /> Choose PDF
+                                        </Button>
+                                        <span className="text-xs text-muted-foreground">
+                                            {draftFile ? draftFile.name : "No file chosen"}
+                                        </span>
+                                    </div>
                                 </div>
                             )}
 
