@@ -40,6 +40,8 @@ import { UserDetail } from "../pages/UserDetail";
 import { ResetPassword } from "../pages/ResetPassword";
 import { Settings } from "../pages/Settings"
 import { ChettAI } from "../pages/ChettAI";
+import { ContractAIChat } from "../pages/ContractAIChat";
+import { ContractTemplates } from "../pages/ContractTemplates";
 import { AuditLog } from "../pages/AuditLog";
 import { MyInfo } from "../pages/MyInfo";
 import { Chat } from "../pages/Chat";
@@ -51,6 +53,7 @@ import { Tasks } from "../pages/Tasks";
 import { EmailTemplates } from "../pages/Campaigns/EmailTemplates";
 import { CampaignList } from "../pages/Campaigns/CampaignList";
 import { Unsubscribe } from "../pages/Unsubscribe";
+import { ContractSign } from "../pages/ContractSign";
 import { QuotationDetail } from "../pages/QuotationDetail";
 import { Events } from "../pages/Events";
 import { EventCreate } from "../pages/EventCreate";
@@ -92,6 +95,7 @@ export const RouterApp = () => {
             <Route path="/plan-expired" element={<PlanExpired />} />
             <Route path="/unsubscribe/:token" element={<Unsubscribe />} />
             <Route path="/event-register/:token" element={<EventRegister />} />
+            <Route path="/contracts/sign/:token" element={<ContractSign />} />
 
             {/* private routes */}
 
@@ -131,6 +135,8 @@ export const RouterApp = () => {
                 <Route path="users/:id" element={<PermissionGuard requiredPermission="auth.add_user"><UserDetail /></PermissionGuard>} />
                 <Route path="settings" element={<PermissionGuard requiredPermission="auth.add_user"><Settings /></PermissionGuard>} />
                 <Route path="chett-ai" element={<PermissionGuard requiredPermission="app.view_aiconversation"><FeatureGate feature="ai"><ChettAI /></FeatureGate></PermissionGuard>} />
+                <Route path="contracts/ai-chat" element={<PermissionGuard requiredPermission="app.view_contractconversation"><FeatureGate feature="contracts"><ContractAIChat /></FeatureGate></PermissionGuard>} />
+                <Route path="contract-templates" element={<PermissionGuard requiredPermission="app.view_contracttemplate"><FeatureGate feature="contracts"><ContractTemplates /></FeatureGate></PermissionGuard>} />
                 <Route path="audit-log" element={<PermissionGuard requiredPermission="auth.add_user"><FeatureGate feature="audit_trail"><AuditLog /></FeatureGate></PermissionGuard>} />
                 <Route path="chat" element={<FeatureGate feature="chat"><Chat /></FeatureGate>} />
                 <Route path="task" element={<PermissionGuard requiredPermission="app.view_task"><FeatureGate feature="tasks"><Tasks /></FeatureGate></PermissionGuard>} />

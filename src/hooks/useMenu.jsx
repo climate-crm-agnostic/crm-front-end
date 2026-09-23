@@ -34,6 +34,8 @@ const MENU_CONFIG = [
         label: "AI",
         items: [
             { title: "Chett AI", url: "/chett-ai", icon: "Bot", permission: "app.view_aiconversation", feature: "ai" },
+            { title: "Contract AI", url: "/contracts/ai-chat", icon: "Sparkles", permission: "app.view_contractconversation", feature: "contracts" },
+            { title: "Contract Templates", url: "/contract-templates", icon: "FileSignature", permission: "app.view_contracttemplate", feature: "contracts" },
         ],
     },
     {

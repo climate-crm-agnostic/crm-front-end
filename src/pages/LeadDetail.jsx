@@ -24,6 +24,7 @@ import { DateInput } from "../components/ui/date-input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs";
 import { SendEmailModal } from "../components/SendEmailModal";
 import { ViewEmailModal } from "../components/ViewEmailModal";
+import { LeadContractPanel } from "../components/LeadContractPanel";
 import { DynamicAttributeField } from "../components/attributes/DynamicAttributeField";
 import { coerceAttributeValue, collectAttributeValuesByType, emptyValueFor, normalizeOptions } from "../utils/attributeTypes";
 import { formatDateTime } from "../utils/tz";
@@ -33,7 +34,7 @@ export const LeadDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const location = useLocation();
-    const { user } = useAuth();
+    const { user, isFeatureEnabled } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
 
     // Tab state lives in the URL (not defaultValue) so that navigating away
@@ -767,6 +768,9 @@ export const LeadDetail = () => {
                         <TabsTrigger value="communication">Communication</TabsTrigger>
                         <TabsTrigger value="tasks">Tasks, Notes & Files</TabsTrigger>
                         {leadEvents.from_event && <TabsTrigger value="events">Events</TabsTrigger>}
+                        {!isNew && currentStage === "Contract" && isFeatureEnabled("contracts") && (
+                            <TabsTrigger value="contract">Contract</TabsTrigger>
+                        )}
                     </TabsList>
 
                 <TabsContent value="info" className="space-y-6 mt-0">
@@ -1287,6 +1291,12 @@ export const LeadDetail = () => {
                         </>
                     )}
                 </TabsContent>
+
+                {!isNew && currentStage === "Contract" && isFeatureEnabled("contracts") && (
+                    <TabsContent value="contract" className="space-y-6 mt-0">
+                        <LeadContractPanel leadId={id} />
+                    </TabsContent>
+                )}
                 </Tabs>
             </div>
 

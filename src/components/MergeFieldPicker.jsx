@@ -12,12 +12,18 @@ import { getMergeFields } from "../services/emailTemplateService";
 // plus this tenant's custom Attributes). `client` -> {contact.x}/{client.x};
 // `lead` -> {lead.x}/{client.x}. `onInsert` receives the literal "{path}"
 // token to drop into a subject input or the RTE body.
-export const MergeFieldPicker = ({ onInsert, label = "Insert Variable", entity = "client" }) => {
+//
+// `fetchFields` defaults to EmailTemplate's endpoint (gated by the
+// 'email_campaigns' plan feature). Callers gated by a *different* feature —
+// e.g. ContractTemplates.jsx, gated by 'contracts' — must pass their own
+// fetcher (entity => Promise<fields>) so a tenant without email_campaigns
+// doesn't get a 403 just for opening the picker.
+export const MergeFieldPicker = ({ onInsert, label = "Insert Variable", entity = "client", fetchFields = getMergeFields }) => {
     const [fields, setFields] = useState([]);
 
     useEffect(() => {
-        getMergeFields(entity).then(setFields).catch(() => setFields([]));
-    }, [entity]);
+        fetchFields(entity).then(setFields).catch(() => setFields([]));
+    }, [entity, fetchFields]);
 
     const grouped = fields.reduce((acc, f) => {
         (acc[f.group] = acc[f.group] || []).push(f);
