@@ -256,6 +256,11 @@ export const LeadContractPanel = ({ leadId, currentStage }) => {
         );
     }
 
+    // Once any signer has signed, the document is locked — replacing it
+    // would invalidate a signature made against a file that's no longer the
+    // same one. Backend enforces this too (upload_file in contracts_view.py).
+    const hasSignedSigner = !!contract && (contract.signers || []).some((s) => s.status === 'signed');
+
     return (
         <div className="bg-card p-6 rounded-lg border shadow-sm space-y-4">
             <ContractDraftModal
@@ -488,41 +493,59 @@ export const LeadContractPanel = ({ leadId, currentStage }) => {
             ) : (
                 <div className="space-y-4">
                     {contract.source === "uploaded" ? (
-                        <div className="flex items-center justify-between p-3 bg-muted/20 border rounded-md">
-                            <div className="flex items-center gap-2 min-w-0">
-                                <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
-                                {contract.uploaded_file_url ? (
-                                    <a
-                                        href={contract.uploaded_file_url}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="text-sm font-medium underline truncate"
+                        <div className="p-3 bg-muted/20 border rounded-md space-y-2">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2 min-w-0">
+                                    <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+                                    {contract.uploaded_file_url ? (
+                                        <a
+                                            href={contract.uploaded_file_url}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="text-sm font-medium underline truncate"
+                                        >
+                                            View uploaded PDF
+                                        </a>
+                                    ) : (
+                                        <span className="text-sm text-muted-foreground italic">No PDF uploaded yet</span>
+                                    )}
+                                </div>
+                                <div>
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        accept="application/pdf"
+                                        className="hidden"
+                                        onChange={handleFileChange}
+                                    />
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        disabled={uploading || currentStage !== "Contract" || hasSignedSigner}
+                                        title={
+                                            hasSignedSigner
+                                                ? "This contract already has a signature on file and can no longer be replaced."
+                                                : currentStage !== "Contract"
+                                                    ? "The contract is locked once the lead has moved past the \"Contract\" stage."
+                                                    : undefined
+                                        }
                                     >
-                                        View uploaded PDF
-                                    </a>
-                                ) : (
-                                    <span className="text-sm text-muted-foreground italic">No PDF uploaded yet</span>
-                                )}
+                                        <Upload className="h-4 w-4 mr-1" />
+                                        {uploading ? "Uploading…" : contract.uploaded_file_url ? "Replace PDF" : "Upload PDF"}
+                                    </Button>
+                                </div>
                             </div>
-                            <div>
-                                <input
-                                    ref={fileInputRef}
-                                    type="file"
-                                    accept="application/pdf"
-                                    className="hidden"
-                                    onChange={handleFileChange}
-                                />
-                                <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => fileInputRef.current?.click()}
-                                    disabled={uploading || currentStage !== "Contract"}
-                                    title={currentStage !== "Contract" ? "The contract is locked once the lead has moved past the \"Contract\" stage." : undefined}
+                            {contract.generated_pdf_url && (
+                                <a
+                                    href={contract.generated_pdf_url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-xs font-medium underline block"
                                 >
-                                    <Upload className="h-4 w-4 mr-1" />
-                                    {uploading ? "Uploading…" : contract.uploaded_file_url ? "Replace PDF" : "Upload PDF"}
-                                </Button>
-                            </div>
+                                    Download Signed PDF (with certificate)
+                                </a>
+                            )}
                         </div>
                     ) : (
                         <div className="p-3 bg-muted/20 border rounded-md space-y-2">
