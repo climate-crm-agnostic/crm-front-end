@@ -1,11 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import { pdf } from "@react-pdf/renderer";
 import { FileSignature, CheckCircle2, XCircle, Clock } from "lucide-react";
 import { getPublicContract, submitSignature } from "../services/contractService";
 import { SignaturePad } from "../components/SignaturePad";
-import { SignatureCertificatePDF } from "../components/SignatureCertificatePDF";
-import { ContractPDF } from "../components/ContractPDF";
 import { Button } from "../components/ui/button";
 import { Checkbox } from "../components/ui/checkbox";
 
@@ -17,8 +14,6 @@ export const ContractSign = () => {
     const [error, setError] = useState("");
     const [accepted, setAccepted] = useState(false);
     const [submitting, setSubmitting] = useState(false);
-    const [signedAt, setSignedAt] = useState(null);
-    const [signatureDataUrl, setSignatureDataUrl] = useState(null);
     const padRef = useRef(null);
 
     const load = () => {
@@ -54,56 +49,12 @@ export const ContractSign = () => {
         setSubmitting(true);
         try {
             await submitSignature(token, { accepted: true, signatureImage: dataUrl });
-            setSignedAt(new Date().toISOString());
-            setSignatureDataUrl(dataUrl);
             setState("signed");
         } catch (err) {
             setError(err.message);
         } finally {
             setSubmitting(false);
         }
-    };
-
-    const handleDownloadContractPdf = async () => {
-        const blob = await pdf(
-            <ContractPDF
-                leadName={contract.lead_name}
-                sections={contract.resolved_content || []}
-                signers={[{
-                    id: "self",
-                    signer_name: contract.signer_name,
-                    role_label: contract.role_label,
-                    signature_image_url: signatureDataUrl,
-                    signed_at: signedAt,
-                }]}
-            />
-        ).toBlob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `contract-${contract.lead_name || token}.pdf`;
-        a.click();
-        URL.revokeObjectURL(url);
-    };
-
-    const handleDownloadCertificate = async () => {
-        const blob = await pdf(
-            <SignatureCertificatePDF
-                leadName={contract.lead_name}
-                signer={{
-                    signer_name: contract.signer_name,
-                    role_label: contract.role_label,
-                    signed_at: signedAt,
-                }}
-                signatureDataUrl={signatureDataUrl}
-            />
-        ).toBlob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `signature-certificate-${contract.lead_name || token}.pdf`;
-        a.click();
-        URL.revokeObjectURL(url);
     };
 
     return (
@@ -141,15 +92,9 @@ export const ContractSign = () => {
                     <div className="text-center">
                         <CheckCircle2 className="h-10 w-10 mx-auto mb-4" style={{ color: "#5E6A43" }} />
                         <h1 className="text-lg font-semibold mb-2" style={{ color: "#2E2A26" }}>Signed successfully</h1>
-                        <p className="text-sm mb-6" style={{ color: "#6b6560" }}>
+                        <p className="text-sm" style={{ color: "#6b6560" }}>
                             Thank you, {contract?.signer_name}. Your signature has been recorded.
                         </p>
-                        {signatureDataUrl && contract?.source === "template_ai" && (
-                            <Button onClick={handleDownloadContractPdf}>Download Contract PDF</Button>
-                        )}
-                        {signatureDataUrl && contract?.source !== "template_ai" && (
-                            <Button onClick={handleDownloadCertificate}>Download Signature Certificate</Button>
-                        )}
                     </div>
                 )}
 
