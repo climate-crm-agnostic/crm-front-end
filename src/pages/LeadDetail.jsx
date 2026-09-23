@@ -1316,7 +1316,7 @@ export const LeadDetail = () => {
 
                 {showContractTab && (
                     <TabsContent value="contract" className="space-y-6 mt-0">
-                        <LeadContractPanel leadId={id} />
+                        <LeadContractPanel leadId={id} currentStage={currentStage} />
                     </TabsContent>
                 )}
                 </Tabs>

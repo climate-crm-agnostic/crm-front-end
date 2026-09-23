@@ -16,12 +16,13 @@ const emptyForm = () => ({ name: "", content: [emptySection()], default_signer_r
 
 /**
  * Name + sections + merge fields + Preview/Save/Approve for one
- * ContractTemplate. `templateId` null means "new, blank template" (used by
- * ContractTemplates.jsx's own create form); a real id fetches and edits that
- * template in place (used both by that same page and by ContractDraftModal's
- * "edit" step after the AI hands off a draft).
+ * ContractTemplate. Used both by ContractDraftModal's "edit" step (right
+ * after the AI hands off a draft) and by LeadContractPanel's "Edit
+ * Template" dialog (editing an already-approved template in place). `leadId`
+ * is optional — when given, "Preview with Real Lead" resolves against that
+ * specific Lead instead of an arbitrary one.
  */
-export const ContractTemplateEditor = ({ templateId, onSaved, onApproved, onCancel, showCancel = true }) => {
+export const ContractTemplateEditor = ({ templateId, leadId, onSaved, onApproved, onCancel, showCancel = true }) => {
     const [form, setForm] = useState(emptyForm());
     const [isActive, setIsActive] = useState(false);
     const [loading, setLoading] = useState(!!templateId);
@@ -89,7 +90,7 @@ export const ContractTemplateEditor = ({ templateId, onSaved, onApproved, onCanc
         if (!templateId) return;
         setPreviewing(true);
         try {
-            const data = await previewContractTemplate(templateId);
+            const data = await previewContractTemplate(templateId, leadId);
             setPreview(data);
         } catch (err) {
             Swal.fire({ icon: 'error', title: 'Error', text: err.message, toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });

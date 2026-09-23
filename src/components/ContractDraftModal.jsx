@@ -5,7 +5,7 @@ import { Button } from "./ui/button";
 import { ContractTemplateEditor } from "./ContractTemplateEditor";
 import { sendContractMessage } from "../services/contractAiService";
 
-// Same lightweight markdown parser as ContractAIChat.jsx/ChettAI.jsx —
+// Same lightweight markdown parser as ChettAI.jsx (src/pages/ChettAI.jsx) —
 // duplicated rather than extracted since it's UI-only and each surface owns
 // its own rendering; not worth a shared module for this small a function.
 function parseInline(text, key) {
@@ -58,10 +58,11 @@ const TypingDots = () => (
 );
 
 /**
- * Guided "Create with AI" flow launched from LeadContractPanel: a focused
- * one-conversation chat (no sidebar/history — that's ContractAIChat.jsx's
- * job) that hands off to the template editor for review + approval, all
- * inside one modal so the Lead page underneath never navigates away.
+ * Guided "Create with AI" flow launched from LeadContractPanel: a focused,
+ * single-use chat (no conversation history/sidebar — that's Chett AI's use
+ * case, not this one) that hands off to the template editor for review +
+ * approval, all inside one modal so the Lead page underneath never
+ * navigates away.
  */
 export const ContractDraftModal = ({ open, onOpenChange, onApproved }) => {
     const [step, setStep] = useState("chat"); // 'chat' | 'edit'

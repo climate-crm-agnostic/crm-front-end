@@ -1,19 +1,21 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Upload, RefreshCw, Plus, X, FileText, Sparkles } from "lucide-react";
+import { Upload, RefreshCw, Plus, X, FileText, Sparkles, Edit } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Switch } from "./ui/switch";
 import { Badge } from "./ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import {
     listContractsForLead,
     createContract,
     uploadContractFile,
     resendSignerLink,
 } from "../services/contractService";
-import { getContractTemplates } from "../services/contractTemplateService";
+import { getContractTemplates, previewContractTemplate } from "../services/contractTemplateService";
 import { ContractDraftModal } from "./ContractDraftModal";
+import { ContractTemplateEditor } from "./ContractTemplateEditor";
 
 const statusVariant = {
     signed: "success",
@@ -25,11 +27,12 @@ const emptySigner = () => ({ role_label: "", signer_name: "", signer_email: "" }
 
 /**
  * A Lead has at most one Contract. Two ways to create it: upload a PDF
- * directly, or build one from an approved ContractTemplate (see
- * ContractAIChat.jsx / ContractTemplates.jsx for how those get created and
- * approved). Shown only while the Lead is in the reserved "Contract" stage.
+ * directly, or build one from an approved ContractTemplate — created,
+ * previewed and edited right here via ContractDraftModal.jsx and
+ * ContractTemplateEditor.jsx. Shown only while the Lead is in the reserved
+ * "Contract" stage.
  */
-export const LeadContractPanel = ({ leadId }) => {
+export const LeadContractPanel = ({ leadId, currentStage }) => {
     const [loading, setLoading] = useState(true);
     const [contract, setContract] = useState(null);
     const [error, setError] = useState("");
@@ -98,6 +101,30 @@ export const LeadContractPanel = ({ leadId }) => {
     const handleTemplateApproved = async (template) => {
         await refreshTemplates();
         if (template?.id) setSelectedTemplateId(template.id);
+    };
+
+    // Detail preview of the selected template, resolved against this Lead —
+    // and the "Edit Template" modal, both replacing the old standalone
+    // /contract-templates page now that everything lives on the Lead.
+    const [templateDetail, setTemplateDetail] = useState(null);
+    const [templateDetailLoading, setTemplateDetailLoading] = useState(false);
+    const [showEditTemplateModal, setShowEditTemplateModal] = useState(false);
+
+    useEffect(() => {
+        if (!selectedTemplateId) { setTemplateDetail(null); return; }
+        setTemplateDetailLoading(true);
+        previewContractTemplate(selectedTemplateId, leadId)
+            .then(setTemplateDetail)
+            .catch(() => setTemplateDetail(null))
+            .finally(() => setTemplateDetailLoading(false));
+    }, [selectedTemplateId, leadId]);
+
+    const handleTemplateEdited = async () => {
+        setShowEditTemplateModal(false);
+        await refreshTemplates();
+        if (selectedTemplateId) {
+            previewContractTemplate(selectedTemplateId, leadId).then(setTemplateDetail).catch(() => {});
+        }
     };
 
     const addSignerRow = () => setSigners((s) => [...s, emptySigner()]);
@@ -237,6 +264,23 @@ export const LeadContractPanel = ({ leadId }) => {
                 onApproved={handleTemplateApproved}
             />
 
+            <Dialog open={showEditTemplateModal} onOpenChange={setShowEditTemplateModal}>
+                <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>Edit Template</DialogTitle>
+                    </DialogHeader>
+                    {selectedTemplateId && (
+                        <ContractTemplateEditor
+                            templateId={selectedTemplateId}
+                            leadId={leadId}
+                            onSaved={handleTemplateEdited}
+                            onApproved={handleTemplateEdited}
+                            showCancel={false}
+                        />
+                    )}
+                </DialogContent>
+            </Dialog>
+
             <div className="flex items-center justify-between border-b pb-2">
                 <h3 className="font-medium text-lg">Contract</h3>
             </div>
@@ -324,6 +368,42 @@ export const LeadContractPanel = ({ leadId }) => {
                                     >
                                         No templates yet? Create one with AI →
                                     </button>
+
+                                    {selectedTemplateId && (
+                                        <div className="border rounded-md p-3 bg-muted/10 space-y-2">
+                                            <div className="flex items-center justify-between">
+                                                <Label className="text-xs">Template preview — resolved for this Lead</Label>
+                                                <Button
+                                                    type="button"
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    className="h-7 px-2 text-xs"
+                                                    onClick={() => setShowEditTemplateModal(true)}
+                                                >
+                                                    <Edit className="h-3.5 w-3.5 mr-1" /> Edit Template
+                                                </Button>
+                                            </div>
+                                            {templateDetailLoading ? (
+                                                <p className="text-xs text-muted-foreground italic">Loading…</p>
+                                            ) : templateDetail ? (
+                                                <div className="max-h-56 overflow-auto space-y-3">
+                                                    {templateDetail.missing_fields.length > 0 && (
+                                                        <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md p-2">
+                                                            This Lead has no data for: {templateDetail.missing_fields.join(", ")} — you'll be asked to fill these in when you create the contract.
+                                                        </p>
+                                                    )}
+                                                    {templateDetail.sections.map((section, i) => (
+                                                        <div key={i} className="text-xs">
+                                                            <p className="font-semibold">{section.title}</p>
+                                                            <p className="text-muted-foreground whitespace-pre-wrap">{section.body}</p>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <p className="text-xs text-muted-foreground italic">Preview unavailable.</p>
+                                            )}
+                                        </div>
+                                    )}
 
                                     {missingFields.length > 0 && (
                                         <div className="space-y-2 p-3 bg-amber-50 border border-amber-200 rounded-md">
@@ -436,7 +516,8 @@ export const LeadContractPanel = ({ leadId }) => {
                                     size="sm"
                                     variant="outline"
                                     onClick={() => fileInputRef.current?.click()}
-                                    disabled={uploading}
+                                    disabled={uploading || currentStage !== "Contract"}
+                                    title={currentStage !== "Contract" ? "The contract is locked once the lead has moved past the \"Contract\" stage." : undefined}
                                 >
                                     <Upload className="h-4 w-4 mr-1" />
                                     {uploading ? "Uploading…" : contract.uploaded_file_url ? "Replace PDF" : "Upload PDF"}
@@ -445,9 +526,25 @@ export const LeadContractPanel = ({ leadId }) => {
                         </div>
                     ) : (
                         <div className="p-3 bg-muted/20 border rounded-md space-y-2">
-                            <div className="flex items-center gap-2">
-                                <Sparkles className="h-4 w-4 shrink-0 text-muted-foreground" />
-                                <span className="text-sm font-medium">Generated from an AI template</span>
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <Sparkles className="h-4 w-4 shrink-0 text-muted-foreground" />
+                                    <span className="text-sm font-medium">Generated from an AI template</span>
+                                </div>
+                                {contract.generated_pdf_url ? (
+                                    <a
+                                        href={contract.generated_pdf_url}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="text-xs font-medium underline shrink-0"
+                                    >
+                                        Download Contract PDF
+                                    </a>
+                                ) : contract.requires_signature ? (
+                                    <span className="text-xs text-muted-foreground italic shrink-0">
+                                        PDF available once all signers sign
+                                    </span>
+                                ) : null}
                             </div>
                             {(contract.resolved_content || []).map((section, i) => (
                                 <div key={i} className="text-xs">

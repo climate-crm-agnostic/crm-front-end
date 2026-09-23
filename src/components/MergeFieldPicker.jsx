@@ -15,7 +15,7 @@ import { getMergeFields } from "../services/emailTemplateService";
 //
 // `fetchFields` defaults to EmailTemplate's endpoint (gated by the
 // 'email_campaigns' plan feature). Callers gated by a *different* feature —
-// e.g. ContractTemplates.jsx, gated by 'contracts' — must pass their own
+// e.g. ContractTemplateEditor.jsx, gated by 'contracts' — must pass their own
 // fetcher (entity => Promise<fields>) so a tenant without email_campaigns
 // doesn't get a 403 just for opening the picker.
 export const MergeFieldPicker = ({ onInsert, label = "Insert Variable", entity = "client", fetchFields = getMergeFields }) => {
