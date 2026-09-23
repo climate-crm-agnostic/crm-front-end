@@ -458,7 +458,7 @@ export const ContractAIChat = () => {
                             </button>
                         </div>
                         <p style={{ fontSize: 11, color: "var(--muted-foreground)", textAlign: "center", marginTop: 8 }}>
-                            AI-generated contracts are not legal advice — have counsel review before use.
+                            AI-generated contracts are not legal advice.
                         </p>
                     </div>
                 </div>

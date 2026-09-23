@@ -25,6 +25,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs"
 import { SendEmailModal } from "../components/SendEmailModal";
 import { ViewEmailModal } from "../components/ViewEmailModal";
 import { LeadContractPanel } from "../components/LeadContractPanel";
+import { listContractsForLead } from "../services/contractService";
 import { DynamicAttributeField } from "../components/attributes/DynamicAttributeField";
 import { coerceAttributeValue, collectAttributeValuesByType, emptyValueFor, normalizeOptions } from "../utils/attributeTypes";
 import { formatDateTime } from "../utils/tz";
@@ -114,6 +115,21 @@ export const LeadDetail = () => {
             }))
             .catch(() => {})
             .finally(() => setLeadEventsLoading(false));
+    }, [id, isNew]);
+
+    // Whether this lead has a Contract at all — keeps the Contract tab visible
+    // after moving to "Won" (not just while parked on the "Contract" stage),
+    // so a signed contract stays reachable once the deal is closed.
+    const [hasContract, setHasContract] = useState(false);
+    useEffect(() => {
+        if (isNew || !id || !isFeatureEnabled("contracts")) return;
+        listContractsForLead(id)
+            .then((list) => {
+                const results = Array.isArray(list) ? list : (list.results || []);
+                setHasContract(results.length > 0);
+            })
+            .catch(() => {});
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id, isNew]);
 
     // Detect first/last name dynamic attributes (case-insensitive label match)
@@ -634,6 +650,12 @@ export const LeadDetail = () => {
         .filter(s => (s.name || '').toLowerCase() !== 'lost')
         .sort((a, b) => (a.order || 0) - (b.order || 0));
 
+    // Visible while parked on the reserved "Contract" stage, and still after
+    // moving to "Won" as long as a Contract actually exists — so a signed
+    // contract stays reachable once the deal is closed.
+    const showContractTab = !isNew && isFeatureEnabled("contracts")
+        && (currentStage === "Contract" || (currentStage === "Won" && hasContract));
+
     return (
         <div className="min-h-screen bg-background flex flex-col">
             {/* Header */}
@@ -768,7 +790,7 @@ export const LeadDetail = () => {
                         <TabsTrigger value="communication">Communication</TabsTrigger>
                         <TabsTrigger value="tasks">Tasks, Notes & Files</TabsTrigger>
                         {leadEvents.from_event && <TabsTrigger value="events">Events</TabsTrigger>}
-                        {!isNew && currentStage === "Contract" && isFeatureEnabled("contracts") && (
+                        {showContractTab && (
                             <TabsTrigger value="contract">Contract</TabsTrigger>
                         )}
                     </TabsList>
@@ -1292,7 +1314,7 @@ export const LeadDetail = () => {
                     )}
                 </TabsContent>
 
-                {!isNew && currentStage === "Contract" && isFeatureEnabled("contracts") && (
+                {showContractTab && (
                     <TabsContent value="contract" className="space-y-6 mt-0">
                         <LeadContractPanel leadId={id} />
                     </TabsContent>

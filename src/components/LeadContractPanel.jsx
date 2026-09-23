@@ -13,6 +13,7 @@ import {
     resendSignerLink,
 } from "../services/contractService";
 import { getContractTemplates } from "../services/contractTemplateService";
+import { ContractDraftModal } from "./ContractDraftModal";
 
 const statusVariant = {
     signed: "success",
@@ -74,16 +75,30 @@ export const LeadContractPanel = ({ leadId }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [leadId]);
 
+    const refreshTemplates = async () => {
+        try {
+            const data = await getContractTemplates();
+            const list = Array.isArray(data) ? data : (data.results || []);
+            setTemplates(list.filter((t) => t.is_active));
+        } catch {
+            setTemplates([]);
+        } finally {
+            setTemplatesLoaded(true);
+        }
+    };
+
     useEffect(() => {
         if (sourceMode !== "template_ai" || templatesLoaded) return;
-        getContractTemplates()
-            .then((data) => {
-                const list = Array.isArray(data) ? data : (data.results || []);
-                setTemplates(list.filter((t) => t.is_active));
-            })
-            .catch(() => setTemplates([]))
-            .finally(() => setTemplatesLoaded(true));
+        refreshTemplates();
     }, [sourceMode, templatesLoaded]);
+
+    // "Create with AI" guided modal — chat, then review/approve the draft,
+    // all inline over this page (ContractDraftModal.jsx).
+    const [showDraftModal, setShowDraftModal] = useState(false);
+    const handleTemplateApproved = async (template) => {
+        await refreshTemplates();
+        if (template?.id) setSelectedTemplateId(template.id);
+    };
 
     const addSignerRow = () => setSigners((s) => [...s, emptySigner()]);
     const removeSignerRow = (index) => setSigners((s) => s.filter((_, i) => i !== index));
@@ -216,6 +231,12 @@ export const LeadContractPanel = ({ leadId }) => {
 
     return (
         <div className="bg-card p-6 rounded-lg border shadow-sm space-y-4">
+            <ContractDraftModal
+                open={showDraftModal}
+                onOpenChange={setShowDraftModal}
+                onApproved={handleTemplateApproved}
+            />
+
             <div className="flex items-center justify-between border-b pb-2">
                 <h3 className="font-medium text-lg">Contract</h3>
             </div>
@@ -296,14 +317,13 @@ export const LeadContractPanel = ({ leadId }) => {
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    <a
-                                        href="/contracts/ai-chat"
-                                        target="_blank"
-                                        rel="noreferrer"
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowDraftModal(true)}
                                         className="text-xs underline text-muted-foreground"
                                     >
                                         No templates yet? Create one with AI →
-                                    </a>
+                                    </button>
 
                                     {missingFields.length > 0 && (
                                         <div className="space-y-2 p-3 bg-amber-50 border border-amber-200 rounded-md">
