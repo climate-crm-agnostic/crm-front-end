@@ -1,23 +1,28 @@
 "use client"
 
-import { React } from "react"
+import { useState } from "react"
 import { Link, useLocation } from "react-router-dom"
-import { LayoutDashboard } from "lucide-react"
+import * as Icons from "lucide-react"
+import { LayoutDashboard, ChevronRight } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
+import {
+  Collapsible,
+  CollapsibleContent,
+} from "@/components/ui/collapsible"
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  useSidebar,
 } from "@/components/ui/sidebar"
 import { useMenu } from "@/hooks/useMenu"
 import { NavUserFooter } from "./nav-user-footer"
@@ -29,6 +34,37 @@ export function AppSidebar({ ...props }) {
   const { user } = useAuth();
   const location = useLocation();
   const isDashboardActive = location.pathname === "/";
+  const { open, setOpen, isMobile } = useSidebar();
+
+  const groupHasActive = (group) => group.items.some(
+    (item) => location.pathname === item.url || location.pathname.startsWith(item.url + "/")
+  );
+
+  // Which hubs are expanded — seeded once from whichever hub contains the
+  // page you loaded on, then driven entirely by clicks from there.
+  const [openGroups, setOpenGroups] = useState(() => {
+    const initial = new Set();
+    menu.forEach((group) => {
+      if (groupHasActive(group)) initial.add(group.label);
+    });
+    return initial;
+  });
+
+  // From the collapsed rail no hub's contents are visible, so a hub click
+  // always means "reveal this hub": expand the sidebar and force it open.
+  // When expanded, it just toggles that one hub.
+  const toggleGroup = (label) => {
+    if (!open && !isMobile) {
+      setOpen(true);
+      setOpenGroups((prev) => new Set(prev).add(label));
+      return;
+    }
+    setOpenGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(label)) next.delete(label); else next.add(label);
+      return next;
+    });
+  };
 
   const data = {
     user: {
@@ -99,19 +135,40 @@ export function AppSidebar({ ...props }) {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {menu.map((group) => (
-          <SidebarGroup key={group.label}>
-            <SidebarGroupLabel
-              className="text-[10px] uppercase tracking-widest font-semibold text-muted-foreground"
-              style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}
-            >
-              {group.label}
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <NavMain items={group.items} />
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
+        {menu.map((group) => {
+          const GroupIcon = Icons[group.icon] ?? Icons.Circle;
+          const isGroupOpen = openGroups.has(group.label);
+          const hasActive = groupHasActive(group);
+
+          return (
+            <Collapsible key={group.label} open={isGroupOpen} className="group/hub">
+              <SidebarGroup>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      tooltip={group.label}
+                      onClick={() => toggleGroup(group.label)}
+                      // In the rail the hub icon is the only trace of where you are.
+                      className={hasActive ? "group-data-[collapsible=icon]:bg-sidebar-accent" : undefined}
+                      style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+                    >
+                      <GroupIcon className="size-4" style={{ color: "var(--secondary-text)" }} />
+                      <span className="text-[10px] uppercase tracking-widest font-semibold text-muted-foreground">
+                        {group.label}
+                      </span>
+                      <ChevronRight className="ml-auto size-3.5 text-muted-foreground transition-transform duration-200 group-data-[state=open]/hub:rotate-90 group-data-[collapsible=icon]:hidden" />
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+                <CollapsibleContent>
+                  <SidebarGroupContent>
+                    <NavMain items={group.items} />
+                  </SidebarGroupContent>
+                </CollapsibleContent>
+              </SidebarGroup>
+            </Collapsible>
+          );
+        })}
       </SidebarContent>
 
       <div className="h-px bg-border" />

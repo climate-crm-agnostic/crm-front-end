@@ -1,14 +1,42 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Table } from "../components/Table";
+import { RowActions } from "../components/Table";
+import { TableSummary } from "../components/TableSummary";
 import { Button } from "../components/ui/button";
 import { Plus, Download, Upload, X, CheckCircle, AlertCircle } from "lucide-react";
 import { getClients, deleteClient, getClientAttributes, importClientsFromExcel, exportClientsExcel } from "../services/clientService";
-import { AttributeValueCell } from "../components/attributes/AttributeValueCell";
+import { formatAttributeValue } from "../utils/attributeTypes";
 import { buildFilterParams } from "../utils/attributeFilters";
 import { AttributeFilterBar } from "../components/attributes/AttributeFilterBar";
 import { saveAs } from "file-saver";
 import Swal from "sweetalert2";
+
+// Magnitude bars, one colour per row. Each must read against the bg-border
+// track in both themes, so --border itself is not in the list.
+const BREAKDOWN_COLORS = ["var(--primary)", "var(--secondary-text)", "var(--muted-foreground)"];
+
+// Groups clients by whatever dropdown-type ("list") attributes this tenant
+// actually has configured — Region/Category on one instance, Program/Status
+// on another — rather than hardcoding field names that only fit one vertical.
+const AttributeBreakdown = ({ label, counts }) => {
+    const max = Math.max(1, ...counts.map((c) => c.count));
+    return (
+        <div className="rounded-lg p-4 space-y-2.5 bg-card border border-border">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">By {label}</p>
+            {counts.map((c, i) => (
+                <div key={c.value}>
+                    <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm font-medium truncate text-foreground">{c.label}</span>
+                        <span className="text-sm font-semibold shrink-0 ml-2 text-muted-foreground">{c.count}</span>
+                    </div>
+                    <div className="h-1.5 w-full rounded-full overflow-hidden bg-border">
+                        <div className="h-full rounded-full" style={{ width: `${(c.count / max) * 100}%`, backgroundColor: BREAKDOWN_COLORS[i % BREAKDOWN_COLORS.length] }} />
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+};
 
 export const Client = () => {
     const [clients, setClients] = useState([]);
@@ -23,11 +51,6 @@ export const Client = () => {
     const [importResult, setImportResult] = useState(null);
     const fileInputRef = useRef(null);
 
-    const staticColumns = [
-        { key: "name", label: "Name" },
-    ];
-
-    const [columns, setColumns] = useState(staticColumns);
     const [contactFilter, setContactFilter] = useState("");
     const availableContactTypes = React.useMemo(
         () => Array.from(new Set(attributes.filter(a => a.type === 'email' || a.type === 'phone').map(a => a.type))),
@@ -60,16 +83,6 @@ export const Client = () => {
             }));
             setClients(processedClients);
             setAttributes(attributesData);
-
-            // Dynamic columns from attributes
-            const dynamicColumns = attributesData.map(attr => ({
-                key: attr.name, // The backend key/name for the attribute
-                label: attr.label,
-                render: (value) => <AttributeValueCell attr={attr} value={value} />,
-            }));
-
-            setColumns([...staticColumns, ...dynamicColumns]);
-
         } catch (error) {
             console.error("Error fetching data", error);
         } finally {
@@ -155,6 +168,46 @@ export const Client = () => {
         ...attributes.map(a => ({ name: a.name, label: a.label, required: a.is_required })),
     ];
 
+    const stats = [
+        { label: "Total clients", value: clients.length },
+    ];
+
+    // Up to two dropdown-type attributes, each rendered as a breakdown and
+    // used as the card subtitle.
+    const groupableAttrs = attributes.filter(a => a.type === 'list').slice(0, 2);
+    const breakdowns = groupableAttrs
+        .map(attr => {
+            const counts = {};
+            clients.forEach(c => {
+                const val = c[attr.name];
+                if (val === undefined || val === null || val === '') return;
+                counts[val] = (counts[val] || 0) + 1;
+            });
+            return {
+                label: attr.label,
+                counts: Object.entries(counts)
+                    .map(([value, count]) => ({ value, count, label: formatAttributeValue(attr, value) || value }))
+                    .sort((a, b) => b.count - a.count),
+            };
+        })
+        .filter(b => b.counts.length > 0);
+
+    const renderClientCard = (client) => {
+        const subtitle = groupableAttrs
+            .map(a => formatAttributeValue(a, client[a.name]))
+            .filter(Boolean)
+            .join(" · ");
+        return (
+            <div className="flex items-center justify-between gap-3 rounded-lg p-4 transition-colors bg-background border border-border">
+                <div className="min-w-0 cursor-pointer" onClick={() => handleEdit(client)}>
+                    <p className="text-sm font-semibold truncate text-foreground">{client.name}</p>
+                    {subtitle && <p className="text-xs mt-0.5 truncate text-muted-foreground">{subtitle}</p>}
+                </div>
+                <RowActions row={client} onEdit={handleEdit} onAskDelete={handleDelete} />
+            </div>
+        );
+    };
+
     return (
         <div className="h-full flex flex-col p-2 w-full">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-2">
@@ -191,6 +244,14 @@ export const Client = () => {
                 </div>
             </div>
 
+            {breakdowns.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2 shrink-0">
+                    {breakdowns.map((b) => (
+                        <AttributeBreakdown key={b.label} label={b.label} counts={b.counts} />
+                    ))}
+                </div>
+            )}
+
             <div className="bg-card p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
                 {availableContactTypes.length > 0 && (
                     <div className="flex items-center gap-2 px-1 pb-2">
@@ -215,12 +276,13 @@ export const Client = () => {
                         onApply={(rows) => setAppliedFilters(buildFilterParams(rows))}
                     />
                 </div>
-                <Table
+                <TableSummary
                     data={clients}
-                    columns={columns}
-                    onEdit={handleEdit}
-                    onAskDelete={handleDelete}
-                    searchable={true}
+                    stats={stats}
+                    renderCard={renderClientCard}
+                    searchKeys={["name"]}
+                    loading={loading}
+                    emptyLabel="No clients yet."
                 />
             </div>
 

@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Table } from "../components/Table";
+import { RowActions } from "../components/Table";
+import { TableSummary } from "../components/TableSummary";
+import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Plus, Search, Upload, X, CheckCircle, AlertCircle } from "lucide-react";
 import { getServices, deleteService, getServiceAttributes, importServicesFromExcel } from "../services/serviceService";
 import { getClients } from "../services/clientService";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
-import { AttributeValueCell } from "../components/attributes/AttributeValueCell";
 import { buildFilterParams } from "../utils/attributeFilters";
 import { AttributeFilterBar } from "../components/attributes/AttributeFilterBar";
 import Swal from "sweetalert2";
@@ -15,6 +16,27 @@ const IMPORT_FIXED_FIELDS = [
     { name: 'name',   label: 'Name',   required: true },
     { name: 'status', label: 'Status', required: false, hint: 'active / paused / cancelled' },
 ];
+
+const SERVICE_STATUS_COLORS = {
+    active: "var(--primary)",
+    paused: "var(--muted-foreground)",
+    cancelled: "var(--destructive)",
+};
+
+const SERVICE_STATUS_TABS = [
+    { value: "all", label: "All" },
+    { value: "active", label: "Active", color: SERVICE_STATUS_COLORS.active, match: (row) => row.status === "active" },
+    { value: "paused", label: "Paused", color: SERVICE_STATUS_COLORS.paused, match: (row) => row.status === "paused" },
+    { value: "cancelled", label: "Cancelled", color: SERVICE_STATUS_COLORS.cancelled, match: (row) => row.status === "cancelled" },
+];
+
+const serviceBadgeVariant = (status) => {
+    switch (status) {
+        case "active": return "success";
+        case "cancelled": return "destructive";
+        default: return "secondary";
+    }
+};
 
 export const Service = () => {
     const [services, setServices] = useState([]);
@@ -41,12 +63,6 @@ export const Service = () => {
     const [importResult, setImportResult] = useState(null);
     const fileInputRef = useRef(null);
 
-    const staticColumns = [
-        { key: "name", label: "Name" },
-    ];
-
-    const [columns, setColumns] = useState(staticColumns);
-
     useEffect(() => {
         fetchInitialData();
     }, []);
@@ -60,15 +76,6 @@ export const Service = () => {
 
             setAttributes(attributesData);
             setClients(clientsData);
-
-            // Dynamic columns from attributes
-            const dynamicColumns = attributesData.map(attr => ({
-                key: attr.name,
-                label: attr.label,
-                render: (value) => <AttributeValueCell attr={attr} value={value} />,
-            }));
-
-            setColumns([...staticColumns, ...dynamicColumns]);
         } catch (error) {
             console.error("Error fetching initial data", error);
         }
@@ -191,6 +198,38 @@ export const Service = () => {
         ...attributes.map(a => ({ name: a.name, label: a.label, required: a.is_required })),
     ];
 
+    const activeCount = services.filter((s) => s.status === "active").length;
+    const needsAttention = services.filter((s) => s.status === "paused" || s.status === "cancelled").length;
+
+    const stats = [
+        { label: "Total services", value: services.length },
+        { label: "Active", value: activeCount },
+        { label: "Needs attention", value: needsAttention },
+    ];
+
+    // `client` can arrive as a bare id rather than a nested object; resolve
+    // the display name from the clients already loaded for the picker.
+    const clientNameOf = (service) => {
+        const c = service.client;
+        if (c && typeof c === "object") return c.name || "";
+        return clients.find((x) => String(x.id) === String(c))?.name || service.client_name || "";
+    };
+
+    const renderServiceCard = (service) => (
+        <div className="flex items-center justify-between gap-3 rounded-lg p-4 transition-colors bg-background border border-border">
+            <div className="min-w-0 cursor-pointer" onClick={() => handleEdit(service)}>
+                <p className="text-sm font-semibold truncate text-foreground">{service.name}</p>
+                <p className="text-xs mt-0.5 truncate text-muted-foreground">{clientNameOf(service) || "—"}</p>
+            </div>
+            <div className="flex items-center gap-4 shrink-0">
+                {service.status && (
+                    <Badge variant={serviceBadgeVariant(service.status)} className="capitalize">{service.status}</Badge>
+                )}
+                <RowActions row={service} onEdit={handleEdit} onAskDelete={handleDelete} verSeguimiento={handleViewFollowup} />
+            </div>
+        </div>
+    );
+
     return (
         <div className="h-full flex flex-col p-2 w-full">
             <div className="flex flex-wrap items-center gap-2 mb-2 ml-2">
@@ -258,13 +297,14 @@ export const Service = () => {
             </div>
 
             <div className="bg-card p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
-                <Table
+                <TableSummary
                     data={services}
-                    columns={columns}
-                    onEdit={handleEdit}
-                    onAskDelete={handleDelete}
-                    verSeguimiento={handleViewFollowup}
-                    searchable={true}
+                    stats={stats}
+                    statusTabs={SERVICE_STATUS_TABS}
+                    renderCard={renderServiceCard}
+                    searchKeys={["name", "status"]}
+                    loading={loading}
+                    emptyLabel={selectedClient ? "No services for this client." : "Select a client and search to see its services."}
                 />
             </div>
 

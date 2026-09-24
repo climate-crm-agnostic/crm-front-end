@@ -1,9 +1,14 @@
 import { useState, useEffect, useCallback } from "react";
 import { formatDateTime } from "../utils/tz";
-import { ClipboardList, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from "lucide-react";
+import { ClipboardList, ChevronDown, ChevronUp } from "lucide-react";
 import Swal from "sweetalert2";
 import { getAuditLogs } from "@/services/auditLogService";
 import { DateInput } from "@/components/ui/date-input";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { PaginationFooter, PageSizeSelect } from "@/components/PaginationControls";
+
+const PAGE_SIZE_OPTIONS = [10, 25, 50];
 
 const ACTION_STYLE = {
     CREATE: { bg: "rgba(37,91,1,0.12)",   border: "rgba(37,91,1,0.4)",   text: "var(--secondary-text)" },
@@ -83,18 +88,20 @@ export const AuditLog = () => {
     const [dateFrom, setDateFrom] = useState("");
     const [dateTo, setDateTo]     = useState("");
     const [page, setPage]         = useState(1);
+    const [pageSize, setPageSizeState] = useState(PAGE_SIZE_OPTIONS[0]);
+    const setPageSize = (size) => { setPageSizeState(size); setPage(1); };
 
     const load = useCallback(async () => {
         setLoading(true);
         try {
-            const result = await getAuditLogs({ model, date_from: dateFrom, date_to: dateTo, page, page_size: 50 });
+            const result = await getAuditLogs({ model, date_from: dateFrom, date_to: dateTo, page, page_size: pageSize });
             setData(result);
         } catch {
             Swal.fire({ icon: "error", title: "Error", text: "Could not load audit logs.", toast: true, position: "top-end", showConfirmButton: false, timer: 3000 });
         } finally {
             setLoading(false);
         }
-    }, [model, dateFrom, dateTo, page]);
+    }, [model, dateFrom, dateTo, page, pageSize]);
 
     useEffect(() => { load(); }, [load]);
 
@@ -130,17 +137,20 @@ export const AuditLog = () => {
             <form onSubmit={handleFilter} className="flex flex-wrap gap-3 items-end">
                 <div className="flex flex-col gap-1">
                     <label className="text-xs font-medium" style={{ color: "#9b948e" }}>Model</label>
-                    <select
-                        value={model}
-                        onChange={e => { setModel(e.target.value); setPage(1); }}
-                        className="h-9 rounded-md border px-2.5 text-sm bg-background focus:outline-none"
-                        style={{ borderColor: "var(--border)", color: "var(--foreground)", minWidth: 160 }}
+                    <Select
+                        value={model || "all"}
+                        onValueChange={(v) => { setModel(v === "all" ? "" : v); setPage(1); }}
                     >
-                        <option value="">All models</option>
-                        {availableModels.map(m => (
-                            <option key={m} value={m}>{MODEL_LABELS[m] || m}</option>
-                        ))}
-                    </select>
+                        <SelectTrigger className="h-9" style={{ minWidth: 160 }}>
+                            <SelectValue placeholder="All models" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All models</SelectItem>
+                            {availableModels.map(m => (
+                                <SelectItem key={m} value={m}>{MODEL_LABELS[m] || m}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                 </div>
                 <div className="flex flex-col gap-1" style={{ width: 160 }}>
                     <label className="text-xs font-medium" style={{ color: "#9b948e" }}>From</label>
@@ -156,15 +166,7 @@ export const AuditLog = () => {
                         onChange={e => { setDateTo(e.target.value); setPage(1); }}
                     />
                 </div>
-                <button
-                    type="submit"
-                    className="h-9 px-4 rounded-md text-sm font-semibold transition-colors"
-                    style={{ backgroundColor: "var(--secondary)", color: "var(--secondary-foreground)" }}
-                    onMouseEnter={e => e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--secondary) 80%, black)"}
-                    onMouseLeave={e => e.currentTarget.style.backgroundColor = "var(--secondary)"}
-                >
-                    Filter
-                </button>
+                <Button type="submit">Filter</Button>
                 {(model || dateFrom || dateTo) && (
                     <button
                         type="button"
@@ -175,6 +177,9 @@ export const AuditLog = () => {
                         Clear
                     </button>
                 )}
+                <div className="ml-auto">
+                    <PageSizeSelect pageSize={pageSize} setPageSize={setPageSize} pageSizeOptions={PAGE_SIZE_OPTIONS} />
+                </div>
             </form>
 
             {/* Table */}
@@ -236,28 +241,15 @@ export const AuditLog = () => {
 
             {/* Pagination */}
             {data && data.total_pages > 1 && (
-                <div className="flex items-center justify-between">
-                    <p className="text-xs" style={{ color: "#9b948e" }}>
-                        {data.count} entries — page {data.page} of {data.total_pages}
-                    </p>
-                    <div className="flex gap-2">
-                        <button
-                            disabled={page <= 1}
-                            onClick={() => setPage(p => p - 1)}
-                            className="flex items-center gap-1 h-8 px-3 rounded-md text-sm font-medium disabled:opacity-40 transition-colors"
-                            style={{ border: "1px solid var(--border)", color: "var(--foreground)", backgroundColor: "var(--background)" }}
-                        >
-                            <ChevronLeft className="h-4 w-4" /> Prev
-                        </button>
-                        <button
-                            disabled={page >= data.total_pages}
-                            onClick={() => setPage(p => p + 1)}
-                            className="flex items-center gap-1 h-8 px-3 rounded-md text-sm font-medium disabled:opacity-40 transition-colors"
-                            style={{ border: "1px solid var(--border)", color: "var(--foreground)", backgroundColor: "var(--background)" }}
-                        >
-                            Next <ChevronRight className="h-4 w-4" />
-                        </button>
-                    </div>
+                <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
+                    <PaginationFooter
+                        currentPage={page}
+                        setCurrentPage={setPage}
+                        totalPages={data.total_pages}
+                        startRecord={data.count ? (page - 1) * pageSize + 1 : 0}
+                        endRecord={data.count ? Math.min(page * pageSize, data.count) : 0}
+                        bordered={false}
+                    />
                 </div>
             )}
         </div>

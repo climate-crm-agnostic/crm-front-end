@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/select";
 import { getWebhooks, deleteWebhook } from "@/services/webhookService";
 import Swal from 'sweetalert2';
+import { usePagination } from "@/hooks/usePagination";
+import { PaginationFooter } from "@/components/PaginationControls";
 
 // Lead/Service and PUT/PATCH keep their old, non-brand hues below — the
 // rebrand only has two greens, and collapsing every entry onto one of them
@@ -46,6 +48,15 @@ export const WebhookList = () => {
     const [webhooks, setWebhooks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedModel, setSelectedModel] = useState("Lead");
+
+    const {
+        pageItems,
+        currentPage,
+        setCurrentPage,
+        totalPages,
+        startRecord,
+        endRecord,
+    } = usePagination(webhooks, { pageSizeOptions: [10, 20, 50] });
 
     useEffect(() => {
         loadWebhooks();
@@ -217,7 +228,7 @@ export const WebhookList = () => {
                                 </tr>
                             </thead>
                             <tbody style={{ color: "var(--foreground)" }}>
-                                {webhooks.map((webhook, idx) => (
+                                {pageItems.map((webhook, idx) => (
                                     <tr
                                         key={webhook.id}
                                         style={{ borderBottom: "1px solid var(--border)" }}
@@ -299,6 +310,15 @@ export const WebhookList = () => {
                             </tbody>
                         </table>
                     </div>
+                )}
+                {webhooks.length > 0 && (
+                    <PaginationFooter
+                        currentPage={currentPage}
+                        setCurrentPage={setCurrentPage}
+                        totalPages={totalPages}
+                        startRecord={startRecord}
+                        endRecord={endRecord}
+                    />
                 )}
             </div>
         </div>

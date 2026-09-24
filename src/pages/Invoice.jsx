@@ -1,19 +1,53 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Table } from "../components/Table";
+import { RowActions } from "../components/Table";
+import { TableSummary } from "../components/TableSummary";
 import { Button } from "../components/ui/button";
+import { DateInput } from "../components/ui/date-input";
 import { Plus, Download } from "lucide-react";
-import { getInvoices, deleteInvoice, getInvoiceAttributes, exportInvoicesExcel } from "../services/invoiceService";
+import { getInvoices, deleteInvoice, exportInvoicesExcel } from "../services/invoiceService";
 import { getClients } from "../services/clientService";
 import { saveAs } from "file-saver";
 import Swal from "sweetalert2";
 import { Badge } from "../components/ui/badge";
 
+const STATUS_COLORS = {
+    paid: "var(--primary)",
+    pending: "var(--muted-foreground)",
+    overdue: "var(--destructive)",
+};
+
+const STATUS_TABS = [
+    { value: "all", label: "All" },
+    { value: "paid", label: "Paid", color: STATUS_COLORS.paid, match: (row) => row.status === "paid" },
+    {
+        value: "pending",
+        label: "Pending",
+        color: STATUS_COLORS.pending,
+        match: (row) => ["draft", "sent", "void", "refunded"].includes(row.status),
+    },
+    { value: "overdue", label: "Overdue", color: STATUS_COLORS.overdue, match: (row) => row.status === "overdue" },
+];
+
+const money = (currency, value) => `${currency || "USD"} ${Number(value || 0).toFixed(2)}`;
+
 export const Invoice = () => {
     const [invoices, setInvoices] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [attributes, setAttributes] = useState([]);
+    const [dateFrom, setDateFrom] = useState("");
+    const [dateTo, setDateTo] = useState("");
     const navigate = useNavigate();
+
+    // Filters by issue_date (ISO "yyyy-mm-dd" strings sort/compare lexicographically).
+    const dateFilteredInvoices = useMemo(() => {
+        if (!dateFrom && !dateTo) return invoices;
+        return invoices.filter((inv) => {
+            if (!inv.issue_date) return false;
+            if (dateFrom && inv.issue_date < dateFrom) return false;
+            if (dateTo && inv.issue_date > dateTo) return false;
+            return true;
+        });
+    }, [invoices, dateFrom, dateTo]);
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -25,33 +59,6 @@ export const Invoice = () => {
         }
     };
 
-    const staticColumns = [
-        { key: "invoice_number", label: "Invoice #" },
-        { key: "client_name", label: "Client" },
-        {
-            key: "status",
-            label: "Status",
-            render: (value) => (
-                <Badge variant={getStatusColor(value)} className="capitalize">
-                    {value}
-                </Badge>
-            )
-        },
-        {
-            key: "total",
-            label: "Total",
-            render: (value, row) => `${row.currency || 'USD'} ${Number(value).toFixed(2)}`
-        },
-        {
-            key: "balance_due",
-            label: "Balance Due",
-            render: (value, row) => `${row.currency || 'USD'} ${Number(value).toFixed(2)}`
-        },
-        { key: "due_date", label: "Due Date" },
-    ];
-
-    const [columns, setColumns] = useState(staticColumns);
-
     useEffect(() => {
         fetchData();
     }, []);
@@ -59,9 +66,8 @@ export const Invoice = () => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [invoicesData, attributesData, clientsData] = await Promise.all([
+            const [invoicesData, clientsData] = await Promise.all([
                 getInvoices(),
-                getInvoiceAttributes(),
                 getClients()
             ]);
 
@@ -80,16 +86,6 @@ export const Invoice = () => {
                 client_name: getClientName(invoice.client),
             }));
             setInvoices(processedInvoices);
-            setAttributes(attributesData);
-
-            // Dynamic columns from attributes
-            const dynamicColumns = attributesData.map(attr => ({
-                key: attr.name,
-                label: attr.label
-            }));
-
-            setColumns([...staticColumns, ...dynamicColumns]);
-
         } catch (error) {
             console.error("Error fetching data", error);
         } finally {
@@ -142,6 +138,47 @@ export const Invoice = () => {
         }
     };
 
+    // Sums are only meaningful within one currency; with several in view the
+    // tiles say so instead of adding USD to EUR.
+    const currencies = new Set(dateFilteredInvoices.map((inv) => inv.currency || "USD"));
+    const singleCurrency = currencies.size <= 1 ? ([...currencies][0] || "USD") : null;
+    const sumLabel = (field) => {
+        if (!singleCurrency) return "Mixed";
+        const total = dateFilteredInvoices.reduce((sum, inv) => sum + (Number(inv[field]) || 0), 0);
+        return `${singleCurrency} ${total.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+    };
+    const overdueCount = dateFilteredInvoices.filter((inv) => inv.status === "overdue").length;
+
+    const stats = [
+        { label: "Total invoiced", value: sumLabel("total") },
+        { label: "Outstanding", value: sumLabel("balance_due") },
+        { label: "Overdue", value: `${overdueCount} invoice${overdueCount === 1 ? "" : "s"}` },
+    ];
+
+    const renderInvoiceCard = (invoice) => {
+        const balance = Number(invoice.balance_due) || 0;
+        const partiallyPaid = balance > 0 && balance !== Number(invoice.total);
+        return (
+            <div className="flex items-center justify-between gap-3 rounded-lg p-4 transition-colors bg-background border border-border">
+                <div className="min-w-0 cursor-pointer" onClick={() => handleEdit(invoice)}>
+                    <p className="text-sm font-semibold truncate text-foreground">{invoice.client_name || "—"}</p>
+                    <p className="text-xs mt-0.5 text-muted-foreground">{invoice.invoice_number}</p>
+                </div>
+                <div className="flex items-center gap-4 shrink-0">
+                    <Badge variant={getStatusColor(invoice.status)} className="capitalize">{invoice.status}</Badge>
+                    <div className="text-right">
+                        <p className="text-sm font-bold text-foreground">{money(invoice.currency, invoice.total)}</p>
+                        <p className="text-xs mt-0.5 text-muted-foreground">
+                            Due {invoice.due_date || "—"}
+                            {partiallyPaid && ` · Balance ${money(invoice.currency, balance)}`}
+                        </p>
+                    </div>
+                    <RowActions row={invoice} onEdit={handleEdit} onAskDelete={handleDelete} />
+                </div>
+            </div>
+        );
+    };
+
     return (
         <div className="h-full flex flex-col p-2 w-full">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-2">
@@ -170,12 +207,40 @@ export const Invoice = () => {
             </div>
 
             <div className="bg-card p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
-                <Table
-                    data={invoices}
-                    columns={columns}
-                    onEdit={handleEdit}
-                    onAskDelete={handleDelete}
-                    searchable={true}
+                <TableSummary
+                    data={dateFilteredInvoices}
+                    stats={stats}
+                    statusTabs={STATUS_TABS}
+                    renderCard={renderInvoiceCard}
+                    searchKeys={["invoice_number", "status", "client_name"]}
+                    loading={loading}
+                    emptyLabel="No invoices yet."
+                    headerActions={
+                        <div className="flex flex-wrap items-center gap-2">
+                            <DateInput
+                                value={dateFrom}
+                                onChange={(e) => setDateFrom(e.target.value)}
+                                placeholder="From"
+                                className="w-[130px]"
+                            />
+                            <span className="text-sm text-muted-foreground">to</span>
+                            <DateInput
+                                value={dateTo}
+                                onChange={(e) => setDateTo(e.target.value)}
+                                placeholder="To"
+                                className="w-[130px]"
+                            />
+                            {(dateFrom || dateTo) && (
+                                <button
+                                    type="button"
+                                    onClick={() => { setDateFrom(""); setDateTo(""); }}
+                                    className="text-xs underline text-muted-foreground cursor-pointer"
+                                >
+                                    Clear
+                                </button>
+                            )}
+                        </div>
+                    }
                 />
             </div>
         </div>

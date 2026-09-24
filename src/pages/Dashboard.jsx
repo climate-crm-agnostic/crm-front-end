@@ -5,7 +5,7 @@ import { API_URL, getHeaders, fetchAllPages } from "@/services/api";
 import { getMyTasks } from "@/services/taskService";
 import { getClients } from "@/services/clientService";
 import { Modal } from "../components/Modal";
-import { Magnet, Building2, Receipt, Laptop, ArrowUpRight, ClipboardList, ChevronLeft, ChevronRight } from "lucide-react";
+import { Magnet, Building2, Receipt, Laptop, ArrowUpRight, ClipboardList, ChevronLeft, ChevronRight, Bot } from "lucide-react";
 
 const fetchCount = async (endpoint) => {
     const res = await fetch(`${API_URL}/${endpoint}/?page_size=1`, { headers: getHeaders() });
@@ -452,8 +452,41 @@ const PipelineReportCard = ({ pipeline }) => {
 
 // ────────────────────────────────────────────────────────────────────────────
 
+// Shown only when the Chett route itself would admit the user (same feature
+// flag and permission as its PermissionGuard/FeatureGate).
+const ChettPromoCard = ({ navigate }) => (
+    <div
+        className="relative overflow-hidden rounded-xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer transition-transform hover:-translate-y-0.5"
+        style={{ backgroundColor: "var(--secondary)" }}
+        onClick={() => navigate("/chett-ai")}
+    >
+        <div className="flex items-center gap-4 min-w-0">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg" style={{ backgroundColor: "rgba(96,216,5,0.18)", border: "1px solid rgba(96,216,5,0.35)" }}>
+                <Bot className="h-5 w-5" style={{ color: "var(--primary-text)" }} />
+            </div>
+            <div className="min-w-0">
+                <p className="text-sm font-semibold italic" style={{ color: "#FFFFFF", fontFamily: '"Cormorant Garamond", Georgia, serif' }}>
+                    Meet Chett, your CRM copilot
+                </p>
+                <p className="text-xs mt-0.5 truncate" style={{ color: "rgba(255,255,255,0.7)" }}>
+                    Ask about clients, invoices, leads, and more
+                </p>
+            </div>
+        </div>
+        <button
+            className="shrink-0 self-start sm:self-auto h-9 px-4 rounded-lg text-sm font-semibold cursor-pointer"
+            style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
+            onClick={(e) => { e.stopPropagation(); navigate("/chett-ai"); }}
+        >
+            Open Chett
+        </button>
+    </div>
+);
+
 export const Dashboard = () => {
-    const { user } = useAuth();
+    const { user, isFeatureEnabled } = useAuth();
+    const canSeeChett = isFeatureEnabled("ai") &&
+        (user?.is_superuser === true || (user?.permissions || []).includes("app.view_aiconversation"));
     const navigate = useNavigate();
     const [counts, setCounts] = useState({ leads: null, clients: null, invoices: null, assets: null });
     const [loading, setLoading] = useState(true);
@@ -642,6 +675,12 @@ export const Dashboard = () => {
 
             {/* Content */}
             <div className="flex-1 p-6 space-y-8 overflow-y-auto">
+
+                {canSeeChett && (
+                    <section>
+                        <ChettPromoCard navigate={navigate} />
+                    </section>
+                )}
 
                 {/* Overview */}
                 <section className="space-y-4">

@@ -1,22 +1,34 @@
 import { useMemo } from "react";
 import { useAuth } from "@/context/AuthContext";
 
+// Grouped into collapsible hubs; each hub's icon is what the collapsed
+// sidebar rail shows.
 const MENU_CONFIG = [
     {
-        label: "CRM",
+        label: "Sales",
+        icon: "TrendingUp",
         items: [
             { title: "Leads",    url: "/lead",     icon: "Magnet",    permission: "app.add_lead" },
+            { title: "Pipeline", url: "/pipeline", icon: "GitMerge",  permission: "app.add_pipeline" },
             { title: "Clients",  url: "/client",   icon: "Building2", permission: "app.add_client" },
             { title: "Contacts", url: "/contact",  icon: "UserCircle",permission: "app.add_contact" },
             { title: "Services", url: "/service",  icon: "Briefcase", permission: "app.add_service" },
-            { title: "Pipeline", url: "/pipeline", icon: "GitMerge",  permission: "app.add_pipeline" },
             { title: "Events",   url: "/event",    icon: "CalendarDays", permission: "app.view_event", feature: "events" },
         ],
     },
     {
-        label: "Billing / Inventory",
+        label: "Finance",
+        icon: "Wallet",
         items: [
             { title: "Invoices",   url: "/invoice",   icon: "Receipt",    permission: "app.add_invoice" },
+        ],
+    },
+    {
+        label: "Operations",
+        icon: "Wrench",
+        items: [
+            { title: "Assets",            url: "/asset",           icon: "Laptop",        permission: "app.add_asset",           feature: "assets" },
+            { title: "Asset Assignments", url: "/assetassignment", icon: "ClipboardList", permission: "app.add_assetassignment", feature: "assets" },
             { title: "Catalogue",  url: "/catalogue", icon: "Package",    permission: "app.add_catalogueitem" },
             { title: "Categories", url: "/category",  icon: "FolderTree", permission: "app.add_category" },
             { title: "Inventory",  url: "/inventory", icon: "Warehouse",  permission: "app.add_inventory",  feature: "inventory" },
@@ -24,21 +36,10 @@ const MENU_CONFIG = [
         ],
     },
     {
-        label: "Assets",
-        items: [
-            { title: "Assets",            url: "/asset",           icon: "Laptop",        permission: "app.add_asset",           feature: "assets" },
-            { title: "Asset Assignments", url: "/assetassignment", icon: "ClipboardList", permission: "app.add_assetassignment", feature: "assets" },
-        ],
-    },
-    {
-        label: "AI",
-        items: [
-            { title: "Chett AI", url: "/chett-ai", icon: "Bot", permission: "app.view_aiconversation", feature: "ai" },
-        ],
-    },
-    {
         label: "Communication",
+        icon: "MessageCircle",
         items: [
+            { title: "Chett AI",  url: "/chett-ai", icon: "Bot", permission: "app.view_aiconversation", feature: "ai" },
             { title: "Team Chat", url: "/chat", icon: "MessageCircle", feature: "chat" },
             { title: "Tasks",     url: "/task", icon: "ListTodo",      permission: "app.view_task", feature: "tasks" },
             { title: "Email Templates", url: "/email-template", icon: "Mail",      permission: "app.view_emailtemplate", feature: "email_campaigns" },
@@ -47,12 +48,13 @@ const MENU_CONFIG = [
     },
     {
         label: "Admin",
+        icon: "ShieldCheck",
         items: [
             { title: "Teams",       url: "/team",                icon: "Users2",            permission: "app.view_team",    feature: "teams" },
             { title: "Periods",     url: "/period",              icon: "CalendarRange",     permission: "app.view_period",  feature: "goals" },
             { title: "Goals",       url: "/goal",                icon: "Target",            permission: "app.view_goal",    feature: "goals" },
             { title: "Attributes",  url: "/attribute",           icon: "SlidersHorizontal", permission: "app.add_attribute" },
-            { title: "Lead Fields", url: "/attribute-pipeline",  icon: "SlidersHorizontal", permission: "app.add_pipeline" },
+            { title: "Lead Fields", url: "/attribute-pipeline",  icon: "FormInput",         permission: "app.add_pipeline" },
             { title: "Webhooks",    url: "/webhook",             icon: "Webhook",           permission: "app.add_webhook", feature: "webhooks" },
             { title: "Audit Log",   url: "/audit-log",           icon: "ClipboardList",     permission: "auth.add_user",   feature: "audit_trail" },
             { title: "Users",       url: "/users",               icon: "Users",             permission: "auth.add_user" },
@@ -62,6 +64,7 @@ const MENU_CONFIG = [
     },
     {
         label: "Account",
+        icon: "UserCircle2",
         items: [
             { title: "My Info", url: "/my-info", icon: "UserCircle2" },
         ],

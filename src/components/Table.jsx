@@ -422,7 +422,7 @@ export const Table = ({
   );
 };
 
-const RowActions = ({
+export const RowActions = ({
   row,
   onEdit,
   onToggle,

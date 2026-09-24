@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { getMyAIUsage } from "@/services/aiService";
 import { User, Building2, Bot, CheckCircle2, XCircle, Infinity } from "lucide-react";
+import { Card, CardHeader } from "@/components/SectionCard";
 
 const TIER_COLORS = {
     free_trial: { bg: "var(--card)", text: "var(--muted-foreground)", border: "var(--border)" },
@@ -22,44 +23,6 @@ const FEATURE_LABELS = {
     max_users:     "Max Users",
     max_pipelines: "Max Pipelines",
 };
-
-function Card({ children, style }) {
-    return (
-        <div
-            style={{
-                backgroundColor: "var(--card)",
-                border: "1px solid var(--border)",
-                borderRadius: "8px",
-                boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
-                ...style,
-            }}
-        >
-            {children}
-        </div>
-    );
-}
-
-function CardHeader({ icon: Icon, title, accentColor = "var(--secondary)" }) {
-    return (
-        <div
-            className="flex items-center gap-3 px-6 py-4 border-b"
-            style={{ borderColor: "var(--border)" }}
-        >
-            <div
-                className="flex h-8 w-8 items-center justify-center rounded-lg"
-                style={{ backgroundColor: accentColor }}
-            >
-                <Icon className="h-4 w-4 text-white" />
-            </div>
-            <h2
-                className="text-sm font-semibold"
-                style={{ color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
-            >
-                {title}
-            </h2>
-        </div>
-    );
-}
 
 function QuotaBar({ used, limit }) {
     const pct = limit > 0 ? Math.min((used / limit) * 100, 100) : 0;
@@ -149,7 +112,7 @@ export const MyInfo = () => {
 
             {/* ── Plan / Tier ── */}
             <Card>
-                <CardHeader icon={Building2} title="Current Plan" accentColor="var(--accent)" />
+                <CardHeader icon={Building2} title="Current Plan" accentColor="var(--accent)" iconColor="var(--primary-foreground)" />
                 <div className="px-6 py-5 space-y-4">
                     <div className="flex items-center gap-3">
                         <span
@@ -215,7 +178,7 @@ export const MyInfo = () => {
             {/* ── AI Usage ── */}
             {isFeatureEnabled("ai") && (
                 <Card>
-                    <CardHeader icon={Bot} title="Chett AI — Daily Quota" accentColor="var(--primary)" />
+                    <CardHeader icon={Bot} title="Chett AI — Daily Quota" accentColor="var(--primary)" iconColor="var(--primary-foreground)" />
                     <div className="px-6 py-5">
                         {usageLoading ? (
                             <div className="h-12 animate-pulse rounded" style={{ backgroundColor: "var(--border)" }} />
