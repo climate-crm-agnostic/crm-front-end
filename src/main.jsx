@@ -8,7 +8,7 @@ import { loadDeploymentTimeZone } from "./utils/tz.js";
 import "./index.css";
 
 // Load the deployment timezone once, before render, so dates format in the
-// deployment's zone from the first paint. Non-blocking fallback to UTC.
+// deployment's zone from the first paint. Non-blocking fallback to UTC..
 loadDeploymentTimeZone();
 
 createRoot(document.getElementById("root")).render(
