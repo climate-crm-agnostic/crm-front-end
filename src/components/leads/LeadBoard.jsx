@@ -14,6 +14,8 @@ import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
 import Swal from "sweetalert2";
 
+const LEADS_PAGE_SIZE = 25;
+
 const LEAD_MY_LEADS_STORAGE_KEY = 'lead_my_leads_only';
 const LEAD_SEARCH_STORAGE_KEY = 'lead_search_term';
 
@@ -36,6 +38,19 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
     const [lostModalOpen, setLostModalOpen] = useState(false);
     const [lostReason, setLostReason] = useState("");
     const [pendingLostLeadId, setPendingLostLeadId] = useState(null);
+
+    // Per-stage visible-card counts — a stage with hundreds of leads only
+    // renders LEADS_PAGE_SIZE at a time instead of the whole column at once.
+    const [visibleCounts, setVisibleCounts] = useState({});
+    const showMore = (stageName) => {
+        setVisibleCounts((prev) => ({ ...prev, [stageName]: (prev[stageName] ?? LEADS_PAGE_SIZE) + LEADS_PAGE_SIZE }));
+    };
+
+    // Filters/pipeline changed — collapse columns back to the first page
+    // rather than leaving stale "expanded" counts from a different view.
+    useEffect(() => {
+        setVisibleCounts({});
+    }, [selectedPipelineId, myLeadsOnly, searchTerm]);
 
     const scrollLeft = () => scrollContainerRef.current?.scrollBy({ left: -320, behavior: 'smooth' });
     const scrollRight = () => scrollContainerRef.current?.scrollBy({ left: 320, behavior: 'smooth' });
@@ -308,6 +323,9 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
                         if (index === 0 && !l.stage && !l.stage_id) return true;
                         return matchesStage;
                     });
+                    const visibleCount = visibleCounts[stage.name] ?? LEADS_PAGE_SIZE;
+                    const visibleStageLeads = stageLeads.slice(0, visibleCount);
+                    const remaining = stageLeads.length - visibleStageLeads.length;
 
                     return (
                         <div
@@ -352,7 +370,7 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
 
                             {/* Cards list */}
                             <div className="flex-1 p-2.5 overflow-y-auto space-y-2.5 min-h-[80px]">
-                                {stageLeads.map((lead) => (
+                                {visibleStageLeads.map((lead) => (
                                     <LeadCard
                                         key={lead.id}
                                         lead={lead}
@@ -375,6 +393,15 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
                                             Drop cards here
                                         </p>
                                     </div>
+                                )}
+                                {remaining > 0 && (
+                                    <button
+                                        onClick={() => showMore(stage.name)}
+                                        className="w-full py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                                        style={{ border: "1px dashed var(--border)", color: "var(--secondary-text)", backgroundColor: "var(--card)" }}
+                                    >
+                                        Load {Math.min(remaining, LEADS_PAGE_SIZE)} more ({remaining} left)
+                                    </button>
                                 )}
                             </div>
                         </div>
