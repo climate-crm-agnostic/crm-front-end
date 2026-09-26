@@ -52,6 +52,9 @@ import { EmailTemplates } from "../pages/Campaigns/EmailTemplates";
 import { CampaignList } from "../pages/Campaigns/CampaignList";
 import { Unsubscribe } from "../pages/Unsubscribe";
 import { ContractSign } from "../pages/ContractSign";
+import { ContractTemplatesPage } from "../pages/ContractTemplatesPage";
+import { ContractAIChat } from "../pages/ContractAIChat";
+import { ContractTemplateEditPage } from "../pages/ContractTemplateEditPage";
 import { QuotationDetail } from "../pages/QuotationDetail";
 import { Events } from "../pages/Events";
 import { EventCreate } from "../pages/EventCreate";
@@ -104,6 +107,9 @@ export const RouterApp = () => {
                 <Route path="lead/:id" element={<PermissionGuard requiredPermission="app.add_lead"><LeadDetail /></PermissionGuard>} />
                 <Route path="quotation/:id" element={<PermissionGuard requiredPermission="app.view_quotation"><QuotationDetail /></PermissionGuard>} />
                 <Route path="pipeline" element={<PermissionGuard requiredPermission="app.add_pipeline"><Pipeline /></PermissionGuard>} />
+                <Route path="pipeline/:pipelineId/contracts" element={<PermissionGuard requiredPermission="app.add_pipeline"><FeatureGate feature="contracts"><ContractTemplatesPage /></FeatureGate></PermissionGuard>} />
+                <Route path="pipeline/:pipelineId/contracts/ai" element={<PermissionGuard requiredPermission="app.add_pipeline"><FeatureGate feature="contracts"><ContractAIChat /></FeatureGate></PermissionGuard>} />
+                <Route path="pipeline/:pipelineId/contracts/:templateId/edit" element={<PermissionGuard requiredPermission="app.add_pipeline"><FeatureGate feature="contracts"><ContractTemplateEditPage /></FeatureGate></PermissionGuard>} />
                 <Route path="attribute" element={<PermissionGuard requiredPermission="app.add_attribute"><Attributes /></PermissionGuard>} />
                 <Route path="attribute-pipeline" element={<PermissionGuard requiredPermission="app.add_pipeline"><PipelineAttributesAdmin /></PermissionGuard>} />
                 <Route path="client" element={<PermissionGuard requiredPermission="app.add_client"><Client /></PermissionGuard>} />

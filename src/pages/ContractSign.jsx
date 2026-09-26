@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { FileSignature, CheckCircle2, XCircle, Clock } from "lucide-react";
 import { getPublicContract, submitSignature } from "../services/contractService";
 import { SignaturePad } from "../components/SignaturePad";
+import { ContractInlineFields } from "../components/ContractInlineFields";
 import { Button } from "../components/ui/button";
 import { Checkbox } from "../components/ui/checkbox";
 
@@ -46,6 +47,8 @@ export const ContractSign = () => {
             return;
         }
 
+        // The signer no longer fills in any fields — staff completes every
+        // {{field}} in the CRM before sending, so the signer just signs.
         setSubmitting(true);
         try {
             await submitSignature(token, { accepted: true, signatureImage: dataUrl });
@@ -108,31 +111,14 @@ export const ContractSign = () => {
                             </p>
                         </div>
 
-                        {contract.source === "template_ai" ? (
-                            <div
-                                className="mb-6 p-4 rounded-md max-h-72 overflow-y-auto text-sm space-y-3"
-                                style={{ backgroundColor: "#FBF7EF", border: "1px solid #D8D2C4", color: "#2E2A26" }}
-                            >
-                                {(contract.resolved_content || []).map((section, i) => (
-                                    <div key={i}>
-                                        <p className="font-semibold mb-1">{section.title}</p>
-                                        <p className="whitespace-pre-wrap" style={{ color: "#6b6560" }}>{section.body}</p>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            contract.file_url && (
-                                <a
-                                    href={contract.file_url}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="block text-center text-sm underline mb-6"
-                                    style={{ color: "#5E6A43" }}
-                                >
-                                    View document
-                                </a>
-                            )
-                        )}
+                        {/* The document is already final — staff filled every field in
+                            the CRM before sending. The signer just reviews and signs. */}
+                        <div
+                            className="mb-6 p-4 rounded-md max-h-72 overflow-y-auto text-sm"
+                            style={{ backgroundColor: "#FBF7EF", border: "1px solid #D8D2C4", color: "#2E2A26" }}
+                        >
+                            <ContractInlineFields sections={contract.resolved_content || []} readOnly />
+                        </div>
 
                         {error && (
                             <div className="p-3 mb-4 text-sm text-red-600 bg-red-50 rounded-md border border-red-200">

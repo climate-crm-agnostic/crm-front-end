@@ -1,8 +1,12 @@
 import { API_URL, getHeaders } from "./api";
 
-export const sendContractMessage = async (message, conversationId = null) => {
+export const sendContractMessage = async (message, conversationId = null, pipelineId = null) => {
     const body = { message };
     if (conversationId) body.conversation_id = conversationId;
+    // Contract templates belong to a pipeline (the AI/templates flow is a
+    // pipeline concern, not a Lead one), so the chat carries the pipeline it
+    // was launched from — the backend scopes the created template to it.
+    if (pipelineId) body.pipeline_id = pipelineId;
 
     const res = await fetch(`${API_URL}/contracts/ai/chat/`, {
         method: "POST",
@@ -11,36 +15,21 @@ export const sendContractMessage = async (message, conversationId = null) => {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || "AI request failed");
-    return data; // { conversation_id, conversation_name, assistant_message, draft_template_id? }
+    // { conversation_id, conversation_name, assistant_message,
+    //   draft_template_id? }  // draft_template_id set once the draft is finalized
+    return data;
 };
 
-export const getContractConversations = async () => {
-    const res = await fetch(`${API_URL}/contract-conversations/`, { headers: getHeaders() });
-    if (!res.ok) throw new Error("Failed to fetch conversations");
-    return res.json();
-};
-
-export const getContractConversation = async (id) => {
-    const res = await fetch(`${API_URL}/contract-conversations/${id}/`, { headers: getHeaders() });
-    if (!res.ok) throw new Error("Failed to fetch conversation");
-    return res.json();
-};
-
-export const renameContractConversation = async (id, name) => {
-    const res = await fetch(`${API_URL}/contract-conversations/${id}/`, {
-        method: "PATCH",
+// On-demand "draft so far" for the chat's Preview button. The backend replays
+// the conversation and forces the preview tool, so it works regardless of
+// whether the model volunteered a preview mid-chat. Returns { sections: [...] }.
+export const getContractDraftPreview = async (conversationId) => {
+    const res = await fetch(`${API_URL}/contracts/ai/preview/`, {
+        method: "POST",
         headers: getHeaders(),
-        body: JSON.stringify({ name }),
+        body: JSON.stringify({ conversation_id: conversationId }),
     });
-    if (!res.ok) throw new Error("Failed to rename conversation");
-    return res.json();
-};
-
-export const deleteContractConversation = async (id) => {
-    const res = await fetch(`${API_URL}/contract-conversations/${id}/`, {
-        method: "DELETE",
-        headers: getHeaders(),
-    });
-    if (!res.ok) throw new Error("Failed to delete conversation");
-    return true;
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "Preview request failed");
+    return data;
 };

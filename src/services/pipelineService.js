@@ -7,6 +7,15 @@ export const getPipelines = async () => {
     });
 };
 
+export const getPipeline = async (id) => {
+    const res = await fetch(`${API_URL}/pipelines/${id}/`, {
+        method: "GET",
+        headers: getHeaders(),
+    });
+    if (!res.ok) throw new Error("Error fetching pipeline");
+    return res.json();
+};
+
 export const updatePipeline = async (id, pipelineData) => {
     const res = await fetch(`${API_URL}/pipelines/${id}/`, {
         method: "PUT",

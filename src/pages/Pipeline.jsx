@@ -10,7 +10,9 @@ import {
     CONDITION_UNARY_OPERATORS, attributeForConditionField,
     conditionOperatorLabel, conditionOperatorsFor,
 } from "../utils/conditionOperators";
-import { Plus, Edit2, Columns, ChevronDown, ChevronUp, Trash2, SlidersHorizontal, ShieldCheck } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Plus, Edit2, Columns, ChevronDown, ChevronUp, Trash2, SlidersHorizontal, ShieldCheck, FileSignature } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 import { ATTRIBUTE_TYPES } from "../utils/attributeTypes";
 
 const FONT = '"Source Sans 3", Arial, sans-serif';
@@ -486,6 +488,8 @@ function ValidationRuleManager({ pipeline }) {
 }
 
 export const Pipeline = () => {
+    const navigate = useNavigate();
+    const { isFeatureEnabled } = useAuth();
     const [pipelines, setPipelines] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -604,7 +608,7 @@ export const Pipeline = () => {
                             <div className="space-y-2">
                                 <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: HINT }}>Stages</p>
                                 <div className="flex flex-wrap gap-1.5">
-                                    {pipeline.stages?.sort((a, b) => a.order - b.order).map((stage) => {
+                                    {[...(pipeline.stages || [])].sort((a, b) => a.order - b.order).map((stage) => {
                                         const bg = stage.color || PEBBLE;
                                         const fg = textColorForBg(bg);
                                         return (
@@ -641,6 +645,22 @@ export const Pipeline = () => {
                                     Stage Rules
                                     {expandedRulesId === pipeline.id ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                                 </button>
+
+                                {/* Only pipelines that actually keep the "Contract" stage can
+                                    have contracts (the auto-create signal fires on that stage),
+                                    so the templates admin is hidden for pipelines that dropped it. */}
+                                {isFeatureEnabled("contracts")
+                                    && (pipeline.stages || []).some((s) => (s?.name || "").trim().toLowerCase() === "contract") && (
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); navigate(`/pipeline/${pipeline.id}/contracts`); }}
+                                        className="flex items-center gap-1.5 text-xs font-semibold transition-colors"
+                                        style={{ background: "none", border: "none", cursor: "pointer", color: HINT, fontFamily: FONT, padding: 0 }}
+                                        title="Manage contract templates for this pipeline"
+                                    >
+                                        <FileSignature size={12} />
+                                        Contract Templates
+                                    </button>
+                                )}
                             </div>
 
                             {/* Expandable attribute manager */}
@@ -658,7 +678,11 @@ export const Pipeline = () => {
             )}
 
             <PipelineModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-                <PipelineForm initialData={editingPipeline} onPipelineSaved={handleSaved} />
+                <PipelineForm
+                    key={editingPipeline?.id || "new"}
+                    initialData={editingPipeline}
+                    onPipelineSaved={handleSaved}
+                />
             </PipelineModal>
         </div>
     );

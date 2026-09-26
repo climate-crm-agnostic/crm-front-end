@@ -1,11 +1,25 @@
 import React, { useState, useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { createPipeline, updatePipeline } from "../../services/pipelineService";
-import { Plus, Trash2, Save, GripVertical } from "lucide-react";
+import { Plus, Trash2, Save, GripVertical, FileSignature, Check } from "lucide-react";
+
+const isReserved = (name) => {
+    const n = (name || "").trim().toLowerCase();
+    return n === "won" || n === "lost";
+};
+const isContractStage = (name) => (name || "").trim().toLowerCase() === "contract";
+
+const CONTRACT_COLOR = "#F29B6B";
 
 export const PipelineForm = ({ onPipelineSaved, initialData = null }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
+
+    // The "Contract" stage is optional and reserved-by-name: it's toggled on/off
+    // here, not typed as a free stage. Won/Lost are never shown — the backend
+    // always re-appends them. Default ON for new pipelines (mirrors the backend
+    // create() default).
+    const [hasContractStage, setHasContractStage] = useState(true);
 
     const { register, control, handleSubmit, reset, formState: { errors } } = useForm({
         defaultValues: {
@@ -19,9 +33,17 @@ export const PipelineForm = ({ onPipelineSaved, initialData = null }) => {
 
     useEffect(() => {
         if (initialData) {
+            const allStages = initialData.stages || [];
+            // Won/Lost are auto-managed by the backend — never editable here.
+            // "Contract" is optional and controlled by its own toggle, so it's
+            // kept out of the editable rows too.
+            const userStages = allStages.filter(
+                (s) => !isReserved(s.name) && !isContractStage(s.name)
+            );
+            setHasContractStage(allStages.some((s) => isContractStage(s.name)));
             reset({
                 name: initialData.name,
-                stages: initialData.stages || []
+                stages: userStages,
             });
         }
     }, [initialData, reset]);
@@ -35,14 +57,25 @@ export const PipelineForm = ({ onPipelineSaved, initialData = null }) => {
         setIsLoading(true);
         setError(null);
         try {
-            // Ensure orders are correct 
-            const formattedData = {
-                ...data,
-                stages: data.stages.map(({ id, ...stage }, index) => ({
-                    ...stage,
-                    order: index + 1
-                }))
-            };
+            // Rebuild the ordered stage list from the user's rows, then append
+            // the optional "Contract" stage if it's toggled on. Won/Lost are
+            // added by the backend (pipelines_serializer). Drop existing ids so
+            // orders are recomputed cleanly by index.
+            const userStages = data.stages.map((stage, index) => {
+                const { id: _id, ...rest } = stage;
+                void _id;
+                return { ...rest, order: index + 1 };
+            });
+
+            if (hasContractStage) {
+                userStages.push({
+                    name: "Contract",
+                    color: CONTRACT_COLOR,
+                    order: userStages.length + 1,
+                });
+            }
+
+            const formattedData = { ...data, stages: userStages };
 
             if (initialData && initialData.id) {
                 await updatePipeline(initialData.id, formattedData);
@@ -98,7 +131,10 @@ export const PipelineForm = ({ onPipelineSaved, initialData = null }) => {
                                             validate: (value) => {
                                                 const lower = value.toLowerCase();
                                                 if (lower === 'won' || lower === 'lost') {
-                                                    return "Stage name cannot be 'Won' or 'Lost'";
+                                                    return "Stage name cannot be 'Won' or 'Lost' (added automatically)";
+                                                }
+                                                if (lower === 'contract') {
+                                                    return "Use the Contract stage toggle below instead of a stage named 'Contract'";
                                                 }
                                                 return true;
                                             }
@@ -128,6 +164,68 @@ export const PipelineForm = ({ onPipelineSaved, initialData = null }) => {
                             </div>
                         ))}
                     </div>
+
+                    {/* Optional reserved "Contract" stage. On new pipelines it's
+                        always added by default (backend); on edit it can be
+                        toggled off to remove it. When present, a contract must
+                        be created before a lead can be marked Won. */}
+                    {initialData ? (
+                        <div
+                            className="flex items-center justify-between gap-3 p-3 rounded-md border transition-colors"
+                            style={hasContractStage
+                                ? { borderColor: CONTRACT_COLOR, backgroundColor: "color-mix(in srgb, " + CONTRACT_COLOR + " 12%, transparent)" }
+                                : { borderColor: "var(--border)", backgroundColor: "var(--muted)" }}
+                        >
+                            <div className="flex items-center gap-2 min-w-0">
+                                <span className="inline-block w-3 h-3 rounded-sm shrink-0" style={{ backgroundColor: CONTRACT_COLOR }} />
+                                <FileSignature size={16} className="text-muted-foreground shrink-0" />
+                                <div className="min-w-0">
+                                    <div className="flex items-center gap-2">
+                                        <p className="text-sm font-medium text-foreground">Contract stage</p>
+                                        {hasContractStage ? (
+                                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                                                style={{ backgroundColor: CONTRACT_COLOR, color: "#fff" }}>
+                                                <Check size={10} /> Enabled
+                                            </span>
+                                        ) : (
+                                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-muted-foreground/15 text-muted-foreground">
+                                                Off
+                                            </span>
+                                        )}
+                                    </div>
+                                    <p className="text-[11px] text-muted-foreground">
+                                        A reserved “Contract” stage before Won. When enabled, a contract must be created before a lead can be won.
+                                    </p>
+                                </div>
+                            </div>
+                            {hasContractStage ? (
+                                <button
+                                    type="button"
+                                    onClick={() => setHasContractStage(false)}
+                                    className="shrink-0 inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-md border border-border text-muted-foreground hover:text-destructive hover:border-destructive transition-colors cursor-pointer"
+                                >
+                                    <Trash2 size={14} /> Remove
+                                </button>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={() => setHasContractStage(true)}
+                                    className="shrink-0 inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-md text-white transition-opacity hover:opacity-90 cursor-pointer"
+                                    style={{ backgroundColor: CONTRACT_COLOR }}
+                                >
+                                    <Plus size={14} /> Add Contract stage
+                                </button>
+                            )}
+                        </div>
+                    ) : (
+                        <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+                            <FileSignature size={12} />
+                            A “Contract” stage is added automatically (removable later by editing the pipeline).
+                        </p>
+                    )}
+                    <p className="text-[11px] text-muted-foreground">
+                        “Won” and “Lost” stages are always added automatically and can’t be edited here.
+                    </p>
                 </div>
 
                 {error && <div className="p-3 bg-destructive/10 text-destructive text-sm rounded-md">{error}</div>}
@@ -138,7 +236,7 @@ export const PipelineForm = ({ onPipelineSaved, initialData = null }) => {
                         disabled={isLoading}
                         className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2 rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                     >
-                        {isLoading ? "Creating..." : <><Save size={18} /> Create Pipeline</>}
+                        {isLoading ? "Saving..." : <><Save size={18} /> {initialData ? "Save Pipeline" : "Create Pipeline"}</>}
                     </button>
                 </div>
             </form>
