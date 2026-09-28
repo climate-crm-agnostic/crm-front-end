@@ -1,8 +1,142 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import * as XLSX from "xlsx";
+import {
+    ResponsiveContainer, BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
+    XAxis, YAxis, Tooltip, CartesianGrid, Legend,
+} from "recharts";
 import {
     sendMessage, getConversations, getConversation,
     renameConversation, deleteConversation,
 } from "../services/aiService";
+
+// Palette for report charts (olive-forward, matches the brand).
+const CHART_COLORS = ["#5E6A43", "#B0592E", "#2f9e3a", "#9b7a2e", "#4a5535", "#C9A227", "#6b6560", "#3CC647"];
+
+// Starter prompts shown as clickable chips on the empty chat. Clicking one
+// sends it immediately. They showcase reports, chart-only, and table-only.
+const SUGGESTIONS = [
+    "Give me a report of leads by stage",
+    "Total invoiced amount per client",
+    "Invoices by status — chart only",
+    "Invoices created per month as a line chart",
+    "Services by status — table only",
+];
+
+// Subtle "explore more" prompts shown under each answer so the user can keep
+// digging without thinking of the next question.
+const FOLLOWUPS = [
+    "Top clients by revenue",
+    "Leads by stage — chart only",
+    "Overdue invoices",
+];
+
+// Renders a single report inside an assistant message: an optional chart, the
+// data table, an Export to Excel button, and a note when the dataset was
+// capped at the row limit. SQL is never shown.
+export function ReportBlock({ report }) {
+    const { title, columns = [], rows = [], truncated, row_cap, chart_spec, display = "both" } = report || {};
+    if (!columns.length) return null;
+
+    const hasChart = !!(chart_spec && chart_spec.x && chart_spec.y);
+    // What to show. 'chart' with no usable chart falls back to the table so the
+    // block is never empty.
+    const mode = display === "chart" && !hasChart ? "both" : display;
+    const showChart = (mode === "chart" || mode === "both") && hasChart;
+    const showTable = mode === "table" || mode === "both";
+
+    const exportExcel = () => {
+        const aoa = [columns, ...rows.map((r) => columns.map((c) => r[c]))];
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, (title || "Report").slice(0, 31));
+        const safe = (title || "report").replace(/[^a-z0-9]+/gi, "_").toLowerCase();
+        XLSX.writeFile(wb, `${safe}.xlsx`);
+    };
+
+    const renderChart = () => {
+        if (!chart_spec || !chart_spec.x || !chart_spec.y) return null;
+        const { type, x, y } = chart_spec;
+        const data = rows.map((r) => ({ ...r, [y]: Number(r[y]) })).filter((r) => !isNaN(r[y]));
+        if (!data.length) return null;
+        return (
+            <div style={{ width: "100%", height: 240, marginBottom: 10 }}>
+                <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+                    {type === "pie" ? (
+                        <PieChart>
+                            <Pie data={data} dataKey={y} nameKey={x} outerRadius={85} label>
+                                {data.map((_, idx) => <Cell key={idx} fill={CHART_COLORS[idx % CHART_COLORS.length]} />)}
+                            </Pie>
+                            <Tooltip />
+                            <Legend />
+                        </PieChart>
+                    ) : type === "line" ? (
+                        <LineChart data={data} margin={{ top: 5, right: 12, bottom: 5, left: -8 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#E7E1D4" />
+                            <XAxis dataKey={x} tick={{ fontSize: 11 }} />
+                            <YAxis tick={{ fontSize: 11 }} />
+                            <Tooltip />
+                            <Line type="linear" dataKey={y} stroke={CHART_COLORS[0]} strokeWidth={2} dot={{ r: 3 }} />
+                        </LineChart>
+                    ) : (
+                        <BarChart data={data} margin={{ top: 5, right: 12, bottom: 5, left: -8 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#E7E1D4" />
+                            <XAxis dataKey={x} tick={{ fontSize: 11 }} />
+                            <YAxis tick={{ fontSize: 11 }} />
+                            <Tooltip />
+                            <Bar dataKey={y} fill={CHART_COLORS[0]} />
+                        </BarChart>
+                    )}
+                </ResponsiveContainer>
+            </div>
+        );
+    };
+
+    return (
+        <div style={{ marginTop: 12, border: "1px solid var(--border)", borderRadius: 10, overflow: "hidden", background: "var(--background)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "9px 12px", background: "var(--muted)", borderBottom: "1px solid var(--border)" }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "var(--foreground)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{title || "Report"}</span>
+                <button
+                    onClick={exportExcel}
+                    style={{ flexShrink: 0, fontSize: 12, fontWeight: 600, color: "#FBF7EF", background: "#5E6A43", border: "none", borderRadius: 6, padding: "6px 12px", cursor: "pointer" }}
+                >
+                    Export to Excel
+                </button>
+            </div>
+            <div style={{ padding: 12 }}>
+                {showChart && renderChart()}
+                {showTable && (
+                    <div style={{ maxHeight: 320, overflow: "auto", border: "1px solid var(--border)", borderRadius: 6 }}>
+                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5 }}>
+                            <thead>
+                                <tr style={{ background: "#5E6A43" }}>
+                                    {columns.map((c) => (
+                                        <th key={c} style={{ color: "#FBF7EF", textAlign: "left", padding: "7px 10px", position: "sticky", top: 0, background: "#5E6A43", whiteSpace: "nowrap" }}>{c}</th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {rows.map((r, ri) => (
+                                    <tr key={ri} style={{ borderBottom: "1px solid var(--border)" }}>
+                                        {columns.map((c) => (
+                                            <td key={c} style={{ padding: "6px 10px", color: "var(--foreground)", whiteSpace: "nowrap" }}>
+                                                {r[c] === null || r[c] === undefined ? "—" : String(r[c])}
+                                            </td>
+                                        ))}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+                {showTable && truncated && (
+                    <p style={{ margin: "8px 2px 0", fontSize: 11.5, color: "var(--muted-foreground)" }}>
+                        Showing the first {row_cap?.toLocaleString?.() || row_cap} rows. Narrow your request (by date, status, etc.) to see a more specific set.
+                    </p>
+                )}
+            </div>
+        </div>
+    );
+}
 
 // ── Inline icons ──────────────────────────────────────────────────────────
 
@@ -221,12 +355,14 @@ const TypingDots = () => (
 
 // ── Message bubble ────────────────────────────────────────────────────────
 
-const Bubble = ({ role, content }) => {
+export const Bubble = ({ role, content, reports }) => {
     const isUser = role === "user";
+    const hasReports = !isUser && Array.isArray(reports) && reports.length > 0;
     return (
         <div className={`flex ${isUser ? "justify-end" : "justify-start"} mb-4`}>
             <div style={{
-                maxWidth: "72%",
+                maxWidth: hasReports ? "92%" : "72%",
+                width: hasReports ? "92%" : "auto",
                 padding: "10px 14px",
                 borderRadius: isUser ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
                 background: isUser ? "var(--primary)" : "var(--card)",
@@ -237,6 +373,7 @@ const Bubble = ({ role, content }) => {
                 boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
             }}>
                 {isUser ? content : <MarkdownContent text={content} />}
+                {hasReports && reports.map((rep, i) => <ReportBlock key={i} report={rep} />)}
             </div>
         </div>
     );
@@ -288,7 +425,7 @@ export const ChettAI = () => {
             const data = await getConversation(id);
             setConvId(data.id);
             setConvName(data.name);
-            setMessages(data.messages.map(m => ({ role: m.role, content: m.content })));
+            setMessages(data.messages.map(m => ({ role: m.role, content: m.content, reports: m.reports || [] })));
         } catch { }
     }, [convId]);
 
@@ -299,8 +436,8 @@ export const ChettAI = () => {
         setTimeout(() => inputRef.current?.focus(), 50);
     }, []);
 
-    const handleSend = useCallback(async () => {
-        const text = input.trim();
+    const handleSend = useCallback(async (overrideText) => {
+        const text = (typeof overrideText === "string" ? overrideText : input).trim();
         if (!text || sending) return;
         setInput("");
         setMessages(prev => [...prev, { role: "user", content: text }]);
@@ -308,7 +445,7 @@ export const ChettAI = () => {
 
         try {
             const res = await sendMessage(text, convId);
-            setMessages(prev => [...prev, { role: "assistant", content: res.assistant_message }]);
+            setMessages(prev => [...prev, { role: "assistant", content: res.assistant_message, reports: res.reports || [], suggestions: res.suggestions || [] }]);
 
             if (!convId) {
                 // New conversation was auto-created
@@ -337,6 +474,9 @@ export const ChettAI = () => {
     const handleKeyDown = (e) => {
         if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
     };
+
+    // Suggestion chips shown on the empty state. Clicking one sends it right away.
+    const sendSuggestion = (text) => { setInput(""); handleSend(text); };
 
     const startRename = (conv, e) => {
         e.stopPropagation();
@@ -558,12 +698,76 @@ export const ChettAI = () => {
                                 <p style={{ fontSize: 12 }}>
                                     I can query clients, invoices, leads, services, and more.
                                 </p>
+                                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", maxWidth: 620, marginTop: 8 }}>
+                                    {SUGGESTIONS.map((s) => (
+                                        <button
+                                            key={s}
+                                            onClick={() => sendSuggestion(s)}
+                                            disabled={sending}
+                                            style={{
+                                                fontSize: 12.5, color: "var(--foreground)", background: "var(--card)",
+                                                border: "1px solid var(--border)", borderRadius: 999,
+                                                padding: "8px 14px", cursor: sending ? "default" : "pointer",
+                                                lineHeight: 1.2, transition: "background 0.15s",
+                                            }}
+                                            onMouseEnter={(e) => { if (!sending) e.currentTarget.style.background = "var(--muted)"; }}
+                                            onMouseLeave={(e) => (e.currentTarget.style.background = "var(--card)")}
+                                        >
+                                            {s}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                         )}
 
                         {messages.map((m, i) => (
-                            <Bubble key={i} role={m.role} content={m.content} />
+                            <Bubble key={i} role={m.role} content={m.content} reports={m.reports} />
                         ))}
+
+                        {/* Suggestions under the latest answer. If the AI attached
+                            clarifying-question options (suggestions), show those as
+                            prominent chips; otherwise show the subtle "Try next" set. */}
+                        {(() => {
+                            if (sending || messages.length === 0) return null;
+                            const last = messages[messages.length - 1];
+                            if (last.role !== "assistant") return null;
+                            const clarifying = Array.isArray(last.suggestions) && last.suggestions.length > 0;
+                            const chips = clarifying ? last.suggestions : FOLLOWUPS;
+                            return (
+                                <div className="flex justify-start mb-4">
+                                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, maxWidth: "92%", paddingLeft: 2 }}>
+                                        <span style={{ fontSize: 11, color: "var(--muted-foreground)", alignSelf: "center", marginRight: 2 }}>
+                                            {clarifying ? "Pick one:" : "Try next:"}
+                                        </span>
+                                        {chips.map((s) => (
+                                            <button
+                                                key={s}
+                                                onClick={() => sendSuggestion(s)}
+                                                style={clarifying ? {
+                                                    fontSize: 12, fontWeight: 600, color: "#FBF7EF", background: "#5E6A43",
+                                                    border: "1px solid #5E6A43", borderRadius: 999,
+                                                    padding: "6px 13px", cursor: "pointer", lineHeight: 1.2,
+                                                } : {
+                                                    fontSize: 11.5, color: "var(--muted-foreground)", background: "transparent",
+                                                    border: "1px dashed var(--border)", borderRadius: 999,
+                                                    padding: "5px 11px", cursor: "pointer", lineHeight: 1.2, transition: "all 0.15s",
+                                                }}
+                                                onMouseEnter={(e) => {
+                                                    if (clarifying) { e.currentTarget.style.background = "#4a5535"; }
+                                                    else { e.currentTarget.style.background = "var(--muted)"; e.currentTarget.style.color = "var(--foreground)"; e.currentTarget.style.borderStyle = "solid"; }
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    if (clarifying) { e.currentTarget.style.background = "#5E6A43"; }
+                                                    else { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--muted-foreground)"; e.currentTarget.style.borderStyle = "dashed"; }
+                                                }}
+                                            >
+                                                {s}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            );
+                        })()}
 
                         {sending && (
                             <div className="flex justify-start mb-4">
