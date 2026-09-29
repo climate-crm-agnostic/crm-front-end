@@ -69,7 +69,7 @@ export const ApiGuide = () => {
         </div>
     );
 
-    const tabs = ['leads','clients','contacts','services','pipelines','followups','catalogue','invoices','assets','attributes','webhooks','files'];
+    const tabs = ['leads','clients','contacts','services','pipelines','followups','catalogue','invoices','payables','assets','attributes','webhooks','files'];
 
     return (
         <div className="min-h-screen p-6 md:p-12" style={{ backgroundColor: "var(--background)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
@@ -317,6 +317,60 @@ export const ApiGuide = () => {
                                         <><code>description</code>: Specific details of what is being charged.</>,
                                         <><code>quantity</code> &amp; <code>unit_price</code>: Used to calculate line subtotal.</>,
                                         <><code>tax_rate</code>: Tax percentage for this specific line.</>,
+                                    ]} />
+                                </>)}
+
+                                {activeTab === 'payables' && (<>
+                                    <SectionTitle>Accounts Payable</SectionTitle>
+                                    <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
+                                        Bills received from suppliers and the payments that settle them. Requires the Accounts Payable plan feature.
+                                    </p>
+                                    <EndpointBlock method="GET" path="/api/supplier-bills/" description="List supplier bills. Filters: supplier, status, currency, bill_number, payable=true, overdue=true, due_from, due_to, issue_from, issue_to (YYYY-MM-DD)." />
+                                    <EndpointBlock method="POST" path="/api/supplier-bills/" description="Record a bill. total = subtotal + tax_amount - discount is computed by the server.">
+                                        <CopyBlock text={`{ "supplier": "supplier-uuid", "bill_number": "INV-4411", "issue_date": "2026-09-01", "due_date": "2026-10-01", "currency": "USD", "subtotal": "1000.00", "tax_amount": "130.00", "status": "open" }`} />
+                                    </EndpointBlock>
+                                    <EndpointBlock method="POST" path="/api/supplier-bills/{bill_uuid}/line-items/" description="Optional detail lines. Once a bill has lines, its subtotal and tax come from them.">
+                                        <CopyBlock text={`{ "description": "Steel bolts", "quantity": "100", "unit_price": "2.50", "tax_rate": "13", "catalogue_item": null }`} />
+                                    </EndpointBlock>
+                                    <EndpointBlock method="GET" path="/api/supplier-bills/{uuid}/payments/" description="Payments applied to this bill." />
+                                    <EndpointBlock method="POST" path="/api/supplier-bills/{uuid}/void/" description="Void a bill (it must have no payments applied). A reason is required. Only draft bills can be deleted.">
+                                        <CopyBlock text={`{ "reason": "Entered twice" }`} />
+                                    </EndpointBlock>
+                                    <EndpointBlock method="POST" path="/api/supplier-payments/" description="Record a payment. Split it across bills with allocations, or send auto_allocate: true to settle the oldest due bills first. Whatever is not applied stays on the supplier's account as credit.">
+                                        <CopyBlock text={`{
+  "supplier": "supplier-uuid",
+  "payment_date": "2026-09-29",
+  "amount": "1500.00",
+  "currency": "USD",
+  "method": "bank_transfer",
+  "reference": "WIRE-8812",
+  "allocations": [
+    { "bill": "bill-uuid-1", "amount": "1130.00" },
+    { "bill": "bill-uuid-2", "amount": "370.00" }
+  ]
+}`} />
+                                    </EndpointBlock>
+                                    <EndpointBlock method="POST" path="/api/supplier-payments/{uuid}/apply-credit/" description="Apply unapplied credit from a payment to a bill.">
+                                        <CopyBlock text={`{ "bill": "bill-uuid", "amount": "120.00" }`} />
+                                    </EndpointBlock>
+                                    <EndpointBlock method="POST" path="/api/supplier-payments/{uuid}/void/" description="Void a payment. The bills it settled go back to open / partially paid.">
+                                        <CopyBlock text={`{ "reason": "Transfer bounced" }`} />
+                                    </EndpointBlock>
+                                    <EndpointBlock method="GET" path="/api/suppliers/{uuid}/balance/" description="Per currency: open balance, overdue balance and unapplied credit." />
+                                    <EndpointBlock method="GET" path="/api/suppliers/{uuid}/statement/?date_from=&date_to=" description="Statement with opening balance, bills (charges), payments and running balance. Add export=excel for an .xlsx file." />
+                                    <EndpointBlock method="GET" path="/api/accounts-payable/aging/?as_of=&supplier=" description="Open balances by supplier in current, 1-30, 31-60, 61-90 and 90+ days past due. Add export=excel for an .xlsx file." />
+                                    <EndpointBlock method="GET" path="/api/accounts-payable/summary/?within_days=7" description="Totals per currency: owed, overdue and due within the next N days." />
+                                    <p className="text-sm font-semibold mt-4" style={{ color: "var(--foreground)" }}>Rules</p>
+                                    <InfoBlock title="Bill statuses" color="var(--secondary-text)" items={[
+                                        <><code>draft</code> and <code>open</code> are set by you; only open bills receive payments.</>,
+                                        <><code>partially_paid</code> and <code>paid</code> follow from the payments applied.</>,
+                                        <><code>void</code> is set only through the void action. Overdue is computed from <code>due_date</code>, never stored.</>,
+                                    ]} />
+                                    <InfoBlock title="Payments" color="var(--accent)" items={[
+                                        <>An amount applied to a bill can't exceed its balance, and allocations can't exceed the payment.</>,
+                                        <>Bill and payment must belong to the same supplier and currency.</>,
+                                        <>A recorded payment's supplier, amount, currency and date can't change: void it and record it again.</>,
+                                        <>Rule violations return <code>400</code> with the field and message.</>,
                                     ]} />
                                 </>)}
 

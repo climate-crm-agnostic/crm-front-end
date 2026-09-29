@@ -21,6 +21,9 @@ const MENU_CONFIG = [
         icon: "Wallet",
         items: [
             { title: "Invoices",   url: "/invoice",   icon: "Receipt",    permission: "app.add_invoice" },
+            { title: "Accounts Payable",  url: "/supplier-bill",    icon: "FileInput", permission: "app.view_supplierbill",    feature: "accounts_payable" },
+            { title: "Supplier Payments", url: "/supplier-payment", icon: "HandCoins", permission: "app.view_supplierpayment", feature: "accounts_payable" },
+            { title: "Payables Aging",    url: "/payables-aging",   icon: "CalendarClock", permission: "app.view_supplierbill", feature: "accounts_payable" },
         ],
     },
     {

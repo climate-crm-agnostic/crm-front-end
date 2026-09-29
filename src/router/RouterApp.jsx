@@ -28,6 +28,12 @@ import { Asset } from "../pages/Asset";
 import { AssetDetail } from "../pages/AssetDetail";
 import { Supplier } from "../pages/Supplier";
 import { SupplierDetail } from "../pages/SupplierDetail";
+import { SupplierBills } from "../pages/SupplierBills";
+import { SupplierBillDetail } from "../pages/SupplierBillDetail";
+import { SupplierPayments } from "../pages/SupplierPayments";
+import { SupplierPaymentDetail } from "../pages/SupplierPaymentDetail";
+import { SupplierAccount } from "../pages/SupplierAccount";
+import { PayablesAging } from "../pages/PayablesAging";
 import { AssetAssignment } from "../pages/AssetAssignment";
 import { AssetAssignmentDetail } from "../pages/AssetAssignmentDetail";
 import { WebhookList } from "../pages/Webhooks/WebhookList";
@@ -130,6 +136,12 @@ export const RouterApp = () => {
                 <Route path="asset/:id" element={<PermissionGuard requiredPermission="app.add_asset"><FeatureGate feature="assets"><AssetDetail /></FeatureGate></PermissionGuard>} />
                 <Route path="supplier" element={<PermissionGuard requiredPermission="app.add_supplier"><Supplier /></PermissionGuard>} />
                 <Route path="supplier/:id" element={<PermissionGuard requiredPermission="app.add_supplier"><SupplierDetail /></PermissionGuard>} />
+                <Route path="supplier-bill" element={<PermissionGuard requiredPermission="app.view_supplierbill"><FeatureGate feature="accounts_payable"><SupplierBills /></FeatureGate></PermissionGuard>} />
+                <Route path="supplier-bill/:id" element={<PermissionGuard requiredPermission="app.view_supplierbill"><FeatureGate feature="accounts_payable"><SupplierBillDetail /></FeatureGate></PermissionGuard>} />
+                <Route path="supplier-payment" element={<PermissionGuard requiredPermission="app.view_supplierpayment"><FeatureGate feature="accounts_payable"><SupplierPayments /></FeatureGate></PermissionGuard>} />
+                <Route path="supplier/:id/account" element={<PermissionGuard requiredPermission="app.view_supplierbill"><FeatureGate feature="accounts_payable"><SupplierAccount /></FeatureGate></PermissionGuard>} />
+                <Route path="payables-aging" element={<PermissionGuard requiredPermission="app.view_supplierbill"><FeatureGate feature="accounts_payable"><PayablesAging /></FeatureGate></PermissionGuard>} />
+                <Route path="supplier-payment/:id" element={<PermissionGuard requiredPermission="app.view_supplierpayment"><FeatureGate feature="accounts_payable"><SupplierPaymentDetail /></FeatureGate></PermissionGuard>} />
                 <Route path="assetassignment" element={<PermissionGuard requiredPermission="app.add_assetassignment"><FeatureGate feature="assets"><AssetAssignment /></FeatureGate></PermissionGuard>} />
                 <Route path="assetassignment/:id" element={<PermissionGuard requiredPermission="app.add_assetassignment"><FeatureGate feature="assets"><AssetAssignmentDetail /></FeatureGate></PermissionGuard>} />
                 <Route path="followup" element={<PermissionGuard requiredPermission="app.add_followup"><Followup /></PermissionGuard>} />

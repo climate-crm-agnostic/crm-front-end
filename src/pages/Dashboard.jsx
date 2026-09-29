@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { PayablesWidget } from "../components/payables/PayablesWidget";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { API_URL, getHeaders, fetchAllPages } from "@/services/api";
@@ -487,6 +488,8 @@ export const Dashboard = () => {
     const { user, isFeatureEnabled } = useAuth();
     const canSeeChett = isFeatureEnabled("ai") &&
         (user?.is_superuser === true || (user?.permissions || []).includes("app.view_aiconversation"));
+    const canSeePayables = isFeatureEnabled("accounts_payable") &&
+        (user?.is_superuser === true || (user?.permissions || []).includes("app.view_supplierbill"));
     const navigate = useNavigate();
     const [counts, setCounts] = useState({ leads: null, clients: null, invoices: null, assets: null });
     const [loading, setLoading] = useState(true);
@@ -696,6 +699,8 @@ export const Dashboard = () => {
                         ))}
                     </div>
                 </section>
+
+                {canSeePayables && <PayablesWidget navigate={navigate} />}
 
                 {/* Leads by Pipeline */}
                 {(reportLoading || reportRaw.pipelines.length > 0) && (

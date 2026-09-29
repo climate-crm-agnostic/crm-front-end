@@ -9,7 +9,9 @@ import {
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Button } from "../components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Wallet } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { useCan } from "../components/payables/payablesUi";
 import { DynamicAttributeField } from "../components/attributes/DynamicAttributeField";
 import { coerceAttributeValue, emptyValueFor, normalizeOptions } from "../utils/attributeTypes";
 
@@ -17,6 +19,11 @@ export const SupplierDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const isNew = id === 'new';
+
+    // Link to the accounts-payable view of this supplier, when the plan and role allow it.
+    const { isFeatureEnabled } = useAuth();
+    const can = useCan();
+    const showAccount = !isNew && isFeatureEnabled("accounts_payable") && can("app.view_supplierbill");
 
     const [attributes, setAttributes] = useState([]);
     const [dynamicData, setDynamicData] = useState({});
@@ -160,6 +167,11 @@ export const SupplierDetail = () => {
                     </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
+                    {showAccount && (
+                        <Button variant="outline" onClick={() => navigate(`/supplier/${id}/account`)}>
+                            <Wallet className="h-4 w-4 mr-2" /> Account
+                        </Button>
+                    )}
                     <Button variant="outline" onClick={() => navigate(-1)}>Cancel</Button>
                     <Button onClick={handleSubmit} disabled={loading}>
                         {loading ? "Saving..." : "Save Supplier"}
