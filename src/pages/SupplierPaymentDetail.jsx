@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Swal } from "../components/payables/payablesUi";
+import { HelpNote } from "../components/payables/HelpNote";
 import { ArrowLeft, Ban, Wand2 } from "lucide-react";
 
 import { Input } from "../components/ui/input";
@@ -153,23 +154,51 @@ const NewSupplierPayment = () => {
 
     const rowError = (bill) => {
         const v = Number(applied[bill.id]);
-        if (!applied[bill.id]) return null;
+        if (!applied[bill.id] || v === 0) return null;
         if (!(v > 0)) return "Must be more than zero";
         if (cents(v) > Number(bill.balance_due)) return `Max ${money(bill.currency, bill.balance_due)}`;
         return null;
     };
     const hasRowErrors = currencyBills.some(rowError);
 
+    // Spread `total` over the given bills, oldest due date first, never more
+    // than a bill's balance. Whatever doesn't fit is left as credit.
+    const distribute = (total, billIds) => {
+        let remaining = cents(total);
+        const next = {};
+        currencyBills
+            .filter((b) => billIds.includes(b.id))
+            .forEach((b) => {
+                const take = Math.max(0, Math.min(remaining, Number(b.balance_due)));
+                next[b.id] = String(cents(take));
+                remaining = cents(remaining - take);
+            });
+        return next;
+    };
+
     const toggleBill = (bill, checked) => {
-        setApplied((prev) => {
-            const next = { ...prev };
-            if (!checked) { delete next[bill.id]; return next; }
-            // Fill with what is left of the payment, or the whole balance.
-            const remaining = amountTouched ? cents(form.amount) - appliedTotal : Infinity;
-            const take = Math.max(0, Math.min(Number(bill.balance_due), remaining));
-            next[bill.id] = take > 0 ? String(cents(take)) : String(bill.balance_due);
-            return next;
-        });
+        const ids = Object.keys(applied).filter((k) => k !== bill.id);
+        if (checked) ids.push(bill.id);
+        if (!amountTouched) {
+            // No amount typed yet: a checked bill is paid in full and the
+            // amount paid follows the total.
+            const next = { ...applied };
+            if (checked) next[bill.id] = String(bill.balance_due);
+            else delete next[bill.id];
+            setApplied(next);
+            return;
+        }
+        // Amount already typed: re-spread it over the checked bills.
+        setApplied(distribute(form.amount, ids));
+    };
+
+    // Typing the amount paid re-spreads it over the bills already checked, so
+    // "Apply" never silently keeps an amount larger than what was paid.
+    const handleAmountChange = (value) => {
+        setAmountTouched(value !== "");
+        set("amount")(value);
+        const ids = Object.keys(applied);
+        if (value !== "" && ids.length) setApplied(distribute(value, ids));
     };
 
     const applyInput = (bill) => {
@@ -179,7 +208,7 @@ const NewSupplierPayment = () => {
                 <Input
                     type="number" step="0.01" min="0"
                     className={`h-8 text-right ${err ? "border-destructive" : ""}`}
-                    placeholder="Amount to apply"
+                    placeholder="0.00"
                     value={applied[bill.id] ?? ""}
                     onChange={(e) => setApplied((prev) => {
                         const next = { ...prev };
@@ -189,20 +218,26 @@ const NewSupplierPayment = () => {
                     })}
                 />
                 {err && <p className="text-xs text-destructive mt-1">{err}</p>}
+                {rowOutcome(bill) && <p className={`text-xs mt-1 ${rowOutcome(bill).tone}`}>{rowOutcome(bill).text}</p>}
             </>
         );
     };
 
+    // Picks the bills itself: oldest due first until the money runs out.
     const autoApply = () => {
-        let remaining = cents(form.amount);
-        const next = {};
-        for (const bill of currencyBills) {
-            if (remaining <= 0) break;
-            const take = Math.min(remaining, Number(bill.balance_due));
-            next[bill.id] = String(cents(take));
-            remaining = cents(remaining - take);
-        }
-        setApplied(next);
+        const next = distribute(form.amount, currencyBills.map((b) => b.id));
+        setApplied(Object.fromEntries(Object.entries(next).filter(([, v]) => Number(v) > 0)));
+    };
+
+    // What happens to a bill with the amount currently applied to it.
+    const rowOutcome = (bill) => {
+        const v = cents(applied[bill.id]);
+        if (applied[bill.id] === undefined || rowError(bill)) return null;
+        if (!(v > 0)) return { text: "Nothing left to apply — raise the amount paid", tone: "text-muted-foreground" };
+        const left = cents(Number(bill.balance_due) - v);
+        return left <= 0
+            ? { text: "Pays this bill in full", tone: "text-secondary-text" }
+            : { text: `Partial payment · ${money(bill.currency, left)} still owed`, tone: "text-muted-foreground" };
     };
 
     const handleSubmit = async () => {
@@ -260,6 +295,13 @@ const NewSupplierPayment = () => {
             </PageHeader>
 
             <div className="flex-1 p-6 max-w-6xl mx-auto w-full space-y-6">
+                <HelpNote id="record-payment" items={[
+                        <><b>Amount paid</b> is the money that left your account (one transfer, check or cash payment).</>,
+                        <><b>Apply</b> is how much of that money settles each bill. A bill can be paid in several payments, and one payment can cover several bills.</>,
+                        <>Changing the amount paid spreads it again over the checked bills, oldest due date first. You can still type each amount by hand.</>,
+                        <>If you apply less than you paid, the rest stays as <b>credit</b> with the supplier and can be applied to a bill later.</>,
+                        <>You can't apply more than a bill still owes, or more than the amount paid. Only bills in the payment's currency are listed.</>,
+                    ]} />
                 {error && (
                     <div className="p-4 text-sm rounded-md border border-destructive/40 bg-destructive/10 text-destructive">{error}</div>
                 )}
@@ -291,8 +333,9 @@ const NewSupplierPayment = () => {
                                     id="amount" type="number" step="0.01" min="0"
                                     placeholder={appliedTotal > 0 ? appliedTotal.toFixed(2) : "0.00"}
                                     value={amountTouched ? form.amount : (appliedTotal > 0 ? appliedTotal.toFixed(2) : "")}
-                                    onChange={(e) => { setAmountTouched(e.target.value !== ""); set("amount")(e.target.value); }}
+                                    onChange={(e) => handleAmountChange(e.target.value)}
                                 />
+                                <p className="text-xs text-muted-foreground">The money that left your account in this transfer, check or cash payment.</p>
                             </div>
                             <div className="space-y-2">
                                 <Label>Method</Label>
@@ -322,12 +365,24 @@ const NewSupplierPayment = () => {
                             <span>{credit < 0 ? "Over-applied" : "Left as credit"}</span>
                             <span>{money(form.currency, Math.abs(credit))}</span>
                         </div>
+                        <p className={`text-xs ${credit < 0 ? "text-destructive" : "text-muted-foreground"}`}>
+                            {credit < 0
+                                ? "You are applying more than was paid. Lower the amounts in \"Apply\" or raise the amount paid."
+                                : credit > 0
+                                    ? "This part of the payment isn't used on any bill. It stays with the supplier as credit, and you can apply it to a bill later from the payment."
+                                    : amount > 0
+                                        ? "All the money paid goes to the selected bills."
+                                        : "Enter the amount paid, or check the bills you are paying."}
+                        </p>
                     </div>
                 </div>
 
                 <div className="bg-card p-6 rounded-lg border shadow-sm space-y-4">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-2">
-                        <h3 className="font-medium text-lg">Apply to bills</h3>
+                        <div>
+                            <h3 className="font-medium text-lg">Apply to bills</h3>
+                            <p className="text-xs text-muted-foreground">Check the bills this payment covers. &quot;Apply&quot; is how much of the payment goes to each one.</p>
+                        </div>
                         <Button
                             size="sm" variant="outline" onClick={autoApply}
                             disabled={!amountTouched || !(Number(form.amount) > 0) || currencyBills.length === 0}
@@ -377,7 +432,7 @@ const NewSupplierPayment = () => {
                                             <th className="py-2 px-2 font-medium">Due</th>
                                             <th className="py-2 px-2 font-medium text-right">Total</th>
                                             <th className="py-2 px-2 font-medium text-right">Balance</th>
-                                            <th className="py-2 pl-2 font-medium text-right w-40">Apply</th>
+                                            <th className="py-2 pl-2 font-medium text-right w-48">Apply</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -536,6 +591,11 @@ const ExistingSupplierPayment = ({ id }) => {
             </PageHeader>
 
             <div className="flex-1 p-6 max-w-6xl mx-auto w-full space-y-6">
+                <HelpNote id="payment-detail" items={[
+                    <>A recorded payment's supplier, amount, currency and date can't change. To correct them, void the payment and record it again.</>,
+                    <><b>Unapplied credit</b> is money paid but not yet used on a bill. Apply it below to any open bill of this supplier in the same currency.</>,
+                    <><b>Void</b> keeps the payment in the history but it no longer counts: the bills it settled go back to open or partially paid.</>,
+                ]} />
                 {error && (
                     <div className="p-4 text-sm rounded-md border border-destructive/40 bg-destructive/10 text-destructive">{error}</div>
                 )}

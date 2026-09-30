@@ -12,6 +12,7 @@ import {
     exportSupplierStatementExcel, getSupplierBalance, getSupplierBills, getSupplierStatement,
 } from "../services/payablesService";
 import { BILL_STATUS, Swal, money, useCan } from "../components/payables/payablesUi";
+import { HelpNote } from "../components/payables/HelpNote";
 
 // A supplier's account: what we owe them per currency, the bills still open,
 // and a statement (bills as charges, payments as credits) with a running balance.
@@ -118,6 +119,11 @@ export const SupplierAccount = () => {
             </div>
 
             <div className="flex-1 p-6 max-w-6xl mx-auto w-full space-y-6">
+                <HelpNote id="supplier-account" items={[
+                    <><b>Owed</b> is the sum of this supplier's open bills. <b>Credit on account</b> is money paid ahead and not yet applied.</>,
+                    <><b>Net balance</b> = owed − credit.</>,
+                    <>The <b>statement</b> lists bills as charges and payments as credits, with the running balance. Its closing balance matches the net balance.</>,
+                ]} />
                 {/* Balance per currency */}
                 {balances.length === 0 ? (
                     <div className="bg-card p-6 rounded-lg border shadow-sm text-sm text-muted-foreground">

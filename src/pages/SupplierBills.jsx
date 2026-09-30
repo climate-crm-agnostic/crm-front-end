@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { saveAs } from "file-saver";
 import { Swal } from "../components/payables/payablesUi";
+import { HelpNote } from "../components/payables/HelpNote";
 import { Download, HandCoins, Plus } from "lucide-react";
 import { TableSummary } from "../components/TableSummary";
 import { Button } from "../components/ui/button";
@@ -126,6 +127,14 @@ export const SupplierBills = () => {
                 </div>
             </div>
 
+            <div className="mb-2">
+                <HelpNote id="bills" items={[
+                    <>A <b>bill</b> is an invoice a supplier sent you — what you owe them.</>,
+                    <><b>Draft</b> bills are not payable yet; <b>Open</b> bills are ready to pay. Partially paid and Paid follow from the payments applied.</>,
+                    <><b>Overdue</b> is worked out from the due date, so a bill turns overdue on its own the day after it is due.</>,
+                    <>Pay one or several bills with <b>Record Payment</b>, or open a bill and use <b>Pay this bill</b>.</>,
+                ]} />
+            </div>
             <div className="bg-card p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
                 <TableSummary
                     data={visible}

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { saveAs } from "file-saver";
 import { Swal } from "../components/payables/payablesUi";
+import { HelpNote } from "../components/payables/HelpNote";
 import { Download, Plus } from "lucide-react";
 import { TableSummary } from "../components/TableSummary";
 import { Button } from "../components/ui/button";
@@ -16,7 +17,7 @@ const hasCredit = (row) => row.status === "posted" && Number(row.amount_unapplie
 const STATUS_TABS = [
     { value: "all", label: "All" },
     {
-        value: "applied", label: "Fully applied", color: "var(--secondary)",
+        value: "applied", label: "Applied", color: "var(--secondary)",
         match: (row) => row.status === "posted" && !hasCredit(row),
     },
     { value: "credit", label: "With credit", color: "var(--primary)", match: hasCredit },
@@ -86,7 +87,7 @@ export const SupplierPayments = () => {
                     ) : hasCredit(p) ? (
                         <Badge variant="secondary">Credit {money(p.currency, p.amount_unapplied)}</Badge>
                     ) : (
-                        <Badge variant="default">{billCount} bill{billCount === 1 ? "" : "s"}</Badge>
+                        <Badge variant="default">Applied to {billCount} bill{billCount === 1 ? "" : "s"}</Badge>
                     )}
                     <div className="text-right">
                         <p className={`text-sm font-bold text-foreground ${isVoid ? "line-through" : ""}`}>{money(p.currency, p.amount)}</p>
@@ -116,6 +117,13 @@ export const SupplierPayments = () => {
                 </div>
             </div>
 
+            <div className="mb-2">
+                <HelpNote id="payments" items={[
+                    <>A <b>payment</b> is money sent to a supplier. It can settle one bill, several bills, or part of a bill.</>,
+                    <><b>Applied</b>: all of the payment went to bills (the bills may still owe more). <b>With credit</b>: part of it hasn't been used yet.</>,
+                    <>Credit is applied to a bill from the payment's page. <b>Void</b> undoes a payment and reopens the bills it settled.</>,
+                ]} />
+            </div>
             <div className="bg-card p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
                 <TableSummary
                     data={visible}

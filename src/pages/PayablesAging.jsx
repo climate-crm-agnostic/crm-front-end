@@ -10,6 +10,7 @@ import { formatDate } from "../utils/date";
 import { getSuppliers } from "../services/supplierService";
 import { exportPayablesAgingExcel, getPayablesAging } from "../services/payablesService";
 import { Swal, money, today } from "../components/payables/payablesUi";
+import { HelpNote } from "../components/payables/HelpNote";
 
 // Days past due, as the backend buckets them (app/payables/services.py).
 const BUCKETS = [
@@ -76,6 +77,11 @@ export const PayablesAging = () => {
                 </Button>
             </div>
 
+            <HelpNote id="aging" items={[
+                <>Shows every open balance by how many days it is past its due date, as of the date you pick.</>,
+                <><b>Not due yet</b> is money owed that isn't due. The other columns are overdue — the older, the more urgent.</>,
+                <>Amounts are each bill's current balance (after payments). Click a supplier to see their account and statement.</>,
+            ]} />
             <div className="bg-card p-4 rounded-lg shadow flex flex-col gap-4 min-h-0">
                 <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                     <div className="flex items-center gap-2">

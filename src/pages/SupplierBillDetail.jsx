@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Swal } from "../components/payables/payablesUi";
+import { HelpNote } from "../components/payables/HelpNote";
 import { ArrowLeft, Ban, HandCoins, Plus, Trash2 } from "lucide-react";
 
 import { Input } from "../components/ui/input";
@@ -13,7 +14,7 @@ import { SearchableSelect } from "../components/ui/searchable-select";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { DynamicAttributeField } from "../components/attributes/DynamicAttributeField";
 import { AttachmentsCard } from "../components/payables/AttachmentsCard";
-import { BILL_STATUS, PAYABLE_STATUSES, addDays, askVoidReason, methodLabel, money, today, useCan } from "../components/payables/payablesUi";
+import { BILL_STATUS, PAYABLE_STATUSES, addDays, askVoidReason, cents, methodLabel, money, today, useCan } from "../components/payables/payablesUi";
 import { coerceAttributeValue, emptyValueFor, normalizeOptions } from "../utils/attributeTypes";
 import { CURRENCY_LIST } from "../utils/currencies";
 import { formatDate } from "../utils/date";
@@ -57,6 +58,8 @@ export const SupplierBillDetail = () => {
     const [lines, setLines] = useState([]);
     const [payments, setPayments] = useState([]);
     const [newLine, setNewLine] = useState(emptyLine);
+    const [pctMode, setPctMode] = useState({ discount: false, tax_amount: false });
+    const [pct, setPct] = useState({ discount: "", tax_amount: "" });
 
     const [fetching, setFetching] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -126,6 +129,11 @@ export const SupplierBillDetail = () => {
     const hasPayments = Number(bill?.amount_paid || 0) > 0;
     const hasLines = lines.length > 0;
     const editable = !isVoid && can(isNew ? "app.add_supplierbill" : "app.change_supplierbill");
+    // Once money is applied the bill's figures are fixed (the backend enforces
+    // the same): amounts, lines, supplier, currency, number and issue date.
+    // The due date stays editable until the bill is fully paid.
+    const figuresEditable = editable && !hasPayments;
+    const dueEditable = editable && status !== "paid";
 
     const supplierOptions = useMemo(
         () => suppliers.map((s) => ({ value: String(s.id), label: s.name })),
@@ -133,7 +141,31 @@ export const SupplierBillDetail = () => {
     );
 
     // Live preview of the total while typing; the server recomputes on save.
-    const previewTotal = (Number(form.subtotal) || 0) + (Number(form.tax_amount) || 0) - (Number(form.discount) || 0);
+    // Tax and discount can be typed as an amount or as a %. The amount is
+    // what gets saved (it has to match the supplier's document); a % is only
+    // a way of entering it. Discount % applies to the subtotal, tax % to the
+    // subtotal after the discount.
+    const subtotalNum = Number(form.subtotal) || 0;
+    const discountAmount = pctMode.discount
+        ? cents(subtotalNum * (Number(pct.discount) || 0) / 100)
+        : Number(form.discount) || 0;
+    const taxAmount = pctMode.tax_amount
+        ? cents((subtotalNum - discountAmount) * (Number(pct.tax_amount) || 0) / 100)
+        : Number(form.tax_amount) || 0;
+    const previewTotal = subtotalNum + taxAmount - discountAmount;
+
+    const togglePct = (field) => {
+        const toPct = !pctMode[field];
+        if (toPct) {
+            // Start the % from the amount already entered.
+            const base = field === "discount" ? subtotalNum : subtotalNum - discountAmount;
+            const current = field === "discount" ? discountAmount : taxAmount;
+            setPct((prev) => ({ ...prev, [field]: base > 0 ? String(cents(current / base * 100)) : "" }));
+        } else {
+            set(field)((field === "discount" ? discountAmount : taxAmount).toFixed(2));
+        }
+        setPctMode((prev) => ({ ...prev, [field]: toPct }));
+    };
 
     const handleSave = async () => {
         setError(null);
@@ -146,13 +178,13 @@ export const SupplierBillDetail = () => {
                 issue_date: form.issue_date,
                 due_date: form.due_date,
                 currency: form.currency,
-                discount: form.discount || "0",
+                discount: discountAmount.toFixed(2),
                 notes: form.notes,
                 attributes: Object.fromEntries(attributes.map((a) => [a.name, coerceAttributeValue(a, dynamicData[a.name])])),
             };
             if (!hasLines) {
                 payload.subtotal = form.subtotal || "0";
-                payload.tax_amount = form.tax_amount || "0";
+                payload.tax_amount = taxAmount.toFixed(2);
             }
             if (["draft", "open"].includes(form.status) && (isNew || ["draft", "open"].includes(bill?.status))) {
                 payload.status = form.status;
@@ -300,9 +332,22 @@ export const SupplierBillDetail = () => {
             </div>
 
             <div className="flex-1 p-6 max-w-6xl mx-auto w-full space-y-6">
+                <HelpNote id="bill-detail" items={[
+                    <>Enter the bill as the supplier issued it: their invoice number, dates and amounts should match their document.</>,
+                    <><b>Total</b> = subtotal − discount + tax. Tax and discount can be typed as an amount or as a %; the amount is what gets saved.</>,
+                    <>Line items are optional. When a bill has lines, its subtotal and tax come from them.</>,
+                    <>Once a payment is applied, the bill's amounts, lines and dates are locked and it can't be voided. To correct it, void those payments first.</>,
+                ]} />
                 {error && (
                     <div className="p-4 text-sm rounded-md border border-destructive/40 bg-destructive/10 text-destructive">
                         {error}
+                    </div>
+                )}
+                {!isNew && !isVoid && hasPayments && (
+                    <div className="p-4 text-sm rounded-md border bg-muted text-muted-foreground">
+                        Payments are applied to this bill, so its amounts, lines, supplier, currency, number and issue date are locked.
+                        To correct them, void those payments first (see <b>Payments applied</b> below).
+                        You can still edit the notes, attachments and additional information{status !== "paid" ? ", and the due date" : ""}.
                     </div>
                 )}
                 {isVoid && (
@@ -332,7 +377,7 @@ export const SupplierBillDetail = () => {
                                     placeholder="As printed on their invoice"
                                     value={form.bill_number}
                                     onChange={(e) => set("bill_number")(e.target.value)}
-                                    disabled={!editable}
+                                    disabled={!figuresEditable}
                                 />
                             </div>
                             <div className="space-y-2">
@@ -347,11 +392,11 @@ export const SupplierBillDetail = () => {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="issue_date">Issue date</Label>
-                                <DateInput id="issue_date" value={form.issue_date} onChange={(e) => set("issue_date")(e.target.value)} disabled={!editable} />
+                                <DateInput id="issue_date" value={form.issue_date} onChange={(e) => set("issue_date")(e.target.value)} disabled={!figuresEditable} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="due_date">Due date</Label>
-                                <DateInput id="due_date" value={form.due_date} onChange={(e) => set("due_date")(e.target.value)} disabled={!editable} />
+                                <DateInput id="due_date" value={form.due_date} onChange={(e) => set("due_date")(e.target.value)} disabled={!dueEditable} />
                             </div>
                             <div className="space-y-2">
                                 <Label>Status</Label>
@@ -378,25 +423,51 @@ export const SupplierBillDetail = () => {
                         <div>
                             <h3 className="font-medium text-lg border-b pb-2 mb-4">Summary</h3>
                             <div className="space-y-3 text-sm">
-                                {[["Subtotal", "subtotal"], ["Tax", "tax_amount"], ["Discount", "discount"]].map(([label, field]) => {
-                                    const locked = !editable || (field !== "discount" && hasLines);
+                                {[["Subtotal", "subtotal"], ["Discount", "discount"], ["Tax", "tax_amount"]].map(([label, field]) => {
+                                    const locked = !figuresEditable || (field !== "discount" && hasLines);
+                                    const canPct = field !== "subtotal";
+                                    const isPct = canPct && pctMode[field];
+                                    const amount = field === "discount" ? discountAmount : field === "tax_amount" ? taxAmount : subtotalNum;
                                     return (
-                                        <div key={field} className="flex items-center justify-between gap-2">
-                                            <span className="text-muted-foreground">{label}</span>
-                                            {locked ? (
-                                                <span className="font-medium">{money(currency, form[field])}</span>
-                                            ) : (
-                                                <Input
-                                                    type="number" step="0.01" min="0"
-                                                    className="w-32 h-8 text-right"
-                                                    value={form[field]}
-                                                    onChange={(e) => set(field)(e.target.value)}
-                                                />
+                                        <div key={field} className="space-y-1">
+                                            <div className="flex items-center justify-between gap-2">
+                                                <span className="text-muted-foreground">{label}</span>
+                                                {locked ? (
+                                                    <span className="font-medium">{money(currency, amount)}</span>
+                                                ) : (
+                                                    <div className="flex items-center gap-1">
+                                                        <Input
+                                                            type="number" step="0.01" min="0"
+                                                            className="w-24 h-8 text-right"
+                                                            placeholder={isPct ? "0 %" : "0.00"}
+                                                            value={isPct ? pct[field] : form[field]}
+                                                            onChange={(e) => (isPct
+                                                                ? setPct((prev) => ({ ...prev, [field]: e.target.value }))
+                                                                : set(field)(e.target.value))}
+                                                        />
+                                                        {!canPct && <span className="w-12 shrink-0" aria-hidden="true" />}
+                                                        {canPct && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => togglePct(field)}
+                                                                title={isPct ? "Enter as an amount" : "Enter as a percentage"}
+                                                                className="h-8 w-12 shrink-0 rounded-md border border-border bg-background text-xs font-semibold text-foreground hover:bg-muted cursor-pointer"
+                                                            >
+                                                                {isPct ? "%" : currency}
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            {isPct && !locked && (
+                                                <p className="text-xs text-right text-muted-foreground">
+                                                    = {money(currency, amount)}{field === "tax_amount" ? " (on subtotal after discount)" : ""}
+                                                </p>
                                             )}
                                         </div>
                                     );
                                 })}
-                                {hasLines && editable && (
+                                {hasLines && figuresEditable && (
                                     <p className="text-xs text-muted-foreground">Subtotal and tax come from the line items.</p>
                                 )}
                                 <div className="flex justify-between text-base font-bold pt-3 border-t">
@@ -430,7 +501,7 @@ export const SupplierBillDetail = () => {
                         <div className="flex items-center justify-between border-b pb-2">
                             <h3 className="font-medium text-lg">Line items <span className="text-sm font-normal text-muted-foreground">(optional)</span></h3>
                         </div>
-                        {editable && (
+                        {figuresEditable && (
                             <div className="flex flex-col md:flex-row gap-2 items-stretch md:items-end bg-muted/30 p-4 rounded-md border">
                                 <div className="space-y-1 w-full md:w-56">
                                     <Label className="text-xs">Catalogue item</Label>
@@ -476,7 +547,7 @@ export const SupplierBillDetail = () => {
                                             <th className="py-2 px-2 font-medium text-right">Unit cost</th>
                                             <th className="py-2 px-2 font-medium text-right">Tax</th>
                                             <th className="py-2 px-2 font-medium text-right">Amount</th>
-                                            {editable && <th className="w-10" />}
+                                            {figuresEditable && <th className="w-10" />}
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -487,7 +558,7 @@ export const SupplierBillDetail = () => {
                                                 <td className="py-2 px-2 text-right">{money(currency, line.unit_price)}</td>
                                                 <td className="py-2 px-2 text-right">{Number(line.tax_rate)}%</td>
                                                 <td className="py-2 px-2 text-right font-medium">{money(currency, line.subtotal)}</td>
-                                                {editable && (
+                                                {figuresEditable && (
                                                     <td className="py-2 text-right">
                                                         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDeleteLine(line)} title="Remove line">
                                                             <Trash2 className="h-4 w-4 text-destructive" />
