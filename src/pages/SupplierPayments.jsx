@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { SupplierFilter } from "../components/payables/SupplierFilter";
 import { saveAs } from "file-saver";
 import { Swal } from "../components/payables/payablesUi";
 import { HelpNote } from "../components/payables/HelpNote";
@@ -26,6 +27,10 @@ const STATUS_TABS = [
 
 export const SupplierPayments = () => {
     const navigate = useNavigate();
+    // ?supplier=<id> opens the list already filtered (e.g. from a supplier's account).
+    const [searchParams, setSearchParams] = useSearchParams();
+    const supplierId = searchParams.get("supplier") || "";
+    const setSupplierId = (value) => setSearchParams(value ? { supplier: value } : {}, { replace: true });
     const can = useCan();
     const [payments, setPayments] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -46,10 +51,11 @@ export const SupplierPayments = () => {
     }, []);
 
     const visible = useMemo(() => payments.filter((p) => {
+        if (supplierId && String(p.supplier) !== supplierId) return false;
         if (dateFrom && p.payment_date < dateFrom) return false;
         if (dateTo && p.payment_date > dateTo) return false;
         return true;
-    }), [payments, dateFrom, dateTo]);
+    }), [payments, supplierId, dateFrom, dateTo]);
 
     const posted = visible.filter((p) => p.status === "posted");
     const monthStart = `${today().slice(0, 8)}01`;
@@ -61,7 +67,7 @@ export const SupplierPayments = () => {
 
     const handleExport = async () => {
         try {
-            saveAs(await exportSupplierPaymentsExcel(), "supplier_payments.xlsx");
+            saveAs(await exportSupplierPaymentsExcel(supplierId ? { supplier: supplierId } : {}), "supplier_payments.xlsx");
         } catch (err) {
             Swal.fire("Error", err.message, "error");
         }
@@ -125,6 +131,10 @@ export const SupplierPayments = () => {
                 ]} />
             </div>
             <div className="bg-card p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
+                <div className="flex flex-wrap items-center gap-2 mb-3">
+                    <span className="text-sm text-muted-foreground">Supplier</span>
+                    <SupplierFilter value={supplierId} onChange={setSupplierId} />
+                </div>
                 <TableSummary
                     data={visible}
                     stats={stats}

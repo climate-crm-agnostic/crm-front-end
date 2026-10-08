@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Swal } from "../components/payables/payablesUi";
 import { HelpNote } from "../components/payables/HelpNote";
-import { ArrowLeft, Ban, HandCoins, Plus, Trash2 } from "lucide-react";
+import { BillScanReview } from "../components/payables/BillScanReview";
+import { ArrowLeft, Ban, FileText, HandCoins, Plus, ScanText, Trash2, Upload, X } from "lucide-react";
 
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -19,16 +20,25 @@ import { coerceAttributeValue, emptyValueFor, normalizeOptions } from "../utils/
 import { CURRENCY_LIST } from "../utils/currencies";
 import { formatDate } from "../utils/date";
 import { getSuppliers } from "../services/supplierService";
-import { getCatalogueItems } from "../services/catalogueService";
+import { getInventoryItems } from "../services/inventoryService";
+import { getAssets } from "../services/assetService";
+import { useAuth } from "@/context/AuthContext";
 import {
     createBillLineItem, createSupplierBill, deleteBillFile, deleteBillLineItem, deleteSupplierBill,
     getBillLineItems, getBillPayments, getSupplierBill, getSupplierBillAttributes, updateSupplierBill,
-    uploadBillFile, voidSupplierBill,
+    scanSupplierBill, uploadBillFile, voidSupplierBill,
 } from "../services/payablesService";
 
 const CURRENCY_OPTIONS = CURRENCY_LIST.map((c) => ({ value: c.code, label: `${c.code} — ${c.name}`, keywords: c.code }));
 
-const emptyLine = { description: "", catalogue_item: "", quantity: "1", unit_price: "0.00", tax_rate: "0" };
+const emptyLine = { description: "", item: "", quantity: "1", unit_price: "0.00", tax_rate: "0" };
+
+// Inventory has no name column; use a name-like custom field when there is one.
+const inventoryLabel = (inv) => {
+    const a = inv.attributes || {};
+    const name = a.name || a.product_name || a.item_name || a.description;
+    return name ? `${inv.sku} — ${name}` : inv.sku;
+};
 
 export const SupplierBillDetail = () => {
     const { id } = useParams();
@@ -38,7 +48,11 @@ export const SupplierBillDetail = () => {
     const isNew = id === "new";
 
     const [suppliers, setSuppliers] = useState([]);
-    const [catalogue, setCatalogue] = useState([]);
+    // What a bill line can point to: stock items and fixed assets, each only
+    // when the plan includes that module.
+    const { isFeatureEnabled } = useAuth();
+    const [inventoryItems, setInventoryItems] = useState([]);
+    const [assets, setAssets] = useState([]);
     const [attributes, setAttributes] = useState([]);
     const [dynamicData, setDynamicData] = useState({});
 
@@ -65,19 +79,40 @@ export const SupplierBillDetail = () => {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState(null);
 
+    // New bill: the supplier's invoice can be attached before saving (it is
+    // uploaded right after the bill is created) and read with AI to prefill
+    // the form, always through the review dialog.
+    const [pendingFile, setPendingFile] = useState(null);
+    const [scanning, setScanning] = useState(false);
+    const [scanResult, setScanResult] = useState(null);
+    const [pendingLines, setPendingLines] = useState(null);
+    const fileInputRef = React.useRef(null);
+    const errorRef = React.useRef(null);
+    // Bring a save error into view: the form is long and the banner is at the top.
+    useEffect(() => {
+        if (error) errorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, [error]);
+    const previewUrl = useMemo(
+        () => (pendingFile && pendingFile.type.startsWith("image/") ? URL.createObjectURL(pendingFile) : null),
+        [pendingFile],
+    );
+    useEffect(() => () => { if (previewUrl) URL.revokeObjectURL(previewUrl); }, [previewUrl]);
+
     const set = (field) => (value) => setForm((prev) => ({ ...prev, [field]: value }));
 
     useEffect(() => {
         const init = async () => {
             setFetching(true);
             try {
-                const [supplierData, attrData, catalogueData] = await Promise.all([
+                const [supplierData, attrData, inventoryData, assetData] = await Promise.all([
                     getSuppliers(),
                     getSupplierBillAttributes().catch(() => []),
-                    getCatalogueItems({ is_active: true }).catch(() => []),
+                    isFeatureEnabled("inventory") ? getInventoryItems().catch(() => []) : [],
+                    isFeatureEnabled("assets") ? getAssets().catch(() => []) : [],
                 ]);
                 setSuppliers(supplierData);
-                setCatalogue(catalogueData);
+                setInventoryItems(inventoryData);
+                setAssets(assetData);
                 const attrs = attrData.map((a) => ({ ...a, options: normalizeOptions(a.options || a.list_values) }));
                 setAttributes(attrs);
                 const initial = {};
@@ -192,6 +227,27 @@ export const SupplierBillDetail = () => {
 
             if (isNew) {
                 const created = await createSupplierBill(payload);
+                // The bill exists now; the follow-ups below must not lose it if they fail.
+                const problems = [];
+                if (pendingFile) {
+                    try { await uploadBillFile(created.id, pendingFile); }
+                    catch (err) { problems.push(`The invoice file was not attached: ${err.message}`); }
+                }
+                if (pendingLines) {
+                    const rows = pendingLines.lines.map((l) => ({
+                        description: l.description, quantity: l.quantity || "1",
+                        unit_price: l.unit_price, tax_rate: String(pendingLines.rate),
+                    }));
+                    if (Number(pendingLines.shipping) > 0) {
+                        rows.push({ description: "Shipping & handling", quantity: "1", unit_price: String(pendingLines.shipping), tax_rate: "0" });
+                    }
+                    try {
+                        for (const row of rows) await createBillLineItem(created.id, row);
+                    } catch (err) {
+                        problems.push(`Not all line items were added: ${err.message}`);
+                    }
+                }
+                if (problems.length) await Swal.fire("Bill created, with issues", problems.join("\n"), "warning");
                 navigate(`/supplier-bill/${created.id}`, { replace: true });
             } else {
                 await updateSupplierBill(id, payload);
@@ -203,6 +259,32 @@ export const SupplierBillDetail = () => {
         } finally {
             setSaving(false);
         }
+    };
+
+    const pickFile = (file) => {
+        if (!file) return;
+        setPendingFile(file);
+        setPendingLines(null);
+    };
+
+    const handleScan = async () => {
+        if (!pendingFile) return;
+        setScanning(true);
+        try {
+            setScanResult(await scanSupplierBill(pendingFile));
+        } catch (err) {
+            Swal.fire("Could not read the invoice", err.message, "warning");
+        } finally {
+            setScanning(false);
+        }
+    };
+
+    const applyScan = (patch, lines) => {
+        // Values from the review are amounts: leave % entry mode.
+        setPctMode({ discount: false, tax_amount: false });
+        setForm((prev) => ({ ...prev, ...patch }));
+        setPendingLines(lines);
+        setScanResult(null);
     };
 
     const handleVoid = async () => {
@@ -229,20 +311,44 @@ export const SupplierBillDetail = () => {
         }
     };
 
-    const handleCatalogueSelect = (value) => {
-        const item = catalogue.find((c) => String(c.id) === value);
+    // One picker for both sources; values are "inventory:<id>" / "asset:<id>".
+    // Items already linked to this bill's supplier are listed first.
+    const itemOptions = useMemo(() => {
+        const ofSupplier = (x) => form.supplier && String(x.supplier || "") === String(form.supplier);
+        const options = [
+            ...inventoryItems.map((inv) => ({
+                value: `inventory:${inv.id}`, label: `Inventory · ${inventoryLabel(inv)}`,
+                keywords: inv.location || "", mine: ofSupplier(inv),
+            })),
+            ...assets.map((a) => ({
+                value: `asset:${a.id}`, label: `Asset · ${a.name}`, keywords: a.description || "", mine: ofSupplier(a),
+            })),
+        ];
+        return options
+            .sort((a, b) => Number(b.mine) - Number(a.mine))
+            .map(({ mine, ...o }) => (mine ? { ...o, label: `${o.label} (this supplier)` } : o));
+    }, [inventoryItems, assets, form.supplier]);
+
+    const handleItemSelect = (value) => {
+        const [kind, itemId] = (value || "").split(":");
+        const inv = kind === "inventory" && inventoryItems.find((i) => String(i.id) === itemId);
+        const asset = kind === "asset" && assets.find((a) => String(a.id) === itemId);
         setNewLine((prev) => ({
             ...prev,
-            catalogue_item: value || "",
-            description: item ? item.name : prev.description,
+            item: value || "",
+            description: inv ? inventoryLabel(inv) : asset ? asset.name : prev.description,
+            unit_price: asset && Number(asset.price) ? String(asset.price) : prev.unit_price,
         }));
     };
 
     const handleAddLine = async () => {
         try {
+            const { item, ...line } = newLine;
+            const [kind, itemId] = (item || "").split(":");
             await createBillLineItem(id, {
-                ...newLine,
-                catalogue_item: newLine.catalogue_item || null,
+                ...line,
+                inventory_item: kind === "inventory" ? itemId : null,
+                asset: kind === "asset" ? itemId : null,
             });
             setNewLine(emptyLine);
             await load(id);
@@ -339,9 +445,73 @@ export const SupplierBillDetail = () => {
                     <>Once a payment is applied, the bill's amounts, lines and dates are locked and it can't be voided. To correct it, void those payments first.</>,
                 ]} />
                 {error && (
-                    <div className="p-4 text-sm rounded-md border border-destructive/40 bg-destructive/10 text-destructive">
+                    <div ref={errorRef} className="p-4 text-sm rounded-md border border-destructive/40 bg-destructive/10 text-destructive">
                         {error}
                     </div>
+                )}
+                {isNew && (
+                    <div
+                        className="bg-card p-6 rounded-lg border shadow-sm space-y-3"
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={(e) => { e.preventDefault(); pickFile(e.dataTransfer.files?.[0]); }}
+                    >
+                        <div>
+                            <h3 className="font-medium text-lg">Supplier invoice <span className="text-sm font-normal text-muted-foreground">(optional)</span></h3>
+                            <p className="text-sm text-muted-foreground">
+                                Attach the invoice now (PDF or image) — it is saved with the bill.
+                                {isFeatureEnabled("ai") && " Use “Read with AI” to prefill the form; you check every value before it is used."}
+                            </p>
+                        </div>
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            className="hidden"
+                            accept=".pdf,.jpg,.jpeg,.png,.webp,.gif"
+                            onChange={(e) => { pickFile(e.target.files?.[0]); e.target.value = ""; }}
+                        />
+                        {!pendingFile ? (
+                            <button
+                                type="button"
+                                onClick={() => fileInputRef.current?.click()}
+                                className="w-full rounded-md border border-dashed border-border bg-background p-6 text-sm text-muted-foreground hover:bg-muted/40 cursor-pointer flex flex-col items-center gap-2"
+                            >
+                                <Upload className="h-5 w-5 text-secondary-text" />
+                                Drop the invoice here or click to choose a file
+                            </button>
+                        ) : (
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-3 rounded-md border bg-background p-3">
+                                {previewUrl
+                                    ? <img src={previewUrl} alt="Invoice preview" className="h-20 w-16 object-cover rounded border" />
+                                    : <FileText className="h-8 w-8 text-muted-foreground" />}
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium truncate">{pendingFile.name}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {(pendingFile.size / 1024).toFixed(0)} KB · attached when the bill is created
+                                        {pendingLines && ` · ${pendingLines.lines.length} line item(s) will be added`}
+                                    </p>
+                                </div>
+                                <div className="flex gap-2">
+                                    {isFeatureEnabled("ai") && (
+                                        <Button size="sm" onClick={handleScan} disabled={scanning}>
+                                            <ScanText className="h-4 w-4 mr-1" /> {scanning ? "Reading..." : "Read with AI"}
+                                        </Button>
+                                    )}
+                                    <Button size="sm" variant="ghost" onClick={() => { setPendingFile(null); setPendingLines(null); }} title="Remove file">
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
+                {scanResult && (
+                    <BillScanReview
+                        result={scanResult}
+                        form={form}
+                        suppliers={suppliers}
+                        onApply={applyScan}
+                        onClose={() => setScanResult(null)}
+                    />
                 )}
                 {!isNew && !isVoid && hasPayments && (
                     <div className="p-4 text-sm rounded-md border bg-muted text-muted-foreground">
@@ -490,7 +660,7 @@ export const SupplierBillDetail = () => {
                         )}
                         {isNew && (
                             <p className="mt-8 text-sm text-center text-muted-foreground italic">
-                                Save the bill to add line items, files and payments.
+                                Save the bill to add line items and payments.
                             </p>
                         )}
                     </div>
@@ -503,15 +673,17 @@ export const SupplierBillDetail = () => {
                         </div>
                         {figuresEditable && (
                             <div className="flex flex-col md:flex-row gap-2 items-stretch md:items-end bg-muted/30 p-4 rounded-md border">
-                                <div className="space-y-1 w-full md:w-56">
-                                    <Label className="text-xs">Catalogue item</Label>
-                                    <SearchableSelect
-                                        value={newLine.catalogue_item}
-                                        onChange={handleCatalogueSelect}
-                                        options={catalogue.map((c) => ({ value: String(c.id), label: c.sku ? `${c.name} (${c.sku})` : c.name }))}
-                                        placeholder="None"
-                                    />
-                                </div>
+                                {itemOptions.length > 0 && (
+                                    <div className="space-y-1 w-full md:w-64">
+                                        <Label className="text-xs">Inventory / asset (optional)</Label>
+                                        <SearchableSelect
+                                            value={newLine.item}
+                                            onChange={handleItemSelect}
+                                            options={itemOptions}
+                                            placeholder="None — free text"
+                                        />
+                                    </div>
+                                )}
                                 <div className="space-y-1 flex-1">
                                     <Label className="text-xs">Description</Label>
                                     <Input className="h-9" value={newLine.description} onChange={(e) => setNewLine((p) => ({ ...p, description: e.target.value }))} />
@@ -553,7 +725,14 @@ export const SupplierBillDetail = () => {
                                     <tbody>
                                         {lines.map((line) => (
                                             <tr key={line.id} className="border-b last:border-0">
-                                                <td className="py-2 pr-2">{line.description}</td>
+                                                <td className="py-2 pr-2">
+                                                    {line.description}
+                                                    {(line.inventory_sku || line.asset_name) && (
+                                                        <p className="text-xs text-muted-foreground">
+                                                            {line.inventory_sku ? `Inventory · ${line.inventory_sku}` : `Asset · ${line.asset_name}`}
+                                                        </p>
+                                                    )}
+                                                </td>
                                                 <td className="py-2 px-2 text-right">{Number(line.quantity)}</td>
                                                 <td className="py-2 px-2 text-right">{money(currency, line.unit_price)}</td>
                                                 <td className="py-2 px-2 text-right">{Number(line.tax_rate)}%</td>
