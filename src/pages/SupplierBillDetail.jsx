@@ -92,11 +92,13 @@ export const SupplierBillDetail = () => {
     useEffect(() => {
         if (error) errorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
     }, [error]);
-    const previewUrl = useMemo(
-        () => (pendingFile && pendingFile.type.startsWith("image/") ? URL.createObjectURL(pendingFile) : null),
-        [pendingFile],
-    );
-    useEffect(() => () => { if (previewUrl) URL.revokeObjectURL(previewUrl); }, [previewUrl]);
+    const [previewUrl, setPreviewUrl] = useState(null);
+    useEffect(() => {
+        if (!pendingFile || !pendingFile.type.startsWith("image/")) { setPreviewUrl(null); return undefined; }
+        const objectUrl = URL.createObjectURL(pendingFile);
+        setPreviewUrl(objectUrl);
+        return () => URL.revokeObjectURL(objectUrl);
+    }, [pendingFile]);
 
     const set = (field) => (value) => setForm((prev) => ({ ...prev, [field]: value }));
 
@@ -509,6 +511,7 @@ export const SupplierBillDetail = () => {
                         result={scanResult}
                         form={form}
                         suppliers={suppliers}
+                        file={pendingFile}
                         onApply={applyScan}
                         onClose={() => setScanResult(null)}
                     />

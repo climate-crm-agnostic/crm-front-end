@@ -1,9 +1,10 @@
-import React, { useMemo, useState } from "react";
-import { AlertTriangle, CheckCircle2 } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import { AlertTriangle, CheckCircle2, ExternalLink, Eye, EyeOff, RotateCw, ZoomIn, ZoomOut } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Button } from "../ui/button";
 import { Checkbox } from "../ui/checkbox";
 import { Input } from "../ui/input";
+import { DateInput } from "../ui/date-input";
 import { SearchableSelect } from "../ui/searchable-select";
 import { cents, money } from "./payablesUi";
 import { formatDate } from "../../utils/date";
@@ -22,12 +23,77 @@ const FIELDS = [
 const same = (a, b) => String(a ?? "").trim() === String(b ?? "").trim()
     || (Number.isFinite(Number(a)) && Number.isFinite(Number(b)) && a !== "" && b !== "" && Number(a) === Number(b));
 
+const MATCH_REASON = { tax_id: "same tax ID", legal_name: "legal name matches", name: "similar name" };
+const ZOOMS = [1, 1.5, 2, 3];
+
+// The uploaded invoice, next to the values read from it. Images can be
+// zoomed and rotated (phone photos are often sideways); PDFs use the
+// browser's own viewer.
+const InvoiceViewer = ({ file }) => {
+    // Create and revoke the object URL in the same effect, so a re-run (React
+    // StrictMode, or a new file) never leaves the viewer on a revoked URL.
+    const [url, setUrl] = useState(null);
+    useEffect(() => {
+        if (!file) { setUrl(null); return undefined; }
+        const objectUrl = URL.createObjectURL(file);
+        setUrl(objectUrl);
+        return () => URL.revokeObjectURL(objectUrl);
+    }, [file]);
+    const [zoom, setZoom] = useState(0);
+    const [rotation, setRotation] = useState(0);
+    if (!file || !url) return null;
+    const isImage = file.type.startsWith("image/");
+
+    return (
+        <div className="flex flex-col min-h-0 h-[45vh] lg:h-auto rounded-md border bg-muted/40 overflow-hidden">
+            <div className="flex items-center justify-between gap-2 px-2 py-1.5 border-b bg-card text-xs">
+                <span className="truncate text-muted-foreground">{file.name}</span>
+                <div className="flex items-center gap-1 shrink-0">
+                    {isImage && (
+                        <>
+                            <Button type="button" variant="ghost" size="icon" className="h-7 w-7" title="Zoom out"
+                                onClick={() => setZoom((z) => Math.max(0, z - 1))} disabled={zoom === 0}>
+                                <ZoomOut className="h-4 w-4" />
+                            </Button>
+                            <span className="w-10 text-center">{ZOOMS[zoom] * 100}%</span>
+                            <Button type="button" variant="ghost" size="icon" className="h-7 w-7" title="Zoom in"
+                                onClick={() => setZoom((z) => Math.min(ZOOMS.length - 1, z + 1))} disabled={zoom === ZOOMS.length - 1}>
+                                <ZoomIn className="h-4 w-4" />
+                            </Button>
+                            <Button type="button" variant="ghost" size="icon" className="h-7 w-7" title="Rotate"
+                                onClick={() => setRotation((r) => (r + 90) % 360)}>
+                                <RotateCw className="h-4 w-4" />
+                            </Button>
+                        </>
+                    )}
+                    <a href={url} target="_blank" rel="noopener noreferrer" title="Open in a new tab"
+                        className="h-7 w-7 inline-flex items-center justify-center rounded-md hover:bg-muted">
+                        <ExternalLink className="h-4 w-4" />
+                    </a>
+                </div>
+            </div>
+            {isImage ? (
+                <div className="flex-1 min-h-0 overflow-auto p-2">
+                    <img
+                        src={url}
+                        alt="Uploaded invoice"
+                        style={{ width: `${ZOOMS[zoom] * 100}%`, maxWidth: "none", transform: `rotate(${rotation}deg)`, transformOrigin: "center" }}
+                        className="mx-auto bg-white"
+                    />
+                </div>
+            ) : (
+                <iframe src={url} title="Uploaded invoice" className="flex-1 min-h-0 w-full bg-white" />
+            )}
+        </div>
+    );
+};
+
 /**
  * Review step between "Read with AI" and the form: every value read from the
  * invoice is shown next to what the form has now, can be corrected, and is
  * applied only if its box is ticked. Nothing reaches the form without this.
  */
-export const BillScanReview = ({ result, form, suppliers, onApply, onClose }) => {
+export const BillScanReview = ({ result, form, suppliers, file, onApply, onClose }) => {
     const initial = useMemo(() => {
         const values = {};
         const checked = {};
@@ -40,9 +106,12 @@ export const BillScanReview = ({ result, form, suppliers, onApply, onClose }) =>
 
     const [values, setValues] = useState(initial.values);
     const [checked, setChecked] = useState(initial.checked);
-    const bestMatch = result.supplier_matches?.[0];
-    const [supplier, setSupplier] = useState(bestMatch && bestMatch.score >= 0.8 ? bestMatch.id : "");
-    const [applySupplier, setApplySupplier] = useState(Boolean(bestMatch && bestMatch.score >= 0.8));
+    // Preselected only when the backend found one clear match (same tax ID,
+    // or a name far closer than any other); otherwise the person chooses.
+    const suggested = result.supplier_suggested || "";
+    const [supplier, setSupplier] = useState(suggested);
+    const [applySupplier, setApplySupplier] = useState(Boolean(suggested));
+    const [showFile, setShowFile] = useState(true);
     const [applyNotes, setApplyNotes] = useState(Boolean(result.notes));
     const [importLines, setImportLines] = useState(false);
 
@@ -71,13 +140,16 @@ export const BillScanReview = ({ result, form, suppliers, onApply, onClose }) =>
     }, [lines, result.shipping, values.tax_amount, values.discount]);
 
     const supplierOptions = useMemo(() => {
-        const matchIds = new Set((result.supplier_matches || []).map((m) => m.id));
+        const matches = new Map((result.supplier_matches || []).map((m) => [m.id, m]));
         return suppliers
-            .map((s) => ({
-                value: String(s.id),
-                label: matchIds.has(String(s.id)) ? `${s.name} — suggested` : s.name,
-                suggested: matchIds.has(String(s.id)),
-            }))
+            .map((s) => {
+                const m = matches.get(String(s.id));
+                return {
+                    value: String(s.id),
+                    label: m ? `${s.name} — ${MATCH_REASON[m.reason] || "suggested"}` : s.name,
+                    suggested: Boolean(m),
+                };
+            })
             .sort((a, b) => Number(b.suggested) - Number(a.suggested) || a.label.localeCompare(b.label));
     }, [suppliers, result.supplier_matches]);
 
@@ -91,15 +163,24 @@ export const BillScanReview = ({ result, form, suppliers, onApply, onClose }) =>
 
     return (
         <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-            <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
+            <DialogContent className={`${file && showFile ? "sm:max-w-6xl" : "sm:max-w-3xl"} w-[96vw] max-h-[92vh] flex flex-col overflow-hidden`}>
                 <DialogHeader>
                     <DialogTitle>Check what was read from the invoice</DialogTitle>
                     <DialogDescription>
                         Compare each value with the document. Correct anything that is wrong and tick only what should go into the bill.
                     </DialogDescription>
+                    {file && (
+                        <button type="button" onClick={() => setShowFile((v) => !v)}
+                            className="self-start inline-flex items-center gap-1 text-xs text-secondary-text hover:underline cursor-pointer">
+                            {showFile ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                            {showFile ? "Hide the invoice" : "Show the invoice"}
+                        </button>
+                    )}
                 </DialogHeader>
 
-                <div className="flex-1 overflow-y-auto space-y-4 pr-1 text-sm">
+                <div className={`flex-1 min-h-0 grid gap-4 ${file && showFile ? "lg:grid-cols-2" : ""} overflow-y-auto lg:overflow-hidden`}>
+                {file && showFile && <InvoiceViewer file={file} />}
+                <div className="min-h-0 lg:overflow-y-auto space-y-4 pr-1 text-sm">
                     {result.warnings?.length > 0 && (
                         <ul className="rounded-md border border-destructive/40 bg-destructive/10 p-3 space-y-1">
                             {result.warnings.map((w, i) => (
@@ -108,6 +189,26 @@ export const BillScanReview = ({ result, form, suppliers, onApply, onClose }) =>
                                 </li>
                             ))}
                         </ul>
+                    )}
+
+                    {result.date_fix && values.issue_date !== result.date_fix.issue_date && (
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 rounded-md border p-3">
+                            <span className="flex-1">
+                                The year may be misread. Same day and month in a recent year:{" "}
+                                <b>{formatDate(result.date_fix.issue_date)}</b>
+                                {result.date_fix.due_date && <> (due <b>{formatDate(result.date_fix.due_date)}</b>)</>}.
+                            </span>
+                            <Button
+                                type="button" size="sm" variant="outline"
+                                onClick={() => {
+                                    const fix = result.date_fix;
+                                    setValues((v) => ({ ...v, issue_date: fix.issue_date, ...(fix.due_date && { due_date: fix.due_date }) }));
+                                    setChecked((c) => ({ ...c, issue_date: true, ...(fix.due_date && { due_date: true }) }));
+                                }}
+                            >
+                                Use {formatDate(result.date_fix.issue_date)}
+                            </Button>
+                        </div>
                     )}
 
                     {/* Supplier */}
@@ -130,6 +231,18 @@ export const BillScanReview = ({ result, form, suppliers, onApply, onClose }) =>
                         {!result.supplier_matches?.length && result.vendor_name && (
                             <p className="text-xs text-muted-foreground">
                                 No existing supplier looks like &quot;{result.vendor_name}&quot;. Pick one, or create it in Operations → Suppliers first.
+                            </p>
+                        )}
+                        {result.supplier_matches?.length > 0 && !suggested && (
+                            <p className="text-xs text-muted-foreground">
+                                {result.supplier_matches.length > 1
+                                    ? "Several suppliers look similar (listed first) — choose the right one."
+                                    : "One supplier looks similar (listed first), but not closely enough to choose it for you."}
+                            </p>
+                        )}
+                        {suggested && (
+                            <p className="text-xs text-secondary-text">
+                                Suggested because of {MATCH_REASON[result.supplier_matches?.[0]?.reason] || "a similar name"}. Check it is right.
                             </p>
                         )}
                     </div>
@@ -162,18 +275,29 @@ export const BillScanReview = ({ result, form, suppliers, onApply, onClose }) =>
                                             )}
                                         </td>
                                         <td className="p-2">
-                                            <Input
-                                                type={type === "date" ? "date" : type === "number" ? "number" : "text"}
-                                                step={type === "number" ? "0.01" : undefined}
-                                                className="h-8"
-                                                value={values[key] ?? ""}
-                                                placeholder="not found"
-                                                onChange={(e) => {
-                                                    const v = e.target.value;
-                                                    setValues((p) => ({ ...p, [key]: v }));
-                                                    setChecked((p) => ({ ...p, [key]: v !== "" }));
-                                                }}
-                                            />
+                                            {type === "date" ? (
+                                                <DateInput
+                                                    value={values[key] ?? ""}
+                                                    onChange={(e) => {
+                                                        const v = e.target.value;
+                                                        setValues((p) => ({ ...p, [key]: v }));
+                                                        setChecked((p) => ({ ...p, [key]: Boolean(v) }));
+                                                    }}
+                                                />
+                                            ) : (
+                                                <Input
+                                                    type={type === "number" ? "number" : "text"}
+                                                    step={type === "number" ? "0.01" : undefined}
+                                                    className="h-8"
+                                                    value={values[key] ?? ""}
+                                                    placeholder="not found"
+                                                    onChange={(e) => {
+                                                        const v = e.target.value;
+                                                        setValues((p) => ({ ...p, [key]: v }));
+                                                        setChecked((p) => ({ ...p, [key]: v !== "" }));
+                                                    }}
+                                                />
+                                            )}
                                         </td>
                                         <td className="p-2 text-muted-foreground">{(type === "date" ? formatDate(form[key]) : form[key]) || "—"}</td>
                                     </tr>
@@ -236,6 +360,7 @@ export const BillScanReview = ({ result, form, suppliers, onApply, onClose }) =>
                             </ul>
                         </div>
                     )}
+                </div>
                 </div>
 
                 <DialogFooter>

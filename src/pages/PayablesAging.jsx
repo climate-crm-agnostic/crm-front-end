@@ -11,6 +11,8 @@ import { getSuppliers } from "../services/supplierService";
 import { exportPayablesAgingExcel, getPayablesAging } from "../services/payablesService";
 import { Swal, money, today } from "../components/payables/payablesUi";
 import { HelpNote } from "../components/payables/HelpNote";
+import { usePagination } from "../hooks/usePagination";
+import { PageSizeSelect, PaginationFooter } from "../components/PaginationControls";
 
 // Days past due, as the backend buckets them (app/payables/services.py).
 const BUCKETS = [
@@ -60,7 +62,13 @@ export const PayablesAging = () => {
     };
 
     const supplierOptions = useMemo(() => suppliers.map((s) => ({ value: String(s.id), label: s.name })), [suppliers]);
-    const rows = report?.rows || [];
+    const rows = useMemo(() => report?.rows || [], [report]);
+    // Rows are supplier × currency, grouped by currency and largest balance
+    // first within each (backend order), so the first page shows who is owed most.
+    const {
+        pageItems, currentPage, setCurrentPage, pageSize, setPageSize, pageSizeOptions,
+        totalPages, startRecord, endRecord,
+    } = usePagination(rows, { pageSizeOptions: [10, 25, 50] });
     const totals = report?.totals || [];
 
     return (
@@ -90,6 +98,9 @@ export const PayablesAging = () => {
                     </div>
                     <div className="w-full sm:w-72">
                         <SearchableSelect value={supplierId} onChange={(v) => setSupplierId(v || "")} options={supplierOptions} placeholder="All suppliers" />
+                    </div>
+                    <div className="sm:ml-auto">
+                        <PageSizeSelect pageSize={pageSize} setPageSize={setPageSize} pageSizeOptions={pageSizeOptions} />
                     </div>
                 </div>
 
@@ -130,7 +141,7 @@ export const PayablesAging = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {rows.map((r) => (
+                                {pageItems.map((r) => (
                                     <tr key={`${r.supplier}-${r.currency}`} className="border-b last:border-0">
                                         <td className="py-2 pr-2">
                                             <Link to={`/supplier/${r.supplier}/account`} className="font-medium underline">{r.supplier_name}</Link>
@@ -153,6 +164,16 @@ export const PayablesAging = () => {
                             </tbody>
                         </table>
                     </div>
+                )}
+                {rows.length > 0 && (
+                    <PaginationFooter
+                        currentPage={currentPage}
+                        setCurrentPage={setCurrentPage}
+                        totalPages={totalPages}
+                        startRecord={startRecord}
+                        endRecord={endRecord}
+                        bordered={false}
+                    />
                 )}
                 <p className="text-xs text-muted-foreground">
                     Uses each bill's current balance; changing the date only moves the point the days past due are counted from.
