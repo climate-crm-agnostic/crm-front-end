@@ -92,16 +92,7 @@ export function AppSidebar({ ...props }) {
 
         {/* Icon-only logo */}
         <div className="hidden group-data-[collapsible=icon]:flex justify-center py-2.5 border-b border-border">
-          <div
-            className="flex h-8 w-8 items-center justify-center rounded-lg"
-            style={{ backgroundColor: "var(--secondary)" }}
-          >
-            <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4 text-white" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 2L2 7l10 5 10-5-10-5z" />
-              <path d="M2 17l10 5 10-5" />
-              <path d="M2 12l10 5 10-5" />
-            </svg>
-          </div>
+          <img src="/climate-icon.svg" alt="Climate by CodeX Technologies logo" className="h-8 w-8 object-contain" />
         </div>
 
         <div className="px-2 pb-1 pt-1 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center">
