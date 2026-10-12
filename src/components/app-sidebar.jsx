@@ -87,7 +87,7 @@ export function AppSidebar({ ...props }) {
         <div
           className="flex items-center px-3 py-2.5 group-data-[collapsible=icon]:hidden border-b border-border"
         >
-          <img src="/climate.svg" alt="Climate by CodeX" className="h-10 w-auto" />
+          <img src="/climate.svg" alt="Climate by CodeX Technologies logo" className="h-10 w-auto" />
         </div>
 
         {/* Icon-only logo */}

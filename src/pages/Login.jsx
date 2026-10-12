@@ -66,7 +66,7 @@ export const Login = ({ className, ...props }) => {
 
             {/* Brand mark */}
             <div className="flex flex-col items-center gap-4">
-              <img src="/climate.svg" alt="Climate by CodeX" className="h-16 w-auto" />
+              <img src="/climate.svg" alt="Climate by CodeX Technologies logo" className="h-16 w-auto" />
               <div className="text-center">
                 <h1
                   className="text-3xl font-semibold text-foreground"
@@ -250,7 +250,7 @@ export const Login = ({ className, ...props }) => {
             )}
 
             <p className="text-center text-xs text-muted-foreground">
-              © {new Date().getFullYear()} Codex Technologies
+              © {new Date().getFullYear()} CodeX Technologies
             </p>
           </div>
         </div>

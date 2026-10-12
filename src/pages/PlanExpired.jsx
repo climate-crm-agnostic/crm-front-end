@@ -57,7 +57,7 @@ export const PlanExpired = () => {
         </a>
 
         <p className="text-xs" style={{ color: "var(--border)" }}>
-          © {new Date().getFullYear()} Codex Technologies
+          © {new Date().getFullYear()} CodeX Technologies
         </p>
       </div>
     </div>
