@@ -446,7 +446,7 @@ export const ServiceDetail = () => {
                     {/* Billing */}
                     <div className="bg-card p-6 rounded-lg border shadow-sm space-y-4">
                         <h3 className="font-medium text-lg border-b pb-2">Billing</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label>Billing</Label>
                                 <Select value={billingType} onValueChange={setBillingType}>
@@ -473,7 +473,7 @@ export const ServiceDetail = () => {
                             </div>
                         </div>
                         {billingType === 'recurring' && (
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="amount">Amount per cycle</Label>
                                     <Input id="amount" type="number" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} />

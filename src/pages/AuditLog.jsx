@@ -141,7 +141,7 @@ export const AuditLog = () => {
                         value={model || "all"}
                         onValueChange={(v) => { setModel(v === "all" ? "" : v); setPage(1); }}
                     >
-                        <SelectTrigger className="h-9" style={{ minWidth: 160 }}>
+                        <SelectTrigger className="h-9 w-fit" style={{ minWidth: 160 }}>
                             <SelectValue placeholder="All models" />
                         </SelectTrigger>
                         <SelectContent>
