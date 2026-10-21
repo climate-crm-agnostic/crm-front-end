@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { formatDateTime } from "../utils/tz";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useParams, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { createService, updateService, uploadServiceImage, deleteServiceImage, getServiceById, getServiceAttributes } from "../services/serviceService";
 import { getClients } from "../services/clientService";
+import { getFollowups, deleteFollowup, getFollowupAttributes } from "../services/followupService";
+import { FollowupModal } from "../components/followups/FollowupModal";
+import { Table } from "../components/Table";
+import Swal from "sweetalert2";
 import { useAuth } from "../context/AuthContext";
 
 // UI Components
@@ -12,7 +16,7 @@ import { Button } from "../components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Checkbox } from "../components/ui/checkbox";
 import { Textarea } from "../components/ui/textarea";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Plus } from "lucide-react";
 import { DateInput } from "../components/ui/date-input";
 import { DynamicAttributeField } from "../components/attributes/DynamicAttributeField";
 import { coerceAttributeValue, emptyValueFor, normalizeOptions } from "../utils/attributeTypes";
@@ -42,6 +46,69 @@ export const ServiceDetail = () => {
     const [currency, setCurrency] = useState("USD");
     const [nextBillingDate, setNextBillingDate] = useState("");
     const [lastBilledAt, setLastBilledAt] = useState("");
+
+    // Sub-tabs of an existing service; the tab lives in the URL so coming back
+    // to the page (or following a link from the services list) keeps it.
+    const [searchParams, setSearchParams] = useSearchParams();
+    const activeTab = searchParams.get("tab") || "followups";
+    const setActiveTab = (tab) => setSearchParams({ tab }, { replace: true });
+
+    // Follow-ups
+    const [followups, setFollowups] = useState([]);
+    const [followupAttributes, setFollowupAttributes] = useState([]);
+    const [followupsLoading, setFollowupsLoading] = useState(!isNew);
+    const [followupModalOpen, setFollowupModalOpen] = useState(false);
+    const [followupToEdit, setFollowupToEdit] = useState(null);
+
+    const fetchFollowups = async () => {
+        if (isNew) return;
+        setFollowupsLoading(true);
+        try {
+            const [data, attrs] = await Promise.all([getFollowups(id), getFollowupAttributes()]);
+            setFollowupAttributes(attrs || []);
+            setFollowups((data || []).map((item) => ({
+                ...item,
+                follow_up_date: item.follow_up_date ? item.follow_up_date.split("T")[0] : "",
+                // Flatten dynamic attributes so they can be table columns
+                ...(item.attributes || {}),
+            })));
+        } catch (err) {
+            console.error("Error fetching follow-ups", err);
+        } finally {
+            setFollowupsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchFollowups();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [id, isNew]);
+
+    const followupColumns = [
+        { key: "follow_up_date", label: "Date" },
+        { key: "comment", label: "Comment" },
+        ...followupAttributes.map((attr) => ({ key: attr.name, label: attr.label })),
+    ];
+
+    const handleDeleteFollowup = async (followup) => {
+        const result = await Swal.fire({
+            title: "Are you sure?",
+            text: "You won't be able to revert this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Yes, delete it!",
+        });
+        if (!result.isConfirmed) return;
+        try {
+            await deleteFollowup(id, followup.id);
+            fetchFollowups();
+        } catch (err) {
+            console.error("Error deleting follow-up", err);
+            Swal.fire("Error!", "There was an error deleting the follow-up.", "error");
+        }
+    };
 
     // UI state
     const [loading, setLoading] = useState(false);
@@ -454,8 +521,60 @@ export const ServiceDetail = () => {
                         </div>
                     )}
 
+                    {/* Sub-tabs (existing services only) */}
+                    {!isNew && (
+                        <div className="flex gap-1 border-b overflow-x-auto" role="tablist">
+                            {[
+                                { key: "followups", label: "Follow-ups", count: followups.length },
+                                { key: "tasks", label: "Tasks", count: tasks.length },
+                                { key: "files", label: "Files", count: images.length },
+                            ].map((tab) => (
+                                <button
+                                    key={tab.key}
+                                    type="button"
+                                    role="tab"
+                                    aria-selected={activeTab === tab.key}
+                                    onClick={() => setActiveTab(tab.key)}
+                                    className={`px-4 py-2.5 text-sm font-semibold -mb-px border-b-2 whitespace-nowrap cursor-pointer transition-colors ${
+                                        activeTab === tab.key
+                                            ? "border-[var(--secondary-text)] text-[var(--secondary-text)]"
+                                            : "border-transparent text-muted-foreground hover:text-foreground"
+                                    }`}
+                                >
+                                    {tab.label}
+                                    <span className="ml-1.5 text-xs font-medium text-muted-foreground">{tab.count}</span>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+
+                    {!isNew && activeTab === "followups" && (
+                        <div className="space-y-4">
+                            <div className="flex justify-end">
+                                <Button onClick={() => { setFollowupToEdit(null); setFollowupModalOpen(true); }}>
+                                    <Plus className="mr-2 h-4 w-4" /> Add Follow-up
+                                </Button>
+                            </div>
+                            {followupsLoading ? (
+                                <div className="h-24 rounded-lg animate-pulse bg-muted" />
+                            ) : followups.length === 0 ? (
+                                <div className="rounded-lg p-8 text-center text-sm text-muted-foreground border bg-card">No follow-ups yet for this service.</div>
+                            ) : (
+                                <div className="bg-card p-2 rounded-lg shadow overflow-hidden flex flex-col">
+                                    <Table
+                                        data={followups}
+                                        columns={followupColumns}
+                                        onEdit={(followup) => { setFollowupToEdit(followup); setFollowupModalOpen(true); }}
+                                        onAskDelete={handleDeleteFollowup}
+                                        searchable={true}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    )}
+
                     {/* Tasks & Notes Row */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6" hidden={!isNew && activeTab !== "tasks"}>
                         {/* Tasks */}
                         <div className="bg-card p-6 rounded-lg border shadow-sm space-y-4">
                             <h3 className="font-medium text-lg border-b pb-2">Tasks</h3>
@@ -534,7 +653,7 @@ export const ServiceDetail = () => {
                     </div>
 
                     {/* Files & Images */}
-                    {!isNew && (
+                    {!isNew && activeTab === "files" && (
                         <div className="bg-card p-6 rounded-lg border shadow-sm space-y-4">
                             <h3 className="font-medium text-lg border-b pb-2">Files & Images</h3>
                             {images.length > 0 ? (
@@ -571,6 +690,16 @@ export const ServiceDetail = () => {
                     )}
                 </div>
             </div>
+
+            {!isNew && (
+                <FollowupModal
+                    isOpen={followupModalOpen}
+                    onClose={() => setFollowupModalOpen(false)}
+                    onFollowupSaved={fetchFollowups}
+                    followupToEdit={followupToEdit}
+                    serviceId={id}
+                />
+            )}
         </div>
     );
 };

@@ -154,7 +154,7 @@ export const Service = () => {
     };
 
     const handleViewFollowup = (service) => {
-        navigate(`/followup?service_id=${service.id}&service_name=${encodeURIComponent(service.name)}`);
+        navigate(`/service/${service.id}?tab=followups`);
     };
 
     const openImportModal = () => {
