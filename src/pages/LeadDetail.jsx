@@ -4,6 +4,9 @@ import { getLeadClientAttributes, createLead, updateLead, uploadLeadImage, delet
 import { getPipelineAttributes } from "../services/pipelineAttributeService";
 import { getPipelines } from "../services/pipelineService";
 import { getCatalogueItems } from "../services/catalogueService";
+import { VariantSelect } from "../components/VariantSelect";
+import { KIND_OPTIONS, itemKind, itemsOfKind, itemLabel } from "../lib/catalogueKinds";
+import { sellableVariants } from "../lib/variants";
 import { getSales } from "../services/salesService";
 import { getClients } from "../services/clientService";
 import { getQuotations } from "../services/quotationService";
@@ -63,6 +66,7 @@ export const LeadDetail = () => {
     const [formData, setFormData] = useState({});
     const [clientInfoData, setClientInfoData] = useState({});
     const [itemsList, setItemsList] = useState([]);
+    const [chosenKind, setChosenKind] = useState(null);
     const [quotations, setQuotations] = useState([]);
     const [sentEmails, setSentEmails] = useState([]);
     const [showEmailModal, setShowEmailModal] = useState(false);
@@ -278,6 +282,7 @@ export const LeadDetail = () => {
         const existingItems = leadData.items || [];
         const formattedItems = existingItems.map(item => ({
             catalogue_item: item.catalogue_item?.id || item.catalogue_item || "",
+            variant: item.variant?.id || item.variant || "",
             quantity: item.quantity || 1,
             custom_price: item.custom_price || ""
         }));
@@ -404,11 +409,46 @@ export const LeadDetail = () => {
 
     // Items list management
     const addItem = () => {
-        setItemsList([...itemsList, { catalogue_item: "", quantity: 1, custom_price: "" }]);
+        setItemsList([...itemsList, { catalogue_item: "", variant: "", quantity: 1, custom_price: "" }]);
     };
 
     const removeItem = (index) => {
         setItemsList(itemsList.filter((_, i) => i !== index));
+    };
+
+    // A lead sells products OR services, never both (services can bill recurring,
+    // products can't). The kind is what the user picked for this lead, else what its
+    // existing lines already are, else "product".
+    const lineKinds = new Set(
+        itemsList
+            .filter(item => item.catalogue_item)
+            .map(item => catalogueOptions.find(o => String(o.id) === String(item.catalogue_item)))
+            .filter(Boolean)           // skip lines whose catalogue item hasn't loaded yet
+            .map(itemKind)
+    );
+    const mixedKinds = lineKinds.size > 1;   // legacy leads created before the rule
+    const saleKind = chosenKind ?? (lineKinds.size ? [...lineKinds][0] : "product");
+
+    // Items offered for a line: those of the lead's kind, plus the line's own item if
+    // it is the other kind (a legacy mixed lead) so it stays visible and can be removed.
+    const optionsFor = (item) => {
+        const ofKind = itemsOfKind(catalogueOptions, saleKind);
+        const current = catalogueOptions.find(o => String(o.id) === String(item.catalogue_item));
+        return current && !ofKind.includes(current) ? [...ofKind, current] : ofKind;
+    };
+
+    const handleSaleKindChange = async (kind) => {
+        if (kind === saleKind) return;
+        if (itemsList.some(item => item.catalogue_item)) {
+            const { isConfirmed } = await Swal.fire({
+                title: `Switch to ${kind === "product" ? "products" : "services"}?`,
+                text: "A lead sells either products or services, so the lines you already added will be removed.",
+                icon: "warning", showCancelButton: true, confirmButtonText: "Switch and clear lines",
+            });
+            if (!isConfirmed) return;
+        }
+        setChosenKind(kind);
+        setItemsList([]);
     };
 
     const handleItemChange = (index, field, value) => {
@@ -418,6 +458,13 @@ export const LeadDetail = () => {
         if (field === "catalogue_item") {
             const catalogueItem = catalogueOptions.find(opt => String(opt.id) === String(value));
             updatedList[index].custom_price = catalogueItem ? catalogueItem.base_price : "";
+            updatedList[index].variant = "";   // a different item has different variants
+        }
+
+        if (field === "variant") {
+            const catalogueItem = catalogueOptions.find(opt => String(opt.id) === String(updatedList[index].catalogue_item));
+            const variant = (catalogueItem?.variants || []).find(v => String(v.id) === String(value));
+            if (variant) updatedList[index].custom_price = variant.effective_price;
         }
 
         setItemsList(updatedList);
@@ -537,10 +584,28 @@ export const LeadDetail = () => {
             const formattedAttributes = formatAttributes(formData, attributes);
             const formattedClientAttributes = formatAttributes(clientInfoData, clientAttributes);
 
+            if (mixedKinds) {
+                setError("A lead sells either products or services, not both. Remove one kind (or move it to a separate lead) before saving.");
+                setLoading(false);
+                return;
+            }
+
+            const missingVariant = itemsList.find(item => {
+                const option = catalogueOptions.find(o => String(o.id) === String(item.catalogue_item));
+                return item.catalogue_item && !item.variant && sellableVariants(option).length > 0;
+            });
+            if (missingVariant) {
+                const option = catalogueOptions.find(o => String(o.id) === String(missingVariant.catalogue_item));
+                setError(`Choose a variant for "${option?.name}" (e.g. its color or size).`);
+                setLoading(false);
+                return;
+            }
+
             const finalItems = itemsList
                 .filter(item => item.catalogue_item)
                 .map(item => ({
                     catalogue_item: item.catalogue_item,
+                    variant: item.variant || null,
                     quantity: Number(item.quantity) || 1,
                     custom_price: item.custom_price ? Number(item.custom_price) : null,
                     attributes: {}
@@ -935,6 +1000,31 @@ export const LeadDetail = () => {
                             </Button>
                         </div>
 
+                        <div className="flex flex-wrap items-center gap-3">
+                            <div role="group" aria-label="This lead sells" className="inline-flex rounded-md border bg-muted/30 p-0.5">
+                                {KIND_OPTIONS.map((kind) => (
+                                    <button
+                                        key={kind.value} type="button" aria-pressed={saleKind === kind.value}
+                                        onClick={() => handleSaleKindChange(kind.value)}
+                                        className={`rounded px-3 py-1 text-sm transition-colors ${saleKind === kind.value ? "bg-primary text-primary-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
+                                    >
+                                        {kind.value === "product" ? "Products" : "Services"}
+                                    </button>
+                                ))}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                A lead sells one kind or the other.{" "}
+                                {saleKind === "service"
+                                    ? "Services can be billed recurring (set on each catalogue item)."
+                                    : "Products are sold once; they can't be billed recurring."}
+                            </p>
+                        </div>
+                        {mixedKinds && (
+                            <p className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-600 dark:border-red-500/30 dark:bg-red-500/15">
+                                This lead mixes products and services, which is no longer allowed. Remove one kind (or move it to a separate lead) before saving.
+                            </p>
+                        )}
+
                         {itemsList.length === 0 ? (
                             <p className="text-sm text-muted-foreground italic">No items added.</p>
                         ) : (
@@ -957,16 +1047,23 @@ export const LeadDetail = () => {
                                                         onValueChange={(val) => handleItemChange(index, "catalogue_item", val)}
                                                     >
                                                         <SelectTrigger className="h-8 w-full min-w-[200px]">
-                                                            <SelectValue placeholder="Select from Catalogue" />
+                                                            <SelectValue placeholder={`Select a ${saleKind}`} />
                                                         </SelectTrigger>
                                                         <SelectContent>
-                                                            {catalogueOptions.map((opt) => (
+                                                            {optionsFor(item).map((opt) => (
                                                                 <SelectItem key={opt.id} value={String(opt.id)}>
-                                                                    {opt.name} ({opt.type})
+                                                                    {itemLabel(opt)}
                                                                 </SelectItem>
                                                             ))}
                                                         </SelectContent>
                                                     </Select>
+                                                    <div className="mt-1">
+                                                        <VariantSelect
+                                                            item={catalogueOptions.find(o => String(o.id) === String(item.catalogue_item))}
+                                                            value={item.variant}
+                                                            onChange={(val) => handleItemChange(index, "variant", val)}
+                                                        />
+                                                    </div>
                                                 </TableCell>
                                                 <TableCell className="p-2">
                                                     <Input

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
     createCatalogueItem, updateCatalogueItem, getCatalogueItemById,
-    getCatalogueItemAttributes, uploadCatalogueItemImage,
+    getCatalogueItemAttributes, catalogueItemGallery, deleteCatalogueVariant,
     getPriceTiers, createPriceTier, deletePriceTier
 } from "../services/catalogueService";
 import { getCategories } from "../services/categoryService";
@@ -15,6 +15,9 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Button } from "../components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
+import { ImageGallery } from "../components/ImageGallery";
+import { VariantEditorModal } from "../components/VariantEditorModal";
+import { Badge } from "../components/ui/badge";
 import { Textarea } from "../components/ui/textarea";
 import { ArrowLeft, Plus } from "lucide-react";
 import { Switch } from "../components/ui/switch";
@@ -48,8 +51,9 @@ export const CatalogueitemDetail = () => {
 
     // Files
     const [images, setImages] = useState([]);
-    const [selectedFile, setSelectedFile] = useState(null);
-    const [uploading, setUploading] = useState(false);
+    const [imagePaths, setImagePaths] = useState([]);
+    const [variants, setVariants] = useState([]);
+    const [variantModal, setVariantModal] = useState({ open: false, variant: null });
 
     // Price Tiers
     const [priceTiers, setPriceTiers] = useState([]);
@@ -156,6 +160,8 @@ export const CatalogueitemDetail = () => {
         setInventoryId(data.inventory ? (typeof data.inventory === 'object' ? String(data.inventory.id) : String(data.inventory)) : "none");
 
         setImages(data.list_of_images || []);
+        setImagePaths(data.image_paths || []);
+        setVariants(data.variants || []);
 
         setDynamicData(prev => {
             const updated = { ...prev };
@@ -178,26 +184,31 @@ export const CatalogueitemDetail = () => {
         }));
     };
 
-    // --- File Management ---
-    const handleFileChange = (e) => {
-        if (e.target.files && e.target.files[0]) {
-            setSelectedFile(e.target.files[0]);
-        }
+    // --- Images & variants ---
+    const handleGalleryChange = ({ images: nextImages, paths }) => {
+        setImages(nextImages);
+        setImagePaths(paths);
     };
 
-    const handleUpload = async () => {
-        if (!selectedFile || isNew) return;
-        setUploading(true);
+    const handleVariantSaved = (saved) => {
+        if (!saved?.id) return;
+        setVariants(prev => prev.some(v => v.id === saved.id)
+            ? prev.map(v => v.id === saved.id ? { ...v, ...saved } : v)
+            : [...prev, saved]);
+    };
+
+    const handleVariantDelete = async (variant) => {
+        const { isConfirmed } = await Swal.fire({
+            title: `Delete "${variant.name}"?`,
+            text: 'Past leads, quotations and invoices keep their text and prices; they just lose the link to this variant.',
+            icon: 'warning', showCancelButton: true, confirmButtonText: 'Delete',
+        });
+        if (!isConfirmed) return;
         try {
-            const res = await uploadCatalogueItemImage(id, selectedFile);
-            setImages(res.list_of_images || []);
-            setSelectedFile(null);
-            const fileInput = document.getElementById("file-upload");
-            if (fileInput) fileInput.value = "";
+            await deleteCatalogueVariant(variant.id);
+            setVariants(prev => prev.filter(v => v.id !== variant.id));
         } catch (err) {
-            setError(`Failed to upload image. ${err.message}`);
-        } finally {
-            setUploading(false);
+            setError(`Failed to delete variant. ${err.message}`);
         }
     };
 
@@ -281,8 +292,8 @@ export const CatalogueitemDetail = () => {
                 currency,
                 unit,
                 tax_rate: taxRate,
-                billing_type: billingType,
-                billing_cycle: billingType === 'recurring' ? billingCycle : null,
+                billing_type: type === 'product' ? 'one_time' : billingType,
+                billing_cycle: type !== 'product' && billingType === 'recurring' ? billingCycle : null,
                 is_active: isActive,
                 category: categoryId === "none" ? null : categoryId,
                 inventory: inventoryId === "none" ? null : inventoryId,
@@ -291,15 +302,10 @@ export const CatalogueitemDetail = () => {
 
             if (isNew) {
                 const newItem = await createCatalogueItem(payload);
-                if (selectedFile && newItem && newItem.id) {
-                    await uploadCatalogueItemImage(newItem.id, selectedFile);
-                }
-                navigate(-1);
+                // Photos and variants need the saved item, so continue on its page.
+                navigate(`/catalogue/${newItem.id}`, { replace: true });
             } else {
                 await updateCatalogueItem(id, payload);
-                if (selectedFile) {
-                    await uploadCatalogueItemImage(id, selectedFile);
-                }
                 navigate(-1);
             }
 
@@ -331,7 +337,7 @@ export const CatalogueitemDetail = () => {
                 </div>
                 <div className="flex flex-wrap gap-2">
                     <Button variant="outline" onClick={() => navigate(-1)}>Cancel</Button>
-                    <Button onClick={handleSubmit} disabled={loading || uploading}>
+                    <Button onClick={handleSubmit} disabled={loading}>
                         {loading ? "Saving..." : "Save Item"}
                     </Button>
                 </div>
@@ -359,7 +365,11 @@ export const CatalogueitemDetail = () => {
 
                             <div className="space-y-2">
                                 <Label htmlFor="type">Type</Label>
-                                <Select value={type} onValueChange={setType}>
+                                <Select value={type} onValueChange={(value) => {
+                                    setType(value);
+                                    // Only services and subscriptions can be billed recurring.
+                                    if (value === 'product') setBillingType('one_time');
+                                }}>
                                     <SelectTrigger><SelectValue placeholder="Type" /></SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="product">Product</SelectItem>
@@ -429,40 +439,49 @@ export const CatalogueitemDetail = () => {
                         </div>
                     </div>
 
-                    {/* Billing: decides what a Won lead does with this item */}
-                    <div className="bg-card p-6 rounded-lg border shadow-sm space-y-4">
-                        <h3 className="font-medium text-lg border-b pb-2">Billing</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label>Charged</Label>
-                                <Select value={billingType} onValueChange={setBillingType}>
-                                    <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="one_time">One time</SelectItem>
-                                        <SelectItem value="recurring">Recurring</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            {billingType === 'recurring' && (
+                    {/* Billing: decides what a Won lead does with this item. Only services recur. */}
+                    {type === 'product' ? (
+                        <div className="bg-card p-6 rounded-lg border shadow-sm space-y-1">
+                            <h3 className="font-medium text-lg border-b pb-2">Billing</h3>
+                            <p className="text-sm text-muted-foreground">
+                                Products are sold once, on a single invoice. Only services and subscriptions can be billed recurring.
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="bg-card p-6 rounded-lg border shadow-sm space-y-4">
+                            <h3 className="font-medium text-lg border-b pb-2">Billing</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label>Billing cycle</Label>
-                                    <Select value={billingCycle} onValueChange={setBillingCycle}>
+                                    <Label>Charged</Label>
+                                    <Select value={billingType} onValueChange={setBillingType}>
                                         <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="monthly">Monthly</SelectItem>
-                                            <SelectItem value="quarterly">Quarterly</SelectItem>
-                                            <SelectItem value="yearly">Yearly</SelectItem>
+                                            <SelectItem value="one_time">One time</SelectItem>
+                                            <SelectItem value="recurring">Recurring</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
-                            )}
+                                {billingType === 'recurring' && (
+                                    <div className="space-y-2">
+                                        <Label>Billing cycle</Label>
+                                        <Select value={billingCycle} onValueChange={setBillingCycle}>
+                                            <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="monthly">Monthly</SelectItem>
+                                                <SelectItem value="quarterly">Quarterly</SelectItem>
+                                                <SelectItem value="yearly">Yearly</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                )}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                {billingType === 'recurring'
+                                    ? "When a lead with this item is won, the client is invoiced right away and then once per cycle automatically."
+                                    : "When a lead with this item is won, it goes on a single invoice."}
+                            </p>
                         </div>
-                        <p className="text-xs text-muted-foreground">
-                            {billingType === 'recurring'
-                                ? "When a lead with this item is won, the client is invoiced right away and then once per cycle automatically."
-                                : "When a lead with this item is won, it goes on a single invoice."}
-                        </p>
-                    </div>
+                    )}
 
                     {/* Price Tiers List - Only show if not new */}
                     {!isNew && (
@@ -522,31 +541,67 @@ export const CatalogueitemDetail = () => {
                         </div>
                     )}
 
-                    {/* Files & Images */}
+                    {/* Photos */}
+                    <div className="bg-card p-6 rounded-lg border shadow-sm space-y-4">
+                        <h3 className="font-medium text-lg border-b pb-2">Photos</h3>
+                        {isNew ? (
+                            <p className="text-sm italic text-muted-foreground">Save the item first, then add its photos and variants here.</p>
+                        ) : (
+                            <ImageGallery images={images} paths={imagePaths} api={catalogueItemGallery(id)} onChange={handleGalleryChange} />
+                        )}
+                    </div>
+
+                    {/* Variants */}
                     {!isNew && (
                         <div className="bg-card p-6 rounded-lg border shadow-sm space-y-4">
-                            <h3 className="font-medium text-lg border-b pb-2">Item Images</h3>
-                            {images.length > 0 ? (
-                                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                                    {images.map((imgUrl, idx) => (
-                                        <div key={idx} className="relative aspect-square bg-muted rounded-md overflow-hidden border">
-                                            <img src={imgUrl} alt={`Product ${idx}`} className="w-full h-full object-cover" />
+                            <div className="flex items-center justify-between border-b pb-2">
+                                <div>
+                                    <h3 className="font-medium text-lg">Variants</h3>
+                                    <p className="text-xs text-muted-foreground">Versions of this item (color, size…) with their own photos and, if different, their own price.</p>
+                                </div>
+                                <Button type="button" variant="secondary" onClick={() => setVariantModal({ open: true, variant: null })}>+ Add variant</Button>
+                            </div>
+
+                            {variants.length === 0 ? (
+                                <p className="text-sm italic text-muted-foreground">No variants — this item is sold as a single product.</p>
+                            ) : (
+                                <div className="space-y-2">
+                                    {variants.map(v => (
+                                        <div key={v.id} className="flex items-center gap-4 rounded-lg border bg-muted/20 p-3">
+                                            <div className="h-14 w-14 shrink-0 overflow-hidden rounded-md border bg-muted">
+                                                {v.list_of_images?.[0]
+                                                    ? <img src={v.list_of_images[0]} alt="" className="h-full w-full object-cover" />
+                                                    : <div className="flex h-full w-full items-center justify-center text-[10px] text-muted-foreground">No photo</div>}
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                                <p className="truncate text-sm font-medium">{v.name}</p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {v.sku ? `SKU ${v.sku} · ` : ""}{v.list_of_images?.length || 0} photo(s)
+                                                </p>
+                                            </div>
+                                            <div className="text-right text-sm">
+                                                <p className="font-medium">{currency} {Number(v.effective_price ?? basePrice).toFixed(2)}</p>
+                                                {v.price == null && <p className="text-xs text-muted-foreground">item price</p>}
+                                            </div>
+                                            {!v.is_active && <Badge variant="secondary">Inactive</Badge>}
+                                            <div className="flex gap-1">
+                                                <Button type="button" variant="outline" size="sm" onClick={() => setVariantModal({ open: true, variant: v })}>Edit</Button>
+                                                <Button type="button" variant="ghost" size="sm" className="text-red-600" onClick={() => handleVariantDelete(v)}>Delete</Button>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
-                            ) : <p className="text-sm text-muted-foreground italic">No images.</p>}
-
-                            <div className="flex items-end gap-4 max-w-md">
-                                <div className="w-full space-y-2">
-                                    <Label>Upload New Image</Label>
-                                    <Input id="file-upload" type="file" accept="image/*" onChange={handleFileChange} />
-                                </div>
-                                <Button type="button" onClick={handleUpload} disabled={!selectedFile || uploading} variant="secondary">
-                                    {uploading ? "..." : "Upload"}
-                                </Button>
-                            </div>
+                            )}
                         </div>
                     )}
+
+                    <VariantEditorModal
+                        isOpen={variantModal.open}
+                        item={{ id, base_price: basePrice }}
+                        variant={variantModal.variant}
+                        onClose={() => setVariantModal({ open: false, variant: null })}
+                        onSaved={handleVariantSaved}
+                    />
                 </div>
             </div>
         </div>

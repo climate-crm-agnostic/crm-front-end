@@ -15,7 +15,27 @@ export const Catalogueitem = () => {
     const navigate = useNavigate();
 
     const staticColumns = [
-        { key: "name", label: "Name" },
+        {
+            key: "list_of_images",
+            label: "",
+            render: (value) => (
+                <div className="h-10 w-10 overflow-hidden rounded-md border bg-muted">
+                    {value?.[0] && <img src={value[0]} alt="" className="h-full w-full object-cover" loading="lazy" />}
+                </div>
+            ),
+        },
+        {
+            key: "name",
+            label: "Name",
+            render: (value, row) => (
+                <div>
+                    <div>{value}</div>
+                    {row.variants?.length > 0 && (
+                        <div className="text-xs text-muted-foreground">{row.variants.length} variant{row.variants.length === 1 ? "" : "s"}</div>
+                    )}
+                </div>
+            ),
+        },
         { key: "sku", label: "SKU" },
         {
             key: "type",
@@ -25,7 +45,12 @@ export const Catalogueitem = () => {
         {
             key: "base_price",
             label: "Base Price",
-            render: (value, row) => `${row.currency || 'USD'} ${Number(value).toFixed(2)}`
+            render: (value, row) => {
+                const money = (n) => `${row.currency || 'USD'} ${Number(n).toFixed(2)}`;
+                return row.has_variants && row.min_price !== row.max_price
+                    ? `${money(row.min_price)} – ${Number(row.max_price).toFixed(2)}`
+                    : money(value);
+            }
         },
         {
             key: "is_active",

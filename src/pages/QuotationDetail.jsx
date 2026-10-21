@@ -15,6 +15,10 @@ import { SendEmailModal } from "../components/SendEmailModal";
 
 import { getLead } from "../services/leadService";
 import { getCatalogueItems } from "../services/catalogueService";
+import { VariantSelect } from "../components/VariantSelect";
+import { KindSelect } from "../components/KindSelect";
+import { itemsOfKind, itemLabel } from "../lib/catalogueKinds";
+import { sellableVariants } from "../lib/variants";
 import {
     getQuotationById, createQuotation, updateQuotation, recalculateQuotation,
     getQuotationLineItems, createQuotationLineItem, deleteQuotationLineItem,
@@ -54,6 +58,8 @@ export const QuotationDetail = () => {
 
     const [newLineType, setNewLineType] = useState("catalogue");
     const [newLineCatalogueId, setNewLineCatalogueId] = useState("");
+    const [newLineVariantId, setNewLineVariantId] = useState("");
+    const [newLineKind, setNewLineKind] = useState("product");
     const [newLineDesc, setNewLineDesc] = useState("");
     const [newLinePrice, setNewLinePrice] = useState("0.00");
     const [newLineQty, setNewLineQty] = useState("1.00");
@@ -144,8 +150,22 @@ export const QuotationDetail = () => {
         }
     };
 
+    const handleKindChange = (kind) => {
+        setNewLineKind(kind);
+        setNewLineCatalogueId("");
+        setNewLineVariantId("");
+        setNewLinePrice("0.00");
+        setNewLineTax("0.00");
+    };
+
+    const handleVariantSelect = (variantId, variant) => {
+        setNewLineVariantId(variantId);
+        if (variant) setNewLinePrice(variant.effective_price);
+    };
+
     const handleCatalogueSelect = (val) => {
         setNewLineCatalogueId(val);
+        setNewLineVariantId("");
         if (val !== "none") {
             const item = catalogueItems.find(c => String(c.id) === String(val));
             if (item) {
@@ -164,8 +184,14 @@ export const QuotationDetail = () => {
         if (newLineType === "catalogue") {
             if (!newLineCatalogueId || newLineCatalogueId === "none") return;
             const item = catalogueItems.find(c => String(c.id) === String(newLineCatalogueId));
+            const variant = (item?.variants || []).find(v => String(v.id) === String(newLineVariantId));
+            if (sellableVariants(item).length > 0 && !variant) {
+                setError(`Choose a variant for "${item.name}".`);
+                return;
+            }
             payload.catalogue_item = newLineCatalogueId;
-            payload.description = item ? item.name : "Catalogue Item";
+            if (variant) payload.variant = variant.id;
+            payload.description = item ? (variant ? `${item.name} — ${variant.name}` : item.name) : "Catalogue Item";
         } else {
             if (!newLineDesc) return;
             payload.description = newLineDesc;
@@ -176,6 +202,7 @@ export const QuotationDetail = () => {
             await recalculateQuotation(id);
             setNewLineType("catalogue");
             setNewLineCatalogueId("");
+            setNewLineVariantId("");
             setNewLineDesc("");
             setNewLineQty("1.00");
             setNewLinePrice("0.00");
@@ -319,18 +346,30 @@ export const QuotationDetail = () => {
                                 </Select>
                             </div>
                             {newLineType === "catalogue" ? (
+                                <>
+                                <div className="space-y-1 w-32">
+                                    <Label className="text-xs">Sold as</Label>
+                                    <KindSelect value={newLineKind} onChange={handleKindChange} className="h-9" />
+                                </div>
                                 <div className="space-y-1 flex-1 w-full">
                                     <Label className="text-xs">Item</Label>
                                     <Select value={newLineCatalogueId} onValueChange={handleCatalogueSelect}>
-                                        <SelectTrigger className="h-9"><SelectValue placeholder="Select Catalogue Item" /></SelectTrigger>
+                                        <SelectTrigger className="h-9"><SelectValue placeholder={`Select a ${newLineKind}`} /></SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="none">-- Select Item --</SelectItem>
-                                            {catalogueItems.map(c => (
-                                                <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
+                                            {itemsOfKind(catalogueItems, newLineKind).map(c => (
+                                                <SelectItem key={c.id} value={String(c.id)}>{itemLabel(c)}</SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
+                                    <VariantSelect
+                                        item={catalogueItems.find(c => String(c.id) === String(newLineCatalogueId))}
+                                        value={newLineVariantId}
+                                        onChange={handleVariantSelect}
+                                        className="h-9 mt-1"
+                                    />
                                 </div>
+                                </>
                             ) : (
                                 <div className="space-y-1 flex-1 w-full">
                                     <Label className="text-xs">Description</Label>
