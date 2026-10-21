@@ -259,7 +259,7 @@ export const EventRegister = () => {
 
     // ── Layout shell ─────────────────────────────────────────────────────
     const shell = (children) => (
-        <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: "var(--background)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+        <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: "var(--background)", fontFamily: 'var(--font-body)' }}>
             <div className="w-full max-w-lg">{children}</div>
         </div>
     );

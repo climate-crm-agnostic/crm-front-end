@@ -168,7 +168,7 @@ export const EventDetail = () => {
     const canResendAll = canSendInvites && pendingWithEmail.length > 0;
 
     return (
-        <div className="p-6 max-w-5xl mx-auto space-y-6" style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+        <div className="p-6 max-w-5xl mx-auto space-y-6" style={{ fontFamily: 'var(--font-body)' }}>
             <button onClick={() => navigate("/event")} className="flex items-center gap-1.5 text-sm font-medium cursor-pointer" style={{ color: "var(--muted-foreground)" }}>
                 <ArrowLeft className="h-4 w-4" /> Back to events
             </button>
@@ -540,7 +540,7 @@ const ReactivateModal = ({ event, onClose, onSubmit }) => {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: "rgba(0,0,0,0.4)" }}>
-            <div className="w-full max-w-lg rounded-2xl p-6 space-y-4 max-h-[90vh] overflow-auto" style={{ backgroundColor: "var(--background)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+            <div className="w-full max-w-lg rounded-2xl p-6 space-y-4 max-h-[90vh] overflow-auto" style={{ backgroundColor: "var(--background)", fontFamily: 'var(--font-body)' }}>
                 <h2 className="text-lg font-semibold" style={{ color: "var(--foreground)" }}>Reactivate event</h2>
                 <p className="text-xs" style={{ color: "#9b948e" }}>New registrations add to the existing ones. A new link and QR are generated.</p>
 

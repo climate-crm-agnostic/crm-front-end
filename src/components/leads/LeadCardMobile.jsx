@@ -48,7 +48,7 @@ export const LeadCardMobile = ({ lead, stages = [], salesUsers = [], clientsById
             style={{
                 backgroundColor: "var(--background)",
                 border: "1px solid var(--border)",
-                fontFamily: '"Source Sans 3", Arial, sans-serif',
+                fontFamily: 'var(--font-body)',
             }}
         >
             {/* Lead name */}

@@ -15,14 +15,14 @@ export const PageSizeSelect = ({ pageSize, setPageSize, pageSizeOptions, label =
     <div className="flex items-center gap-2">
         <span
             className="text-sm text-muted-foreground"
-            style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+            style={{ fontFamily: 'var(--font-body)' }}
         >
             {label}
         </span>
         <Select value={String(pageSize)} onValueChange={(v) => setPageSize(Number(v))}>
             <SelectTrigger
                 className="w-[88px] h-9 bg-card border-border text-foreground"
-                style={{ fontFamily: '"Source Sans 3", Arial, sans-serif', fontSize: "14px" }}
+                style={{ fontFamily: 'var(--font-body)', fontSize: "14px" }}
             >
                 <SelectValue placeholder={pageSize} />
             </SelectTrigger>
@@ -68,7 +68,7 @@ export const PaginationFooter = ({
         <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
             <div
                 className="text-center sm:text-left text-muted-foreground"
-                style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+                style={{ fontFamily: 'var(--font-body)' }}
             >
                 <span className="font-semibold text-foreground">{startRecord}</span> -{" "}
                 <span className="font-semibold text-foreground">{endRecord}</span>{" "}

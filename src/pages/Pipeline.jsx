@@ -15,7 +15,7 @@ import { Plus, Edit2, Columns, ChevronDown, ChevronUp, Trash2, SlidersHorizontal
 import { useAuth } from "@/context/AuthContext";
 import { ATTRIBUTE_TYPES } from "../utils/attributeTypes";
 
-const FONT = '"Source Sans 3", Arial, sans-serif';
+const FONT = 'var(--font-body)';
 const INK = "var(--foreground)";
 const MUTED = "var(--muted-foreground)";
 const HINT = "#9b948e";

@@ -8,7 +8,7 @@ import { Card, CardHeader } from "../components/SectionCard";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "../components/ui/select";
 import Swal from "sweetalert2";
 
-const FONT = { fontFamily: '"Source Sans 3", Arial, sans-serif' };
+const FONT = { fontFamily: 'var(--font-body)' };
 
 export const LeadReassignment = () => {
     const [salesUsers, setSalesUsers] = useState([]);

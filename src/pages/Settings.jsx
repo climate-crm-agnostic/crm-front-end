@@ -111,7 +111,7 @@ export const Settings = () => {
     if (loading) return <div className="p-10 flex justify-center">Loading...</div>;
 
     return (
-        <div className="max-w-3xl mx-auto py-6 px-2 space-y-6" style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+        <div className="max-w-3xl mx-auto py-6 px-2 space-y-6" style={{ fontFamily: 'var(--font-body)' }}>
 
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-1">
                 <div className="min-w-0">

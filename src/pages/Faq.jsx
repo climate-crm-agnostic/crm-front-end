@@ -10,7 +10,7 @@ export const Faq = () => {
     const navigate = useNavigate();
 
     return (
-        <div className="min-h-screen p-6 md:p-12" style={{ backgroundColor: "var(--background)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+        <div className="min-h-screen p-6 md:p-12" style={{ backgroundColor: "var(--background)", fontFamily: 'var(--font-body)' }}>
             <div className="max-w-3xl mx-auto space-y-8">
 
                 {/* Header */}

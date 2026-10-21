@@ -4,7 +4,7 @@ export const PlanExpired = () => {
   return (
     <div
       className="w-full min-h-screen flex items-center justify-center px-6"
-      style={{ backgroundColor: "var(--background)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+      style={{ backgroundColor: "var(--background)", fontFamily: 'var(--font-body)' }}
     >
       {/* Top accent bar */}
       <div

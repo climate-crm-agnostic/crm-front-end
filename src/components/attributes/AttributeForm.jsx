@@ -15,7 +15,7 @@ const HINT = "#9b948e";
 const OAT = "var(--card)";
 const PEBBLE = "var(--border)";
 const OLIVE = "var(--secondary)";
-const FONT = '"Source Sans 3", Arial, sans-serif';
+const FONT = 'var(--font-body)';
 
 const inputStyle = {
     backgroundColor: "var(--background)", border: `1px solid ${PEBBLE}`, color: INK,

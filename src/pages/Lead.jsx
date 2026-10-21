@@ -168,7 +168,7 @@ export const Lead = () => {
     return (
         <div
             className="h-full flex flex-col w-full overflow-hidden"
-            style={{ backgroundColor: "var(--background)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+            style={{ backgroundColor: "var(--background)", fontFamily: 'var(--font-body)' }}
         >
             {/* Page header — same pattern as Attributes */}
             <div
@@ -183,7 +183,7 @@ export const Lead = () => {
                         <TrendingUp className="h-5 w-5" style={{ color: "var(--secondary-text)" }} />
                     </div>
                     <div className="min-w-0">
-                        <p className="text-base font-semibold truncate" style={{ color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+                        <p className="text-base font-semibold truncate" style={{ color: "var(--foreground)", fontFamily: 'var(--font-body)' }}>
                             Sales Pipeline
                         </p>
                         <p className="text-xs flex items-center gap-1.5 mt-0.5" style={{ color: "#9b948e" }}>

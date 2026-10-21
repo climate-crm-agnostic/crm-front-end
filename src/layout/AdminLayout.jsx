@@ -1,79 +1,10 @@
-import { AppSidebar } from "@/components/app-sidebar"
-import { Separator } from "@/components/ui/separator"
-import {
-    SidebarInset,
-    SidebarProvider,
-    SidebarTrigger,
-    useSidebar
-} from "@/components/ui/sidebar"
-import { Outlet, useLocation, useNavigate } from "react-router-dom"
+import { useEffect, useState } from "react"
+import { Outlet, useNavigate } from "react-router-dom"
+import { TooltipProvider } from "@/components/ui/tooltip"
 import { ChatNotificationProvider, useChatNotifications } from "@/context/ChatNotificationContext"
-
-const routeLabels = {
-    "/": "Dashboard", "/lead": "Leads", "/client": "Clients",
-    "/contact": "Contacts", "/service": "Services", "/invoice": "Invoices",
-    "/inventory": "Inventory", "/asset": "Assets", "/assetassignment": "Asset Assignments",
-    "/pipeline": "Pipelines", "/attribute": "Attributes", "/category": "Categories",
-    "/catalogue": "Catalogue", "/followup": "Follow-ups", "/webhook": "Webhooks",
-    "/apidocs": "API Docs", "/faq": "FAQ", "/my-info": "My Info",
-    "/chat": "Team Chat", "/team": "Teams",
-    "/period": "Periods", "/goal": "Goals", "/task": "Tasks",
-    "/email-template": "Email Templates", "/campaign": "Campaigns",
-    "/quotation": "Quotations",
-};
-
-function getPageTitle(pathname) {
-    const base = "/" + pathname.split("/")[1];
-    return routeLabels[base] ?? null;
-}
-
-function AdminLayoutContent() {
-    const { setOpen, open, isMobile } = useSidebar()
-    const location = useLocation()
-    const pageTitle = getPageTitle(location.pathname)
-
-    return (
-        <>
-            <AppSidebar />
-            <SidebarInset
-                onClick={() => { if (open && !isMobile) setOpen(false) }}
-                style={{ backgroundColor: "var(--background)" }}
-            >
-                <header
-                    className="flex h-12 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12"
-                    style={{
-                        backgroundColor: "color-mix(in srgb, var(--background) 90%, transparent)",
-                        borderBottom: "1px solid var(--border)",
-                        backdropFilter: "blur(10px)",
-                        WebkitBackdropFilter: "blur(10px)",
-                    }}
-                >
-                    <div className="flex items-center gap-3 px-4 w-full">
-                        <SidebarTrigger
-                            className="-ml-1 transition-all rounded"
-                            style={{ backgroundColor: "var(--secondary)", color: "var(--secondary-foreground)" }}
-                            onClick={(e) => e.stopPropagation()}
-                        />
-                        <Separator orientation="vertical" className="data-[orientation=vertical]:h-4" style={{ backgroundColor: "var(--border)" }} />
-                        {pageTitle && (
-                            <span
-                                className="text-sm font-medium hidden sm:block"
-                                style={{ color: "#9b948e", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
-                            >
-                                {pageTitle}
-                            </span>
-                        )}
-                    </div>
-                </header>
-
-                <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-                    <Outlet />
-                </div>
-            </SidebarInset>
-
-        </>
-    )
-}
+import { IconRail } from "@/components/shell/IconRail"
+import { TopNav } from "@/components/shell/TopNav"
+import { CommandPalette } from "@/components/shell/CommandPalette"
 
 function ChatToasts() {
     const { toasts, dismissToast } = useChatNotifications();
@@ -118,13 +49,42 @@ function ChatToasts() {
     );
 }
 
+function Shell() {
+    const [searchOpen, setSearchOpen] = useState(false);
+
+    // ⌘K / Ctrl+K opens the page switcher from anywhere.
+    useEffect(() => {
+        const onKeyDown = (event) => {
+            if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+                event.preventDefault();
+                setSearchOpen((open) => !open);
+            }
+        };
+        window.addEventListener("keydown", onKeyDown);
+        return () => window.removeEventListener("keydown", onKeyDown);
+    }, []);
+
+    return (
+        <div className="flex min-h-screen gap-4 bg-background p-4 pb-24 md:pb-4">
+            <IconRail />
+            <div className="flex min-w-0 flex-1 flex-col gap-4">
+                <TopNav onOpenSearch={() => setSearchOpen(true)} />
+                <main className="flex flex-1 flex-col gap-4">
+                    <Outlet />
+                </main>
+            </div>
+            <CommandPalette open={searchOpen} onOpenChange={setSearchOpen} />
+        </div>
+    )
+}
+
 export default function AdminLayout() {
     return (
         <ChatNotificationProvider>
-            <SidebarProvider defaultOpen={false}>
-                <AdminLayoutContent />
-                <ChatToasts />
-            </SidebarProvider>
+            <TooltipProvider delayDuration={0}>
+                <Shell />
+            </TooltipProvider>
+            <ChatToasts />
         </ChatNotificationProvider>
     )
 }

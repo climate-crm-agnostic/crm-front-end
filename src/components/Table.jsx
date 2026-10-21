@@ -239,7 +239,7 @@ export const Table = ({
                   borderRadius: "6px",
                   color: "var(--foreground)",
                   fontSize: "14px",
-                  fontFamily: '"Source Sans 3", Arial, sans-serif',
+                  fontFamily: 'var(--font-body)',
                   outline: "none",
                 }}
                 onFocus={e => e.target.style.borderColor = "var(--secondary-text)"}
@@ -261,7 +261,7 @@ export const Table = ({
 
         {/* Select de shadcn */}
         <div className="flex items-center gap-2 sm:justify-end">
-          <span className="text-sm" style={{ color: "var(--muted-foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>Rows per page</span>
+          <span className="text-sm" style={{ color: "var(--muted-foreground)", fontFamily: 'var(--font-body)' }}>Rows per page</span>
           <Select
             value={String(pageSize)}
             onValueChange={(v) => {
@@ -271,7 +271,7 @@ export const Table = ({
           >
             <SelectTrigger
               className="w-[88px] h-9"
-              style={{ backgroundColor: "var(--background)", border: "1px solid var(--border)", color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif', fontSize: "14px" }}
+              style={{ backgroundColor: "var(--background)", border: "1px solid var(--border)", color: "var(--foreground)", fontFamily: 'var(--font-body)', fontSize: "14px" }}
             >
               <SelectValue placeholder={pageSize} />
             </SelectTrigger>
@@ -289,12 +289,12 @@ export const Table = ({
       {/* Tabla */}
       <div
         className="flex-1 overflow-auto mt-4 relative"
-        style={{ borderRadius: "8px", border: "1px solid var(--border)", backgroundColor: "var(--background)" }}
+        style={{ borderRadius: "var(--radius-lg)", border: "1px solid var(--border)", backgroundColor: "var(--card)" }}
       >
         <div className="min-w-full inline-block align-middle">
           <table className="w-full text-sm">
             <thead>
-              <tr style={{ backgroundColor: "var(--secondary)" }}>
+              <tr style={{ backgroundColor: "var(--card)" }}>
                 {visibleCols.map((col) => {
                   const canSort = col.key !== "_actions";
                   const isSorted = sortKey === col.key ? sortDir : null;
@@ -303,16 +303,18 @@ export const Table = ({
                       key={col.key}
                       style={{
                         ...(col.width ? { width: col.width } : {}),
-                        backgroundColor: "var(--secondary)",
-                        color: "var(--secondary-foreground)",
+                        backgroundColor: "var(--card)",
+                        color: "var(--muted-foreground)",
+                        borderBottom: "1px solid var(--border)",
+                        textTransform: "uppercase",
                         position: "sticky",
                         top: 0,
                         zIndex: 10,
-                        fontFamily: '"Source Sans 3", Arial, sans-serif',
+                        fontFamily: 'var(--font-body)',
                         letterSpacing: "0.06em",
                       }}
                       className={[
-                        "px-3 py-2.5 text-xs font-semibold text-center",
+                        "px-3 py-3 text-xs font-semibold text-center",
                         canSort ? "cursor-pointer select-none" : "",
                       ].join(" ")}
                       onClick={canSort ? () => toggleSort(col.key) : undefined}
@@ -335,7 +337,7 @@ export const Table = ({
                     key={row.id_rol ?? row.id ?? idx}
                     style={{ borderBottom: "1px solid var(--border)" }}
                     className="transition-colors"
-                    onMouseEnter={e => e.currentTarget.style.backgroundColor = "var(--card)"}
+                    onMouseEnter={e => e.currentTarget.style.backgroundColor = "var(--muted)"}
                     onMouseLeave={e => e.currentTarget.style.backgroundColor = ""}
                   >
                     {visibleCols.map((col) => (
@@ -359,7 +361,7 @@ export const Table = ({
                   <td
                     colSpan={visibleCols.length}
                     className="px-4 py-10 text-center"
-                    style={{ color: "#9b948e", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+                    style={{ color: "#9b948e", fontFamily: 'var(--font-body)' }}
                   >
                     No results.
                   </td>
@@ -373,7 +375,7 @@ export const Table = ({
       {/* Paginación */}
       <div className="mt-auto px-4 py-2 text-xs" style={{ borderTop: "1px solid var(--border)" }}>
         <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
-          <div className="text-center sm:text-left" style={{ color: "var(--muted-foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+          <div className="text-center sm:text-left" style={{ color: "var(--muted-foreground)", fontFamily: 'var(--font-body)' }}>
             <span className="font-semibold" style={{ color: "var(--foreground)" }}>{startRecord}</span> -{" "}
             <span className="font-semibold" style={{ color: "var(--foreground)" }}>{endRecord}</span>{" "}
             (Page {currentPage} of {totalPages})
@@ -445,7 +447,7 @@ export const RowActions = ({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="terciary" size="icon" className="h-8 w-8 rounded-md">
+        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-muted hover:text-foreground" aria-label="Row actions">
           <MoreHorizontal className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>

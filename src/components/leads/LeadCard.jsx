@@ -48,7 +48,7 @@ export const LeadCard = ({ lead, salesUsers = [], clientsById = {}, onDragStart,
                 style={{
                     backgroundColor: "var(--background)",
                     border: "1px solid var(--border)",
-                    fontFamily: '"Source Sans 3", Arial, sans-serif',
+                    fontFamily: 'var(--font-body)',
                 }}
                 onMouseEnter={e => {
                     e.currentTarget.style.borderColor = "var(--secondary-text)";

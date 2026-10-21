@@ -32,7 +32,7 @@ export function CardHeader(props) {
                 </div>
                 <p
                     className="text-base font-semibold truncate"
-                    style={{ color: "var(--secondary-text)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+                    style={{ color: "var(--secondary-text)", fontFamily: 'var(--font-body)' }}
                 >
                     {title}
                 </p>

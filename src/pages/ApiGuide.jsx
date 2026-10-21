@@ -46,7 +46,7 @@ const InfoBlock = ({ title, color = "var(--secondary-text)", items }) => (
 );
 
 const SectionTitle = ({ children }) => (
-    <p className="text-base font-semibold mb-1" style={{ color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>{children}</p>
+    <p className="text-base font-semibold mb-1" style={{ color: "var(--foreground)", fontFamily: 'var(--font-body)' }}>{children}</p>
 );
 
 export const ApiGuide = () => {
@@ -72,7 +72,7 @@ export const ApiGuide = () => {
     const tabs = ['leads','clients','contacts','services','pipelines','followups','catalogue','invoices','payables','assets','attributes','webhooks','files'];
 
     return (
-        <div className="min-h-screen p-6 md:p-12" style={{ backgroundColor: "var(--background)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+        <div className="min-h-screen p-6 md:p-12" style={{ backgroundColor: "var(--background)", fontFamily: 'var(--font-body)' }}>
             <div className="max-w-5xl mx-auto space-y-8">
 
                 {/* Header */}

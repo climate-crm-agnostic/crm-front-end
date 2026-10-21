@@ -89,7 +89,7 @@ export const AddAttendeesModal = ({ eventId, onClose, onDone }) => {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: "rgba(0,0,0,0.4)" }}>
-            <div className="w-full max-w-lg rounded-2xl p-6 space-y-4 max-h-[90vh] overflow-auto" style={{ backgroundColor: "var(--background)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+            <div className="w-full max-w-lg rounded-2xl p-6 space-y-4 max-h-[90vh] overflow-auto" style={{ backgroundColor: "var(--background)", fontFamily: 'var(--font-body)' }}>
                 <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
                         <h2 className="text-lg font-semibold" style={{ color: "var(--foreground)" }}>Add attendees</h2>

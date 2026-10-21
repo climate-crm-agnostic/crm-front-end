@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Table } from "../components/Table";
+import { CatalogueGallery } from "../components/CatalogueGallery";
 import { Button } from "../components/ui/button";
-import { Plus, Download } from "lucide-react";
+import { Plus, Download, Image as ImageIcon } from "lucide-react";
 import { getCatalogueItems, deleteCatalogueItem, getCatalogueItemAttributes, exportCatalogueItemsExcel } from "../services/catalogueService";
 import { saveAs } from "file-saver";
 import Swal from "sweetalert2";
@@ -13,14 +14,23 @@ export const Catalogueitem = () => {
     const [loading, setLoading] = useState(true);
     const [attributes, setAttributes] = useState([]);
     const navigate = useNavigate();
+    const [view, setView] = useState(() => {
+        try { return localStorage.getItem("catalogue_view") || "gallery"; } catch { return "gallery"; }
+    });
+    const changeView = (next) => {
+        setView(next);
+        try { localStorage.setItem("catalogue_view", next); } catch { /* remembering the view is a nicety */ }
+    };
 
     const staticColumns = [
         {
             key: "list_of_images",
             label: "",
             render: (value) => (
-                <div className="h-10 w-10 overflow-hidden rounded-md border bg-muted">
-                    {value?.[0] && <img src={value[0]} alt="" className="h-full w-full object-cover" loading="lazy" />}
+                <div className="grid h-10 w-10 place-items-center overflow-hidden rounded-lg border bg-muted text-muted-foreground">
+                    {value?.[0]
+                        ? <img src={value[0]} alt="" className="h-full w-full object-cover" loading="lazy" />
+                        : <ImageIcon className="size-4 opacity-50" aria-hidden="true" />}
                 </div>
             ),
         },
@@ -155,7 +165,17 @@ export const Catalogueitem = () => {
                         Manage your products, services, and subscriptions.
                     </p>
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                    <div role="group" aria-label="View" className="inline-flex gap-0.5 rounded-full bg-muted p-[3px]">
+                        {[["gallery", "Gallery"], ["table", "Table"]].map(([value, label]) => (
+                            <button
+                                key={value} type="button" aria-pressed={view === value} onClick={() => changeView(value)}
+                                className={`h-8 cursor-pointer rounded-full px-4 text-[13px] font-semibold transition-colors ${view === value ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                            >
+                                {label}
+                            </button>
+                        ))}
+                    </div>
                     <button
                         onClick={handleExportExcel}
                         className="flex items-center gap-2 h-9 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
@@ -171,15 +191,27 @@ export const Catalogueitem = () => {
                 </div>
             </div>
 
-            <div className="bg-card p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
-                <Table
-                    data={items}
-                    columns={columns}
-                    onEdit={handleEdit}
-                    onAskDelete={handleDelete}
-                    searchable={true}
-                />
-            </div>
+            {view === "gallery" ? (
+                <div className="p-2">
+                    {loading ? (
+                        <div className="grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(min(220px,100%),1fr))]">
+                            {[0, 1, 2, 3].map((i) => <div key={i} className="h-64 animate-pulse rounded-xl bg-muted" />)}
+                        </div>
+                    ) : (
+                        <CatalogueGallery items={items} onOpen={handleEdit} />
+                    )}
+                </div>
+            ) : (
+                <div className="bg-card p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
+                    <Table
+                        data={items}
+                        columns={columns}
+                        onEdit={handleEdit}
+                        onAskDelete={handleDelete}
+                        searchable={true}
+                    />
+                </div>
+            )}
         </div>
     );
 };

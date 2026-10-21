@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import Swal from "sweetalert2";
 
-const FONT = '"Source Sans 3", Arial, sans-serif';
+const FONT = 'var(--font-body)';
 const INK = "var(--foreground)";
 const MUTED = "var(--muted-foreground)";
 const HINT = "#9b948e";

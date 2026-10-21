@@ -158,14 +158,14 @@ export const LeadTable = ({ selectedPipelineId, refreshTrigger, onLeadClick }) =
 
     if (loading) {
         return (
-            <div className="p-10 text-center" style={{ color: "var(--muted-foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+            <div className="p-10 text-center" style={{ color: "var(--muted-foreground)", fontFamily: 'var(--font-body)' }}>
                 Loading leads...
             </div>
         );
     }
 
     return (
-        <div className="h-full flex flex-col px-4 pb-4" style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+        <div className="h-full flex flex-col px-4 pb-4" style={{ fontFamily: 'var(--font-body)' }}>
             {availableContactTypes.length > 0 && (
                 <div className="flex items-center gap-2 py-2">
                     <label htmlFor="lead-contact-filter" className="text-xs font-medium text-muted-foreground">Filter:</label>

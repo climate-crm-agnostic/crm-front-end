@@ -31,7 +31,7 @@ function QuotaBar({ used, limit }) {
     return (
         <div className="space-y-2">
             <div className="flex justify-between items-baseline">
-                <span className="text-2xl font-bold" style={{ color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+                <span className="text-2xl font-bold" style={{ color: "var(--foreground)", fontFamily: 'var(--font-body)' }}>
                     {used}
                     <span className="text-sm font-normal text-muted-foreground ml-1">/ {limit} today</span>
                 </span>
@@ -81,12 +81,12 @@ export const MyInfo = () => {
                 <div className="px-6 py-5 flex items-center gap-5">
                     <div
                         className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-lg font-bold"
-                        style={{ backgroundColor: "var(--secondary)", color: "var(--secondary-foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+                        style={{ backgroundColor: "var(--secondary)", color: "var(--secondary-foreground)", fontFamily: 'var(--font-body)' }}
                     >
                         {initials}
                     </div>
                     <div className="space-y-1 min-w-0">
-                        <p className="font-semibold text-base truncate" style={{ color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+                        <p className="font-semibold text-base truncate" style={{ color: "var(--foreground)", fontFamily: 'var(--font-body)' }}>
                             {user?.username}
                         </p>
                         <p className="text-sm truncate" style={{ color: "var(--muted-foreground)" }}>

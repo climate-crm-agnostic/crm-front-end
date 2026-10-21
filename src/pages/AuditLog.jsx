@@ -79,7 +79,7 @@ const ChangesCell = ({ changes }) => {
     );
 };
 
-const FONT = { fontFamily: '"Source Sans 3", Arial, sans-serif' };
+const FONT = { fontFamily: 'var(--font-body)' };
 
 export const AuditLog = () => {
     const [data, setData]         = useState(null);

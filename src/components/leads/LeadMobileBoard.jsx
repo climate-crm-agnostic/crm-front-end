@@ -31,7 +31,7 @@ export const LeadMobileBoard = ({ stages, leads, salesUsers, clientsById, onLead
     if (!stages.length) return null;
 
     return (
-        <div className="flex flex-col h-full w-full overflow-hidden" style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+        <div className="flex flex-col h-full w-full overflow-hidden" style={{ fontFamily: 'var(--font-body)' }}>
             {/* Stage chips */}
             <div
                 className="flex gap-2 overflow-x-auto px-4 py-3 shrink-0"

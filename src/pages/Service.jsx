@@ -236,7 +236,7 @@ export const Service = () => {
                 <Select value={selectedClient} onValueChange={setSelectedClient}>
                     <SelectTrigger
                         className="w-full sm:w-[200px]"
-                        style={{ backgroundColor: "var(--background)", border: "1px solid var(--border)", color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif', fontSize: "14px" }}
+                        style={{ backgroundColor: "var(--background)", border: "1px solid var(--border)", color: "var(--foreground)", fontFamily: 'var(--font-body)', fontSize: "14px" }}
                     >
                         <SelectValue placeholder="Select Client" />
                     </SelectTrigger>
@@ -253,7 +253,7 @@ export const Service = () => {
                         value={contactFilter}
                         onChange={(e) => setContactFilter(e.target.value)}
                         className="h-9 text-sm border rounded-md px-2 bg-background"
-                        style={{ border: "1px solid var(--border)", color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+                        style={{ border: "1px solid var(--border)", color: "var(--foreground)", fontFamily: 'var(--font-body)' }}
                     >
                         <option value="">All services</option>
                         {availableContactTypes.includes('email') && <option value="email">Has Email</option>}

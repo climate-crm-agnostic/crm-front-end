@@ -21,7 +21,7 @@ export const FeatureGate = ({ feature, children }) => {
   return (
     <div
       className="flex flex-col items-center justify-center min-h-[60vh] gap-6 text-center px-6"
-      style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+      style={{ fontFamily: 'var(--font-body)' }}
     >
       <div
         className="flex h-16 w-16 items-center justify-center rounded-2xl shadow-md"

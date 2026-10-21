@@ -54,7 +54,7 @@ export const EditAttendeeModal = ({ attendee, onClose, onSave }) => {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: "rgba(0,0,0,0.4)" }}>
-            <div className="w-full max-w-md rounded-2xl p-6 space-y-4" style={{ backgroundColor: "var(--background)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+            <div className="w-full max-w-md rounded-2xl p-6 space-y-4" style={{ backgroundColor: "var(--background)", fontFamily: 'var(--font-body)' }}>
                 <h2 className="text-lg font-semibold" style={{ color: "var(--foreground)" }}>Edit attendee</h2>
 
                 {errors._global && (

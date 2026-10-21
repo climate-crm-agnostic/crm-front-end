@@ -122,14 +122,14 @@ export const WebhookList = () => {
 
     if (loading) {
         return (
-            <div className="p-8 text-center" style={{ color: "var(--muted-foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+            <div className="p-8 text-center" style={{ color: "var(--muted-foreground)", fontFamily: 'var(--font-body)' }}>
                 Loading webhooks...
             </div>
         );
     }
 
     return (
-        <div className="p-6 space-y-6" style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+        <div className="p-6 space-y-6" style={{ fontFamily: 'var(--font-body)' }}>
 
             {/* Page header */}
             <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
@@ -143,7 +143,7 @@ export const WebhookList = () => {
                     <div>
                         <p
                             className="text-base font-semibold"
-                            style={{ color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+                            style={{ color: "var(--foreground)", fontFamily: 'var(--font-body)' }}
                         >
                             Webhooks
                         </p>
@@ -218,7 +218,7 @@ export const WebhookList = () => {
                                             style={{
                                                 color: "var(--secondary-foreground)",
                                                 letterSpacing: "0.06em",
-                                                fontFamily: '"Source Sans 3", Arial, sans-serif',
+                                                fontFamily: 'var(--font-body)',
                                                 textAlign: i === 4 ? "right" : "left",
                                             }}
                                         >

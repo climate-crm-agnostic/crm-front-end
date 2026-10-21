@@ -186,7 +186,7 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
 
     if (loading) {
         return (
-            <div className="p-10 text-center" style={{ color: "var(--muted-foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+            <div className="p-10 text-center" style={{ color: "var(--muted-foreground)", fontFamily: 'var(--font-body)' }}>
                 Loading board...
             </div>
         );
@@ -194,7 +194,7 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
 
     if (!pipelines.length) {
         return (
-            <div className="flex flex-col items-center justify-center p-10 h-full" style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+            <div className="flex flex-col items-center justify-center p-10 h-full" style={{ fontFamily: 'var(--font-body)' }}>
                 <div className="text-center mb-8">
                     <h3 className="text-lg font-semibold mb-2" style={{ color: "var(--foreground)" }}>No active pipeline found</h3>
                     <p className="text-sm mb-6" style={{ color: "#9b948e" }}>Configure your first pipeline to start managing leads.</p>
@@ -213,7 +213,7 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
     return (
         <div
             className="flex flex-col h-full w-full overflow-hidden relative group/board"
-            style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+            style={{ fontFamily: 'var(--font-body)' }}
         >
             {/* Pipeline selector toolbar */}
             <div

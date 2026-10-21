@@ -56,7 +56,7 @@ export const Login = ({ className, ...props }) => {
 
   return (
     <>
-      <div className="w-full h-screen lg:grid lg:grid-cols-2" style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+      <div className="w-full h-screen lg:grid lg:grid-cols-2" style={{ fontFamily: 'var(--font-body)' }}>
 
         {/* Left — Form */}
         <div className="flex items-center justify-center py-12 px-8" style={{ backgroundColor: "var(--background)" }}>
@@ -115,7 +115,7 @@ export const Login = ({ className, ...props }) => {
                       backgroundColor: "var(--background)",
                       border: "1px solid var(--border)",
                       color: "var(--foreground)",
-                      fontFamily: '"Source Sans 3", Arial, sans-serif',
+                      fontFamily: 'var(--font-body)',
                     }}
                   />
                 </div>
@@ -149,7 +149,7 @@ export const Login = ({ className, ...props }) => {
                       backgroundColor: "var(--background)",
                       border: "1px solid var(--border)",
                       color: "var(--foreground)",
-                      fontFamily: '"Source Sans 3", Arial, sans-serif',
+                      fontFamily: 'var(--font-body)',
                     }}
                   />
                 </div>
@@ -161,7 +161,7 @@ export const Login = ({ className, ...props }) => {
                   style={{
                     backgroundColor: loading ? "color-mix(in srgb, var(--primary) 80%, black)" : "var(--primary)",
                     color: "var(--primary-foreground)",
-                    fontFamily: '"Source Sans 3", Arial, sans-serif',
+                    fontFamily: 'var(--font-body)',
                     letterSpacing: "0.02em",
                     cursor: loading ? "not-allowed" : "pointer",
                   }}
@@ -221,7 +221,7 @@ export const Login = ({ className, ...props }) => {
                       backgroundColor: "var(--background)",
                       border: "1px solid var(--border)",
                       color: "var(--foreground)",
-                      fontFamily: '"Source Sans 3", Arial, sans-serif',
+                      fontFamily: 'var(--font-body)',
                     }}
                   />
                 </div>
@@ -233,7 +233,7 @@ export const Login = ({ className, ...props }) => {
                   style={{
                     backgroundColor: loading ? "color-mix(in srgb, var(--primary) 80%, black)" : "var(--primary)",
                     color: "var(--primary-foreground)",
-                    fontFamily: '"Source Sans 3", Arial, sans-serif',
+                    fontFamily: 'var(--font-body)',
                     letterSpacing: "0.02em",
                     cursor: loading ? "not-allowed" : "pointer",
                   }}
@@ -307,7 +307,7 @@ export const Login = ({ className, ...props }) => {
                 Manage smarter.<br />
                 <span style={{ color: "var(--primary-text)" }}>Grow faster.</span>
               </h2>
-              <p className="text-base leading-relaxed" style={{ color: "#b8b0a8", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+              <p className="text-base leading-relaxed" style={{ color: "#b8b0a8", fontFamily: 'var(--font-body)' }}>
                 A unified platform to manage clients, leads, and operations — all in one place.
               </p>
             </div>
@@ -327,8 +327,8 @@ export const Login = ({ className, ...props }) => {
                     <Icon className="h-5 w-5" style={{ color: iconColor }} />
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold" style={{ color: "#ffffff", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>{title}</h3>
-                    <p className="text-sm mt-0.5 leading-relaxed" style={{ color: "#b0a89e", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>{desc}</p>
+                    <h3 className="text-sm font-semibold" style={{ color: "#ffffff", fontFamily: 'var(--font-body)' }}>{title}</h3>
+                    <p className="text-sm mt-0.5 leading-relaxed" style={{ color: "#b0a89e", fontFamily: 'var(--font-body)' }}>{desc}</p>
                   </div>
                 </div>
               ))}

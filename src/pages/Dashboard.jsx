@@ -6,7 +6,15 @@ import { API_URL, getHeaders, fetchAllPages } from "@/services/api";
 import { getMyTasks } from "@/services/taskService";
 import { getClients } from "@/services/clientService";
 import { Modal } from "../components/Modal";
-import { Magnet, Building2, Receipt, Laptop, ArrowUpRight, ClipboardList, ChevronLeft, ChevronRight, Bot } from "lucide-react";
+import { Magnet, Building2, Receipt, Laptop, ArrowUpRight, ClipboardList, ChevronLeft, ChevronRight, Target, Wallet, Repeat, Plus, Bot } from "lucide-react";
+import { getDashboardSummary, getRevenueSeries } from "@/services/dashboardService";
+import { getPeriods } from "@/services/periodService";
+import { getGoalsProgress } from "@/services/goalService";
+import { compactMoney } from "@/lib/chartPaths";
+import { KpiCard } from "@/components/dashboard/KpiCard";
+import { RevenueChart } from "@/components/dashboard/RevenueChart";
+import { GoalGauge } from "@/components/dashboard/GoalGauge";
+import { LatestWins } from "@/components/dashboard/LatestWins";
 
 const fetchCount = async (endpoint) => {
     const res = await fetch(`${API_URL}/${endpoint}/?page_size=1`, { headers: getHeaders() });
@@ -143,7 +151,7 @@ const StatCard = ({ title, count, icon: Icon, href, loading, navigate }) => {
                 <div>
                     <p
                         className="text-xs font-semibold uppercase tracking-widest mb-1.5"
-                        style={{ color: "var(--muted-foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+                        style={{ color: "var(--muted-foreground)", fontFamily: 'var(--font-body)' }}
                     >
                         {title}
                     </p>
@@ -152,7 +160,7 @@ const StatCard = ({ title, count, icon: Icon, href, loading, navigate }) => {
                     ) : (
                         <span
                             className="text-4xl font-bold"
-                            style={{ color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif', letterSpacing: "-0.02em" }}
+                            style={{ color: "var(--foreground)", fontFamily: 'var(--font-body)', letterSpacing: "-0.02em" }}
                         >
                             {count ?? "—"}
                         </span>
@@ -165,7 +173,7 @@ const StatCard = ({ title, count, icon: Icon, href, loading, navigate }) => {
                     style={{
                         color: accent.link,
                         borderTop: "1px solid var(--border)",
-                        fontFamily: '"Source Sans 3", Arial, sans-serif',
+                        fontFamily: 'var(--font-body)',
                     }}
                 >
                     <span>View all</span>
@@ -196,13 +204,13 @@ const TaskKpiCard = ({ title, count, color, entityKey, onOpenModal, loading }) =
                 </span>
             </div>
             <div>
-                <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: "var(--muted-foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+                <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: "var(--muted-foreground)", fontFamily: 'var(--font-body)' }}>
                     {title}
                 </p>
                 {loading ? (
                     <div className="h-9 w-16 rounded animate-pulse" style={{ backgroundColor: "var(--border)" }} />
                 ) : (
-                    <span className="text-3xl font-bold" style={{ color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif', letterSpacing: "-0.02em" }}>
+                    <span className="text-3xl font-bold" style={{ color: "var(--foreground)", fontFamily: 'var(--font-body)', letterSpacing: "-0.02em" }}>
                         {count}
                     </span>
                 )}
@@ -261,7 +269,7 @@ const TaskCalendar = ({ tasks, navigate }) => {
 
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-bold" style={{ color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+                <h3 className="text-sm font-bold" style={{ color: "var(--foreground)", fontFamily: 'var(--font-body)' }}>
                     {MONTHS[current.month]} {current.year}
                 </h3>
                 <div className="flex gap-1">
@@ -313,7 +321,7 @@ const TaskCalendar = ({ tasks, navigate }) => {
                                 style={{
                                     color: isToday ? "var(--background)" : "var(--foreground)",
                                     backgroundColor: isToday ? "var(--secondary)" : "transparent",
-                                    fontFamily: '"Source Sans 3", Arial, sans-serif',
+                                    fontFamily: 'var(--font-body)',
                                 }}
                             >
                                 {cell.dayNum}
@@ -376,7 +384,7 @@ const PipelineReportCard = ({ pipeline }) => {
     return (
         <div style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)", borderRadius: 8, overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
             <div style={{ borderBottom: "1px solid var(--border)", padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <p style={{ fontSize: 14, fontWeight: 700, color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif', margin: 0 }}>
+                <p style={{ fontSize: 14, fontWeight: 700, color: "var(--foreground)", fontFamily: 'var(--font-body)', margin: 0 }}>
                     {pipeline.name}
                 </p>
                 <span style={{ fontSize: 11, fontWeight: 600, color: "var(--secondary-text)", backgroundColor: "var(--sidebar-accent)", border: "1px solid var(--primary-text)", borderRadius: 99, padding: "2px 10px" }}>
@@ -386,7 +394,7 @@ const PipelineReportCard = ({ pipeline }) => {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
                 {/* By stage */}
                 <div style={{ padding: "16px 20px", borderRight: "1px solid var(--border)" }}>
-                    <p style={{ fontSize: 10, fontWeight: 700, color: "#9b948e", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12, fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+                    <p style={{ fontSize: 10, fontWeight: 700, color: "#9b948e", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12, fontFamily: 'var(--font-body)' }}>
                         By Stage
                     </p>
                     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -397,8 +405,8 @@ const PipelineReportCard = ({ pipeline }) => {
                             return (
                                 <div key={stage}>
                                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                                        <span style={{ fontSize: 12, color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>{stage}</span>
-                                        <span style={{ fontSize: 12, fontWeight: 700, color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>{count}</span>
+                                        <span style={{ fontSize: 12, color: "var(--foreground)", fontFamily: 'var(--font-body)' }}>{stage}</span>
+                                        <span style={{ fontSize: 12, fontWeight: 700, color: "var(--foreground)", fontFamily: 'var(--font-body)' }}>{count}</span>
                                     </div>
                                     <div style={{ height: 7, backgroundColor: "var(--border)", borderRadius: 4 }}>
                                         <div style={{ height: 7, width: `${pct}%`, backgroundColor: color, borderRadius: 4, transition: "width 0.5s ease" }} />
@@ -410,7 +418,7 @@ const PipelineReportCard = ({ pipeline }) => {
                 </div>
                 {/* By responsible */}
                 <div style={{ padding: "16px 20px" }}>
-                    <p style={{ fontSize: 10, fontWeight: 700, color: "#9b948e", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12, fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+                    <p style={{ fontSize: 10, fontWeight: 700, color: "#9b948e", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12, fontFamily: 'var(--font-body)' }}>
                         By Responsible
                     </p>
                     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -423,10 +431,10 @@ const PipelineReportCard = ({ pipeline }) => {
                                 </div>
                                 <div style={{ flex: 1, minWidth: 0 }}>
                                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                                        <span style={{ fontSize: 12, color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif', overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                        <span style={{ fontSize: 12, color: "var(--foreground)", fontFamily: 'var(--font-body)', overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                             {userName}
                                         </span>
-                                        <span style={{ fontSize: 12, fontWeight: 700, color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif', marginLeft: 8, flexShrink: 0 }}>
+                                        <span style={{ fontSize: 12, fontWeight: 700, color: "var(--foreground)", fontFamily: 'var(--font-body)', marginLeft: 8, flexShrink: 0 }}>
                                             {data.total}
                                         </span>
                                     </div>
@@ -435,7 +443,7 @@ const PipelineReportCard = ({ pipeline }) => {
                                             const idx = pipeline.orderedStages.indexOf(stage);
                                             const color = idx >= 0 ? STAGE_PALETTE[idx % STAGE_PALETTE.length] : "#9b948e";
                                             return (
-                                                <span key={stage} style={{ fontSize: 10, color: "#fff", backgroundColor: color, borderRadius: 3, padding: "1px 6px", fontFamily: '"Source Sans 3", Arial, sans-serif', whiteSpace: "nowrap" }}>
+                                                <span key={stage} style={{ fontSize: 10, color: "#fff", backgroundColor: color, borderRadius: 3, padding: "1px 6px", fontFamily: 'var(--font-body)', whiteSpace: "nowrap" }}>
                                                     {stage} · {count}
                                                 </span>
                                             );
@@ -455,35 +463,6 @@ const PipelineReportCard = ({ pipeline }) => {
 
 // Shown only when the Chett route itself would admit the user (same feature
 // flag and permission as its PermissionGuard/FeatureGate).
-const ChettPromoCard = ({ navigate }) => (
-    <div
-        className="relative overflow-hidden rounded-xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer transition-transform hover:-translate-y-0.5"
-        style={{ backgroundColor: "var(--secondary)" }}
-        onClick={() => navigate("/chett-ai")}
-    >
-        <div className="flex items-center gap-4 min-w-0">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg" style={{ backgroundColor: "rgba(96,216,5,0.18)", border: "1px solid rgba(96,216,5,0.35)" }}>
-                <Bot className="h-5 w-5" style={{ color: "var(--primary-text)" }} />
-            </div>
-            <div className="min-w-0">
-                <p className="text-sm font-semibold italic" style={{ color: "#FFFFFF", fontFamily: '"Cormorant Garamond", Georgia, serif' }}>
-                    Meet Chett, your CRM copilot
-                </p>
-                <p className="text-xs mt-0.5 truncate" style={{ color: "rgba(255,255,255,0.7)" }}>
-                    Ask about clients, invoices, leads, and more
-                </p>
-            </div>
-        </div>
-        <button
-            className="shrink-0 self-start sm:self-auto h-9 px-4 rounded-lg text-sm font-semibold cursor-pointer"
-            style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
-            onClick={(e) => { e.stopPropagation(); navigate("/chett-ai"); }}
-        >
-            Open Chett
-        </button>
-    </div>
-);
-
 export const Dashboard = () => {
     const { user, isFeatureEnabled } = useAuth();
     const canSeeChett = isFeatureEnabled("ai") &&
@@ -504,6 +483,54 @@ export const Dashboard = () => {
     const [reportClients, setReportClients] = useState([]);
     const [reportClientFilter, setReportClientFilter] = useState("");
     const [openTaskModal, setOpenTaskModal] = useState(null); // 'lead' | 'client' | 'service' | null
+
+    // New top of the dashboard: the three indicators, revenue, the team goal and the latest wins.
+    const [summary, setSummary] = useState(null);
+    const [summaryLoading, setSummaryLoading] = useState(true);
+    const [granularity, setGranularity] = useState("month");
+    const [kind, setKind] = useState("all");
+    const [series, setSeries] = useState(null);
+    const [seriesLoading, setSeriesLoading] = useState(true);
+    const [goal, setGoal] = useState(null);
+    const [goalLoading, setGoalLoading] = useState(true);
+    const canSeeGoals = isFeatureEnabled("goals") &&
+        (user?.is_superuser === true || (user?.permissions || []).includes("app.view_goal"));
+
+    useEffect(() => {
+        getDashboardSummary().then(setSummary).catch(() => setSummary(null)).finally(() => setSummaryLoading(false));
+    }, []);
+
+    useEffect(() => {
+        let cancelled = false;
+        setSeriesLoading(true);
+        getRevenueSeries({ granularity, kind })
+            .then((data) => { if (!cancelled) setSeries(data); })
+            .catch(() => { if (!cancelled) setSeries(null); })
+            .finally(() => { if (!cancelled) setSeriesLoading(false); });
+        return () => { cancelled = true; };
+    }, [granularity, kind]);
+
+    useEffect(() => {
+        if (!canSeeGoals) { setGoalLoading(false); return; }
+        (async () => {
+            try {
+                const today = new Date().toISOString().slice(0, 10);
+                const periods = await getPeriods();
+                const current = (Array.isArray(periods) ? periods : []).find((p) => p.start_date <= today && today <= p.end_date);
+                if (!current) return;
+                const progress = await getGoalsProgress({ periodId: current.id });
+                // The team the user belongs to; anyone else (e.g. an admin) sees the first team.
+                const team = progress.teams.find((t) => t.indicators.some((i) => i.members.some((m) => m.user?.id === user?.id))) || progress.teams[0];
+                if (!team) return;
+                const entry = team.indicators.find((i) => i.indicator.key === "closed-deals") || team.indicators[0];
+                if (entry) setGoal({ ...entry, periodName: current.name });
+            } catch {
+                // a missing goal card is not worth an error on the dashboard
+            } finally {
+                setGoalLoading(false);
+            }
+        })();
+    }, [canSeeGoals, user?.id]);
 
     useEffect(() => {
         const load = async () => {
@@ -633,80 +660,79 @@ export const Dashboard = () => {
     const hour = new Date().getHours();
     const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
 
+    const indicator = (key) => summary?.indicators.find((i) => i.key === key);
+    const money = (value) => compactMoney(Number(value));
+    const kpis = [
+        { key: "closed_deals", label: "Closed deals", icon: Target, format: (v) => Math.round(Number(v)).toLocaleString() },
+        { key: "revenue", label: "Revenue", icon: Wallet, format: money },
+        { key: "recurrent_invoice", label: "Recurrent invoice", icon: Repeat, format: money },
+    ];
+    const canCreateLead = user?.is_superuser === true || (user?.permissions || []).includes("app.add_lead");
+    const dateLabel = new Date().toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
+
     return (
-        <div className="h-full flex flex-col w-full transition-colors duration-300" style={{ backgroundColor: "var(--background)" }}>
+        <div className="flex flex-col gap-4">
 
-            {/* Page header */}
-            <header
-                className="sticky top-0 z-30 w-full px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-                style={{
-                    backgroundColor: "color-mix(in srgb, var(--background) 85%, transparent)",
-                    borderBottom: "1px solid var(--border)",
-                    backdropFilter: "blur(12px)",
-                    WebkitBackdropFilter: "blur(12px)",
-                }}
-            >
-                <div>
-                    <div className="flex items-center gap-2.5">
-                        <h1
-                            className="text-2xl font-semibold"
-                            style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', fontStyle: "italic", color: "var(--foreground)", letterSpacing: "-0.01em" }}
-                        >
-                            Dashboard
-                        </h1>
-                        <span
-                            className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-widest rounded-full px-2 py-0.5"
-                            style={{ backgroundColor: "var(--sidebar-accent)", border: "1px solid var(--primary-text)", color: "var(--secondary-text)" }}
-                        >
-                            <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ backgroundColor: "var(--accent)" }} />
-                            Live
-                        </span>
+            {/* Greeting + the three indicators */}
+            <div className="flex flex-wrap items-stretch gap-4">
+                <section className="flex flex-[1_1_280px] flex-col justify-center gap-3.5 px-2 py-3">
+                    <span className="inline-flex items-center gap-2 self-start rounded-full border bg-card px-3 py-1 text-[13px] text-muted-foreground shadow-sm">
+                        <span className="size-2 rounded-full bg-primary" />{dateLabel}
+                    </span>
+                    <h1 className="text-[40px] leading-[1.08]">{greeting},<br />{user?.username || "User"}</h1>
+                    {summary && <p className="max-w-sm text-muted-foreground">{summary.month.label}: {summary.scope === "all" ? "the whole company" : "your own deals"}.</p>}
+                    <div className="flex flex-wrap gap-2.5">
+                        {canCreateLead && (
+                            <button type="button" onClick={() => navigate("/lead/new")} className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground outline-none hover:brightness-95 focus-visible:ring-2 focus-visible:ring-ring">
+                                <Plus className="size-4" />New lead
+                            </button>
+                        )}
+                        {canSeeChett && (
+                            <button type="button" onClick={() => navigate("/chett-ai")} className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-full border bg-card px-5 text-sm font-semibold outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
+                                <Bot className="size-4" />Ask Chett
+                            </button>
+                        )}
                     </div>
-                    <p className="text-sm mt-0.5" style={{ color: "var(--muted-foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
-                        {greeting},{" "}
-                        <span className="font-semibold" style={{ color: "var(--foreground)" }}>{user?.username || "User"}</span>
-                        {user?.groups?.[0] && <span style={{ color: "#9b948e" }}> · {user.groups[0]}</span>}
-                    </p>
-                </div>
-                <p
-                    className="text-xs hidden sm:block"
-                    style={{ color: "var(--muted-foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif', letterSpacing: "0.04em" }}
-                >
-                    {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
-                </p>
-            </header>
+                </section>
+                <section aria-label="Key indicators" className="grid flex-[3_1_520px] gap-4 [grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr))]">
+                    {kpis.map((kpi) => {
+                        const data = indicator(kpi.key);
+                        return (
+                            <KpiCard
+                                key={kpi.key} label={kpi.label} icon={kpi.icon} loading={summaryLoading}
+                                value={data ? kpi.format(data.value) : "—"} change={data?.change_pct} series={data?.series}
+                                caption="This month vs the same days last month"
+                            />
+                        );
+                    })}
+                </section>
+            </div>
 
-            {/* Content */}
-            <div className="flex-1 p-6 space-y-8 overflow-y-auto">
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1.75fr)_minmax(0,1fr)]">
+                <RevenueChart series={series} loading={seriesLoading} granularity={granularity} kind={kind} onGranularity={setGranularity} onKind={setKind} />
+                <GoalGauge goal={goal} loading={goalLoading} canManage={user?.is_superuser === true || (user?.permissions || []).includes("app.add_goal")} />
+            </div>
 
-                {canSeeChett && (
-                    <section>
-                        <ChettPromoCard navigate={navigate} />
-                    </section>
-                )}
-
-                {/* Overview */}
-                <section className="space-y-4">
-                    <p
-                        className="text-xs font-semibold uppercase tracking-widest"
-                        style={{ color: "#9b948e", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
-                    >
-                        Overview
-                    </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1.75fr)_minmax(0,1fr)]">
+                <LatestWins wins={summary?.latest_wins ?? []} loading={summaryLoading} />
+                <section className="space-y-3">
+                    <p className="px-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Overview</p>
+                    <div className="grid grid-cols-2 gap-4">
                         {cards.map((card) => (
                             <StatCard key={card.title} {...card} loading={loading} navigate={navigate} />
                         ))}
                     </div>
                 </section>
+            </div>
 
+            <div className="space-y-8 pt-2">
                 {canSeePayables && <PayablesWidget navigate={navigate} />}
 
                 {/* Leads by Pipeline */}
                 {(reportLoading || reportRaw.pipelines.length > 0) && (
                     <section className="space-y-4">
                         <div className="flex flex-wrap items-center justify-between gap-3">
-                            <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#9b948e", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+                            <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#9b948e", fontFamily: 'var(--font-body)' }}>
                                 Leads by Pipeline
                             </p>
                             {!reportLoading && (
@@ -745,7 +771,7 @@ export const Dashboard = () => {
 
                 {/* My Pending Tasks KPIs */}
                 <section className="space-y-4">
-                    <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#9b948e", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+                    <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#9b948e", fontFamily: 'var(--font-body)' }}>
                         My Pending Tasks
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -757,7 +783,7 @@ export const Dashboard = () => {
 
                 {/* Calendar */}
                 <section className="space-y-4">
-                    <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#9b948e", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+                    <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#9b948e", fontFamily: 'var(--font-body)' }}>
                         Task Calendar
                     </p>
                     {tasksLoading ? (

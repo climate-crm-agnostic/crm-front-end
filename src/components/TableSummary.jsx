@@ -68,13 +68,13 @@ export const TableSummary = ({
                         >
                             <p
                                 className="text-xs font-semibold uppercase tracking-widest mb-1 text-muted-foreground"
-                                style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+                                style={{ fontFamily: 'var(--font-body)' }}
                             >
                                 {s.label}
                             </p>
                             <p
                                 className="text-2xl font-bold text-foreground"
-                                style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+                                style={{ fontFamily: 'var(--font-body)' }}
                             >
                                 {s.value}
                             </p>
@@ -96,7 +96,7 @@ export const TableSummary = ({
                                     "h-8 px-3 rounded-md text-sm font-medium transition-colors cursor-pointer",
                                     isActive ? "bg-secondary text-secondary-foreground" : "bg-transparent text-muted-foreground",
                                 ].join(" ")}
-                                style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+                                style={{ fontFamily: 'var(--font-body)' }}
                             >
                                 {t.label}
                             </button>
@@ -118,7 +118,7 @@ export const TableSummary = ({
                                 paddingRight: "12px",
                                 borderRadius: "6px",
                                 fontSize: "14px",
-                                fontFamily: '"Source Sans 3", Arial, sans-serif',
+                                fontFamily: 'var(--font-body)',
                                 outline: "none",
                             }}
                         />

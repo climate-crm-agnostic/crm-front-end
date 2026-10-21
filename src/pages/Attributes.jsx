@@ -273,7 +273,7 @@ export const Attributes = () => {
 
     if (loading) {
         return (
-            <div className="p-8 text-center" style={{ color: "var(--muted-foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+            <div className="p-8 text-center" style={{ color: "var(--muted-foreground)", fontFamily: 'var(--font-body)' }}>
                 Loading Attributes...
             </div>
         );
@@ -282,7 +282,7 @@ export const Attributes = () => {
     return (
         <div
             className="flex-1 flex flex-col min-h-0 overflow-hidden w-full"
-            style={{ backgroundColor: "var(--background)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+            style={{ backgroundColor: "var(--background)", fontFamily: 'var(--font-body)' }}
         >
             {/* Page header */}
             <div
@@ -297,7 +297,7 @@ export const Attributes = () => {
                         <SlidersHorizontal className="h-5 w-5" style={{ color: "var(--secondary-text)" }} />
                     </div>
                     <div>
-                        <p className="text-base font-semibold uppercase tracking-wide" style={{ color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+                        <p className="text-base font-semibold uppercase tracking-wide" style={{ color: "var(--foreground)", fontFamily: 'var(--font-body)' }}>
                             Core Attributes Management
                         </p>
                         <p className="text-xs flex items-center gap-1.5 mt-0.5" style={{ color: "#9b948e" }}>

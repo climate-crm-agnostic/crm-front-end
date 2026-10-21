@@ -72,14 +72,14 @@ export const Events = () => {
 
     if (loading) {
         return (
-            <div className="p-8 text-center" style={{ color: "var(--muted-foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+            <div className="p-8 text-center" style={{ color: "var(--muted-foreground)", fontFamily: 'var(--font-body)' }}>
                 Loading events...
             </div>
         );
     }
 
     return (
-        <div className="p-6 space-y-6" style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+        <div className="p-6 space-y-6" style={{ fontFamily: 'var(--font-body)' }}>
             <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-3">
                     <div

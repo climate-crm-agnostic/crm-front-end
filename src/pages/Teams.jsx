@@ -72,14 +72,14 @@ export const Teams = () => {
 
     if (loading) {
         return (
-            <div className="p-8 text-center" style={{ color: "var(--muted-foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+            <div className="p-8 text-center" style={{ color: "var(--muted-foreground)", fontFamily: 'var(--font-body)' }}>
                 Loading teams...
             </div>
         );
     }
 
     return (
-        <div className="p-6 space-y-6" style={{ fontFamily: '"Source Sans 3", Arial, sans-serif' }}>
+        <div className="p-6 space-y-6" style={{ fontFamily: 'var(--font-body)' }}>
 
             <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-3">
@@ -92,7 +92,7 @@ export const Teams = () => {
                     <div>
                         <p
                             className="text-base font-semibold"
-                            style={{ color: "var(--foreground)", fontFamily: '"Source Sans 3", Arial, sans-serif' }}
+                            style={{ color: "var(--foreground)", fontFamily: 'var(--font-body)' }}
                         >
                             Teams
                         </p>
@@ -152,7 +152,7 @@ export const Teams = () => {
                                             style={{
                                                 color: "var(--secondary-foreground)",
                                                 letterSpacing: "0.06em",
-                                                fontFamily: '"Source Sans 3", Arial, sans-serif',
+                                                fontFamily: 'var(--font-body)',
                                                 textAlign: i === 3 ? "right" : "left",
                                             }}
                                         >
