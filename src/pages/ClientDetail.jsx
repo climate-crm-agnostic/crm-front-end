@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { formatDateTime } from "../utils/tz";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { createClient, updateClient, uploadClientImage, deleteClientImage, getClientById, getClientAttributes } from "../services/clientService";
+import { getContacts } from "../services/contactService";
+import { getServices } from "../services/serviceService";
 import { useAuth } from "../context/AuthContext";
 
 // UI Components
@@ -10,7 +12,7 @@ import { Label } from "../components/ui/label";
 import { Button } from "../components/ui/button";
 import { Checkbox } from "../components/ui/checkbox";
 import { Textarea } from "../components/ui/textarea";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Plus } from "lucide-react";
 import { DateInput } from "../components/ui/date-input";
 import { DynamicAttributeField } from "../components/attributes/DynamicAttributeField";
 import { coerceAttributeValue, emptyValueFor, normalizeOptions } from "../utils/attributeTypes";
@@ -42,6 +44,31 @@ export const ClientDetail = () => {
     const [newTaskCompleted, setNewTaskCompleted] = useState(false);
     const [notes, setNotes] = useState([]);
     const [newNote, setNewNote] = useState("");
+
+    // Sub-tabs of an existing client. The tab lives in the URL so coming back
+    // from a contact/service page lands on the same tab.
+    const [searchParams, setSearchParams] = useSearchParams();
+    const activeTab = searchParams.get("tab") || "contacts";
+    const setActiveTab = (tab) => setSearchParams({ tab }, { replace: true });
+    const [contacts, setContacts] = useState([]);
+    const [services, setServices] = useState([]);
+    const [relatedLoading, setRelatedLoading] = useState(true);
+
+    useEffect(() => {
+        if (isNew) return;
+        let cancelled = false;
+        setRelatedLoading(true);
+        Promise.all([
+            getContacts({ client: id }).catch(() => []),
+            getServices({ client: id }).catch(() => []),
+        ]).then(([contactsData, servicesData]) => {
+            if (cancelled) return;
+            setContacts(contactsData || []);
+            setServices(servicesData || []);
+            setRelatedLoading(false);
+        });
+        return () => { cancelled = true; };
+    }, [id, isNew]);
 
     useEffect(() => {
         const init = async () => {
@@ -340,8 +367,111 @@ export const ClientDetail = () => {
                         </div>
                     )}
 
+
+                    {/* Sub-tabs (existing clients only) */}
+                    {!isNew && (
+                        <div className="flex gap-1 border-b overflow-x-auto" role="tablist">
+                            {[
+                                { key: "contacts", label: "Contacts", count: contacts.length },
+                                { key: "services", label: "Services", count: services.length },
+                                { key: "tasks", label: "Tasks", count: tasks.length },
+                                { key: "files", label: "Files", count: images.length },
+                            ].map((tab) => (
+                                <button
+                                    key={tab.key}
+                                    type="button"
+                                    role="tab"
+                                    aria-selected={activeTab === tab.key}
+                                    onClick={() => setActiveTab(tab.key)}
+                                    className={`px-4 py-2.5 text-sm font-semibold -mb-px border-b-2 whitespace-nowrap cursor-pointer transition-colors ${
+                                        activeTab === tab.key
+                                            ? "border-[var(--secondary-text)] text-[var(--secondary-text)]"
+                                            : "border-transparent text-muted-foreground hover:text-foreground"
+                                    }`}
+                                >
+                                    {tab.label}
+                                    <span className="ml-1.5 text-xs font-medium text-muted-foreground">{tab.count}</span>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+
+                    {!isNew && activeTab === "contacts" && (
+                        <div className="space-y-4">
+                            <div className="flex justify-end">
+                                <Button onClick={() => navigate("/contact/new", { state: { clientId: id } })}>
+                                    <Plus className="mr-2 h-4 w-4" /> Add Contact
+                                </Button>
+                            </div>
+                            {relatedLoading ? (
+                                <div className="h-24 rounded-lg animate-pulse bg-muted" />
+                            ) : contacts.length === 0 ? (
+                                <div className="rounded-lg p-8 text-center text-sm text-muted-foreground border bg-card">No contacts yet for this client.</div>
+                            ) : (
+                                <div className="space-y-2">
+                                    {contacts.map((contact) => (
+                                        <button
+                                            key={contact.id}
+                                            type="button"
+                                            onClick={() => navigate(`/contact/${contact.id}`)}
+                                            className="w-full flex items-center justify-between gap-3 rounded-lg p-4 bg-card border text-left cursor-pointer hover:bg-muted/40 transition-colors"
+                                        >
+                                            <div className="min-w-0">
+                                                <p className="text-sm font-semibold truncate">{contact.first_name} {contact.last_name}</p>
+                                                <p className="text-xs mt-0.5 text-muted-foreground truncate">
+                                                    {[contact.job_title, contact.email, contact.phone].filter(Boolean).join(" · ")}
+                                                </p>
+                                            </div>
+                                            {contact.is_primary && (
+                                                <span className="shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-muted text-[var(--secondary-text)]">Primary</span>
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {!isNew && activeTab === "services" && (
+                        <div className="space-y-4">
+                            <div className="flex justify-end">
+                                <Button onClick={() => navigate("/service/new", { state: { clientId: id } })}>
+                                    <Plus className="mr-2 h-4 w-4" /> Add Service
+                                </Button>
+                            </div>
+                            {relatedLoading ? (
+                                <div className="h-24 rounded-lg animate-pulse bg-muted" />
+                            ) : services.length === 0 ? (
+                                <div className="rounded-lg p-8 text-center text-sm text-muted-foreground border bg-card">No services yet for this client.</div>
+                            ) : (
+                                <div className="space-y-2">
+                                    {services.map((service) => (
+                                        <button
+                                            key={service.id}
+                                            type="button"
+                                            onClick={() => navigate(`/service/${service.id}`)}
+                                            className="w-full flex items-center justify-between gap-3 rounded-lg p-4 bg-card border text-left cursor-pointer hover:bg-muted/40 transition-colors"
+                                        >
+                                            <div className="min-w-0">
+                                                <p className="text-sm font-semibold truncate">{service.name}</p>
+                                                {service.billing_type === "recurring" && service.amount && (
+                                                    <p className="text-xs mt-0.5 text-muted-foreground">
+                                                        ${Math.round(Number(service.amount)).toLocaleString("en-US")} / {service.billing_cycle}
+                                                    </p>
+                                                )}
+                                            </div>
+                                            {service.status && (
+                                                <span className="shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize bg-muted text-[var(--secondary-text)]">{service.status}</span>
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
                     {/* Tasks & Notes Row */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6" hidden={!isNew && activeTab !== "tasks"}>
                         {/* Tasks */}
                         <div className="bg-card p-6 rounded-lg border shadow-sm space-y-4">
                             <h3 className="font-medium text-lg border-b pb-2">Tasks</h3>
@@ -420,7 +550,7 @@ export const ClientDetail = () => {
                     </div>
 
                     {/* Files & Images */}
-                    {!isNew && (
+                    {!isNew && activeTab === "files" && (
                         <div className="bg-card p-6 rounded-lg border shadow-sm space-y-4">
                             <h3 className="font-medium text-lg border-b pb-2">Files & Images</h3>
                             {images.length > 0 ? (

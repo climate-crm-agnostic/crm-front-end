@@ -11,33 +11,6 @@ import { AttributeFilterBar } from "../components/attributes/AttributeFilterBar"
 import { saveAs } from "file-saver";
 import Swal from "sweetalert2";
 
-// Magnitude bars, one colour per row. Each must read against the bg-border
-// track in both themes, so --border itself is not in the list.
-const BREAKDOWN_COLORS = ["var(--primary)", "var(--secondary-text)", "var(--muted-foreground)"];
-
-// Groups clients by whatever dropdown-type ("list") attributes this tenant
-// actually has configured — Region/Category on one instance, Program/Status
-// on another — rather than hardcoding field names that only fit one vertical.
-const AttributeBreakdown = ({ label, counts }) => {
-    const max = Math.max(1, ...counts.map((c) => c.count));
-    return (
-        <div className="rounded-lg p-4 space-y-2.5 bg-card border border-border">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">By {label}</p>
-            {counts.map((c, i) => (
-                <div key={c.value}>
-                    <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm font-medium truncate text-foreground">{c.label}</span>
-                        <span className="text-sm font-semibold shrink-0 ml-2 text-muted-foreground">{c.count}</span>
-                    </div>
-                    <div className="h-1.5 w-full rounded-full overflow-hidden bg-border">
-                        <div className="h-full rounded-full" style={{ width: `${(c.count / max) * 100}%`, backgroundColor: BREAKDOWN_COLORS[i % BREAKDOWN_COLORS.length] }} />
-                    </div>
-                </div>
-            ))}
-        </div>
-    );
-};
-
 export const Client = () => {
     const [clients, setClients] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -172,25 +145,8 @@ export const Client = () => {
         { label: "Total clients", value: clients.length },
     ];
 
-    // Up to two dropdown-type attributes, each rendered as a breakdown and
-    // used as the card subtitle.
+    // Up to two dropdown-type attributes, used as the card subtitle.
     const groupableAttrs = attributes.filter(a => a.type === 'list').slice(0, 2);
-    const breakdowns = groupableAttrs
-        .map(attr => {
-            const counts = {};
-            clients.forEach(c => {
-                const val = c[attr.name];
-                if (val === undefined || val === null || val === '') return;
-                counts[val] = (counts[val] || 0) + 1;
-            });
-            return {
-                label: attr.label,
-                counts: Object.entries(counts)
-                    .map(([value, count]) => ({ value, count, label: formatAttributeValue(attr, value) || value }))
-                    .sort((a, b) => b.count - a.count),
-            };
-        })
-        .filter(b => b.counts.length > 0);
 
     const renderClientCard = (client) => {
         const subtitle = groupableAttrs
@@ -243,14 +199,6 @@ export const Client = () => {
                     </Button>
                 </div>
             </div>
-
-            {breakdowns.length > 0 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2 shrink-0">
-                    {breakdowns.map((b) => (
-                        <AttributeBreakdown key={b.label} label={b.label} counts={b.counts} />
-                    ))}
-                </div>
-            )}
 
             <div className="bg-card p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
                 {availableContactTypes.length > 0 && (

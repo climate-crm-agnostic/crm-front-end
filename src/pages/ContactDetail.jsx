@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { formatDateTime } from "../utils/tz";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { createContact, updateContact, getContactById, getContactAttributes, updateContactTask, deleteContactNote } from "../services/contactService";
 import { getClients } from "../services/clientService";
 import { useAuth } from "../context/AuthContext";
@@ -35,7 +35,9 @@ export const ContactDetail = () => {
     const [phone, setPhone] = useState("");
     const [jobTitle, setJobTitle] = useState("");
     const [isPrimary, setIsPrimary] = useState(false);
-    const [clientId, setClientId] = useState("");
+    // Opened from a client's Contacts tab: start with that client selected.
+    const preSelectedClientId = useLocation().state?.clientId;
+    const [clientId, setClientId] = useState(preSelectedClientId ? String(preSelectedClientId) : "");
 
     // UI state
     const [loading, setLoading] = useState(false);
