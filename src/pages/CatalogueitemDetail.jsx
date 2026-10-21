@@ -23,6 +23,7 @@ import { ArrowLeft, Plus } from "lucide-react";
 import { Switch } from "../components/ui/switch";
 import { DynamicAttributeField } from "../components/attributes/DynamicAttributeField";
 import { coerceAttributeValue, emptyValueFor, normalizeOptions } from "../utils/attributeTypes";
+import { formatDecimal } from "@/lib/utils";
 
 export const CatalogueitemDetail = () => {
     const { id } = useParams();
@@ -265,7 +266,7 @@ export const CatalogueitemDetail = () => {
         {
             key: "price",
             label: "Price",
-            render: (value) => `${currency} ${Number(value).toFixed(2)}`
+            render: (value) => `${currency} ${formatDecimal(value)}`
         }
     ];
 
@@ -580,7 +581,7 @@ export const CatalogueitemDetail = () => {
                                                 </p>
                                             </div>
                                             <div className="text-right text-sm">
-                                                <p className="font-medium">{currency} {Number(v.effective_price ?? basePrice).toFixed(2)}</p>
+                                                <p className="font-medium">{currency} {formatDecimal(v.effective_price ?? basePrice)}</p>
                                                 {v.price == null && <p className="text-xs text-muted-foreground">item price</p>}
                                             </div>
                                             {!v.is_active && <Badge variant="secondary">Inactive</Badge>}

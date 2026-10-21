@@ -8,6 +8,7 @@ import { getCatalogueItems, deleteCatalogueItem, getCatalogueItemAttributes, exp
 import { saveAs } from "file-saver";
 import Swal from "sweetalert2";
 import { Badge } from "../components/ui/badge";
+import { formatDecimal } from "@/lib/utils";
 
 export const Catalogueitem = () => {
     const [items, setItems] = useState([]);
@@ -56,9 +57,9 @@ export const Catalogueitem = () => {
             key: "base_price",
             label: "Base Price",
             render: (value, row) => {
-                const money = (n) => `${row.currency || 'USD'} ${Number(n).toFixed(2)}`;
+                const money = (n) => `${row.currency || 'USD'} ${formatDecimal(n)}`;
                 return row.has_variants && row.min_price !== row.max_price
-                    ? `${money(row.min_price)} – ${Number(row.max_price).toFixed(2)}`
+                    ? `${money(row.min_price)} – ${formatDecimal(row.max_price)}`
                     : money(value);
             }
         },

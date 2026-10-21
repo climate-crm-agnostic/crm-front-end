@@ -39,5 +39,5 @@ export const compactMoney = (value, currency = "$") => {
     const abs = Math.abs(value);
     if (abs >= 1_000_000) return `${currency}${(value / 1_000_000).toFixed(1)}M`;
     if (abs >= 1_000) return `${currency}${(value / 1_000).toFixed(abs >= 10_000 ? 0 : 1)}k`;
-    return `${currency}${Math.round(value).toLocaleString()}`;
+    return `${currency}${Math.round(value).toLocaleString("en-US")}`;
 };

@@ -1,5 +1,6 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { sellableVariants } from "../lib/variants";
+import { formatDecimal } from "@/lib/utils";
 
 /**
  * Variant picker for a catalogue item. Renders nothing for items without
@@ -13,7 +14,7 @@ export const VariantSelect = ({ item, value, onChange, className = "h-8 w-full" 
     const options = current && !current.is_active ? [...variants, current] : variants;
     if (options.length === 0) return null;
 
-    const money = (v) => `${item.currency || 'USD'} ${Number(v.effective_price ?? item.base_price).toFixed(2)}`;
+    const money = (v) => `${item.currency || 'USD'} ${formatDecimal(v.effective_price ?? item.base_price)}`;
 
     return (
         <Select value={value ? String(value) : ""} onValueChange={(id) => onChange(id, options.find((v) => String(v.id) === id))}>

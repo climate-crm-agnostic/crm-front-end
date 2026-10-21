@@ -36,7 +36,7 @@ export const PAYMENT_METHODS = [
 export const methodLabel = (value) => PAYMENT_METHODS.find((m) => m.value === value)?.label || value || "—";
 
 export const money = (currency, value) =>
-    `${currency || "USD"} ${Number(value || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    `${currency || "USD"} ${Number(value || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 // Round to cents the way the backend does, so client-side sums of
 // allocations match what the API will accept.

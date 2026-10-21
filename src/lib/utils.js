@@ -27,3 +27,9 @@ export function formatMoney(value) {
   const n = Number(value);
   return Number.isFinite(n) ? `$${Math.round(n).toLocaleString("en-US")}` : "—";
 }
+
+/** Fixed-decimals number with thousands separators ("12,345.60"). Display only: payloads and inputs keep plain numbers. */
+export function formatDecimal(value, digits = 2) {
+  const n = Number.isFinite(Number(value)) ? Number(value) : 0;
+  return n.toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits });
+}

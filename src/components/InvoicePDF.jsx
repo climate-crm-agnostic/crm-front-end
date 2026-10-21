@@ -7,6 +7,7 @@ import {
     StyleSheet,
     Font,
 } from "@react-pdf/renderer";
+import { formatDecimal } from "@/lib/utils";
 
 const BRAND_GREEN = "var(--secondary)";
 const GREY = "#6B7280";
@@ -96,7 +97,7 @@ const styles = StyleSheet.create({
 });
 
 const fmt = (value, currency = "USD") =>
-    `${currency} ${Number(value || 0).toFixed(2)}`;
+    `${currency} ${formatDecimal(value || 0)}`;
 
 const fmtDate = (dateStr) => {
     if (!dateStr) return "—";
@@ -181,9 +182,9 @@ export const InvoicePDF = ({ invoice, client, contact, lineItems, payments }) =>
                 {lineItems.length > 0 ? lineItems.map((item, i) => (
                     <View key={i} style={[styles.tableRow, i % 2 !== 0 ? styles.tableRowAlt : {}]}>
                         <Text style={[styles.tdText, styles.colDesc]}>{item.description || "—"}</Text>
-                        <Text style={[styles.tdText, styles.colQty]}>{Number(item.quantity).toFixed(2)}</Text>
+                        <Text style={[styles.tdText, styles.colQty]}>{formatDecimal(item.quantity)}</Text>
                         <Text style={[styles.tdText, styles.colPrice]}>{fmt(item.unit_price, currency)}</Text>
-                        <Text style={[styles.tdText, styles.colTax]}>{Number(item.tax_rate).toFixed(2)}%</Text>
+                        <Text style={[styles.tdText, styles.colTax]}>{formatDecimal(item.tax_rate)}%</Text>
                         <Text style={[styles.tdText, styles.colAmount]}>{fmt(item.subtotal, currency)}</Text>
                     </View>
                 )) : (

@@ -6,6 +6,7 @@ import { Button } from "./ui/button";
 import { Switch } from "./ui/switch";
 import { ImageGallery } from "./ImageGallery";
 import { createCatalogueVariant, updateCatalogueVariant, catalogueVariantGallery } from "../services/catalogueService";
+import { formatDecimal } from "@/lib/utils";
 
 /**
  * Create or edit one variant of a catalogue item (name, SKU, optional own price,
@@ -87,7 +88,7 @@ export const VariantEditorModal = ({ isOpen, item, variant, onClose, onSaved }) 
                         <Input
                             id="variant-price" type="number" step="0.01" min="0" value={price}
                             onChange={(e) => setPrice(e.target.value)}
-                            placeholder={`Same as item: ${Number(item?.base_price ?? 0).toFixed(2)}`}
+                            placeholder={`Same as item: ${formatDecimal(item?.base_price ?? 0)}`}
                         />
                         <p className="text-xs text-muted-foreground">Leave empty to use the item's base price.</p>
                     </div>

@@ -257,7 +257,7 @@ export const formatAttributeValue = (attr, rawValue) => {
             // toISOString(), which would shift a naive value into UTC and
             // disagree with the server for the same stored value.
             if (config.display_format === "iso") return String(rawValue);
-            return parsed.toLocaleString();
+            return parsed.toLocaleString("en-US");
         }
         case "list":
             return findOption(attr.list_values, rawValue)?.label ?? String(rawValue);

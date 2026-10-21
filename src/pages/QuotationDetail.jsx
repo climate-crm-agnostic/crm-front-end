@@ -23,6 +23,7 @@ import {
     getQuotationById, createQuotation, updateQuotation, recalculateQuotation,
     getQuotationLineItems, createQuotationLineItem, deleteQuotationLineItem,
 } from "../services/quotationService";
+import { formatDecimal } from "@/lib/utils";
 
 const STATUS_OPTIONS = ["draft", "sent", "accepted", "rejected", "expired"];
 
@@ -412,10 +413,10 @@ export const QuotationDetail = () => {
                                         {lineItems.map(line => (
                                             <tr key={line.id} className="border-t">
                                                 <td className="px-3 py-2">{line.description}</td>
-                                                <td className="px-3 py-2 text-right">{Number(line.quantity).toFixed(2)}</td>
-                                                <td className="px-3 py-2 text-right">{Number(line.unit_price).toFixed(2)}</td>
-                                                <td className="px-3 py-2 text-right">{Number(line.tax_rate).toFixed(2)}%</td>
-                                                <td className="px-3 py-2 text-right">{Number(line.subtotal).toFixed(2)}</td>
+                                                <td className="px-3 py-2 text-right">{formatDecimal(line.quantity)}</td>
+                                                <td className="px-3 py-2 text-right">{formatDecimal(line.unit_price)}</td>
+                                                <td className="px-3 py-2 text-right">{formatDecimal(line.tax_rate)}%</td>
+                                                <td className="px-3 py-2 text-right">{formatDecimal(line.subtotal)}</td>
                                                 <td className="px-3 py-2 text-right">
                                                     <Button variant="ghost" size="sm" onClick={() => handleDeleteLineItem(line.id)} className="h-7 w-7 p-0 text-red-500 hover:text-red-700 dark:hover:text-red-300">
                                                         <Trash2 className="h-3.5 w-3.5" />
@@ -430,10 +431,10 @@ export const QuotationDetail = () => {
 
                         <div className="flex justify-end">
                             <div className="w-56 space-y-1 text-sm">
-                                <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{Number(subtotal).toFixed(2)}</span></div>
-                                <div className="flex justify-between"><span className="text-muted-foreground">Tax</span><span>{Number(taxAmount).toFixed(2)}</span></div>
-                                <div className="flex justify-between"><span className="text-muted-foreground">Discount</span><span>- {Number(discount).toFixed(2)}</span></div>
-                                <div className="flex justify-between font-semibold border-t pt-1"><span>Total</span><span>{Number(total).toFixed(2)}</span></div>
+                                <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{formatDecimal(subtotal)}</span></div>
+                                <div className="flex justify-between"><span className="text-muted-foreground">Tax</span><span>{formatDecimal(taxAmount)}</span></div>
+                                <div className="flex justify-between"><span className="text-muted-foreground">Discount</span><span>- {formatDecimal(discount)}</span></div>
+                                <div className="flex justify-between font-semibold border-t pt-1"><span>Total</span><span>{formatDecimal(total)}</span></div>
                             </div>
                         </div>
                     </div>

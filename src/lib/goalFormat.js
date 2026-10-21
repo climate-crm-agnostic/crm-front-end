@@ -3,6 +3,6 @@ export const formatGoalValue = (value, unit) => {
     const n = Number(value);
     if (Number.isNaN(n)) return "—";
     return unit === 'currency'
-        ? n.toLocaleString(undefined, { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })
-        : n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+        ? n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })
+        : n.toLocaleString('en-US', { maximumFractionDigits: 2 });
 };

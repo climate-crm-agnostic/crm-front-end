@@ -17,6 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { formatCount } from "@/lib/utils";
 
 export const Table = ({
   data = [],
@@ -376,9 +377,9 @@ export const Table = ({
       <div className="mt-auto px-4 py-2 text-xs" style={{ borderTop: "1px solid var(--border)" }}>
         <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
           <div className="text-center sm:text-left" style={{ color: "var(--muted-foreground)", fontFamily: 'var(--font-body)' }}>
-            <span className="font-semibold" style={{ color: "var(--foreground)" }}>{startRecord}</span> -{" "}
-            <span className="font-semibold" style={{ color: "var(--foreground)" }}>{endRecord}</span>{" "}
-            (Page {currentPage} of {totalPages})
+            <span className="font-semibold" style={{ color: "var(--foreground)" }}>{formatCount(startRecord)}</span> -{" "}
+            <span className="font-semibold" style={{ color: "var(--foreground)" }}>{formatCount(endRecord)}</span>{" "}
+            (Page {formatCount(currentPage)} of {formatCount(totalPages)})
           </div>
           <div className="flex items-center justify-center gap-1 overflow-x-auto max-w-full">
             <Button

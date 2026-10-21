@@ -34,6 +34,7 @@ import { Badge } from "../components/ui/badge";
 import { DateInput } from "../components/ui/date-input";
 import { formatDate } from "../utils/date";
 import { formatDateTime } from "../utils/tz";
+import { formatDecimal } from "@/lib/utils";
 
 export const InvoiceDetail = () => {
     const { id } = useParams();
@@ -348,18 +349,18 @@ export const InvoiceDetail = () => {
         {
             key: "unit_price",
             label: "Unit Price",
-            render: (value) => `${currency} ${Number(value).toFixed(2)}`
+            render: (value) => `${currency} ${formatDecimal(value)}`
         },
         { key: "quantity", label: "Qty" },
         {
             key: "tax_rate",
             label: "Tax %",
-            render: (value) => `${Number(value).toFixed(2)}%`
+            render: (value) => `${formatDecimal(value)}%`
         },
         {
             key: "subtotal",
             label: "Amount",
-            render: (value) => `${currency} ${Number(value).toFixed(2)}`
+            render: (value) => `${currency} ${formatDecimal(value)}`
         }
     ];
 
@@ -418,7 +419,7 @@ export const InvoiceDetail = () => {
         {
             key: "amount",
             label: "Amount paid",
-            render: (value) => `${currency} ${Number(value).toFixed(2)}`
+            render: (value) => `${currency} ${formatDecimal(value)}`
         }
     ];
 
@@ -733,11 +734,11 @@ export const InvoiceDetail = () => {
                                 <div className="space-y-3 text-sm">
                                     <div className="flex justify-between">
                                         <span className="text-muted-foreground">Subtotal:</span>
-                                        <span className="font-medium">{currency} {Number(subtotal).toFixed(2)}</span>
+                                        <span className="font-medium">{currency} {formatDecimal(subtotal)}</span>
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-muted-foreground">Tax:</span>
-                                        <span className="font-medium">{currency} {Number(taxAmount).toFixed(2)}</span>
+                                        <span className="font-medium">{currency} {formatDecimal(taxAmount)}</span>
                                     </div>
                                     <div className="flex items-center justify-between pb-3 border-b">
                                         <span className="text-muted-foreground">Discount:</span>
@@ -745,7 +746,7 @@ export const InvoiceDetail = () => {
                                     </div>
                                     <div className="flex justify-between text-base font-bold pt-2">
                                         <span>Total:</span>
-                                        <span>{currency} {Number(total).toFixed(2)}</span>
+                                        <span>{currency} {formatDecimal(total)}</span>
                                     </div>
                                 </div>
                             </div>
@@ -754,11 +755,11 @@ export const InvoiceDetail = () => {
                                 <div className="mt-6 pt-4 border-t space-y-2">
                                     <div className="flex justify-between text-sm">
                                         <span className="text-muted-foreground">Amount Paid:</span>
-                                        <span className="text-green-600 font-medium">{currency} {Number(amountPaid).toFixed(2)}</span>
+                                        <span className="text-green-600 font-medium">{currency} {formatDecimal(amountPaid)}</span>
                                     </div>
                                     <div className="flex justify-between text-lg font-bold text-destructive">
                                         <span>Balance Due:</span>
-                                        <span>{currency} {Number(balanceDue).toFixed(2)}</span>
+                                        <span>{currency} {formatDecimal(balanceDue)}</span>
                                     </div>
                                 </div>
                             )}

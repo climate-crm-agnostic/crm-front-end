@@ -5,6 +5,7 @@ import { Button } from "../components/ui/button";
 import { Plus } from "lucide-react";
 import { getInventoryItems, deleteInventoryItem, getInventoryItemAttributes } from "../services/inventoryService";
 import Swal from "sweetalert2";
+import { formatDecimal } from "@/lib/utils";
 
 export const Inventory = () => {
     const [items, setItems] = useState([]);
@@ -17,12 +18,12 @@ export const Inventory = () => {
         {
             key: "quantity_on_hand",
             label: "Quantity",
-            render: (value) => Number(value).toFixed(2)
+            render: (value) => formatDecimal(value)
         },
         {
             key: "reorder_level",
             label: "Reorder Lvl",
-            render: (value) => Number(value).toFixed(2)
+            render: (value) => formatDecimal(value)
         },
         { key: "location", label: "Location" },
         { key: "supplier_name", label: "Supplier", render: (value) => value || "-" },

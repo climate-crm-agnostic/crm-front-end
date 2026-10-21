@@ -7,6 +7,7 @@ import {
     SelectContent,
     SelectItem,
 } from "@/components/ui/select";
+import { formatCount } from "@/lib/utils";
 
 // "Rows per page" dropdown — kept separate from PaginationFooter so callers
 // can place it in a toolbar (next to search) instead of the footer, matching
@@ -70,9 +71,9 @@ export const PaginationFooter = ({
                 className="text-center sm:text-left text-muted-foreground"
                 style={{ fontFamily: 'var(--font-body)' }}
             >
-                <span className="font-semibold text-foreground">{startRecord}</span> -{" "}
-                <span className="font-semibold text-foreground">{endRecord}</span>{" "}
-                (Page {currentPage} of {totalPages})
+                <span className="font-semibold text-foreground">{formatCount(startRecord)}</span> -{" "}
+                <span className="font-semibold text-foreground">{formatCount(endRecord)}</span>{" "}
+                (Page {formatCount(currentPage)} of {formatCount(totalPages)})
             </div>
             <div className="flex items-center justify-center gap-1 overflow-x-auto max-w-full">
                 <Button

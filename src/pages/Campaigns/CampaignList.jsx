@@ -9,6 +9,7 @@ import { AudienceFilterBuilder } from "./AudienceFilterBuilder";
 import { getEmailTemplates } from "../../services/emailTemplateService";
 import { getCampaigns, createCampaign, updateCampaign, deleteCampaign, sendCampaignNow, previewRecipients, getSendProgress, getCampaignRecipients, getRecipientsConfig, saveRecipientsConfig } from "../../services/campaignService";
 import Swal from 'sweetalert2';
+import { formatCount } from "@/lib/utils";
 
 const STATUS_COLORS = { draft: "#9b948e", sending: "#c0622a", sent: "var(--secondary-text)" };
 
@@ -363,7 +364,7 @@ export const CampaignList = () => {
                                     </span>
                                 </div>
                                 <span className="text-xs text-muted-foreground">
-                                    {c.template?.name} · {c.sent_count}/{c.recipient_count || '?'} sent
+                                    {c.template?.name} · {formatCount(c.sent_count)}/{c.recipient_count ? formatCount(c.recipient_count) : '?'} sent
                                 </span>
                             </div>
                             <div className="flex gap-1">
@@ -508,7 +509,7 @@ export const CampaignList = () => {
                                 </div>
                             ) : (
                                 <p className="text-sm text-muted-foreground">
-                                    <strong>{detailsData.recipient_count}</strong> record(s) currently match this campaign's audience (not sent yet).
+                                    <strong>{formatCount(detailsData.recipient_count)}</strong> record(s) currently match this campaign's audience (not sent yet).
                                 </p>
                             )}
                             {detailsData.recipient_count > 0 && (
@@ -533,7 +534,7 @@ export const CampaignList = () => {
                             <p className="text-sm text-muted-foreground">
                                 <strong className="text-secondary-text">{detailsData.sent_count}</strong> sent
                                 {detailsData.failed_count > 0 && <> · <strong className="text-red-600">{detailsData.failed_count}</strong> failed</>}
-                                {' '}of {detailsData.recipient_count} total.
+                                {' '}of {formatCount(detailsData.recipient_count)} total.
                             </p>
                             {detailsData.recipient_count > 0 && (
                                 <div className="max-h-64 overflow-y-auto border rounded-md divide-y">
@@ -595,7 +596,7 @@ export const CampaignList = () => {
                                 />
                             </div>
                             <p className="text-sm text-muted-foreground">
-                                {sendProgress.sent + sendProgress.failed} of {sendProgress.total} processed
+                                {formatCount(sendProgress.sent + sendProgress.failed)} of {formatCount(sendProgress.total)} processed
                                 {sendProgress.failed > 0 && <> — <span className="text-red-600">{sendProgress.failed} failed</span></>}
                             </p>
 
@@ -656,7 +657,7 @@ export const CampaignList = () => {
                                 </div>
                             ) : (
                                 <p className="text-sm text-muted-foreground">
-                                    This will email <strong>{sendPreviewData.recipient_count}</strong> recipient(s) right now. This can't be undone.
+                                    This will email <strong>{formatCount(sendPreviewData.recipient_count)}</strong> recipient(s) right now. This can't be undone.
                                 </p>
                             )}
                             {sendPreviewData.recipient_count > 0 && (

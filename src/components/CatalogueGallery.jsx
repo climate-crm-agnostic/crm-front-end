@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Image as ImageIcon, Repeat, Search } from "lucide-react";
+import { formatDecimal } from "@/lib/utils";
 
 const FILTERS = [
     { value: "all", label: "All" },
@@ -8,11 +9,11 @@ const FILTERS = [
     { value: "subscription", label: "Subscriptions" },
 ];
 
-const money = (value, currency = "USD") => `${currency} ${Number(value).toFixed(2)}`;
+const money = (value, currency = "USD") => `${currency} ${formatDecimal(value)}`;
 
 const priceLabel = (item) =>
     item.has_variants && item.min_price !== item.max_price
-        ? `${money(item.min_price, item.currency)} – ${Number(item.max_price).toFixed(2)}`
+        ? `${money(item.min_price, item.currency)} – ${formatDecimal(item.max_price)}`
         : money(item.base_price, item.currency);
 
 const TypeTag = ({ item }) => {

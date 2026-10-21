@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { usePagination } from "@/hooks/usePagination";
+import { formatCount } from "@/lib/utils";
 import { PageSizeSelect, PaginationFooter } from "@/components/PaginationControls";
 
 // Reusable "stat tiles + status tabs + progress bar + card list" pattern —
@@ -76,7 +77,7 @@ export const TableSummary = ({
                                 className="text-2xl font-bold text-foreground"
                                 style={{ fontFamily: 'var(--font-body)' }}
                             >
-                                {s.value}
+                                {typeof s.value === "number" ? formatCount(s.value) : s.value}
                             </p>
                         </div>
                     ))}

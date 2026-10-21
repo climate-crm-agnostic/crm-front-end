@@ -10,6 +10,7 @@ import { getClients } from "../services/clientService";
 import { saveAs } from "file-saver";
 import Swal from "sweetalert2";
 import { Badge } from "../components/ui/badge";
+import { formatDecimal } from "@/lib/utils";
 
 const STATUS_COLORS = {
     paid: "var(--primary)",
@@ -29,7 +30,7 @@ const STATUS_TABS = [
     { value: "overdue", label: "Overdue", color: STATUS_COLORS.overdue, match: (row) => row.status === "overdue" },
 ];
 
-const money = (currency, value) => `${currency || "USD"} ${Number(value || 0).toFixed(2)}`;
+const money = (currency, value) => `${currency || "USD"} ${formatDecimal(value || 0)}`;
 
 export const Invoice = () => {
     const [invoices, setInvoices] = useState([]);
@@ -145,7 +146,7 @@ export const Invoice = () => {
     const sumLabel = (field) => {
         if (!singleCurrency) return "Mixed";
         const total = dateFilteredInvoices.reduce((sum, inv) => sum + (Number(inv[field]) || 0), 0);
-        return `${singleCurrency} ${total.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+        return `${singleCurrency} ${total.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
     };
     const overdueCount = dateFilteredInvoices.filter((inv) => inv.status === "overdue").length;
 

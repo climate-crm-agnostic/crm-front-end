@@ -6,6 +6,7 @@ import { Button } from "../components/ui/button";
 import { Plus } from "lucide-react";
 import { getAssets, deleteAsset } from "../services/assetService";
 import Swal from "sweetalert2";
+import { formatCount, formatDecimal } from "@/lib/utils";
 
 export const Asset = () => {
     const [items, setItems] = useState([]);
@@ -73,7 +74,7 @@ export const Asset = () => {
     const stats = [
         { label: "Total assets", value: items.length },
         { label: "Total quantity", value: totalQuantity },
-        { label: "Total value", value: `$${totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}` },
+        { label: "Total value", value: `$${totalValue.toLocaleString("en-US", { maximumFractionDigits: 0 })}` },
     ];
 
     const renderAssetCard = (item) => {
@@ -90,9 +91,9 @@ export const Asset = () => {
                 <div className="flex items-center gap-4 shrink-0">
                     <div className="text-right">
                         <p className="text-sm font-bold text-foreground">
-                            {item.price ? `$${Number(item.price).toFixed(2)}` : "—"}
+                            {item.price ? `$${formatDecimal(item.price)}` : "—"}
                         </p>
-                        <p className="text-xs mt-0.5 text-muted-foreground">Qty {item.quantity ?? "—"}</p>
+                        <p className="text-xs mt-0.5 text-muted-foreground">Qty {item.quantity == null ? "—" : formatCount(item.quantity)}</p>
                     </div>
                     <RowActions row={item} onEdit={handleEdit} onAskDelete={handleDelete} />
                 </div>

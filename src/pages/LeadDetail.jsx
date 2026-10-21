@@ -33,6 +33,7 @@ import { DynamicAttributeField } from "../components/attributes/DynamicAttribute
 import { coerceAttributeValue, collectAttributeValuesByType, emptyValueFor, normalizeOptions } from "../utils/attributeTypes";
 import { formatDateTime } from "../utils/tz";
 import Swal from "sweetalert2";
+import { formatDecimal } from "@/lib/utils";
 
 export const LeadDetail = () => {
     const { id } = useParams();
@@ -1136,7 +1137,7 @@ export const LeadDetail = () => {
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-3 shrink-0">
-                                            <span className="text-sm font-medium">{Number(q.total).toFixed(2)}</span>
+                                            <span className="text-sm font-medium">{formatDecimal(q.total)}</span>
                                             <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-muted capitalize">{q.status}</span>
                                         </div>
                                     </div>

@@ -389,7 +389,7 @@ const PipelineReportCard = ({ pipeline }) => {
                     {pipeline.name}
                 </p>
                 <span style={{ fontSize: 11, fontWeight: 600, color: "var(--secondary-text)", backgroundColor: "var(--sidebar-accent)", border: "1px solid var(--primary-text)", borderRadius: 99, padding: "2px 10px" }}>
-                    {pipeline.total} lead{pipeline.total !== 1 ? "s" : ""}
+                    {formatCount(pipeline.total)} lead{pipeline.total !== 1 ? "s" : ""}
                 </span>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
@@ -436,7 +436,7 @@ const PipelineReportCard = ({ pipeline }) => {
                                             {userName}
                                         </span>
                                         <span style={{ fontSize: 12, fontWeight: 700, color: "var(--foreground)", fontFamily: 'var(--font-body)', marginLeft: 8, flexShrink: 0 }}>
-                                            {data.total}
+                                            {formatCount(data.total)}
                                         </span>
                                     </div>
                                     <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
@@ -445,7 +445,7 @@ const PipelineReportCard = ({ pipeline }) => {
                                             const color = idx >= 0 ? STAGE_PALETTE[idx % STAGE_PALETTE.length] : "#9b948e";
                                             return (
                                                 <span key={stage} style={{ fontSize: 10, color: "#fff", backgroundColor: color, borderRadius: 3, padding: "1px 6px", fontFamily: 'var(--font-body)', whiteSpace: "nowrap" }}>
-                                                    {stage} · {count}
+                                                    {stage} · {formatCount(count)}
                                                 </span>
                                             );
                                         })}

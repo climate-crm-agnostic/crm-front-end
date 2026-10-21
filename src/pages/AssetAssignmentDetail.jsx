@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { ArrowLeft } from "lucide-react";
 import { Switch } from "../components/ui/switch";
 import { DateInput } from "../components/ui/date-input";
+import { formatCount } from "@/lib/utils";
 
 export const AssetAssignmentDetail = () => {
     const { id } = useParams();
@@ -256,7 +257,7 @@ export const AssetAssignmentDetail = () => {
                                     <SelectContent>
                                         {availableAssets.map(a => (
                                             <SelectItem key={a.id} value={a.id}>
-                                                {a.name} ({a.quantity} left in stock)
+                                                {a.name} ({formatCount(a.quantity)} left in stock)
                                             </SelectItem>
                                         ))}
                                         {availableAssets.length === 0 && <SelectItem value="none" disabled>No assets available</SelectItem>}
