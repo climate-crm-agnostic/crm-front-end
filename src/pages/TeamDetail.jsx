@@ -5,6 +5,8 @@ import {
     getEligibleMembers, addTeamMember, removeTeamMember,
 } from "../services/teamService";
 import { getUsers } from "../services/userService";
+import { getPeriods } from "../services/periodService";
+import { GoalProgressBoard } from "../components/GoalProgressBoard";
 
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -27,6 +29,9 @@ export const TeamDetail = () => {
     const [eligibleUsers, setEligibleUsers] = useState([]);
     const [selectedNewMember, setSelectedNewMember] = useState("");
 
+    const [periods, setPeriods] = useState([]);
+    const [progressPeriodId, setProgressPeriodId] = useState("");
+
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(!isNew);
     const [error, setError] = useState(null);
@@ -44,6 +49,14 @@ export const TeamDetail = () => {
                     setDescription(team.description || "");
                     setLeaderId(team.leader?.id ? String(team.leader.id) : "");
                     setMembers(team.members || []);
+
+                    const allPeriods = await getPeriods().catch(() => []);
+                    const list = Array.isArray(allPeriods) ? allPeriods : [];
+                    setPeriods(list);
+                    // Default to the period containing today, else the most recent one.
+                    const today = new Date().toISOString().slice(0, 10);
+                    const current = list.find(p => p.start_date <= today && today <= p.end_date) || list[0];
+                    if (current) setProgressPeriodId(current.id);
                 }
                 await refreshEligible();
             } catch (err) {
@@ -224,6 +237,21 @@ export const TeamDetail = () => {
                                 Add
                             </Button>
                         </div>
+                    </div>
+                )}
+
+                {!isNew && (
+                    <div className="bg-card p-6 rounded-lg border shadow-sm space-y-4">
+                        <div className="flex items-center justify-between gap-4 border-b pb-2">
+                            <h3 className="font-medium text-lg">Goals &amp; Progress</h3>
+                            <Select value={progressPeriodId} onValueChange={setProgressPeriodId}>
+                                <SelectTrigger className="w-48"><SelectValue placeholder="Select a period" /></SelectTrigger>
+                                <SelectContent>
+                                    {periods.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <GoalProgressBoard periodId={progressPeriodId} teamId={id} />
                     </div>
                 )}
             </div>

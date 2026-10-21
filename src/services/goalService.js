@@ -20,17 +20,27 @@ export const updateGoal = async (id, data) => {
   return res.json();
 };
 
-export const bulkSetTeamGoal = async ({ periodId, teamId, metricLabel, targetValue }) => {
+export const bulkSetTeamGoal = async ({ periodId, teamId, indicatorId, targetValue }) => {
   const res = await fetch(`${GOALS_URL}bulk-set-team-goal/`, {
     method: 'POST',
     headers: getHeaders(),
     body: JSON.stringify({
-      period_id: periodId, team_id: teamId, metric_label: metricLabel, target_value: targetValue,
+      period_id: periodId, team_id: teamId, indicator_id: indicatorId, target_value: targetValue,
     }),
   });
   if (!res.ok) {
     const errorData = await res.json().catch(() => null);
     throw new Error(extractErrorMessage(errorData, 'Error setting team goal'));
+  }
+  return res.json();
+};
+
+export const getGoalsProgress = async ({ periodId, teamId }) => {
+  const query = new URLSearchParams({ period: periodId, ...(teamId ? { team: teamId } : {}) }).toString();
+  const res = await fetch(`${GOALS_URL}progress/?${query}`, { headers: getHeaders() });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => null);
+    throw new Error(extractErrorMessage(errorData, 'Error loading goal progress'));
   }
   return res.json();
 };

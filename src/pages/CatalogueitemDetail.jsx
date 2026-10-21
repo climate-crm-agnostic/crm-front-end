@@ -39,6 +39,8 @@ export const CatalogueitemDetail = () => {
     const [currency, setCurrency] = useState("USD");
     const [unit, setUnit] = useState("unit");
     const [taxRate, setTaxRate] = useState("0.00");
+    const [billingType, setBillingType] = useState("one_time");
+    const [billingCycle, setBillingCycle] = useState("monthly");
     const [isActive, setIsActive] = useState(true);
     const [categoryId, setCategoryId] = useState("");
     const [inventoryId, setInventoryId] = useState("");
@@ -147,6 +149,8 @@ export const CatalogueitemDetail = () => {
         setCurrency(data.currency || "USD");
         setUnit(data.unit || "unit");
         setTaxRate(data.tax_rate || "0.00");
+        setBillingType(data.billing_type || "one_time");
+        setBillingCycle(data.billing_cycle || "monthly");
         setIsActive(data.is_active !== undefined ? data.is_active : true);
         setCategoryId(data.category ? (typeof data.category === 'object' ? String(data.category.id) : String(data.category)) : "none");
         setInventoryId(data.inventory ? (typeof data.inventory === 'object' ? String(data.inventory.id) : String(data.inventory)) : "none");
@@ -277,6 +281,8 @@ export const CatalogueitemDetail = () => {
                 currency,
                 unit,
                 tax_rate: taxRate,
+                billing_type: billingType,
+                billing_cycle: billingType === 'recurring' ? billingCycle : null,
                 is_active: isActive,
                 category: categoryId === "none" ? null : categoryId,
                 inventory: inventoryId === "none" ? null : inventoryId,
@@ -421,6 +427,41 @@ export const CatalogueitemDetail = () => {
                                 <Input id="tax_rate" type="number" step="0.01" value={taxRate} onChange={(e) => setTaxRate(e.target.value)} />
                             </div>
                         </div>
+                    </div>
+
+                    {/* Billing: decides what a Won lead does with this item */}
+                    <div className="bg-card p-6 rounded-lg border shadow-sm space-y-4">
+                        <h3 className="font-medium text-lg border-b pb-2">Billing</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label>Charged</Label>
+                                <Select value={billingType} onValueChange={setBillingType}>
+                                    <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="one_time">One time</SelectItem>
+                                        <SelectItem value="recurring">Recurring</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            {billingType === 'recurring' && (
+                                <div className="space-y-2">
+                                    <Label>Billing cycle</Label>
+                                    <Select value={billingCycle} onValueChange={setBillingCycle}>
+                                        <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="monthly">Monthly</SelectItem>
+                                            <SelectItem value="quarterly">Quarterly</SelectItem>
+                                            <SelectItem value="yearly">Yearly</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            )}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            {billingType === 'recurring'
+                                ? "When a lead with this item is won, the client is invoiced right away and then once per cycle automatically."
+                                : "When a lead with this item is won, it goes on a single invoice."}
+                        </p>
                     </div>
 
                     {/* Price Tiers List - Only show if not new */}

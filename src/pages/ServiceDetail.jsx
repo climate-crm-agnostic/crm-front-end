@@ -34,6 +34,15 @@ export const ServiceDetail = () => {
     const [clientId, setClientId] = useState("");
     const [dynamicData, setDynamicData] = useState({});
 
+    // Billing schedule — recurring services are invoiced automatically by the daily job
+    const [status, setStatus] = useState("active");
+    const [billingType, setBillingType] = useState("one_time");
+    const [billingCycle, setBillingCycle] = useState("monthly");
+    const [amount, setAmount] = useState("");
+    const [currency, setCurrency] = useState("USD");
+    const [nextBillingDate, setNextBillingDate] = useState("");
+    const [lastBilledAt, setLastBilledAt] = useState("");
+
     // UI state
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(!isNew);
@@ -119,6 +128,13 @@ export const ServiceDetail = () => {
     const populateForm = (data) => {
         setName(data.name || "");
         setClientId(data.client ? (typeof data.client === 'object' ? String(data.client.id) : String(data.client)) : "");
+        setStatus(data.status || "active");
+        setBillingType(data.billing_type || "one_time");
+        setBillingCycle(data.billing_cycle || "monthly");
+        setAmount(data.amount ?? "");
+        setCurrency(data.currency || "USD");
+        setNextBillingDate(data.next_billing_date || "");
+        setLastBilledAt(data.last_billed_at || "");
 
         setDynamicData(prev => {
             const updated = { ...prev };
@@ -261,8 +277,16 @@ export const ServiceDetail = () => {
             const payload = {
                 name,
                 client: clientId,
+                status,
+                billing_type: billingType,
                 attributes: formattedAttributes
             };
+            if (billingType === 'recurring') {
+                payload.billing_cycle = billingCycle;
+                payload.amount = amount;
+                payload.currency = currency;
+                payload.next_billing_date = nextBillingDate || null;
+            }
 
             if (isNew) {
                 if (tasks.length) payload.list_of_tasks = tasks;
@@ -350,6 +374,65 @@ export const ServiceDetail = () => {
                                 </Select>
                             </div>
                         </div>
+                    </div>
+
+                    {/* Billing */}
+                    <div className="bg-card p-6 rounded-lg border shadow-sm space-y-4">
+                        <h3 className="font-medium text-lg border-b pb-2">Billing</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="space-y-2">
+                                <Label>Billing</Label>
+                                <Select value={billingType} onValueChange={setBillingType}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="one_time">One time</SelectItem>
+                                        <SelectItem value="recurring">Recurring</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Status</Label>
+                                <Select value={status} onValueChange={setStatus}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="active">Active</SelectItem>
+                                        <SelectItem value="paused">Paused</SelectItem>
+                                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                {billingType === 'recurring' && status !== 'active' && (
+                                    <p className="text-xs text-muted-foreground">Only active services are invoiced.</p>
+                                )}
+                            </div>
+                        </div>
+                        {billingType === 'recurring' && (
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="amount">Amount per cycle</Label>
+                                    <Input id="amount" type="number" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="currency">Currency</Label>
+                                    <Input id="currency" value={currency} onChange={(e) => setCurrency(e.target.value)} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Cycle</Label>
+                                    <Select value={billingCycle} onValueChange={setBillingCycle}>
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="monthly">Monthly</SelectItem>
+                                            <SelectItem value="quarterly">Quarterly</SelectItem>
+                                            <SelectItem value="yearly">Yearly</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Next billing date</Label>
+                                    <DateInput value={nextBillingDate} onChange={(e) => setNextBillingDate(e.target.value)} />
+                                    {lastBilledAt && <p className="text-xs text-muted-foreground">Last billed: {lastBilledAt}</p>}
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Dynamic Attributes */}
