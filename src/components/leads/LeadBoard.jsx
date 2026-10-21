@@ -60,7 +60,10 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
             const pipelinesData = await getPipelines();
             const loadedPipelines = pipelinesData.results || pipelinesData || [];
             setPipelines(loadedPipelines);
-            if (loadedPipelines.length > 0 && !selectedPipelineId) {
+            // The remembered pipeline may no longer exist (pipelines were
+            // recreated, or deleted); fall back instead of showing an empty board.
+            const remembered = loadedPipelines.some((p) => String(p.id) === String(selectedPipelineId));
+            if (loadedPipelines.length > 0 && !remembered) {
                 setSelectedPipelineId(loadedPipelines[0].id);
             }
         };

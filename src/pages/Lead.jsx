@@ -41,7 +41,15 @@ export const Lead = () => {
     // needs the pipeline selector so switching Kanban<->Table keeps showing
     // the same pipeline (selectedPipelineId is shared between both).
     useEffect(() => {
-        getPipelines().then(data => setTablePipelines(data.results || data || [])).catch(() => setTablePipelines([]));
+        getPipelines().then(data => {
+            const loaded = data.results || data || [];
+            setTablePipelines(loaded);
+            // Same stale-id guard as LeadBoard: a remembered pipeline that no longer exists would filter to nothing.
+            if (loaded.length > 0 && !loaded.some((p) => String(p.id) === String(selectedPipelineId))) {
+                setSelectedPipelineId(loaded[0].id);
+            }
+        }).catch(() => setTablePipelines([]));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleExportExcel = async () => {
