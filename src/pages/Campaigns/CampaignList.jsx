@@ -495,9 +495,22 @@ export const CampaignList = () => {
                         <p className="text-sm text-muted-foreground">Loading recipients...</p>
                     ) : detailsData && detailsData.mode === 'preview' && (
                         <div className="space-y-3">
-                            <p className="text-sm text-muted-foreground">
-                                <strong>{detailsData.recipient_count}</strong> record(s) currently match this campaign's audience (not sent yet).
-                            </p>
+                            {detailsCampaign?.template?.entity === 'client' && detailsData.recipient_count === 0 ? (
+                                // For client campaigns, preview-recipients reflects CONFIGURED
+                                // recipients (recipients-config), not the raw audience match —
+                                // so 0 here almost always means "contact not chosen yet", not
+                                // "no clients match". Same wording as the Send confirmation's
+                                // amber notice for this exact case.
+                                <div className="rounded-md border border-amber-300 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/15 px-3 py-3 text-sm text-amber-800 dark:text-amber-300">
+                                    No recipients configured yet. For client campaigns you must choose a contact
+                                    (primary or secondary) for each client before sending. Close this dialog and use the
+                                    <strong> Recipients </strong> button to configure contacts.
+                                </div>
+                            ) : (
+                                <p className="text-sm text-muted-foreground">
+                                    <strong>{detailsData.recipient_count}</strong> record(s) currently match this campaign's audience (not sent yet).
+                                </p>
+                            )}
                             {detailsData.recipient_count > 0 && (
                                 <div className="max-h-64 overflow-y-auto border rounded-md divide-y">
                                     {detailsData.recipients.map(r => (

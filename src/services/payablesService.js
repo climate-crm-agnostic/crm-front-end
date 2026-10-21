@@ -76,7 +76,7 @@ export const uploadBillFile = (id, file) => uploadTo(`${billsUrl}${id}/upload-fi
 export const deleteBillFile = (id, path) =>
     request(`${billsUrl}${id}/delete-file/`, { method: "POST", body: { path }, fallback: "Error deleting file" });
 
-export const exportSupplierBillsExcel = () => download(`${billsUrl}export_excel/`, "Error exporting bills");
+export const exportSupplierBillsExcel = (filters = {}) => download(`${billsUrl}export_excel/${query(filters)}`, "Error exporting bills");
 
 export const getSupplierBillAttributes = () =>
     fetchAllPages(`${API_URL}/attributes/supplier_bill/`, { headers: getHeaders() });
@@ -107,7 +107,7 @@ export const uploadPaymentFile = (id, file) => uploadTo(`${paymentsUrl}${id}/upl
 export const deletePaymentFile = (id, path) =>
     request(`${paymentsUrl}${id}/delete-file/`, { method: "POST", body: { path }, fallback: "Error deleting file" });
 
-export const exportSupplierPaymentsExcel = () => download(`${paymentsUrl}export_excel/`, "Error exporting payments");
+export const exportSupplierPaymentsExcel = (filters = {}) => download(`${paymentsUrl}export_excel/${query(filters)}`, "Error exporting payments");
 
 export const getSupplierPaymentAttributes = () =>
     fetchAllPages(`${API_URL}/attributes/supplier_payment/`, { headers: getHeaders() });
@@ -137,3 +137,7 @@ export const getPayablesAging = (filters = {}) => request(agingUrl(filters), { f
 
 export const exportPayablesAgingExcel = (filters = {}) =>
     download(agingUrl({ ...filters, export: "excel" }), "Error exporting aging report");
+
+// Read an invoice file with AI. Returns proposed bill values + warnings;
+// nothing is saved (see app/ai/bill_ocr.py).
+export const scanSupplierBill = (file) => uploadTo(`${billsUrl}scan/`, file);

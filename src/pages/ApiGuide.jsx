@@ -329,8 +329,8 @@ export const ApiGuide = () => {
                                     <EndpointBlock method="POST" path="/api/supplier-bills/" description="Record a bill. total = subtotal + tax_amount - discount is computed by the server.">
                                         <CopyBlock text={`{ "supplier": "supplier-uuid", "bill_number": "INV-4411", "issue_date": "2026-09-01", "due_date": "2026-10-01", "currency": "USD", "subtotal": "1000.00", "tax_amount": "130.00", "status": "open" }`} />
                                     </EndpointBlock>
-                                    <EndpointBlock method="POST" path="/api/supplier-bills/{bill_uuid}/line-items/" description="Optional detail lines. Once a bill has lines, its subtotal and tax come from them.">
-                                        <CopyBlock text={`{ "description": "Steel bolts", "quantity": "100", "unit_price": "2.50", "tax_rate": "13", "catalogue_item": null }`} />
+                                    <EndpointBlock method="POST" path="/api/supplier-bills/{bill_uuid}/line-items/" description="Optional detail lines. Each can link an inventory item or an asset (not both). Once a bill has lines, its subtotal and tax come from them.">
+                                        <CopyBlock text={`{ "description": "Steel bolts", "quantity": "100", "unit_price": "2.50", "tax_rate": "13", "inventory_item": "inventory-uuid", "asset": null }`} />
                                     </EndpointBlock>
                                     <EndpointBlock method="GET" path="/api/supplier-bills/{uuid}/payments/" description="Payments applied to this bill." />
                                     <EndpointBlock method="POST" path="/api/supplier-bills/{uuid}/void/" description="Void a bill (it must have no payments applied). A reason is required. Only draft bills can be deleted.">

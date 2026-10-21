@@ -75,6 +75,23 @@ export const uploadEmailTemplateImage = async (file) => {
   return res.json();
 };
 
+// Rewrites a template body draft via AI, preserving {merge.fields} verbatim
+// (see EmailTemplateViewSet.polish). Deliberately a separate endpoint from
+// communicationService.polishEmail (used by the Lead compose modal), which
+// has no merge fields to protect.
+export const polishTemplateBody = async (text) => {
+  const res = await fetch(`${TEMPLATES_URL}polish/`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify({ text }),
+  });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => null);
+    throw new Error(extractErrorMessage(errorData, 'Error polishing template'));
+  }
+  return res.json();
+};
+
 // Renders subject/html_body against a real Contact so the editor can show
 // what the variables actually resolve to. contactId is optional.
 export const previewEmailTemplate = async (id, contactId) => {

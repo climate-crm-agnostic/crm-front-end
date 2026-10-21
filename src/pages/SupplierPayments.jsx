@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { SupplierFilter } from "../components/payables/SupplierFilter";
 import { saveAs } from "file-saver";
 import { Swal } from "../components/payables/payablesUi";
+import { HelpNote } from "../components/payables/HelpNote";
 import { Download, Plus } from "lucide-react";
 import { TableSummary } from "../components/TableSummary";
 import { Button } from "../components/ui/button";
@@ -16,7 +18,7 @@ const hasCredit = (row) => row.status === "posted" && Number(row.amount_unapplie
 const STATUS_TABS = [
     { value: "all", label: "All" },
     {
-        value: "applied", label: "Fully applied", color: "var(--secondary)",
+        value: "applied", label: "Applied", color: "var(--secondary)",
         match: (row) => row.status === "posted" && !hasCredit(row),
     },
     { value: "credit", label: "With credit", color: "var(--primary)", match: hasCredit },
@@ -25,6 +27,10 @@ const STATUS_TABS = [
 
 export const SupplierPayments = () => {
     const navigate = useNavigate();
+    // ?supplier=<id> opens the list already filtered (e.g. from a supplier's account).
+    const [searchParams, setSearchParams] = useSearchParams();
+    const supplierId = searchParams.get("supplier") || "";
+    const setSupplierId = (value) => setSearchParams(value ? { supplier: value } : {}, { replace: true });
     const can = useCan();
     const [payments, setPayments] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -45,10 +51,11 @@ export const SupplierPayments = () => {
     }, []);
 
     const visible = useMemo(() => payments.filter((p) => {
+        if (supplierId && String(p.supplier) !== supplierId) return false;
         if (dateFrom && p.payment_date < dateFrom) return false;
         if (dateTo && p.payment_date > dateTo) return false;
         return true;
-    }), [payments, dateFrom, dateTo]);
+    }), [payments, supplierId, dateFrom, dateTo]);
 
     const posted = visible.filter((p) => p.status === "posted");
     const monthStart = `${today().slice(0, 8)}01`;
@@ -60,7 +67,7 @@ export const SupplierPayments = () => {
 
     const handleExport = async () => {
         try {
-            saveAs(await exportSupplierPaymentsExcel(), "supplier_payments.xlsx");
+            saveAs(await exportSupplierPaymentsExcel(supplierId ? { supplier: supplierId } : {}), "supplier_payments.xlsx");
         } catch (err) {
             Swal.fire("Error", err.message, "error");
         }
@@ -86,7 +93,7 @@ export const SupplierPayments = () => {
                     ) : hasCredit(p) ? (
                         <Badge variant="secondary">Credit {money(p.currency, p.amount_unapplied)}</Badge>
                     ) : (
-                        <Badge variant="default">{billCount} bill{billCount === 1 ? "" : "s"}</Badge>
+                        <Badge variant="default">Applied to {billCount} bill{billCount === 1 ? "" : "s"}</Badge>
                     )}
                     <div className="text-right">
                         <p className={`text-sm font-bold text-foreground ${isVoid ? "line-through" : ""}`}>{money(p.currency, p.amount)}</p>
@@ -116,7 +123,18 @@ export const SupplierPayments = () => {
                 </div>
             </div>
 
+            <div className="mb-2">
+                <HelpNote id="payments" items={[
+                    <>A <b>payment</b> is money sent to a supplier. It can settle one bill, several bills, or part of a bill.</>,
+                    <><b>Applied</b>: all of the payment went to bills (the bills may still owe more). <b>With credit</b>: part of it hasn't been used yet.</>,
+                    <>Credit is applied to a bill from the payment's page. <b>Void</b> undoes a payment and reopens the bills it settled.</>,
+                ]} />
+            </div>
             <div className="bg-card p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
+                <div className="flex flex-wrap items-center gap-2 mb-3">
+                    <span className="text-sm text-muted-foreground">Supplier</span>
+                    <SupplierFilter value={supplierId} onChange={setSupplierId} />
+                </div>
                 <TableSummary
                     data={visible}
                     stats={stats}

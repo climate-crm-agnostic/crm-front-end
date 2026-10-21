@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { SupplierFilter } from "../components/payables/SupplierFilter";
 import { saveAs } from "file-saver";
 import { Swal } from "../components/payables/payablesUi";
+import { HelpNote } from "../components/payables/HelpNote";
 import { Download, HandCoins, Plus } from "lucide-react";
 import { TableSummary } from "../components/TableSummary";
 import { Button } from "../components/ui/button";
@@ -27,6 +29,10 @@ const STATUS_TABS = [
 
 export const SupplierBills = () => {
     const navigate = useNavigate();
+    // ?supplier=<id> opens the list already filtered (e.g. from a supplier's account).
+    const [searchParams, setSearchParams] = useSearchParams();
+    const supplierId = searchParams.get("supplier") || "";
+    const setSupplierId = (value) => setSearchParams(value ? { supplier: value } : {}, { replace: true });
     const can = useCan();
     const [bills, setBills] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -48,10 +54,11 @@ export const SupplierBills = () => {
 
     // Filters by due date — what matters for deciding what to pay next.
     const visible = useMemo(() => bills.filter((b) => {
+        if (supplierId && String(b.supplier) !== supplierId) return false;
         if (dueFrom && b.due_date < dueFrom) return false;
         if (dueTo && b.due_date > dueTo) return false;
         return true;
-    }), [bills, dueFrom, dueTo]);
+    }), [bills, supplierId, dueFrom, dueTo]);
 
     const payable = visible.filter((b) => PAYABLE_STATUSES.includes(b.status));
     const horizon = addDays(today(), 7);
@@ -66,7 +73,7 @@ export const SupplierBills = () => {
 
     const handleExport = async () => {
         try {
-            saveAs(await exportSupplierBillsExcel(), "supplier_bills.xlsx");
+            saveAs(await exportSupplierBillsExcel(supplierId ? { supplier: supplierId } : {}), "supplier_bills.xlsx");
         } catch (err) {
             Swal.fire("Error", err.message, "error");
         }
@@ -126,7 +133,19 @@ export const SupplierBills = () => {
                 </div>
             </div>
 
+            <div className="mb-2">
+                <HelpNote id="bills" items={[
+                    <>A <b>bill</b> is an invoice a supplier sent you — what you owe them.</>,
+                    <><b>Draft</b> bills are not payable yet; <b>Open</b> bills are ready to pay. Partially paid and Paid follow from the payments applied.</>,
+                    <><b>Overdue</b> is worked out from the due date, so a bill turns overdue on its own the day after it is due.</>,
+                    <>Pay one or several bills with <b>Record Payment</b>, or open a bill and use <b>Pay this bill</b>.</>,
+                ]} />
+            </div>
             <div className="bg-card p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
+                <div className="flex flex-wrap items-center gap-2 mb-3">
+                    <span className="text-sm text-muted-foreground">Supplier</span>
+                    <SupplierFilter value={supplierId} onChange={setSupplierId} />
+                </div>
                 <TableSummary
                     data={visible}
                     stats={stats}

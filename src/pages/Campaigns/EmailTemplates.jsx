@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { Mail, Trash2, Edit, Eye } from "lucide-react";
+import { Mail, Trash2, Edit, Eye, Sparkles } from "lucide-react";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { Button } from "../../components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
 import { RichTextEditor } from "../../components/RichTextEditor";
 import { MergeFieldPicker } from "../../components/MergeFieldPicker";
-import { getEmailTemplates, createEmailTemplate, updateEmailTemplate, deleteEmailTemplate, previewEmailTemplate, uploadEmailTemplateImage } from "../../services/emailTemplateService";
+import { getEmailTemplates, createEmailTemplate, updateEmailTemplate, deleteEmailTemplate, previewEmailTemplate, uploadEmailTemplateImage, polishTemplateBody } from "../../services/emailTemplateService";
 import Swal from 'sweetalert2';
 
 const emptyForm = { name: "", subject: "", campaign_type: "one_time", entity: "client", html_body: "" };
@@ -20,6 +20,7 @@ export const EmailTemplates = () => {
     const [subjectCursor, setSubjectCursor] = useState(0);
     const [preview, setPreview] = useState(null);
     const [previewing, setPreviewing] = useState(false);
+    const [polishing, setPolishing] = useState(false);
 
     const subjectRef = useRef(null);
     const bodyEditorRef = useRef(null);
@@ -112,6 +113,26 @@ export const EmailTemplates = () => {
         }
     };
 
+    // Tiptap's "empty" state is HTML like "<p></p>", not an empty string —
+    // form.html_body.trim() alone stays truthy for that, so the Polish
+    // button needs to strip tags first to tell a real draft from a blank
+    // editor (same rule the backend applies with strip_tags()).
+    const isBodyEmpty = (html) => !html || !html.replace(/<[^>]*>/g, '').trim();
+
+    const handlePolish = async () => {
+        if (isBodyEmpty(form.html_body)) return;
+        setPolishing(true);
+        try {
+            const { polished_html } = await polishTemplateBody(form.html_body);
+            setForm(f => ({ ...f, html_body: polished_html }));
+            bodyEditorRef.current?.setContent(polished_html);
+        } catch (err) {
+            Swal.fire({ icon: 'error', title: 'Error', text: err.message, toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
+        } finally {
+            setPolishing(false);
+        }
+    };
+
     const handlePreview = async () => {
         if (!editingId) return;
         setPreviewing(true);
@@ -187,7 +208,21 @@ export const EmailTemplates = () => {
                     <div className="space-y-2 md:col-span-2">
                         <div className="flex items-center justify-between">
                             <Label>Body</Label>
-                            <MergeFieldPicker onInsert={insertIntoBody} label="Insert Variable" entity={form.entity} />
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-7 gap-1.5 text-xs"
+                                    onClick={handlePolish}
+                                    disabled={polishing || isBodyEmpty(form.html_body)}
+                                    title="Improve the wording with AI — merge fields are preserved; images move to the end"
+                                >
+                                    <Sparkles className="h-3.5 w-3.5" />
+                                    {polishing ? "Polishing..." : "Polish"}
+                                </Button>
+                                <MergeFieldPicker onInsert={insertIntoBody} label="Insert Variable" entity={form.entity} />
+                            </div>
                         </div>
                         <RichTextEditor
                             key={editingId || 'new'}
