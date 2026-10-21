@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { ArrowUpRight } from "lucide-react";
+import { formatCount, formatMoney } from "@/lib/utils";
 
 const N = 52;
 const CX = 130;
@@ -12,7 +13,7 @@ const initials = (name = "") => name.split(/\s+/).filter(Boolean).slice(0, 2).ma
 const formatValue = (value, unit) => {
     if (value === null || value === undefined) return "—";
     const n = Number(value);
-    return unit === "currency" ? `$${Math.round(n).toLocaleString()}` : Math.round(n).toLocaleString();
+    return unit === "currency" ? formatMoney(n) : formatCount(n);
 };
 
 /** Semicircle of ticks for the team's progress on one indicator, with the members ranked below. */

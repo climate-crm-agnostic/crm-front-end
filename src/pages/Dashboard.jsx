@@ -15,6 +15,7 @@ import { KpiCard } from "@/components/dashboard/KpiCard";
 import { RevenueChart } from "@/components/dashboard/RevenueChart";
 import { GoalGauge } from "@/components/dashboard/GoalGauge";
 import { LatestWins } from "@/components/dashboard/LatestWins";
+import { formatCount } from "@/lib/utils";
 
 const fetchCount = async (endpoint) => {
     const res = await fetch(`${API_URL}/${endpoint}/?page_size=1`, { headers: getHeaders() });
@@ -162,7 +163,7 @@ const StatCard = ({ title, count, icon: Icon, href, loading, navigate }) => {
                             className="text-4xl font-bold"
                             style={{ color: "var(--foreground)", fontFamily: 'var(--font-body)', letterSpacing: "-0.02em" }}
                         >
-                            {count ?? "—"}
+                            {count == null ? "—" : formatCount(count)}
                         </span>
                     )}
                 </div>
@@ -211,7 +212,7 @@ const TaskKpiCard = ({ title, count, color, entityKey, onOpenModal, loading }) =
                     <div className="h-9 w-16 rounded animate-pulse" style={{ backgroundColor: "var(--border)" }} />
                 ) : (
                     <span className="text-3xl font-bold" style={{ color: "var(--foreground)", fontFamily: 'var(--font-body)', letterSpacing: "-0.02em" }}>
-                        {count}
+                        {formatCount(count)}
                     </span>
                 )}
             </div>
@@ -406,7 +407,7 @@ const PipelineReportCard = ({ pipeline }) => {
                                 <div key={stage}>
                                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
                                         <span style={{ fontSize: 12, color: "var(--foreground)", fontFamily: 'var(--font-body)' }}>{stage}</span>
-                                        <span style={{ fontSize: 12, fontWeight: 700, color: "var(--foreground)", fontFamily: 'var(--font-body)' }}>{count}</span>
+                                        <span style={{ fontSize: 12, fontWeight: 700, color: "var(--foreground)", fontFamily: 'var(--font-body)' }}>{formatCount(count)}</span>
                                     </div>
                                     <div style={{ height: 7, backgroundColor: "var(--border)", borderRadius: 4 }}>
                                         <div style={{ height: 7, width: `${pct}%`, backgroundColor: color, borderRadius: 4, transition: "width 0.5s ease" }} />
@@ -663,7 +664,7 @@ export const Dashboard = () => {
     const indicator = (key) => summary?.indicators.find((i) => i.key === key);
     const money = (value) => compactMoney(Number(value));
     const kpis = [
-        { key: "closed_deals", label: "Closed deals", icon: Target, format: (v) => Math.round(Number(v)).toLocaleString() },
+        { key: "closed_deals", label: "Closed deals", icon: Target, format: formatCount },
         { key: "revenue", label: "Revenue", icon: Wallet, format: money },
         { key: "recurrent_invoice", label: "Recurrent invoice", icon: Repeat, format: money },
     ];

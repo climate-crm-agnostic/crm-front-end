@@ -15,3 +15,15 @@ export function cn(...inputs) {
 export function foldForSearch(text) {
   return String(text).normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
 }
+
+/** Thousands-separated integer ("3,006"); explicit locale so es-* browsers group 4-digit numbers too. */
+export function formatCount(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? Math.round(n).toLocaleString("en-US") : "—";
+}
+
+/** Whole-dollar amount ("$12,345"). */
+export function formatMoney(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? `$${Math.round(n).toLocaleString("en-US")}` : "—";
+}

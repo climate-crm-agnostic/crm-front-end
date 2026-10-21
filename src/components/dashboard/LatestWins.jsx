@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-const money = (value) => `$${Math.round(Number(value)).toLocaleString()}`;
+import { formatMoney as money } from "@/lib/utils";
 
 const Tag = ({ win }) => {
     if (win.recurring) {
