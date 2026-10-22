@@ -5,6 +5,7 @@ import { ChatNotificationProvider, useChatNotifications } from "@/context/ChatNo
 import { IconRail } from "@/components/shell/IconRail"
 import { TopNav } from "@/components/shell/TopNav"
 import { CommandPalette } from "@/components/shell/CommandPalette"
+import { ChettButton } from "@/components/shell/ChettButton"
 
 function ChatToasts() {
     const { toasts, dismissToast } = useChatNotifications();
@@ -12,7 +13,7 @@ function ChatToasts() {
     if (toasts.length === 0) return null;
     return (
         <div style={{
-            position: 'fixed', bottom: 24, right: 24, zIndex: 9999,
+            position: 'fixed', bottom: 96, right: 24, zIndex: 9999,
             display: 'flex', flexDirection: 'column-reverse', gap: 8,
             pointerEvents: 'none',
         }}>
@@ -73,6 +74,7 @@ function Shell() {
                     <Outlet />
                 </main>
             </div>
+            <ChettButton />
             <CommandPalette open={searchOpen} onOpenChange={setSearchOpen} />
         </div>
     )

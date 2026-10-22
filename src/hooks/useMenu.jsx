@@ -30,47 +30,55 @@ const MENU_CONFIG = [
         label: "Operations",
         icon: "Wrench",
         items: [
-            { title: "Assets",            url: "/asset",           icon: "Laptop",        permission: "app.add_asset",           feature: "assets" },
-            { title: "Asset Assignments", url: "/assetassignment", icon: "ClipboardList", permission: "app.add_assetassignment", feature: "assets" },
             { title: "Catalogue",  url: "/catalogue", icon: "Package",    permission: "app.add_catalogueitem" },
             { title: "Categories", url: "/category",  icon: "FolderTree", permission: "app.add_category" },
             { title: "Inventory",  url: "/inventory", icon: "Warehouse",  permission: "app.add_inventory",  feature: "inventory" },
             { title: "Suppliers",  url: "/supplier",  icon: "Truck",      permission: "app.add_supplier" },
+            { title: "Assets",            url: "/asset",           icon: "Laptop",        permission: "app.add_asset",           feature: "assets" },
+            { title: "Asset Assignments", url: "/assetassignment", icon: "ClipboardList", permission: "app.add_assetassignment", feature: "assets" },
         ],
     },
     {
-        label: "Communication",
+        // How people talk to customers and to each other. Chett AI is not here: it is a floating button.
+        label: "Communications",
         icon: "MessageCircle",
         items: [
-            { title: "Chett AI",  url: "/chett-ai", icon: "Bot", permission: "app.view_aiconversation", feature: "ai" },
-            { title: "Team Chat", url: "/chat", icon: "MessageCircle", feature: "chat" },
-            { title: "Tasks",     url: "/task", icon: "ListTodo",      permission: "app.view_task", feature: "tasks" },
-            { title: "Email Templates", url: "/email-template", icon: "Mail",      permission: "app.view_emailtemplate", feature: "email_campaigns" },
-            { title: "Campaigns",       url: "/campaign",       icon: "Megaphone", permission: "app.view_campaign",      feature: "email_campaigns" },
+            { title: "Team Chat",       url: "/chat",           icon: "MessageCircle", feature: "chat" },
+            { title: "Email Templates", url: "/email-template", icon: "Mail",          permission: "app.view_emailtemplate", feature: "email_campaigns" },
+            { title: "Campaigns",       url: "/campaign",       icon: "Megaphone",     permission: "app.view_campaign",      feature: "email_campaigns" },
         ],
     },
     {
+        // Everything about measuring people's work, in the order you set it up: who, when, what, how much, how it went.
+        label: "Performance",
+        icon: "Gauge",
+        items: [
+            { title: "Tasks",   url: "/task",      icon: "ListTodo",      permission: "app.view_task",      feature: "tasks" },
+            { title: "Teams",   url: "/team",      icon: "Users2",        permission: "app.view_team",      feature: "teams" },
+            { title: "Periods", url: "/period",    icon: "CalendarRange", permission: "app.view_period",    feature: "goals" },
+            { title: "KPIs",    url: "/indicator", icon: "Gauge",         permission: "app.view_indicator", feature: "goals" },
+            { title: "Goals",   url: "/goal",      icon: "Target",        permission: "app.view_goal",      feature: "goals" },
+        ],
+    },
+    {
+        // The technical side of running the CRM; for administrators.
         label: "Admin",
         icon: "ShieldCheck",
         items: [
-            { title: "Teams",       url: "/team",                icon: "Users2",            permission: "app.view_team",    feature: "teams" },
-            { title: "Periods",     url: "/period",              icon: "CalendarRange",     permission: "app.view_period",  feature: "goals" },
-            { title: "KPIs",        url: "/indicator",           icon: "Gauge",             permission: "app.view_indicator", feature: "goals" },
-            { title: "Goals",       url: "/goal",                icon: "Target",            permission: "app.view_goal",    feature: "goals" },
+            { title: "Users",       url: "/users",               icon: "Users",             permission: "auth.add_user" },
             { title: "Attributes",  url: "/attribute",           icon: "SlidersHorizontal", permission: "app.add_attribute" },
             { title: "Lead Fields", url: "/attribute-pipeline",  icon: "FormInput",         permission: "app.add_pipeline" },
             { title: "Webhooks",    url: "/webhook",             icon: "Webhook",           permission: "app.add_webhook", feature: "webhooks" },
             { title: "Audit Log",   url: "/audit-log",           icon: "ClipboardList",     permission: "auth.add_user",   feature: "audit_trail" },
-            { title: "Users",       url: "/users",               icon: "Users",             permission: "auth.add_user" },
-            { title: "Settings",    url: "/settings",            icon: "Settings2",         permission: "auth.add_user" },
             { title: "Lead Reassignment", url: "/lead-reassignment", icon: "ArrowLeftRight", superuserOnly: true },
         ],
     },
     {
-        label: "Account",
+        label: "My Account",
         icon: "UserCircle2",
         items: [
-            { title: "My Info", url: "/my-info", icon: "UserCircle2" },
+            { title: "My Info",  url: "/my-info",  icon: "UserCircle2" },
+            { title: "Settings", url: "/settings", icon: "Settings2", permission: "auth.add_user" },  // plan and integrations (Stripe)
         ],
     },
 ];
@@ -96,4 +104,11 @@ export const useMenu = () => {
     }, [user, isFeatureEnabled]);
 
     return { menu };
+};
+
+/** Whether the current user may open Chett AI (it lives in a floating button, not in the menu). */
+export const useChettAccess = () => {
+    const { user, isFeatureEnabled } = useAuth();
+    const allowed = user?.is_superuser === true || (user?.permissions || []).includes("app.view_aiconversation");
+    return Boolean(allowed && isFeatureEnabled("ai"));
 };

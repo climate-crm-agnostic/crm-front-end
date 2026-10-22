@@ -1,11 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { iconFor, useShellNav } from "./useShellNav";
+import { useChettAccess } from "@/hooks/useMenu";
 
 /** ⌘K / Ctrl+K: jump to any page the current user can open. */
 export function CommandPalette({ open, onOpenChange }) {
     const { hubs } = useShellNav();
     const navigate = useNavigate();
+    const canUseChett = useChettAccess();
 
     const go = (url) => {
         onOpenChange(false);
@@ -33,6 +35,14 @@ export function CommandPalette({ open, onOpenChange }) {
                         </CommandGroup>
                     );
                 })}
+                {canUseChett && (
+                    <CommandGroup heading="Assistant">
+                        <CommandItem value="Assistant Chett AI ask" onSelect={() => go("/chett-ai")} className="cursor-pointer gap-2">
+                            {(() => { const Icon = iconFor("Bot"); return <Icon className="size-4" />; })()}
+                            Ask Chett AI
+                        </CommandItem>
+                    </CommandGroup>
+                )}
             </CommandList>
         </CommandDialog>
     );

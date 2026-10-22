@@ -58,7 +58,7 @@ export function IconRail() {
                     const Icon = iconFor(hub.icon);
                     const active = activeHub?.label === hub.label;
                     return (
-                        <Link key={hub.label} to={hubUrl(hub)} aria-label={hub.label} aria-current={active ? "page" : undefined} className={hubButton(active, "h-12 w-12")}>
+                        <Link key={hub.label} to={hubUrl(hub)} aria-label={hub.label} aria-current={active ? "page" : undefined} className={hubButton(active, "h-12 min-w-0 flex-1 max-w-12")}>
                             <Icon className="size-[22px]" strokeWidth={1.8} />
                         </Link>
                     );

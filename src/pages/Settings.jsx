@@ -6,8 +6,59 @@ import { Button } from "../components/ui/button";
 import { Switch } from "../components/ui/switch";
 import { Badge } from "../components/ui/badge";
 import { Card, CardHeader } from "../components/SectionCard";
-import { CreditCard } from "lucide-react";
+import { BadgeCheck, CreditCard } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import { formatCount } from "../lib/utils";
 import Swal from "sweetalert2";
+
+const titleCase = (key) => key.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase());
+
+/** The plan this instance runs on: status, dates and what it includes. Read-only. */
+const PlanCard = () => {
+    const { plan } = useAuth();
+    if (!plan) return null;
+    const features = Object.entries(plan.features || {});
+    const included = features.filter(([, v]) => v === true);
+    const limits = features.filter(([, v]) => typeof v === "number");
+    const missing = features.filter(([, v]) => v === false);
+    const status = plan.is_suspended ? "Suspended" : plan.is_active ? "Active" : "Expired";
+    const daysLeft = plan.end_date ? Math.ceil((new Date(plan.end_date) - new Date()) / 86400000) : null;
+
+    return (
+        <Card>
+            <CardHeader
+                icon={BadgeCheck}
+                title="Plan"
+                right={<Badge variant={status === "Active" ? "default" : "outline"}>{status}</Badge>}
+            />
+            <div className="space-y-4 p-1">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div><p className="text-xs uppercase tracking-wide text-muted-foreground">Plan</p><p className="text-lg font-semibold">{plan.tier_display}</p></div>
+                    <div><p className="text-xs uppercase tracking-wide text-muted-foreground">Started</p><p className="text-lg font-semibold">{plan.start_date}</p></div>
+                    <div>
+                        <p className="text-xs uppercase tracking-wide text-muted-foreground">Valid until</p>
+                        <p className="text-lg font-semibold">
+                            {plan.end_date ? plan.end_date : "No expiry"}
+                            {daysLeft !== null && daysLeft >= 0 && <span className="ml-2 text-sm font-normal text-muted-foreground">{formatCount(daysLeft)} days left</span>}
+                        </p>
+                    </div>
+                </div>
+                {included.length > 0 && (
+                    <div>
+                        <p className="mb-1.5 text-xs uppercase tracking-wide text-muted-foreground">Included</p>
+                        <div className="flex flex-wrap gap-1.5">
+                            {included.map(([name]) => <Badge key={name} variant="secondary">{titleCase(name)}</Badge>)}
+                            {limits.map(([name, value]) => <Badge key={name} variant="outline">{titleCase(name)}: {formatCount(value)}</Badge>)}
+                        </div>
+                    </div>
+                )}
+                {missing.length > 0 && (
+                    <p className="text-sm text-muted-foreground">Not in this plan: {missing.map(([name]) => titleCase(name)).join(", ")}.</p>
+                )}
+            </div>
+        </Card>
+    );
+};
 
 const SecretField = ({ label, maskedValue, fieldKey, pendingValues, onChange }) => {
     const [editing, setEditing] = useState(false);
@@ -115,8 +166,8 @@ export const Settings = () => {
 
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-1">
                 <div className="min-w-0">
-                    <h1 className="text-2xl font-semibold">Integrations</h1>
-                    <p className="text-sm text-muted-foreground">Configure third-party services</p>
+                    <h1 className="text-2xl font-semibold">Settings</h1>
+                    <p className="text-sm text-muted-foreground">Your plan and third-party integrations</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3 shrink-0">
                     {hasPending && <span className="text-sm text-muted-foreground">Unsaved changes</span>}
@@ -128,6 +179,8 @@ export const Settings = () => {
                     </Button>
                 </div>
             </div>
+
+            <PlanCard />
 
             {/* ── Stripe ─────────────────────────────────────────── */}
             <Card>
