@@ -52,7 +52,7 @@ export function TopNav({ onOpenSearch }) {
             <span className="font-heading text-base font-bold">{title}</span>
 
             {items.length > 1 && (
-                <nav aria-label={`${title} pages`} className="order-last flex w-full items-center gap-1 overflow-x-auto md:order-none md:w-auto md:overflow-visible">
+                <nav aria-label={`${title} pages`} className="order-last flex w-full items-center gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:order-none md:w-auto md:overflow-visible">
                     {visible.map((item) => (
                         <Link key={item.url} to={item.url} aria-current={item === activeItem ? "page" : undefined} className={tabClass(item === activeItem)}>
                             {item.title}
@@ -103,8 +103,8 @@ export function TopNav({ onOpenSearch }) {
             {newItems.length > 0 && (
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <button type="button" className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground outline-none transition-[filter] hover:brightness-95 focus-visible:ring-2 focus-visible:ring-ring">
-                            <Plus className="size-4" />New
+                        <button type="button" aria-label="New" className="inline-flex h-10 w-10 cursor-pointer items-center justify-center gap-2 rounded-full bg-primary px-0 text-sm font-semibold sm:w-auto sm:px-5 text-primary-foreground outline-none transition-[filter] hover:brightness-95 focus-visible:ring-2 focus-visible:ring-ring">
+                            <Plus className="size-4" /><span className="hidden sm:inline">New</span>
                         </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" sideOffset={8} className="min-w-44">

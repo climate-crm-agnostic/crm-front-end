@@ -1,6 +1,6 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { sellableVariants } from "../lib/variants";
-import { formatDecimal } from "@/lib/utils";
+import { formatCount, formatDecimal } from "@/lib/utils";
 
 /**
  * Variant picker for a catalogue item. Renders nothing for items without
@@ -15,6 +15,8 @@ export const VariantSelect = ({ item, value, onChange, className = "h-8 w-full" 
     if (options.length === 0) return null;
 
     const money = (v) => `${item.currency || 'USD'} ${formatDecimal(v.effective_price ?? item.base_price)}`;
+    // Informational only: selling past zero is allowed, but the person should see it.
+    const stockNote = (v) => (!v.stock ? "" : Number(v.stock.quantity_on_hand) <= 0 ? " · out of stock" : v.stock.low ? ` · ${formatCount(v.stock.quantity_on_hand)} left` : "");
 
     return (
         <Select value={value ? String(value) : ""} onValueChange={(id) => onChange(id, options.find((v) => String(v.id) === id))}>
@@ -22,7 +24,7 @@ export const VariantSelect = ({ item, value, onChange, className = "h-8 w-full" 
             <SelectContent>
                 {options.map((v) => (
                     <SelectItem key={v.id} value={String(v.id)}>
-                        {v.name} — {money(v)}{v.is_active ? "" : " (inactive)"}
+                        {v.name} — {money(v)}{stockNote(v)}{v.is_active ? "" : " (inactive)"}
                     </SelectItem>
                 ))}
             </SelectContent>

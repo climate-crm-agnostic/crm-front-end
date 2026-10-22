@@ -7,6 +7,7 @@ import { Switch } from "./ui/switch";
 import { ImageGallery } from "./ImageGallery";
 import { createCatalogueVariant, updateCatalogueVariant, catalogueVariantGallery } from "../services/catalogueService";
 import { formatDecimal } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
 
 /**
  * Create or edit one variant of a catalogue item (name, SKU, optional own price,
@@ -27,6 +28,11 @@ export const VariantEditorModal = ({ isOpen, item, variant, onClose, onSaved }) 
     const [paths, setPaths] = useState([]);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState(null);
+    const { isFeatureEnabled } = useAuth();
+    const stockEnabled = isFeatureEnabled("inventory");
+    const [trackStock, setTrackStock] = useState(false);
+    const [onHand, setOnHand] = useState("");
+    const [reorderAt, setReorderAt] = useState("");
 
     useEffect(() => {
         if (!isOpen) return;
@@ -37,6 +43,9 @@ export const VariantEditorModal = ({ isOpen, item, variant, onClose, onSaved }) 
         setIsActive(variant ? variant.is_active : true);
         setImages(variant?.list_of_images || []);
         setPaths(variant?.image_paths || []);
+        setTrackStock(Boolean(variant?.stock));
+        setOnHand(variant?.stock ? String(Number(variant.stock.quantity_on_hand)) : "");
+        setReorderAt(variant?.stock ? String(Number(variant.stock.reorder_level)) : "");
         setError(null);
     }, [isOpen, variant]);
 
@@ -46,6 +55,13 @@ export const VariantEditorModal = ({ isOpen, item, variant, onClose, onSaved }) 
         setError(null);
         try {
             const payload = { name: name.trim(), sku: sku.trim(), price: price === "" ? null : price, is_active: isActive };
+            if (stockEnabled && (trackStock || saved?.stock)) {
+                payload.track_stock = trackStock;
+                if (trackStock) {
+                    payload.stock_on_hand = onHand === "" ? "0" : onHand;
+                    payload.stock_reorder_level = reorderAt === "" ? "0" : reorderAt;
+                }
+            }
             const result = saved
                 ? await updateCatalogueVariant(saved.id, payload)
                 : await createCatalogueVariant({ ...payload, catalogue_item: item.id });
@@ -97,6 +113,30 @@ export const VariantEditorModal = ({ isOpen, item, variant, onClose, onSaved }) 
                         <Label htmlFor="variant-active">Active (can be sold)</Label>
                     </div>
                 </div>
+
+                {stockEnabled && (
+                    <div className="space-y-3 border-t pt-4">
+                        <div className="flex items-center gap-3">
+                            <Switch id="variant-track-stock" checked={trackStock} onCheckedChange={setTrackStock} />
+                            <Label htmlFor="variant-track-stock">Track stock for this variant</Label>
+                        </div>
+                        {trackStock && (
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                <div className="space-y-2">
+                                    <Label htmlFor="variant-on-hand">On hand</Label>
+                                    <Input id="variant-on-hand" type="number" min="0" step="1" value={onHand} onChange={(e) => setOnHand(e.target.value)} placeholder="0" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="variant-reorder">Reorder when it falls to</Label>
+                                    <Input id="variant-reorder" type="number" min="0" step="1" value={reorderAt} onChange={(e) => setReorderAt(e.target.value)} placeholder="0" />
+                                </div>
+                                <p className="text-xs text-muted-foreground sm:col-span-2">
+                                    This creates a stock record for the variant. Its location and supplier are managed in Operations → Inventory, and the reorder alert names the variant that is running low.
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 <div className="space-y-2 border-t pt-4">
                     <Label>Photos of this variant</Label>

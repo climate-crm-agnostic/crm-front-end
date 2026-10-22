@@ -15,6 +15,7 @@ export const Inventory = () => {
 
     const staticColumns = [
         { key: "sku", label: "SKU" },
+        { key: "for_name", label: "Stock of", render: (value) => value || "—" },
         {
             key: "quantity_on_hand",
             label: "Quantity",

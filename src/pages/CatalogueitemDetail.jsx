@@ -17,6 +17,8 @@ import { Button } from "../components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { ImageGallery } from "../components/ImageGallery";
 import { VariantEditorModal } from "../components/VariantEditorModal";
+import { StockBadge } from "../components/StockBadge";
+import { useAuth } from "../context/AuthContext";
 import { Badge } from "../components/ui/badge";
 import { Textarea } from "../components/ui/textarea";
 import { ArrowLeft, Plus } from "lucide-react";
@@ -28,6 +30,7 @@ import { formatDecimal } from "@/lib/utils";
 export const CatalogueitemDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { isFeatureEnabled } = useAuth();
     const isNew = id === 'new';
 
     const [attributes, setAttributes] = useState([]);
@@ -579,6 +582,7 @@ export const CatalogueitemDetail = () => {
                                                 <p className="text-xs text-muted-foreground">
                                                     {v.sku ? `SKU ${v.sku} · ` : ""}{v.list_of_images?.length || 0} photo(s)
                                                 </p>
+                                                {isFeatureEnabled("inventory") && <div className="mt-1"><StockBadge stock={v.stock} /></div>}
                                             </div>
                                             <div className="text-right text-sm">
                                                 <p className="font-medium">{currency} {formatDecimal(v.effective_price ?? basePrice)}</p>

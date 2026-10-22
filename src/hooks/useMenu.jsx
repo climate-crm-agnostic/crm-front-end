@@ -8,7 +8,7 @@ const MENU_CONFIG = [
         label: "Sales",
         icon: "TrendingUp",
         items: [
-            { title: "Leads",    url: "/lead",     icon: "Magnet",    permission: "app.add_lead" },
+            { title: "Leads",    url: "/lead",     icon: "Magnet",    permission: "app.add_lead", also: ["/quotation"] },
             { title: "Pipeline", url: "/pipeline", icon: "GitMerge",  permission: "app.add_pipeline" },
             { title: "Clients",  url: "/client",   icon: "Building2", permission: "app.add_client" },
             { title: "Contacts", url: "/contact",  icon: "UserCircle",permission: "app.add_contact" },

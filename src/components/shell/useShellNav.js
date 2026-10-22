@@ -6,6 +6,8 @@ import { useMenu } from "@/hooks/useMenu";
 export const DASHBOARD_HUB = { label: "Dashboard", icon: "LayoutDashboard", url: "/", items: [] };
 
 const matches = (pathname, url) => (url === "/" ? pathname === "/" : pathname === url || pathname.startsWith(`${url}/`));
+// A menu item also owns the detail pages that have no entry of their own (e.g. a quotation belongs to Leads).
+const matchesItem = (pathname, item) => matches(pathname, item.url) || (item.also || []).some((url) => matches(pathname, url));
 
 export const iconFor = (name) => Icons[name] ?? Icons.Circle;
 
@@ -21,10 +23,10 @@ export function useShellNav() {
     const hubs = [DASHBOARD_HUB, ...menu];
     const activeHub = pathname === "/"
         ? DASHBOARD_HUB
-        : menu.find((group) => group.items.some((item) => matches(pathname, item.url))) || null;
+        : menu.find((group) => group.items.some((item) => matchesItem(pathname, item))) || null;
     const activeItem = activeHub
         ? activeHub.items
-            .filter((item) => matches(pathname, item.url))
+            .filter((item) => matchesItem(pathname, item))
             .sort((a, b) => b.url.length - a.url.length)[0] || null
         : null;
 
