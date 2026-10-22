@@ -53,6 +53,8 @@ import { Teams } from "../pages/Teams";
 import { TeamDetail } from "../pages/TeamDetail";
 import { Periods } from "../pages/Periods";
 import { Goals } from "../pages/Goals";
+import { Indicators } from "../pages/Indicators";
+import { IndicatorDetail } from "../pages/IndicatorDetail";
 import { Tasks } from "../pages/Tasks";
 import { EmailTemplates } from "../pages/Campaigns/EmailTemplates";
 import { CampaignList } from "../pages/Campaigns/CampaignList";
@@ -159,6 +161,8 @@ export const RouterApp = () => {
                 <Route path="team" element={<PermissionGuard requiredPermission="app.view_team"><FeatureGate feature="teams"><Teams /></FeatureGate></PermissionGuard>} />
                 <Route path="team/:id" element={<PermissionGuard requiredPermission="app.view_team"><FeatureGate feature="teams"><TeamDetail /></FeatureGate></PermissionGuard>} />
                 <Route path="period" element={<PermissionGuard requiredPermission="app.view_period"><FeatureGate feature="goals"><Periods /></FeatureGate></PermissionGuard>} />
+                <Route path="indicator" element={<PermissionGuard requiredPermission="app.view_indicator"><FeatureGate feature="goals"><Indicators /></FeatureGate></PermissionGuard>} />
+                <Route path="indicator/:id" element={<PermissionGuard requiredPermission="app.add_indicator"><FeatureGate feature="goals"><IndicatorDetail /></FeatureGate></PermissionGuard>} />
                 <Route path="goal" element={<PermissionGuard requiredPermission="app.view_goal"><FeatureGate feature="goals"><Goals /></FeatureGate></PermissionGuard>} />
                 <Route path="event" element={<PermissionGuard requiredPermission="app.view_event"><FeatureGate feature="events"><Events /></FeatureGate></PermissionGuard>} />
                 <Route path="event/new" element={<PermissionGuard requiredPermission="app.add_event"><FeatureGate feature="events"><EventCreate /></FeatureGate></PermissionGuard>} />

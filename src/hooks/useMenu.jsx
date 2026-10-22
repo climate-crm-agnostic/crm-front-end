@@ -55,6 +55,7 @@ const MENU_CONFIG = [
         items: [
             { title: "Teams",       url: "/team",                icon: "Users2",            permission: "app.view_team",    feature: "teams" },
             { title: "Periods",     url: "/period",              icon: "CalendarRange",     permission: "app.view_period",  feature: "goals" },
+            { title: "KPIs",        url: "/indicator",           icon: "Gauge",             permission: "app.view_indicator", feature: "goals" },
             { title: "Goals",       url: "/goal",                icon: "Target",            permission: "app.view_goal",    feature: "goals" },
             { title: "Attributes",  url: "/attribute",           icon: "SlidersHorizontal", permission: "app.add_attribute" },
             { title: "Lead Fields", url: "/attribute-pipeline",  icon: "FormInput",         permission: "app.add_pipeline" },

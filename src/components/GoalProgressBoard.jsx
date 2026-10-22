@@ -139,9 +139,6 @@ export const GoalProgressBoard = ({ periodId, teamId, refreshKey }) => {
                                     <tr key={goal.id} className="border-t">
                                         <td className="px-3 py-2">
                                             {indicator.name}
-                                            {!indicator.is_automatic && (
-                                                <span className="ml-2 rounded border px-1.5 py-0.5 text-xs text-muted-foreground">manual</span>
-                                            )}
                                         </td>
                                         <td className="px-3 py-2 text-right tabular-nums">{formatGoalValue(goal.target_value, indicator.unit)}</td>
                                         <td className="px-3 py-2 text-right tabular-nums">{formatGoalValue(goal.actual_value, indicator.unit)}</td>
@@ -170,9 +167,6 @@ export const GoalProgressBoard = ({ periodId, teamId, refreshKey }) => {
                                         <tr key={goal.id} className="border-t">
                                             <td className="px-3 py-2 pl-6">
                                                 {indicator.name}
-                                                {!indicator.is_automatic && (
-                                                    <span className="ml-2 rounded border px-1.5 py-0.5 text-xs text-muted-foreground">manual</span>
-                                                )}
                                             </td>
                                             <td className="px-3 py-2 text-right tabular-nums">{formatGoalValue(goal.target_value, indicator.unit)}</td>
                                             <td className="px-3 py-2 text-right tabular-nums">{formatGoalValue(goal.actual_value, indicator.unit)}</td>
