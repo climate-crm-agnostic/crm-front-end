@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { StockMovements } from "../components/inventory/StockMovements";
 import {
     createInventoryItem, updateInventoryItem, getInventoryItemById,
     getInventoryItemAttributes
@@ -248,6 +249,8 @@ export const InventoryDetail = () => {
                             </div>
                         </div>
                     )}
+
+                    {!isNew && <StockMovements inventoryId={id} />}
                 </div>
             </div>
         </div>

@@ -58,3 +58,10 @@ export const getInventoryItemAttributes = async () => {
         headers: getHeaders(),
     });
 };
+
+/** The sales that took stock out (or returned it) for one record, newest first. */
+export const getInventoryMovements = async (id) => {
+    const res = await fetch(`${url}${id}/movements/`, { headers: getHeaders() });
+    if (!res.ok) throw new Error("Error fetching stock movements");
+    return res.json();
+};

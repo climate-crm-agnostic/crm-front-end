@@ -131,7 +131,7 @@ export const VariantEditorModal = ({ isOpen, item, variant, onClose, onSaved }) 
                                     <Input id="variant-reorder" type="number" min="0" step="1" value={reorderAt} onChange={(e) => setReorderAt(e.target.value)} placeholder="0" />
                                 </div>
                                 <p className="text-xs text-muted-foreground sm:col-span-2">
-                                    This creates a stock record for the variant. Its location and supplier are managed in Operations → Inventory, and the reorder alert names the variant that is running low.
+                                    This creates a stock record for the variant, and selling it takes stock out automatically (voiding the invoice puts it back). Location and supplier live in Operations → Inventory, and the reorder alert names the variant that runs low.
                                 </p>
                             </div>
                         )}
