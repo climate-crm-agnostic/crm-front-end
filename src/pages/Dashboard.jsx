@@ -492,7 +492,8 @@ export const Dashboard = () => {
     const [kind, setKind] = useState("all");
     const [series, setSeries] = useState(null);
     const [seriesLoading, setSeriesLoading] = useState(true);
-    const [goal, setGoal] = useState(null);
+    const [goalEntries, setGoalEntries] = useState([]);
+    const [goalKey, setGoalKey] = useState(null);
     const [goalLoading, setGoalLoading] = useState(true);
     const canSeeGoals = isFeatureEnabled("goals") &&
         (user?.is_superuser === true || (user?.permissions || []).includes("app.view_goal"));
@@ -523,8 +524,7 @@ export const Dashboard = () => {
                 // The team the user belongs to; anyone else (e.g. an admin) sees the first team.
                 const team = progress.teams.find((t) => t.indicators.some((i) => i.members.some((m) => m.user?.id === user?.id))) || progress.teams[0];
                 if (!team) return;
-                const entry = team.indicators.find((i) => i.indicator.key === "closed-deals") || team.indicators[0];
-                if (entry) setGoal({ ...entry, periodName: current.name });
+                setGoalEntries(team.indicators.map((entry) => ({ ...entry, periodName: current.name })));
             } catch {
                 // a missing goal card is not worth an error on the dashboard
             } finally {
@@ -661,6 +661,11 @@ export const Dashboard = () => {
     const hour = new Date().getHours();
     const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
 
+    // The team-goal gauge follows the KPIs chosen for the Dashboard (in their order); any other KPI with a goal is the fallback.
+    const chosenKeys = (summary?.indicators ?? []).map((i) => i.key);
+    const chosenEntries = chosenKeys.map((key) => goalEntries.find((e) => e.indicator.key === key)).filter(Boolean);
+    const goalOptions = chosenEntries.length ? chosenEntries : goalEntries;
+    const goal = goalOptions.find((e) => e.indicator.key === goalKey) ?? goalOptions[0] ?? null;
     const money = (value) => compactMoney(Number(value));
     // The KPIs chosen for the Dashboard (KPIs → "Show on the Dashboard"); placeholders while loading.
     const KPI_ICONS = { "closed-deals": Target, revenue: Wallet, "recurrent-invoice": Repeat };
@@ -712,7 +717,7 @@ export const Dashboard = () => {
 
             <div className="grid gap-4 lg:grid-cols-[minmax(0,1.75fr)_minmax(0,1fr)]">
                 <RevenueChart series={series} loading={seriesLoading} granularity={granularity} kind={kind} onGranularity={setGranularity} onKind={setKind} />
-                <GoalGauge goal={goal} loading={goalLoading} canManage={user?.is_superuser === true || (user?.permissions || []).includes("app.add_goal")} />
+                <GoalGauge goal={goal} options={goalOptions} onSelect={setGoalKey} loading={goalLoading} canManage={user?.is_superuser === true || (user?.permissions || []).includes("app.add_goal")} />
             </div>
 
             <div className="grid gap-4 lg:grid-cols-[minmax(0,1.75fr)_minmax(0,1fr)]">

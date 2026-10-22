@@ -17,7 +17,7 @@ const formatValue = (value, unit) => {
 };
 
 /** Semicircle of ticks for the team's progress on one indicator, with the members ranked below. */
-export const GoalGauge = ({ goal, loading, canManage }) => {
+export const GoalGauge = ({ goal, options = [], onSelect, loading, canManage }) => {
     const ticks = Array.from({ length: N }, (_, i) => {
         const f = i / (N - 1);
         const a = Math.PI + f * Math.PI;
@@ -36,6 +36,20 @@ export const GoalGauge = ({ goal, loading, canManage }) => {
                 </div>
                 <Link to="/goal" aria-label="Open goals" className="grid h-9 w-9 place-items-center rounded-full bg-muted outline-none hover:bg-border focus-visible:ring-2 focus-visible:ring-ring"><ArrowUpRight className="size-4" /></Link>
             </div>
+
+            {options.length > 1 && (
+                <div className="mt-3 flex flex-wrap gap-1.5" role="tablist" aria-label="KPI">
+                    {options.map((o) => (
+                        <button
+                            key={o.indicator.key} type="button" role="tab" aria-selected={o.indicator.key === goal?.indicator.key}
+                            onClick={() => onSelect?.(o.indicator.key)}
+                            className={`rounded-full border px-3 py-1 text-xs font-semibold cursor-pointer transition-colors ${o.indicator.key === goal?.indicator.key ? "bg-primary text-primary-foreground border-primary" : "hover:bg-muted"}`}
+                        >
+                            {o.indicator.name}
+                        </button>
+                    ))}
+                </div>
+            )}
 
             {loading ? (
                 <div className="mt-4 h-48 animate-pulse rounded-lg bg-muted" />
