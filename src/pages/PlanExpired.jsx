@@ -23,16 +23,7 @@ export const PlanExpired = () => {
 
         {/* Copy */}
         <div className="space-y-3">
-          <h1
-            className="text-4xl font-semibold"
-            style={{
-              fontFamily: '"Cormorant Garamond", Georgia, serif',
-              fontStyle: "italic",
-              color: "var(--foreground)",
-              letterSpacing: "-0.015em",
-              lineHeight: 1.1,
-            }}
-          >
+          <h1 className="font-heading text-4xl font-extrabold tracking-tight" style={{ color: "var(--foreground)", lineHeight: 1.1 }}>
             Access suspended
           </h1>
           <p className="text-base leading-relaxed" style={{ color: "var(--muted-foreground)" }}>

@@ -31,14 +31,7 @@ export const FeatureGate = ({ feature, children }) => {
       </div>
 
       <div className="space-y-2 max-w-sm">
-        <h2
-          className="text-2xl font-semibold"
-          style={{
-            fontFamily: '"Cormorant Garamond", Georgia, serif',
-            fontStyle: "italic",
-            color: "var(--foreground)",
-          }}
-        >
+        <h2 className="font-heading text-2xl font-bold tracking-tight" style={{ color: "var(--foreground)" }}>
           Feature not available
         </h2>
         <p className="text-sm leading-relaxed" style={{ color: "var(--muted-foreground)" }}>

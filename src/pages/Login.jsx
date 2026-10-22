@@ -68,10 +68,7 @@ export const Login = ({ className, ...props }) => {
             <div className="flex flex-col items-center gap-4">
               <img src="/climate.svg" alt="Climate by CodeX" className="h-16 w-auto" />
               <div className="text-center">
-                <h1
-                  className="text-3xl font-semibold"
-                  style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', fontStyle: "italic", color: "var(--foreground)", letterSpacing: "-0.015em", lineHeight: 1.1 }}
-                >
+                <h1 className="font-heading text-3xl font-bold tracking-tight" style={{ color: "var(--foreground)", lineHeight: 1.15 }}>
                   Welcome back
                 </h1>
                 <p className="text-sm mt-1.5" style={{ color: "var(--muted-foreground)" }}>
@@ -110,7 +107,7 @@ export const Login = ({ className, ...props }) => {
                     value={user}
                     onChange={(e) => setUser(e.target.value)}
                     disabled={loading}
-                    className="h-11 rounded-md transition-all"
+                    className="h-11 rounded-xl transition-all"
                     style={{
                       backgroundColor: "var(--background)",
                       border: "1px solid var(--border)",
@@ -144,7 +141,7 @@ export const Login = ({ className, ...props }) => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={loading}
-                    className="h-11 rounded-md transition-all"
+                    className="h-11 rounded-xl transition-all"
                     style={{
                       backgroundColor: "var(--background)",
                       border: "1px solid var(--border)",
@@ -157,7 +154,7 @@ export const Login = ({ className, ...props }) => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full mt-1 h-11 rounded-md font-semibold text-sm transition-all duration-200 active:scale-[0.99] flex items-center justify-center gap-2 shadow-sm"
+                  className="w-full mt-1 h-11 rounded-full font-semibold text-sm transition-all duration-200 active:scale-[0.99] flex items-center justify-center gap-2 shadow-sm"
                   style={{
                     backgroundColor: loading ? "color-mix(in srgb, var(--primary) 80%, black)" : "var(--primary)",
                     color: "var(--primary-foreground)",
@@ -216,7 +213,7 @@ export const Login = ({ className, ...props }) => {
                     value={code}
                     onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
                     disabled={loading}
-                    className="h-11 rounded-md transition-all text-center tracking-[0.5em] text-lg"
+                    className="h-11 rounded-xl transition-all text-center tracking-[0.5em] text-lg"
                     style={{
                       backgroundColor: "var(--background)",
                       border: "1px solid var(--border)",
@@ -229,7 +226,7 @@ export const Login = ({ className, ...props }) => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full mt-1 h-11 rounded-md font-semibold text-sm transition-all duration-200 active:scale-[0.99] flex items-center justify-center gap-2 shadow-sm"
+                  className="w-full mt-1 h-11 rounded-full font-semibold text-sm transition-all duration-200 active:scale-[0.99] flex items-center justify-center gap-2 shadow-sm"
                   style={{
                     backgroundColor: loading ? "color-mix(in srgb, var(--primary) 80%, black)" : "var(--primary)",
                     color: "var(--primary-foreground)",
@@ -298,12 +295,9 @@ export const Login = ({ className, ...props }) => {
               Climate by CodeX
             </div>
 
-            {/* Hero heading — Cormorant Garamond */}
+            {/* Hero heading */}
             <div className="space-y-3">
-              <h2
-                className="text-5xl font-semibold leading-tight"
-                style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', fontStyle: "italic", color: "#ffffff", letterSpacing: "-0.015em", lineHeight: 1.1 }}
-              >
+              <h2 className="font-heading text-5xl font-extrabold tracking-tight" style={{ color: "#ffffff", lineHeight: 1.08 }}>
                 Manage smarter.<br />
                 <span style={{ color: "var(--primary-text)" }}>Grow faster.</span>
               </h2>
@@ -336,10 +330,7 @@ export const Login = ({ className, ...props }) => {
 
             {/* Quote */}
             <div className="pt-8" style={{ borderTop: "1px solid rgba(255,255,255,0.15)" }}>
-              <blockquote
-                className="text-sm leading-relaxed"
-                style={{ fontFamily: '"Libre Baskerville", Georgia, serif', fontStyle: "italic", color: "#c8bfb5" }}
-              >
+              <blockquote className="text-sm leading-relaxed" style={{ fontFamily: 'var(--font-body)', color: "#c8bfb5" }}>
                 "Technology that takes your business to the next level."
               </blockquote>
               <p className="text-xs mt-2 font-semibold uppercase tracking-widest" style={{ color: "var(--primary-text)" }}>

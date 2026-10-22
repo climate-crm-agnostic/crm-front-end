@@ -27,3 +27,16 @@ export const deleteProject = async (id) => {
     if (!res.ok) throw new Error("Failed to delete project");
     return true;
 };
+
+export const updateProject = async (id, data) => {
+    const res = await fetch(`${PROJECTS_URL}${id}/`, {
+        method: "PATCH",
+        headers: getHeaders(),
+        body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        throw new Error(extractErrorMessage(errorData, "Error updating board"));
+    }
+    return res.json();
+};

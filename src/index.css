@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600;1,700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap");
 @import "tailwindcss";
 
 @custom-variant dark (&:is(.dark *));
@@ -38,8 +38,6 @@
      text and tables. The serif stays only as the brand voice (login, plan pages). */
   --font-heading: "Plus Jakarta Sans", "DM Sans", system-ui, sans-serif;
   --font-body: "DM Sans", system-ui, "Segoe UI", sans-serif;
-  --font-brand: "Cormorant Garamond", Georgia, serif;
-  --font-accent: "Libre Baskerville", Georgia, serif;
 
   /* --------- Colors Codex -------------- */
 
@@ -605,5 +603,5 @@ main .sticky.top-0 {
 
 /* The UI fonts (DM Sans, Plus Jakarta Sans) are loaded upright only, so italic
    text was a browser-slanted fake. Empty states and hints stay upright and rely
-   on their muted colour; the brand pages set real Cormorant italics inline. */
+   on their muted colour. */
 .italic, em, i, cite { font-style: normal; }
