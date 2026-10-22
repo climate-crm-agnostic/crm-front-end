@@ -6,59 +6,9 @@ import { Button } from "../components/ui/button";
 import { Switch } from "../components/ui/switch";
 import { Badge } from "../components/ui/badge";
 import { Card, CardHeader } from "../components/SectionCard";
-import { BadgeCheck, CreditCard } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
-import { formatCount } from "../lib/utils";
+import { CreditCard } from "lucide-react";
+import { PlanSummary } from "../components/PlanSummary";
 import Swal from "sweetalert2";
-
-const titleCase = (key) => key.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase());
-
-/** The plan this instance runs on: status, dates and what it includes. Read-only. */
-const PlanCard = () => {
-    const { plan } = useAuth();
-    if (!plan) return null;
-    const features = Object.entries(plan.features || {});
-    const included = features.filter(([, v]) => v === true);
-    const limits = features.filter(([, v]) => typeof v === "number");
-    const missing = features.filter(([, v]) => v === false);
-    const status = plan.is_suspended ? "Suspended" : plan.is_active ? "Active" : "Expired";
-    const daysLeft = plan.end_date ? Math.ceil((new Date(plan.end_date) - new Date()) / 86400000) : null;
-
-    return (
-        <Card>
-            <CardHeader
-                icon={BadgeCheck}
-                title="Plan"
-                right={<Badge variant={status === "Active" ? "default" : "outline"}>{status}</Badge>}
-            />
-            <div className="space-y-4 p-1">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div><p className="text-xs uppercase tracking-wide text-muted-foreground">Plan</p><p className="text-lg font-semibold">{plan.tier_display}</p></div>
-                    <div><p className="text-xs uppercase tracking-wide text-muted-foreground">Started</p><p className="text-lg font-semibold">{plan.start_date}</p></div>
-                    <div>
-                        <p className="text-xs uppercase tracking-wide text-muted-foreground">Valid until</p>
-                        <p className="text-lg font-semibold">
-                            {plan.end_date ? plan.end_date : "No expiry"}
-                            {daysLeft !== null && daysLeft >= 0 && <span className="ml-2 text-sm font-normal text-muted-foreground">{formatCount(daysLeft)} days left</span>}
-                        </p>
-                    </div>
-                </div>
-                {included.length > 0 && (
-                    <div>
-                        <p className="mb-1.5 text-xs uppercase tracking-wide text-muted-foreground">Included</p>
-                        <div className="flex flex-wrap gap-1.5">
-                            {included.map(([name]) => <Badge key={name} variant="secondary">{titleCase(name)}</Badge>)}
-                            {limits.map(([name, value]) => <Badge key={name} variant="outline">{titleCase(name)}: {formatCount(value)}</Badge>)}
-                        </div>
-                    </div>
-                )}
-                {missing.length > 0 && (
-                    <p className="text-sm text-muted-foreground">Not in this plan: {missing.map(([name]) => titleCase(name)).join(", ")}.</p>
-                )}
-            </div>
-        </Card>
-    );
-};
 
 const SecretField = ({ label, maskedValue, fieldKey, pendingValues, onChange }) => {
     const [editing, setEditing] = useState(false);
@@ -75,7 +25,7 @@ const SecretField = ({ label, maskedValue, fieldKey, pendingValues, onChange }) 
 
     return (
         <div className="space-y-2">
-            <Label>{label}</Label>
+            <Label className="text-sm font-semibold">{label}</Label>
             {editing ? (
                 <div className="flex gap-2">
                     <Input
@@ -90,8 +40,8 @@ const SecretField = ({ label, maskedValue, fieldKey, pendingValues, onChange }) 
                 </div>
             ) : (
                 <div className="flex items-center gap-2">
-                    <code className="flex-1 min-w-0 h-9 flex items-center truncate text-sm bg-muted px-3 rounded-md border font-mono text-muted-foreground">
-                        {maskedValue || <span className="italic">Not configured</span>}
+                    <code className="flex h-10 min-w-0 flex-1 items-center truncate rounded-lg border bg-muted/40 px-3 font-mono text-sm">
+                        {maskedValue || <span className="font-sans text-muted-foreground">Not configured</span>}
                     </code>
                     <Button variant="outline" onClick={handleEdit}>Change</Button>
                 </div>
@@ -180,7 +130,7 @@ export const Settings = () => {
                 </div>
             </div>
 
-            <PlanCard />
+            <PlanSummary />
 
             {/* ── Stripe ─────────────────────────────────────────── */}
             <Card>
@@ -199,8 +149,8 @@ export const Settings = () => {
                         </>
                     }
                 />
-                <div className="px-6 py-5 space-y-5">
-                    <p className="text-sm text-muted-foreground">Accept card payments via Stripe Invoices</p>
+                <div className="space-y-5 px-6 py-5">
+                    <p className="text-sm text-muted-foreground">Accept card payments through Stripe invoices. Keys are stored encrypted; only the last characters are shown.</p>
 
                     <SecretField
                         label="Secret Key (sk_live_... or sk_test_...)"
@@ -223,8 +173,9 @@ export const Settings = () => {
                         pendingValues={pending}
                         onChange={handleChange}
                     />
-                    <div className="text-sm text-muted-foreground bg-muted/40 rounded-lg p-4 border space-y-2">
-                        <p className="font-semibold text-foreground">Stripe Webhook Setup</p>
+                    <details className="group rounded-lg border bg-muted/30 text-sm text-muted-foreground">
+                        <summary className="cursor-pointer select-none px-4 py-3 font-semibold text-foreground marker:content-none">How to connect Stripe webhooks</summary>
+                        <div className="space-y-2 border-t px-4 py-3">
                         <p>
                             <span className="font-medium text-foreground">Option 1 — Built-in (automatic):</span> Register the CRM's own endpoint in your Stripe Dashboard to automatically update invoice status on payment:
                         </p>
@@ -234,7 +185,8 @@ export const Settings = () => {
                             Use this when you need custom logic (ERP sync, notifications, etc.).
                         </p>
                         <p>Events to listen: <code className="font-mono">invoice.paid</code>, <code className="font-mono">invoice.payment_failed</code></p>
-                    </div>
+                        </div>
+                    </details>
                 </div>
             </Card>
         </div>

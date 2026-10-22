@@ -602,3 +602,8 @@ main .sticky.top-0 {
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-sm);
 }
+
+/* The UI fonts (DM Sans, Plus Jakarta Sans) are loaded upright only, so italic
+   text was a browser-slanted fake. Empty states and hints stay upright and rely
+   on their muted colour; the brand pages set real Cormorant italics inline. */
+.italic, em, i, cite { font-style: normal; }

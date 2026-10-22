@@ -1,41 +1,28 @@
-export function Card({ children, style }) {
+export function Card({ children, className = "", style }) {
     return (
-        <div
-            style={{
-                backgroundColor: "var(--card)",
-                border: "1px solid var(--border)",
-                borderRadius: "8px",
-                boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
-                ...style,
-            }}
-        >
+        <div className={`rounded-xl border bg-card shadow-sm ${className}`} style={style}>
             {children}
         </div>
     );
 }
 
-// iconColor must contrast with accentColor: the white default suits the dark
-// greens; pass "var(--primary-foreground)" when accentColor is --primary/--accent.
+// A soft tinted icon chip and a heading-font title. `accentColor`/`iconColor` still
+// override the chip for the rare card that needs its own colour.
 export function CardHeader(props) {
-    const { icon: Icon, title, accentColor = "var(--secondary)", iconColor = "#fff", right = null } = props;
+    const { icon: Icon, title, subtitle = null, accentColor, iconColor, right = null } = props;
     return (
-        <div
-            className="flex items-center justify-between gap-3 px-6 py-4 border-b"
-            style={{ borderColor: "var(--border)" }}
-        >
+        <div className="flex items-center justify-between gap-3 px-6 py-4 border-b">
             <div className="flex items-center gap-3 min-w-0">
                 <div
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
-                    style={{ backgroundColor: accentColor }}
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                    style={{ backgroundColor: accentColor ?? "color-mix(in srgb, var(--primary) 18%, transparent)" }}
                 >
-                    <Icon className="h-4 w-4" style={{ color: iconColor }} />
+                    <Icon className="h-[18px] w-[18px]" style={{ color: iconColor ?? "var(--secondary-text)" }} aria-hidden="true" />
                 </div>
-                <p
-                    className="text-base font-semibold truncate"
-                    style={{ color: "var(--secondary-text)", fontFamily: 'var(--font-body)' }}
-                >
-                    {title}
-                </p>
+                <div className="min-w-0">
+                    <p className="font-heading text-base font-semibold leading-tight truncate">{title}</p>
+                    {subtitle && <p className="text-[13px] text-muted-foreground truncate">{subtitle}</p>}
+                </div>
             </div>
             {right && <div className="flex items-center gap-2 shrink-0">{right}</div>}
         </div>
