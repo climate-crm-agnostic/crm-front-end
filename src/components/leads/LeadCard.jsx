@@ -2,6 +2,7 @@ import React from "react";
 import { Calendar, Building, Archive } from "lucide-react";
 import { formatDate } from "../../utils/date";
 import Swal from "sweetalert2";
+import { SellsBadge } from "./SellsBadge";
 
 export const LeadCard = ({ lead, salesUsers = [], clientsById = {}, onDragStart, onClick, onArchive }) => {
 
@@ -95,6 +96,8 @@ export const LeadCard = ({ lead, salesUsers = [], clientsById = {}, onDragStart,
                         {responsibleName}
                     </span>
                 </div>
+
+                {lead.sells && <div className="mb-2"><SellsBadge sells={lead.sells} className="!px-2 !py-0 !text-[9px]" /></div>}
 
                 {/* Date + client */}
                 <div className="flex items-center justify-between">

@@ -38,7 +38,7 @@ export const CatalogueitemDetail = () => {
     const [name, setName] = useState("");
     const [sku, setSku] = useState("");
     const [description, setDescription] = useState("");
-    const [type, setType] = useState("service");
+    const [type, setType] = useState("product");  // new items start as products; existing ones load their own type
     const [basePrice, setBasePrice] = useState("0.00");
     const [currency, setCurrency] = useState("USD");
     const [unit, setUnit] = useState("unit");

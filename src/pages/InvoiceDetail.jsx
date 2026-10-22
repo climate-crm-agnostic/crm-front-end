@@ -14,6 +14,7 @@ import { getContacts } from "../services/contactService";
 import { getCatalogueItems } from "../services/catalogueService";
 import { VariantSelect } from "../components/VariantSelect";
 import { KindSelect } from "../components/KindSelect";
+import { useDocumentKind } from "../lib/documentKind";
 import { itemsOfKind, itemLabel } from "../lib/catalogueKinds";
 import { sellableVariants } from "../lib/variants";
 import { Table } from "../components/Table";
@@ -326,6 +327,13 @@ export const InvoiceDetail = () => {
         setNewLinePrice("0.00");
         setNewLineTax("0.00");
     };
+
+    // One kind per document: the lead's, or what its lines already are. The selector locks to it.
+    const { lockedKind, lockNote } = useDocumentKind({ lineItems, catalogueItems, leadSells: null });
+    useEffect(() => {
+        if (lockedKind && newLineKind !== lockedKind) handleKindChange(lockedKind);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [lockedKind]);
 
     const handleVariantSelect = (variantId, variant) => {
         setNewLineVariantId(variantId);
@@ -791,9 +799,10 @@ export const InvoiceDetail = () => {
 
                                 {newLineType === 'catalogue' ? (
                                     <>
-                                    <div className="space-y-1 w-32">
+                                    <div className="space-y-1 w-40">
                                         <Label className="text-xs">Sold as</Label>
-                                        <KindSelect value={newLineKind} onChange={handleKindChange} className="h-9" />
+                                        <KindSelect value={newLineKind} onChange={handleKindChange} className="h-9" disabled={Boolean(lockedKind)} />
+                                    {lockNote && <p className="text-[11px] leading-tight text-muted-foreground">{lockNote}</p>}
                                     </div>
                                     <div className="space-y-1 flex-1 w-full">
                                         <Label className="text-xs">Item</Label>

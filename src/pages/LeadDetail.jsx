@@ -32,6 +32,8 @@ import { listContractsForLead } from "../services/contractService";
 import { DynamicAttributeField } from "../components/attributes/DynamicAttributeField";
 import { coerceAttributeValue, collectAttributeValuesByType, emptyValueFor, normalizeOptions } from "../utils/attributeTypes";
 import { formatDateTime } from "../utils/tz";
+import { StageStepper } from "../components/leads/StageStepper";
+import { LeadSummaryCard } from "../components/leads/LeadSummaryCard";
 import Swal from "sweetalert2";
 import { formatDecimal } from "@/lib/utils";
 
@@ -87,6 +89,7 @@ export const LeadDetail = () => {
     const [lostReason, setLostReason] = useState("");
     const [movingToLost, setMovingToLost] = useState(false);
     const [isArchived, setIsArchived] = useState(false);
+    const [createdAt, setCreatedAt] = useState("");
     const [archiving, setArchiving] = useState(false);
 
     // File upload state
@@ -247,6 +250,7 @@ export const LeadDetail = () => {
         setName(leadData.name || "");
         setCurrentStage(leadData.stage || "");
         setIsArchived(!!leadData.is_archived);
+        setCreatedAt(leadData.created_at || "");
 
         // Capture pipeline so attributes can be fetched from the right pipeline
         const pid = leadData.pipeline?.id || leadData.pipeline || null;
@@ -716,6 +720,24 @@ export const LeadDetail = () => {
         .filter(s => (s.name || '').toLowerCase() !== 'lost')
         .sort((a, b) => (a.order || 0) - (b.order || 0));
 
+    // Moving to "Won" closes the deal and creates its client, services and invoices, so ask first.
+    const handleStepClick = async (stageName) => {
+        if (stageName.toLowerCase() === "won") {
+            const confirm = await Swal.fire({
+                title: "Mark this deal as won?", icon: "question", showCancelButton: true, confirmButtonText: "Yes, mark as won",
+                text: "This creates the client's services and invoices from the items on this lead.",
+            });
+            if (!confirm.isConfirmed) return;
+        }
+        handleStageChange(stageName);
+    };
+
+    // Summary card: what the items add up to, what they are, and the people involved.
+    const dealValue = itemsList.reduce((sum, item) => sum + (Number(item.custom_price) || 0) * (Number(item.quantity) || 0), 0);
+    const itemKinds = new Set(itemsList.map((item) => catalogueOptions.find((c) => String(c.id) === String(item.catalogue_item))).filter(Boolean).map(itemKind));
+    const summarySells = itemKinds.size === 0 ? null : itemKinds.size === 1 ? [...itemKinds][0] : "mixed";
+    const personName = (person) => person?.name || person?.username || "";
+
     // Visible while parked on the reserved "Contract" stage, and still after
     // moving to "Won" as long as a Contract actually exists — so a signed
     // contract stays reachable once the deal is closed.
@@ -733,7 +755,7 @@ export const LeadDetail = () => {
                     <div className="min-w-0">
                         <div className="flex items-center gap-2">
                             <h1 className="text-xl font-semibold truncate">
-                                {isNew ? "New Opportunity" : "Edit Opportunity"}
+                                {isNew ? "New Opportunity" : (name || "Opportunity")}
                             </h1>
                             {!isNew && isArchived && (
                                 <span className="shrink-0" style={{ fontSize: "12px", backgroundColor: "var(--border)", color: "var(--muted-foreground)", border: "1px solid var(--border)", borderRadius: "12px", padding: "2px 10px", fontWeight: 600, display: "flex", alignItems: "center" }}>
@@ -742,34 +764,13 @@ export const LeadDetail = () => {
                             )}
                         </div>
                         <p className="text-sm text-muted-foreground truncate">
-                            {isNew ? "Create a new sales opportunity" : `Managing details for ${name}`}
+                            {isNew ? "Create a new sales opportunity" : [activePipeline?.name, currentStage].filter(Boolean).join(" · ")}
                         </p>
                     </div>
                 </div>
 
                 {/* Desktop actions */}
                 <div className="hidden sm:flex items-center gap-2 shrink-0">
-                    {!isNew && availableStages.length > 0 && (
-                        <Select
-                            value={currentStage}
-                            onValueChange={handleStageChange}
-                            disabled={changingStage}
-                        >
-                            <SelectTrigger className="h-9 w-[180px]" style={{ backgroundColor: "var(--background)", borderColor: "var(--border)", color: "var(--foreground)" }}>
-                                <SelectValue placeholder="Stage" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {currentStage && !availableStages.some(s => s.name === currentStage) && (
-                                    <SelectItem value={currentStage}>{currentStage}</SelectItem>
-                                )}
-                                {availableStages.map(s => (
-                                    <SelectItem key={s.id || s.name} value={s.name}>
-                                        {s.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    )}
                     {!isNew && (
                         <button
                             type="button"
@@ -796,27 +797,6 @@ export const LeadDetail = () => {
                 {/* Mobile actions — compact: stage + overflow menu, then full-width Cancel/Save */}
                 {!isNew && (
                 <div className="flex sm:hidden items-center gap-2">
-                    {availableStages.length > 0 && (
-                        <Select
-                            value={currentStage}
-                            onValueChange={handleStageChange}
-                            disabled={changingStage}
-                        >
-                            <SelectTrigger className="h-9 flex-1 min-w-0" style={{ backgroundColor: "var(--background)", borderColor: "var(--border)", color: "var(--foreground)" }}>
-                                <SelectValue placeholder="Stage" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {currentStage && !availableStages.some(s => s.name === currentStage) && (
-                                    <SelectItem value={currentStage}>{currentStage}</SelectItem>
-                                )}
-                                {availableStages.map(s => (
-                                    <SelectItem key={s.id || s.name} value={s.name}>
-                                        {s.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    )}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
@@ -850,6 +830,14 @@ export const LeadDetail = () => {
                     </div>
                 )}
 
+                {!isNew && availableStages.length > 0 && (
+                    <div className="mb-6 rounded-xl border bg-card px-4 py-3 shadow-sm">
+                        <StageStepper stages={availableStages} current={currentStage} onSelect={handleStepClick} disabled={changingStage} />
+                    </div>
+                )}
+
+                <div className={isNew ? "" : "grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_300px]"}>
+                <div className="min-w-0">
                 <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
                     <TabsList>
                         <TabsTrigger value="info">Info</TabsTrigger>
@@ -1418,6 +1406,19 @@ export const LeadDetail = () => {
                     </TabsContent>
                 )}
                 </Tabs>
+                </div>
+                {!isNew && (
+                    <aside className="lg:sticky lg:top-44">
+                        <LeadSummaryCard
+                            value={dealValue} stage={currentStage} sells={summarySells}
+                            client={clients.find((c) => String(c.id) === String(possibleClient))?.name}
+                            responsible={personName(salesUsers.find((u) => String(u.id) === String(selectedResponsible)))}
+                            pipeline={activePipeline?.name}
+                            createdAt={createdAt ? formatDateTime(createdAt) : ""}
+                        />
+                    </aside>
+                )}
+                </div>
             </div>
 
             <SendEmailModal

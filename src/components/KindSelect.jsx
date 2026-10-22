@@ -2,8 +2,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { KIND_OPTIONS } from "../lib/catalogueKinds";
 
 /** Product / Service switch that decides which catalogue items a line can pick from. */
-export const KindSelect = ({ value, onChange, className = "h-8 w-full" }) => (
-    <Select value={value} onValueChange={onChange}>
+export const KindSelect = ({ value, onChange, className = "h-8 w-full", disabled = false }) => (
+    <Select value={value} onValueChange={onChange} disabled={disabled}>
         <SelectTrigger className={className} aria-label="Sold as"><SelectValue /></SelectTrigger>
         <SelectContent>
             {KIND_OPTIONS.map((kind) => (

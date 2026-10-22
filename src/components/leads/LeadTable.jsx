@@ -11,6 +11,7 @@ import { getClients } from "../../services/clientService";
 import { getPipelineAttributes } from "../../services/pipelineAttributeService";
 import { formatDate } from "../../utils/date";
 import { AttributeValueCell } from "../attributes/AttributeValueCell";
+import { SellsBadge } from "./SellsBadge";
 
 // Table view of the leads in the active pipeline — a flat alternative to the
 // Kanban (LeadBoard). Self-contained data fetching (sales/clients/attributes)
@@ -123,6 +124,7 @@ export const LeadTable = ({ selectedPipelineId, refreshTrigger, onLeadClick }) =
         { key: "stage", label: "Stage" },
         { key: "responsible_name", label: "Responsible" },
         { key: "client_name", label: "Client" },
+        { key: "sells", label: "Sells", render: (val) => <SellsBadge sells={val} /> },
         ...attributeColumns,
         { key: "created_at", label: "Created At", render: (val) => formatDate(val) },
         {
