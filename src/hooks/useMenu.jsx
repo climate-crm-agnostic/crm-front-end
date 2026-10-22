@@ -17,13 +17,18 @@ const MENU_CONFIG = [
         ],
     },
     {
+        // Money in and out, plus what the money is spent on: suppliers, stock and equipment.
         label: "Finance",
         icon: "Wallet",
         items: [
-            { title: "Invoices",   url: "/invoice",   icon: "Receipt",    permission: "app.add_invoice" },
-            { title: "Accounts Payable",  url: "/supplier-bill",    icon: "FileInput", permission: "app.view_supplierbill",    feature: "accounts_payable" },
-            { title: "Supplier Payments", url: "/supplier-payment", icon: "HandCoins", permission: "app.view_supplierpayment", feature: "accounts_payable" },
-            { title: "Payables Aging",    url: "/payables-aging",   icon: "CalendarClock", permission: "app.view_supplierbill", feature: "accounts_payable" },
+            { title: "Invoices",          url: "/invoice",          icon: "Receipt",       permission: "app.add_invoice" },
+            { title: "Suppliers",         url: "/supplier",         icon: "Truck",         permission: "app.add_supplier" },
+            { title: "Accounts Payable",  url: "/supplier-bill",    icon: "FileInput",     permission: "app.view_supplierbill",    feature: "accounts_payable" },
+            { title: "Supplier Payments", url: "/supplier-payment", icon: "HandCoins",     permission: "app.view_supplierpayment", feature: "accounts_payable" },
+            { title: "Payables Aging",    url: "/payables-aging",   icon: "CalendarClock", permission: "app.view_supplierbill",    feature: "accounts_payable" },
+            { title: "Inventory",         url: "/inventory",        icon: "Warehouse",     permission: "app.add_inventory",        feature: "inventory" },
+            { title: "Assets",            url: "/asset",            icon: "Laptop",        permission: "app.add_asset",            feature: "assets" },
+            { title: "Asset Assignments", url: "/assetassignment",  icon: "ClipboardList", permission: "app.add_assetassignment",  feature: "assets" },
         ],
     },
     {
@@ -32,10 +37,6 @@ const MENU_CONFIG = [
         items: [
             { title: "Catalogue",  url: "/catalogue", icon: "Package",    permission: "app.add_catalogueitem" },
             { title: "Categories", url: "/category",  icon: "FolderTree", permission: "app.add_category" },
-            { title: "Inventory",  url: "/inventory", icon: "Warehouse",  permission: "app.add_inventory",  feature: "inventory" },
-            { title: "Suppliers",  url: "/supplier",  icon: "Truck",      permission: "app.add_supplier" },
-            { title: "Assets",            url: "/asset",           icon: "Laptop",        permission: "app.add_asset",           feature: "assets" },
-            { title: "Asset Assignments", url: "/assetassignment", icon: "ClipboardList", permission: "app.add_assetassignment", feature: "assets" },
         ],
     },
     {
