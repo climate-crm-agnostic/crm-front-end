@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { PayablesWidget } from "../components/payables/PayablesWidget";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { API_URL, getHeaders, fetchAllPages } from "@/services/api";
 import { getMyTasks } from "@/services/taskService";
 import { getClients } from "@/services/clientService";
 import { Modal } from "../components/Modal";
-import { Magnet, Building2, Receipt, Laptop, ArrowUpRight, ClipboardList, ChevronLeft, ChevronRight, Target, Wallet, Repeat, Plus, Bot } from "lucide-react";
+import { Magnet, Building2, Receipt, Laptop, ArrowUpRight, ClipboardList, ChevronLeft, ChevronRight, Target, Wallet, Repeat, Gauge, Plus, Bot } from "lucide-react";
 import { getDashboardSummary, getRevenueSeries } from "@/services/dashboardService";
 import { getPeriods } from "@/services/periodService";
 import { getGoalsProgress } from "@/services/goalService";
@@ -661,13 +661,11 @@ export const Dashboard = () => {
     const hour = new Date().getHours();
     const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
 
-    const indicator = (key) => summary?.indicators.find((i) => i.key === key);
     const money = (value) => compactMoney(Number(value));
-    const kpis = [
-        { key: "closed_deals", label: "Closed deals", icon: Target, format: formatCount },
-        { key: "revenue", label: "Revenue", icon: Wallet, format: money },
-        { key: "recurrent_invoice", label: "Recurrent invoice", icon: Repeat, format: money },
-    ];
+    // The KPIs chosen for the Dashboard (KPIs → "Show on the Dashboard"); placeholders while loading.
+    const KPI_ICONS = { "closed-deals": Target, revenue: Wallet, "recurrent-invoice": Repeat };
+    const kpiCards = summary?.indicators ?? (summaryLoading ? [null, null, null] : []);
+    const formatKpi = (data) => (data.unit === "currency" ? money(data.value) : formatCount(data.value));
     const canCreateLead = user?.is_superuser === true || (user?.permissions || []).includes("app.add_lead");
     const dateLabel = new Date().toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
 
@@ -696,16 +694,19 @@ export const Dashboard = () => {
                     </div>
                 </section>
                 <section aria-label="Key indicators" className="grid flex-[3_1_520px] gap-4 [grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr))]">
-                    {kpis.map((kpi) => {
-                        const data = indicator(kpi.key);
-                        return (
-                            <KpiCard
-                                key={kpi.key} label={kpi.label} icon={kpi.icon} loading={summaryLoading}
-                                value={data ? kpi.format(data.value) : "—"} change={data?.change_pct} series={data?.series}
-                                caption="This month vs the same days last month"
-                            />
-                        );
-                    })}
+                    {kpiCards.map((data, index) => (
+                        <KpiCard
+                            key={data?.key ?? index} label={data?.label ?? ""} loading={summaryLoading || !data}
+                            icon={KPI_ICONS[data?.key] ?? (data?.unit === "currency" ? Wallet : Gauge)}
+                            value={data ? formatKpi(data) : "—"} change={data?.change_pct} series={data?.series}
+                            caption={data?.problem ? `Needs attention: ${data.problem}` : "This month vs the same days last month"}
+                        />
+                    ))}
+                    {!summaryLoading && kpiCards.length === 0 && (
+                        <p className="text-sm text-muted-foreground">
+                            No KPIs chosen for the Dashboard. <Link to="/indicator" className="font-semibold underline">Choose them in KPIs</Link>.
+                        </p>
+                    )}
                 </section>
             </div>
 

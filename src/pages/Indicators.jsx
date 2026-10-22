@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Gauge, Plus, SquarePen, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Gauge, Plus, SquarePen, Trash2 } from "lucide-react";
 import Swal from "sweetalert2";
 import { Button } from "../components/ui/button";
-import { deleteIndicator, getIndicators } from "../services/indicatorService";
+import { deleteIndicator, getIndicators, updateIndicator } from "../services/indicatorService";
 
 // The Dashboard reads these by key, so they can be edited but not deleted.
 const USED_BY_DASHBOARD = ["closed-deals", "revenue", "recurrent-invoice"];
@@ -28,6 +28,33 @@ export const Indicators = () => {
     };
 
     useEffect(() => { load(); }, []);
+
+    // Dashboard cards: the shown KPIs in order, and a way to show/hide and move them.
+    const shown = indicators.filter((i) => i.show_on_dashboard && i.is_active).sort((a, b) => a.dashboard_order - b.dashboard_order || a.name.localeCompare(b.name));
+
+    const toggleDashboard = async (indicator) => {
+        try {
+            await updateIndicator(indicator.id, { show_on_dashboard: !indicator.show_on_dashboard });
+            load();
+        } catch (err) {
+            toast("error", err.message);
+        }
+    };
+
+    const move = async (indicator, direction) => {
+        const index = shown.findIndex((i) => i.id === indicator.id);
+        const other = shown[index + direction];
+        if (!other) return;
+        // Give both a clean, distinct position so equal or gappy orders never leave them tied.
+        const positions = shown.map((_, i) => i);
+        [positions[index], positions[index + direction]] = [positions[index + direction], positions[index]];
+        try {
+            await Promise.all(shown.map((item, i) => item.dashboard_order === positions[i] ? null : updateIndicator(item.id, { dashboard_order: positions[i] })));
+            load();
+        } catch (err) {
+            toast("error", err.message);
+        }
+    };
 
     const handleDelete = async (indicator) => {
         const result = await Swal.fire({
@@ -70,14 +97,15 @@ export const Indicators = () => {
                             <th className="px-4 py-3 font-semibold">How it is measured</th>
                             <th className="px-4 py-3 font-semibold text-right">Goals</th>
                             <th className="px-4 py-3 font-semibold">Status</th>
+                            <th className="px-4 py-3 font-semibold">On Dashboard</th>
                             <th className="px-4 py-3" />
                         </tr>
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">Loading...</td></tr>
+                            <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">Loading...</td></tr>
                         ) : indicators.length === 0 ? (
-                            <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground italic">No KPIs yet.</td></tr>
+                            <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground italic">No KPIs yet.</td></tr>
                         ) : indicators.map((indicator) => {
                             const protectedKey = USED_BY_DASHBOARD.includes(indicator.key);
                             const canDelete = !protectedKey && indicator.goal_count === 0;
@@ -92,12 +120,33 @@ export const Indicators = () => {
                                             {protectedKey && <span className="rounded border px-1.5 py-0.5">used by the Dashboard</span>}
                                         </div>
                                     </td>
-                                    <td className="px-4 py-3 text-muted-foreground max-w-xl">{indicator.summary}</td>
+                                    <td className="px-4 py-3 text-muted-foreground max-w-xl">
+                                        {indicator.summary}
+                                        {indicator.problem && <p className="mt-1 text-xs font-medium text-amber-700">⚠ {indicator.problem}</p>}
+                                    </td>
                                     <td className="px-4 py-3 text-right tabular-nums">{indicator.goal_count}</td>
                                     <td className="px-4 py-3">
                                         <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${indicator.is_active ? "bg-muted text-[var(--secondary-text)]" : "bg-muted/50 text-muted-foreground"}`}>
                                             {indicator.is_active ? "Active" : "Inactive"}
                                         </span>
+                                    </td>
+                                    <td className="px-4 py-3">
+                                        <div className="flex items-center gap-1">
+                                            <button
+                                                type="button" role="switch" aria-checked={indicator.show_on_dashboard && indicator.is_active}
+                                                disabled={!indicator.is_active} onClick={() => toggleDashboard(indicator)}
+                                                aria-label={`Show ${indicator.name} on the Dashboard`}
+                                                className={`relative h-5 w-9 rounded-full transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 ${indicator.show_on_dashboard && indicator.is_active ? "bg-primary" : "bg-border"}`}
+                                            >
+                                                <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all ${indicator.show_on_dashboard && indicator.is_active ? "left-[18px]" : "left-0.5"}`} />
+                                            </button>
+                                            {shown.some((i) => i.id === indicator.id) && (
+                                                <>
+                                                    <Button variant="ghost" size="icon" className="h-7 w-7" disabled={shown[0].id === indicator.id} onClick={() => move(indicator, -1)} aria-label="Move earlier"><ArrowUp className="h-4 w-4" /></Button>
+                                                    <Button variant="ghost" size="icon" className="h-7 w-7" disabled={shown[shown.length - 1].id === indicator.id} onClick={() => move(indicator, 1)} aria-label="Move later"><ArrowDown className="h-4 w-4" /></Button>
+                                                </>
+                                            )}
+                                        </div>
                                     </td>
                                     <td className="px-4 py-3">
                                         <div className="flex justify-end gap-1">

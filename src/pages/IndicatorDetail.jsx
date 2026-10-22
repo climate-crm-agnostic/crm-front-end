@@ -6,7 +6,7 @@ import { Button } from "../components/ui/button";
 import { Checkbox } from "../components/ui/checkbox";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Textarea } from "../components/ui/textarea";
 import { createIndicator, getIndicator, getIndicatorSchema, previewIndicator, updateIndicator } from "../services/indicatorService";
 import { formatGoalValue } from "../lib/goalFormat";
@@ -30,18 +30,33 @@ const Section = ({ title, hint, children }) => (
     </div>
 );
 
-const Pick = ({ label, value, onChange, options, placeholder, error }) => (
-    <div className="space-y-2">
-        <Label>{label}</Label>
-        <Select value={value || ""} onValueChange={onChange}>
-            <SelectTrigger className="w-full"><SelectValue placeholder={placeholder} /></SelectTrigger>
-            <SelectContent>
-                {options.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
-            </SelectContent>
-        </Select>
-        {error && <p className="text-xs text-red-500">{error}</p>}
-    </div>
-);
+// Options may carry a `group`; groups render under a heading, in the order they first appear.
+const Pick = ({ label, value, onChange, options, placeholder, error }) => {
+    const groups = [...new Set(options.map((o) => o.group || ""))];
+    const item = (o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>;
+    return (
+        <div className="space-y-2">
+            <Label>{label}</Label>
+            <Select value={value || ""} onValueChange={onChange}>
+                <SelectTrigger className="w-full"><SelectValue placeholder={placeholder} /></SelectTrigger>
+                <SelectContent>
+                    {groups.length === 1 && !groups[0]
+                        ? options.map(item)
+                        : groups.map((g) => (
+                            <SelectGroup key={g}>
+                                {g && <SelectLabel>{g}</SelectLabel>}
+                                {options.filter((o) => (o.group || "") === g).map(item)}
+                            </SelectGroup>
+                        ))}
+                </SelectContent>
+            </Select>
+            {error && <p className="text-xs text-red-500">{error}</p>}
+        </div>
+    );
+};
+
+// A condition's field is identified by name plus, for a lead's custom field, its pipeline.
+const fieldKey = (field, pipeline) => (pipeline ? `${field}@${pipeline}` : field);
 
 /** One value box, shaped by the field's kind and the operator. */
 const ConditionValue = ({ column, condition, onChange }) => {
@@ -63,7 +78,7 @@ const ConditionValue = ({ column, condition, onChange }) => {
             </div>
         );
     }
-    if (column?.kind === "choice") {
+    if (column?.kind === "choice" || column?.kind === "multi") {
         return (
             <Select value={condition.value ?? ""} onValueChange={onChange}>
                 <SelectTrigger className="w-full"><SelectValue placeholder="Choose…" /></SelectTrigger>
@@ -99,6 +114,7 @@ export const IndicatorDetail = () => {
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
     const [isActive, setIsActive] = useState(true);
+    const [onDashboard, setOnDashboard] = useState(false);
     const [rule, setRule] = useState(EMPTY_RULE);
     const [key, setKey] = useState("");
     const [fetching, setFetching] = useState(true);
@@ -106,6 +122,7 @@ export const IndicatorDetail = () => {
     const [errors, setErrors] = useState({});
     const [preview, setPreview] = useState(null);
     const [previewError, setPreviewError] = useState(null);
+    const [problem, setProblem] = useState(null);
     const previewSeq = useRef(0);
 
     // Load the whitelist, and the KPI itself when editing.
@@ -121,7 +138,9 @@ export const IndicatorDetail = () => {
                     setName(indicator.name);
                     setDescription(indicator.description || "");
                     setIsActive(indicator.is_active);
+                    setOnDashboard(indicator.show_on_dashboard);
                     setKey(indicator.key);
+                    setProblem(indicator.problem || null);
                     setRule({
                         entity: indicator.entity, aggregation: indicator.aggregation, value_field: indicator.value_field,
                         date_field: indicator.date_field, owner_field: indicator.owner_field,
@@ -137,20 +156,25 @@ export const IndicatorDetail = () => {
     }, [id, isNew]);
 
     const entity = schema?.entities[rule.entity];
+    // Database fields first, then the custom fields defined in Attributes (conditions only).
+    const fieldOptions = useMemo(() => !entity ? [] : [
+        ...entity.filters.map((f) => ({ ...f, key: f.value, pipeline: null, group: "Fields" })),
+        ...(entity.attributes || []).map((a) => ({ ...a, key: fieldKey(a.value, a.pipeline), group: "Custom fields" })),
+    ], [entity]);
     const needsValueField = rule.aggregation !== "count";
 
     const setEntity = (value) => setRule(withDefaults(schema, { ...EMPTY_RULE, entity: value, aggregation: rule.aggregation }));
     const setAggregation = (value) => setRule((r) => ({ ...r, aggregation: value, value_field: value === "count" ? "" : (r.value_field || entity?.value_fields[0]?.value || "") }));
     const setCondition = (index, patch) => setRule((r) => ({ ...r, conditions: r.conditions.map((c, i) => i === index ? { ...c, ...patch } : c) }));
     const addCondition = () => {
-        const first = entity?.filters[0];
+        const first = fieldOptions[0];
         if (!first) return;
-        setRule((r) => ({ ...r, conditions: [...r.conditions, { field: first.value, operator: schema.operators[first.kind][0].value, value: "" }] }));
+        setRule((r) => ({ ...r, conditions: [...r.conditions, { field: first.value, pipeline: first.pipeline || undefined, operator: schema.operators[first.kind][0].value, value: "" }] }));
     };
     const removeCondition = (index) => setRule((r) => ({ ...r, conditions: r.conditions.filter((_, i) => i !== index) }));
-    const changeConditionField = (index, fieldName) => {
-        const column = entity.filters.find((f) => f.value === fieldName);
-        setCondition(index, { field: fieldName, operator: schema.operators[column.kind][0].value, value: "" });
+    const changeConditionField = (index, key) => {
+        const column = fieldOptions.find((f) => f.key === key);
+        setCondition(index, { field: column.value, pipeline: column.pipeline || undefined, operator: schema.operators[column.kind][0].value, value: "" });
     };
     const changeOperator = (index, operator) => {
         const current = rule.conditions[index];
@@ -179,7 +203,7 @@ export const IndicatorDetail = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ruleKey, schema]);
 
-    const payload = useMemo(() => ({ name: name.trim(), description, is_active: isActive, ...rule }), [name, description, isActive, rule]);
+    const payload = useMemo(() => ({ name: name.trim(), description, is_active: isActive, show_on_dashboard: onDashboard && isActive, ...rule }), [name, description, isActive, onDashboard, rule]);
 
     const handleSave = async () => {
         setSaving(true);
@@ -219,6 +243,11 @@ export const IndicatorDetail = () => {
             </div>
 
             <div className="flex-1 p-6 max-w-4xl mx-auto w-full space-y-6">
+                {problem && (
+                    <div role="alert" className="p-4 text-sm rounded-md border border-amber-300 bg-amber-50 text-amber-800 dark:bg-amber-500/15 dark:border-amber-500/30 dark:text-amber-200">
+                        <b>This KPI needs attention:</b> {problem}
+                    </div>
+                )}
                 {errors.form && (
                     <div role="alert" className="p-4 text-sm text-red-500 bg-red-50 dark:bg-red-500/15 rounded-md border border-red-200 dark:border-red-500/30">
                         {errors.form}
@@ -266,7 +295,7 @@ export const IndicatorDetail = () => {
                     </div>
                 </Section>
 
-                <Section title="Which records count" hint="Only real database fields are available, so the number can always be checked against the data.">
+                <Section title="Which records count" hint="Database fields, plus the custom fields you defined in Attributes. Custom fields only decide which records count — never the amount, the date or who gets the credit.">
                     {rule.conditions.length === 0 && <p className="text-sm text-muted-foreground italic">No conditions: every record in the period counts.</p>}
                     {rule.conditions.length > 1 && (
                         <div className="max-w-xs">
@@ -277,12 +306,13 @@ export const IndicatorDetail = () => {
                         </div>
                     )}
                     {rule.conditions.map((condition, index) => {
-                        const column = entity.filters.find((f) => f.value === condition.field);
+                        const column = fieldOptions.find((f) => f.key === fieldKey(condition.field, condition.pipeline));
                         const operators = column ? schema.operators[column.kind] : [];
                         return (
                             <div key={index} className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1.4fr_auto] gap-3 items-start">
-                                <Pick label={index === 0 ? "Field" : ""} value={condition.field} onChange={(v) => changeConditionField(index, v)}
-                                    options={entity.filters.map((f) => ({ value: f.value, label: f.label }))} />
+                                <Pick label={index === 0 ? "Field" : ""} value={column ? column.key : ""} onChange={(v) => changeConditionField(index, v)}
+                                    placeholder={condition.label ? `${condition.label} (no longer available)` : "Choose a field"}
+                                    options={fieldOptions.map((f) => ({ value: f.key, label: f.label, group: f.group }))} />
                                 <Pick label={index === 0 ? "Is" : ""} value={condition.operator} onChange={(v) => changeOperator(index, v)} options={operators} />
                                 <div className="space-y-2">
                                     {index === 0 && <Label>Value</Label>}
@@ -295,7 +325,7 @@ export const IndicatorDetail = () => {
                         );
                     })}
                     {errors.conditions && <p className="text-xs text-red-500">{[].concat(errors.conditions).join(" ")}</p>}
-                    <Button type="button" variant="outline" size="sm" onClick={addCondition} disabled={!entity?.filters.length}>
+                    <Button type="button" variant="outline" size="sm" onClick={addCondition} disabled={!fieldOptions.length}>
                         <Plus className="mr-1.5 h-4 w-4" /> Add condition
                     </Button>
                 </Section>
@@ -307,6 +337,14 @@ export const IndicatorDetail = () => {
                         <Pick label="Credited to" value={rule.owner_field} onChange={(v) => setRule((r) => ({ ...r, owner_field: v }))}
                             options={entity?.owner_fields || []} placeholder="Choose a person" error={errors.owner_field && [].concat(errors.owner_field).join(" ")} />
                     </div>
+                </Section>
+
+                <Section title="Dashboard" hint="Choose whether this KPI appears as a card at the top of the Dashboard (up to six).">
+                    <div className="flex items-center gap-2">
+                        <Checkbox id="kpi-dashboard" checked={onDashboard && isActive} disabled={!isActive} onCheckedChange={(v) => setOnDashboard(Boolean(v))} />
+                        <Label htmlFor="kpi-dashboard">Show on the Dashboard{!isActive ? " (activate the KPI first)" : ""}</Label>
+                    </div>
+                    {errors.show_on_dashboard && <p className="text-xs text-red-500">{[].concat(errors.show_on_dashboard).join(" ")}</p>}
                 </Section>
 
                 <Section title="Preview" hint="What this rule measures this month, for everyone. Nothing is saved yet.">
