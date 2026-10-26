@@ -44,6 +44,7 @@ import { Dashboard } from "../pages/Dashboard";
 import { Users } from "../pages/Users";
 import { UserDetail } from "../pages/UserDetail";
 import { ResetPassword } from "../pages/ResetPassword";
+import { ForgotPassword } from "../pages/ForgotPassword";
 import { Settings } from "../pages/Settings"
 import { ChettAI } from "../pages/ChettAI";
 import { AuditLog } from "../pages/AuditLog";
@@ -100,6 +101,7 @@ export const RouterApp = () => {
 
             {/* public routes */}
             <Route path="/login" element={<RedirectIfAuth><Login /></RedirectIfAuth>} />
+            <Route path="/forgot-password" element={<RedirectIfAuth><ForgotPassword /></RedirectIfAuth>} />
             <Route path="/reset-password/:uid/:token" element={<ResetPassword />} />
             <Route path="/plan-expired" element={<PlanExpired />} />
             <Route path="/unsubscribe/:token" element={<Unsubscribe />} />

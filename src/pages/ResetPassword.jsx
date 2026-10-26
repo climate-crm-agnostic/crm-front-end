@@ -23,11 +23,6 @@ export const ResetPassword = () => {
             setError("Passwords do not match.");
             return;
         }
-        if (password.length < 8) {
-            setError("Password must be at least 8 characters.");
-            return;
-        }
-
         setLoading(true);
         const res = await confirmPasswordReset({ uid, token, password });
         const data = await res.json().catch(() => ({}));
@@ -44,9 +39,7 @@ export const ResetPassword = () => {
         <div className="min-h-screen flex items-center justify-center bg-background px-4">
             <div className="w-full max-w-sm space-y-6">
                 <div className="text-center">
-                    <p className="text-2xl font-bold tracking-tight">
-                        Climate by Code<span style={{ color: "#38bdf8" }}>X</span>
-                    </p>
+                    <img src="/climate.svg" alt="Climate by CodeX" className="mx-auto h-14 w-auto" />
                     <p className="text-muted-foreground text-sm mt-1">Set your new password</p>
                 </div>
 

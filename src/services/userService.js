@@ -68,3 +68,21 @@ export const confirmPasswordReset = async ({ uid, token, password }) => {
     });
     return res;
 };
+
+export const requestPasswordReset = async (identifier) => {
+    const res = await fetch(`${API_URL}/auth/password-reset/request/`, {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ identifier }),
+    });
+    return res;
+};
+
+export const changeMyPassword = async ({ currentPassword, newPassword }) => {
+    const res = await fetch(`${API_URL}/me/change-password/`, {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
+    });
+    return res;
+};

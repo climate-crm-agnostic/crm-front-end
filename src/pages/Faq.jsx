@@ -50,8 +50,10 @@ export const Faq = () => {
                             <AccordionItem value="item-1">
                                 <AccordionTrigger>How do I reset my password?</AccordionTrigger>
                                 <AccordionContent>
-                                    If you are logged in, go to your User Profile menu (top right) and select "Account".
-                                    If you cannot log in, please contact your system administrator to initiate a password reset.
+                                    If you are signed in, open <strong>My Account</strong> (top right) and use the <strong>Password</strong> card:
+                                    enter your current password and a new one.
+                                    If you forgot it, click <strong>Forgot password?</strong> on the login page and enter your username or email.
+                                    We'll email you a link that stays valid for 15 minutes. An administrator can also send you a link from the Users page.
                                 </AccordionContent>
                             </AccordionItem>
                             <AccordionItem value="item-2">

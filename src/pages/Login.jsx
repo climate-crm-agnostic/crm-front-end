@@ -7,6 +7,7 @@ import { Modal } from "@/components/Modal";
 import { Form } from "@/components/Form";
 import { Notification } from "@/components/Notification";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { handleSaveCrud } from "@/utils/handleOperacion";
 
 export const Login = ({ className, ...props }) => {
@@ -149,6 +150,13 @@ export const Login = ({ className, ...props }) => {
                       fontFamily: 'var(--font-body)',
                     }}
                   />
+                  <Link
+                    to="/forgot-password"
+                    className="justify-self-end text-xs font-medium transition-colors hover:underline"
+                    style={{ color: "var(--primary-text)" }}
+                  >
+                    Forgot password?
+                  </Link>
                 </div>
 
                 <button
