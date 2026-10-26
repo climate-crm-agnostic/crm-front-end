@@ -113,7 +113,7 @@ export const Users = () => {
             ) : (
                 <Table
                 columns={columns}
-                data={users}
+                data={users.map((u) => (u.is_superuser ? { ...u, group: "Administrator" } : u))}
                 onEdit={(row) => navigate(`/users/${row.id}`)}
                 onAskDelete={handleDelete}
                 onResetPassword={(row) => row.email ? handleResetPassword(row) : null}

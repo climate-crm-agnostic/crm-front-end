@@ -8,6 +8,12 @@ export const getUsers = async () => {
     return res.json();
 };
 
+export const getUserRoles = async () => {
+    const res = await fetch(`${BASE}/roles/`, { headers: getHeaders() });
+    if (!res.ok) throw new Error("Failed to fetch roles");
+    return res.json();
+};
+
 export const getUser = async (id) => {
     const res = await fetch(`${BASE}/${id}/`, { headers: getHeaders() });
     if (!res.ok) throw new Error("Failed to fetch user");
