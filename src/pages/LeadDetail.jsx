@@ -29,6 +29,7 @@ import { SendEmailModal } from "../components/SendEmailModal";
 import { ViewEmailModal } from "../components/ViewEmailModal";
 import { LeadContractPanel } from "../components/LeadContractPanel";
 import { listContractsForLead } from "../services/contractService";
+import { LeadMeetingDocumentPanel } from "../components/LeadMeetingDocumentPanel";
 import { DynamicAttributeField } from "../components/attributes/DynamicAttributeField";
 import { coerceAttributeValue, collectAttributeValuesByType, emptyValueFor, normalizeOptions } from "../utils/attributeTypes";
 import { formatDateTime } from "../utils/tz";
@@ -744,6 +745,11 @@ export const LeadDetail = () => {
     const showContractTab = !isNew && isFeatureEnabled("contracts")
         && (currentStage === "Contract" || (currentStage === "Won" && hasContract));
 
+    // Unlike the Contract tab, meeting documents aren't tied to any reserved
+    // pipeline stage — the agenda is a one-off document useful at any point
+    // in the deal, so this is just the feature flag.
+    const showMeetingDocumentsTab = !isNew && isFeatureEnabled("meeting_documents");
+
     return (
         <div className="min-h-screen bg-background flex flex-col">
             {/* Header */}
@@ -846,6 +852,9 @@ export const LeadDetail = () => {
                         {leadEvents.from_event && <TabsTrigger value="events">Events</TabsTrigger>}
                         {showContractTab && (
                             <TabsTrigger value="contract">Contract</TabsTrigger>
+                        )}
+                        {showMeetingDocumentsTab && (
+                            <TabsTrigger value="meeting-documents">Meeting Documents</TabsTrigger>
                         )}
                     </TabsList>
 
@@ -1403,6 +1412,11 @@ export const LeadDetail = () => {
                 {showContractTab && (
                     <TabsContent value="contract" className="space-y-6 mt-0">
                         <LeadContractPanel leadId={id} pipelineId={activePipelineId} />
+                    </TabsContent>
+                )}
+                {showMeetingDocumentsTab && (
+                    <TabsContent value="meeting-documents" className="space-y-6 mt-0">
+                        <LeadMeetingDocumentPanel leadId={id} />
                     </TabsContent>
                 )}
                 </Tabs>

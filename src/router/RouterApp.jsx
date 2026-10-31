@@ -63,6 +63,7 @@ import { Unsubscribe } from "../pages/Unsubscribe";
 import { ContractSign } from "../pages/ContractSign";
 import { ContractTemplatesPage } from "../pages/ContractTemplatesPage";
 import { ContractAIChat } from "../pages/ContractAIChat";
+import { MeetingDocumentAIChat } from "../pages/MeetingDocumentAIChat";
 import { ContractTemplateEditPage } from "../pages/ContractTemplateEditPage";
 import { QuotationDetail } from "../pages/QuotationDetail";
 import { Events } from "../pages/Events";
@@ -115,6 +116,7 @@ export const RouterApp = () => {
                 {/*  <Route path="rol" element={<Rol />} /> */}
                 <Route path="lead" element={<PermissionGuard requiredPermission="app.add_lead"><Lead /></PermissionGuard>} />
                 <Route path="lead/:id" element={<PermissionGuard requiredPermission="app.add_lead"><LeadDetail /></PermissionGuard>} />
+                <Route path="lead/:leadId/meeting-documents/ai" element={<PermissionGuard requiredPermission="app.add_lead"><FeatureGate feature="meeting_documents"><MeetingDocumentAIChat /></FeatureGate></PermissionGuard>} />
                 <Route path="quotation/:id" element={<PermissionGuard requiredPermission="app.view_quotation"><QuotationDetail /></PermissionGuard>} />
                 <Route path="pipeline" element={<PermissionGuard requiredPermission="app.add_pipeline"><Pipeline /></PermissionGuard>} />
                 <Route path="pipeline/:pipelineId/contracts" element={<PermissionGuard requiredPermission="app.add_pipeline"><FeatureGate feature="contracts"><ContractTemplatesPage /></FeatureGate></PermissionGuard>} />
