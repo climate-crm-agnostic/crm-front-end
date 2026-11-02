@@ -142,7 +142,7 @@ export const PipelineForm = ({ onPipelineSaved, initialData = null }) => {
                                         placeholder="Stage Name"
                                         className="w-full p-1.5 text-sm bg-transparent border-b border-transparent focus:border-primary-text focus:outline-none transition-colors"
                                     />
-                                    {errors.stages?.[index]?.name && <span className="text-red-500 text-[10px]">{errors.stages[index].name.message}</span>}
+                                    {errors.stages?.[index]?.name && <span className="text-red-500 text-xs">{errors.stages[index].name.message}</span>}
                                 </div>
 
                                 <div className="flex items-center gap-2">
@@ -183,12 +183,12 @@ export const PipelineForm = ({ onPipelineSaved, initialData = null }) => {
                                     <div className="flex items-center gap-2">
                                         <p className="text-sm font-medium text-foreground">Contract stage</p>
                                         {hasContractStage ? (
-                                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                                            <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
                                                 style={{ backgroundColor: CONTRACT_COLOR, color: "#fff" }}>
                                                 <Check size={10} /> Enabled
                                             </span>
                                         ) : (
-                                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-muted-foreground/15 text-muted-foreground">
+                                            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-muted-foreground/15 text-muted-foreground">
                                                 Off
                                             </span>
                                         )}

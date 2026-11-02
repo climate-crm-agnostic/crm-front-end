@@ -651,11 +651,11 @@ export const WebhookDetail = () => {
                         <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0">
                             <TabsTrigger value="params" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary-text data-[state=active]:bg-transparent px-4 py-2">
                                 Params
-                                {queryParams.length > 0 && <Badge variant="secondary" className="ml-2 text-[10px] h-4 px-1">{queryParams.length}</Badge>}
+                                {queryParams.length > 0 && <Badge variant="secondary" className="ml-2 text-xs h-4 px-1">{queryParams.length}</Badge>}
                             </TabsTrigger>
                             <TabsTrigger value="headers" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary-text data-[state=active]:bg-transparent px-4 py-2">
                                 Headers
-                                {headerParams.length > 0 && <Badge variant="secondary" className="ml-2 text-[10px] h-4 px-1">{headerParams.length}</Badge>}
+                                {headerParams.length > 0 && <Badge variant="secondary" className="ml-2 text-xs h-4 px-1">{headerParams.length}</Badge>}
                             </TabsTrigger>
                             <TabsTrigger value="body" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary-text data-[state=active]:bg-transparent px-4 py-2">
                                 Body

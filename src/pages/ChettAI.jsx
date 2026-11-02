@@ -581,7 +581,7 @@ export const ChettAI = () => {
                         {grouped.map(([label, items]) => (
                             <div key={label}>
                                 <p style={{
-                                    fontSize: 10, fontWeight: 600, letterSpacing: "0.08em",
+                                    fontSize: 12, fontWeight: 600, letterSpacing: "0.08em",
                                     textTransform: "uppercase", color: "var(--muted-foreground)",
                                     padding: "10px 8px 4px",
                                 }}>

@@ -92,25 +92,25 @@ export const LeadCard = ({ lead, salesUsers = [], clientsById = {}, onDragStart,
                     >
                         {responsibleName.charAt(0).toUpperCase()}
                     </div>
-                    <span className="text-[9px] font-semibold truncate" style={{ color: "var(--foreground)" }}>
+                    <span className="text-xs font-semibold truncate" style={{ color: "var(--foreground)" }}>
                         {responsibleName}
                     </span>
                 </div>
 
-                {lead.sells && <div className="mb-2"><SellsBadge sells={lead.sells} className="!px-2 !py-0 !text-[9px]" /></div>}
+                {lead.sells && <div className="mb-2"><SellsBadge sells={lead.sells} className="!px-2 !py-0 !text-xs" /></div>}
 
                 {/* Date + client */}
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1" style={{ color: "#9b948e" }}>
                         <Calendar className="w-2.5 h-2.5" />
-                        <span className="text-[9px] font-medium">
+                        <span className="text-xs font-medium">
                             {formatDate(lead.created_at || lead.date) || "No date"}
                         </span>
                     </div>
                     {clientName && (
                         <div className="flex items-center gap-1 max-w-[55%]" style={{ color: "#9b948e" }}>
                             <Building className="w-2.5 h-2.5 shrink-0" />
-                            <span className="text-[9px] truncate">{clientName}</span>
+                            <span className="text-xs truncate">{clientName}</span>
                         </div>
                     )}
                 </div>

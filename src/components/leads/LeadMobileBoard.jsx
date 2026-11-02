@@ -58,7 +58,7 @@ export const LeadMobileBoard = ({ stages, leads, salesUsers, clientsById, onLead
                             />
                             {stage.name}
                             <span
-                                className="text-[10px] font-bold px-1.5 rounded-full tabular-nums"
+                                className="text-xs font-bold px-1.5 rounded-full tabular-nums"
                                 style={{ backgroundColor: isActive ? "color-mix(in srgb, var(--background) 25%, transparent)" : "rgba(37,91,1,0.12)" }}
                             >
                                 {count}

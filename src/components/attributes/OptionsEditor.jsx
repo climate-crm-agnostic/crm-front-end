@@ -121,7 +121,7 @@ export const OptionsEditor = ({ value, onChange, error, lockedValues }) => {
                         <button
                             type="button"
                             onClick={() => update(index, { is_active: !option.is_active })}
-                            className="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold uppercase"
+                            className="shrink-0 rounded px-1.5 py-0.5 text-xs font-bold uppercase"
                             title={option.is_active
                                 ? "Retire — keeps existing records valid, hides it from new ones"
                                 : "Bring back"}

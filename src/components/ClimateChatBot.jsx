@@ -103,7 +103,7 @@ export const ReportBlock = ({ report }) => {
                     </table>
                 </div>
                 {truncated && (
-                    <p style={{ margin: "6px 2px 0", fontSize: 10.5, color: "#9b948e" }}>
+                    <p style={{ margin: "6px 2px 0", fontSize: 12, color: "#9b948e" }}>
                         Showing the first {row_cap?.toLocaleString?.() || row_cap} rows. Narrow your request (by date, status, etc.) to see a more specific set.
                     </p>
                 )}

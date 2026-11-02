@@ -74,7 +74,7 @@ export const LeadCardMobile = ({ lead, stages = [], salesUsers = [], clientsById
                     style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)" }}
                 >
                     <div
-                        className="h-5 w-5 rounded-full flex items-center justify-center text-[9px] font-black shrink-0"
+                        className="h-5 w-5 rounded-full flex items-center justify-center text-xs font-black shrink-0"
                         style={{ backgroundColor: "var(--secondary)", color: "var(--secondary-foreground)" }}
                     >
                         {responsibleName.charAt(0).toUpperCase()}
