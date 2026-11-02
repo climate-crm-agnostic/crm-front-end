@@ -5,7 +5,6 @@ import {
     DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/context/AuthContext";
-import { UseTheme } from "@/components/UseTheme";
 
 const THEMES = [
     { key: "light", label: "Light", icon: Sun },
@@ -15,10 +14,9 @@ const THEMES = [
 
 const initials = (name = "") => name.split(/[\s._-]+/).filter(Boolean).slice(0, 2).map((part) => part[0].toUpperCase()).join("") || "?";
 
-/** Avatar chip with profile, theme and logout. Also the single place that applies the saved theme. */
-export function UserMenu() {
+/** Avatar chip with profile, theme and logout. Theme state comes from TopNav, which owns it. */
+export function UserMenu({ theme, setTheme }) {
     const { user, logout } = useAuth();
-    const [theme, setTheme] = UseTheme();
     const name = user?.username || "";
     const role = user?.groups?.[0] || "";
 
