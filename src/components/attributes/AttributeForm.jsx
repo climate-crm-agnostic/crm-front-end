@@ -274,7 +274,7 @@ export const AttributeForm = ({
                             <div className="flex flex-col gap-2.5">
                                 {grouped.map((group) => (
                                     <div key={group.value}>
-                                        <p style={{ fontSize: 10, fontWeight: 700, color: HINT,
+                                        <p style={{ fontSize: 12, fontWeight: 700, color: HINT,
                                                     textTransform: "uppercase", letterSpacing: "0.08em",
                                                     marginBottom: 5 }}>
                                             {group.label}
@@ -488,7 +488,7 @@ const TypeCard = ({ type, selected, onClick }) => {
             className="flex flex-col items-center gap-1 rounded-lg px-1 py-2 transition-colors cursor-pointer"
             style={{
                 border: `1px solid ${selected ? "var(--secondary-text)" : PEBBLE}`,
-                backgroundColor: selected ? "rgba(37,91,1,0.10)" : "#fff",
+                backgroundColor: selected ? "rgba(37,91,1,0.10)" : "var(--card)",
                 color: selected ? "var(--secondary-text)" : MUTED,
             }}
         >
