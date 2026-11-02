@@ -4,7 +4,9 @@ import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { createClient, updateClient, uploadClientImage, deleteClientImage, getClientById, getClientAttributes } from "../services/clientService";
 import { getContacts } from "../services/contactService";
 import { getServices } from "../services/serviceService";
+import { getFollowups, deleteFollowup, getFollowupAttributes } from "../services/followupService";
 import { useAuth } from "../context/AuthContext";
+import Swal from "sweetalert2";
 
 // UI Components
 import { Input } from "../components/ui/input";
@@ -16,6 +18,8 @@ import { ArrowLeft, Plus } from "lucide-react";
 import { DateInput } from "../components/ui/date-input";
 import { DynamicAttributeField } from "../components/attributes/DynamicAttributeField";
 import { coerceAttributeValue, emptyValueFor, normalizeOptions } from "../utils/attributeTypes";
+import { FollowupModal } from "../components/followups/FollowupModal";
+import { Table } from "../components/Table";
 
 export const ClientDetail = () => {
     const { id } = useParams();
@@ -69,6 +73,103 @@ export const ClientDetail = () => {
         });
         return () => { cancelled = true; };
     }, [id, isNew]);
+
+    // Follow-ups: aggregates every service's follow-ups, tagged with their source service
+    const [followups, setFollowups] = useState([]);
+    const [followupAttributes, setFollowupAttributes] = useState([]);
+    const [followupsLoading, setFollowupsLoading] = useState(!isNew);
+    const [followupModalOpen, setFollowupModalOpen] = useState(false);
+    const [followupToEdit, setFollowupToEdit] = useState(null);
+    const [followupServiceId, setFollowupServiceId] = useState(null);
+
+    const fetchClientFollowups = async () => {
+        if (isNew) return;
+        setFollowupsLoading(true);
+        try {
+            const attrs = await getFollowupAttributes().catch(() => []);
+            setFollowupAttributes(attrs || []);
+            const perService = await Promise.all(
+                services.map(async (svc) => {
+                    const items = await getFollowups(svc.id).catch(() => []);
+                    return (items || []).map((item) => ({
+                        ...item,
+                        service_id: svc.id,
+                        service_name: svc.name,
+                        follow_up_date: item.follow_up_date ? item.follow_up_date.split("T")[0] : "",
+                        ...(item.attributes || {}),
+                    }));
+                })
+            );
+            setFollowups(perService.flat().sort((a, b) => (b.follow_up_date || "").localeCompare(a.follow_up_date || "")));
+        } catch (err) {
+            console.error("Error fetching follow-ups", err);
+        } finally {
+            setFollowupsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (isNew || relatedLoading) return;
+        fetchClientFollowups();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [services, relatedLoading, isNew]);
+
+    const followupColumns = [
+        { key: "follow_up_date", label: "Date" },
+        { key: "service_name", label: "Service" },
+        { key: "comment", label: "Comment" },
+        ...followupAttributes.map((attr) => ({ key: attr.name, label: attr.label })),
+    ];
+
+    const handleAddFollowup = async () => {
+        if (services.length === 0) {
+            Swal.fire("No services", "Add a service to this client before creating a follow-up.", "info");
+            return;
+        }
+        let serviceId = services[0].id;
+        if (services.length > 1) {
+            const { value, isConfirmed } = await Swal.fire({
+                title: "Which service?",
+                input: "select",
+                inputOptions: Object.fromEntries(services.map((s) => [s.id, s.name])),
+                inputPlaceholder: "Select a service",
+                showCancelButton: true,
+                confirmButtonText: "Continue",
+                inputValidator: (v) => (v ? null : "Please select a service"),
+            });
+            if (!isConfirmed) return;
+            serviceId = value;
+        }
+        setFollowupToEdit(null);
+        setFollowupServiceId(serviceId);
+        setFollowupModalOpen(true);
+    };
+
+    const handleEditFollowup = (followup) => {
+        setFollowupToEdit(followup);
+        setFollowupServiceId(followup.service_id);
+        setFollowupModalOpen(true);
+    };
+
+    const handleDeleteFollowup = async (followup) => {
+        const result = await Swal.fire({
+            title: "Are you sure?",
+            text: "You won't be able to revert this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Yes, delete it!",
+        });
+        if (!result.isConfirmed) return;
+        try {
+            await deleteFollowup(followup.service_id, followup.id);
+            fetchClientFollowups();
+        } catch (err) {
+            console.error("Error deleting follow-up", err);
+            Swal.fire("Error!", "There was an error deleting the follow-up.", "error");
+        }
+    };
 
     useEffect(() => {
         const init = async () => {
@@ -374,6 +475,7 @@ export const ClientDetail = () => {
                             {[
                                 { key: "contacts", label: "Contacts", count: contacts.length },
                                 { key: "services", label: "Services", count: services.length },
+                                { key: "followups", label: "Follow-ups", count: followups.length },
                                 { key: "tasks", label: "Tasks", count: tasks.length },
                                 { key: "files", label: "Files", count: images.length },
                             ].map((tab) => (
@@ -470,6 +572,31 @@ export const ClientDetail = () => {
                         </div>
                     )}
 
+                    {!isNew && activeTab === "followups" && (
+                        <div className="space-y-4">
+                            <div className="flex justify-end">
+                                <Button onClick={handleAddFollowup}>
+                                    <Plus className="mr-2 h-4 w-4" /> Add Follow-up
+                                </Button>
+                            </div>
+                            {followupsLoading ? (
+                                <div className="h-24 rounded-lg animate-pulse bg-muted" />
+                            ) : followups.length === 0 ? (
+                                <div className="rounded-lg p-8 text-center text-sm text-muted-foreground border bg-card">No follow-ups yet for this client's services.</div>
+                            ) : (
+                                <div className="bg-card p-2 rounded-lg shadow overflow-hidden flex flex-col">
+                                    <Table
+                                        data={followups}
+                                        columns={followupColumns}
+                                        onEdit={handleEditFollowup}
+                                        onAskDelete={handleDeleteFollowup}
+                                        searchable={true}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    )}
+
                     {/* Tasks & Notes Row */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6" hidden={!isNew && activeTab !== "tasks"}>
                         {/* Tasks */}
@@ -539,7 +666,7 @@ export const ClientDetail = () => {
                                 {notes.length === 0 ? <p className="text-sm text-muted-foreground italic">No notes.</p> : notes.slice().reverse().map((item, idx) => (
                                     <div key={idx} className="p-3 bg-muted/20 border rounded-md space-y-1">
                                         <p className="text-sm whitespace-pre-wrap">{item.note}</p>
-                                        <div className="flex justify-between items-center text-[10px] text-muted-foreground">
+                                        <div className="flex justify-between items-center text-xs text-muted-foreground">
                                             <span>{formatDateTime(item.date)}</span>
                                             {item.user_name && <span>{item.user_name}</span>}
                                         </div>
@@ -587,6 +714,14 @@ export const ClientDetail = () => {
                     )}
                 </div>
             </div>
+
+            <FollowupModal
+                isOpen={followupModalOpen}
+                onClose={() => setFollowupModalOpen(false)}
+                onFollowupSaved={fetchClientFollowups}
+                followupToEdit={followupToEdit}
+                serviceId={followupServiceId}
+            />
         </div>
     );
 };
