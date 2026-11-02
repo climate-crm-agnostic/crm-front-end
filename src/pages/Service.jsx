@@ -4,7 +4,8 @@ import { RowActions } from "../components/Table";
 import { TableSummary } from "../components/TableSummary";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
-import { Plus, Search, Upload, X, CheckCircle, AlertCircle } from "lucide-react";
+import { Plus, Search, Upload, X, CheckCircle, AlertCircle, Briefcase } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
 import { getServices, deleteService, getServiceAttributes, importServicesFromExcel } from "../services/serviceService";
 import { getClients } from "../services/clientService";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
@@ -232,6 +233,7 @@ export const Service = () => {
 
     return (
         <div className="h-full flex flex-col p-2 w-full">
+            <PageHeader icon={Briefcase} title="Services" description="Manage your clients' services and their follow-ups." className="mb-2" />
             <div className="flex flex-wrap items-center gap-2 mb-2 ml-2">
                 <Select value={selectedClient} onValueChange={setSelectedClient}>
                     <SelectTrigger

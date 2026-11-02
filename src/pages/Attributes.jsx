@@ -9,6 +9,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { getAttributes, createAttribute, updateAttribute, deleteAttribute } from '../services/attributeService';
 import { AttributeForm } from '../components/attributes/AttributeForm';
 import { Plus, Trash, Edit, ChevronLeft, ChevronRight, SlidersHorizontal, GripVertical } from 'lucide-react';
+import { PageHeader } from "@/components/PageHeader";
 import Swal from 'sweetalert2';
 
 const ENTITY_LABELS = {
@@ -32,7 +33,7 @@ const TypePill = ({ type }) => {
     const c = TYPE_COLORS[type?.toLowerCase()] || TYPE_COLORS.number;
     return (
         <span
-            className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-widest"
+            className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-black uppercase tracking-widest"
             style={{ backgroundColor: c.bg, border: `1px solid ${c.border}`, color: c.color }}
         >
             {type}
@@ -98,7 +99,7 @@ const SortableAttrCard = ({ attr, onEdit, onDelete }) => {
 
             {/* Order badge */}
             <span
-                className="shrink-0 mr-2 text-[9px] font-black tabular-nums flex items-center justify-center rounded"
+                className="shrink-0 mr-2 text-xs font-black tabular-nums flex items-center justify-center rounded"
                 style={{
                     minWidth: "18px", height: "18px",
                     backgroundColor: "rgba(37,91,1,0.12)",
@@ -116,12 +117,12 @@ const SortableAttrCard = ({ attr, onEdit, onDelete }) => {
                         {attr.label}
                     </p>
                     {attr.is_required && (
-                        <span className="text-[9px] font-bold" style={{ color: "var(--destructive)" }} title="Required">●</span>
+                        <span className="text-xs font-bold" style={{ color: "var(--destructive)" }} title="Required">●</span>
                     )}
                 </div>
                 <div className="flex items-center gap-2 mt-1">
                     <TypePill type={attr.type} />
-                    <span className="font-mono text-[9px] truncate opacity-60" style={{ color: "var(--muted-foreground)" }}>#{attr.name}</span>
+                    <span className="font-mono text-xs truncate opacity-60" style={{ color: "var(--muted-foreground)" }}>#{attr.name}</span>
                 </div>
             </div>
 
@@ -285,34 +286,14 @@ export const Attributes = () => {
             style={{ backgroundColor: "var(--background)", fontFamily: 'var(--font-body)' }}
         >
             {/* Page header */}
-            <div
-                className="shrink-0 px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3"
-                style={{ borderBottom: "1px solid var(--border)", backgroundColor: "var(--card)" }}
-            >
-                <div className="flex items-center gap-3">
-                    <div
-                        className="flex h-10 w-10 items-center justify-center rounded-lg"
-                        style={{ backgroundColor: "rgba(37,91,1,0.12)", border: "1px solid rgba(37,91,1,0.3)" }}
-                    >
-                        <SlidersHorizontal className="h-5 w-5" style={{ color: "var(--secondary-text)" }} />
-                    </div>
-                    <div>
-                        <p className="text-base font-semibold uppercase tracking-wide" style={{ color: "var(--foreground)", fontFamily: 'var(--font-body)' }}>
-                            Core Attributes Management
-                        </p>
-                        <p className="text-xs flex items-center gap-1.5 mt-0.5" style={{ color: "#9b948e" }}>
-                            <span className="h-1.5 w-1.5 rounded-full animate-pulse inline-block" style={{ backgroundColor: "var(--secondary)" }} />
-                            Define and customize fields for your core system entities. Drag cards to reorder.
-                        </p>
-                    </div>
-                </div>
+            <PageHeader icon={SlidersHorizontal} title="Core Attributes Management" description="Define and customize fields for your core system entities. Drag cards to reorder." className="shrink-0 px-6 py-4">
                 <span
                     className="text-xs font-semibold uppercase tracking-widest px-3 py-1 rounded-full"
                     style={{ backgroundColor: "rgba(37,91,1,0.10)", border: "1px solid rgba(37,91,1,0.3)", color: "var(--secondary-text)" }}
                 >
                     {entities.length} Modules
                 </span>
-            </div>
+            </PageHeader>
 
             {/* Kanban board */}
             <div className="flex-1 min-h-0 overflow-hidden p-5 relative group/board">
@@ -367,20 +348,20 @@ export const Attributes = () => {
                                             {entity.charAt(0).toUpperCase()}
                                         </div>
                                         <div>
-                                            <p className="text-xs font-black uppercase tracking-widest leading-none" style={{ color: "var(--background)" }}>
+                                            <p className="text-xs font-black uppercase tracking-widest leading-none" style={{ color: "var(--secondary-foreground)" }}>
                                                 {label}
                                             </p>
-                                            <span className="text-[9px] font-medium" style={{ color: "rgba(255,255,255,0.6)" }}>
+                                            <span className="text-xs font-medium" style={{ color: "rgba(255,255,255,0.6)" }}>
                                                 {attrs.length} {attrs.length === 1 ? 'attribute' : 'attributes'}
                                             </span>
                                         </div>
                                     </div>
                                     <button
                                         onClick={() => handleAddClick(entity)}
-                                        className="flex items-center gap-1 px-3 h-7 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer"
-                                        style={{ backgroundColor: "color-mix(in srgb, var(--background) 15%, transparent)", color: "var(--background)", border: "1px solid rgba(255,255,255,0.25)" }}
-                                        onMouseEnter={e => e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--background) 25%, transparent)"}
-                                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--background) 15%, transparent)"}
+                                        className="flex items-center gap-1 px-3 h-7 rounded-full text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
+                                        style={{ backgroundColor: "transparent", color: "var(--color-codex-botones-primary)", border: "1px solid var(--color-codex-botones-primary)" }}
+                                        onMouseEnter={e => e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--color-codex-botones-primary) 15%, transparent)"}
+                                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
                                     >
                                         <Plus size={11} /> New
                                     </button>
@@ -393,8 +374,8 @@ export const Attributes = () => {
                                             className="h-24 flex flex-col items-center justify-center rounded-lg m-1"
                                             style={{ border: "1.5px dashed var(--border)", color: "#9b948e" }}
                                         >
-                                            <p className="text-[10px] uppercase tracking-widest font-bold">No Attributes</p>
-                                            <p className="text-[9px] mt-0.5 opacity-60 italic">Start by adding one</p>
+                                            <p className="text-xs uppercase tracking-widest font-bold">No Attributes</p>
+                                            <p className="text-xs mt-0.5 opacity-60 italic">Start by adding one</p>
                                         </div>
                                     ) : (
                                         <DndContext

@@ -6,7 +6,8 @@ import { Button } from "../components/ui/button";
 import { Switch } from "../components/ui/switch";
 import { Badge } from "../components/ui/badge";
 import { Card, CardHeader } from "../components/SectionCard";
-import { CreditCard } from "lucide-react";
+import { CreditCard, Settings as SettingsIcon } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
 import { PlanSummary } from "../components/PlanSummary";
 import Swal from "sweetalert2";
 
@@ -114,11 +115,7 @@ export const Settings = () => {
     return (
         <div className="max-w-3xl mx-auto py-6 px-2 space-y-6" style={{ fontFamily: 'var(--font-body)' }}>
 
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-1">
-                <div className="min-w-0">
-                    <h1 className="text-2xl font-semibold">Settings</h1>
-                    <p className="text-sm text-muted-foreground">Your plan and third-party integrations</p>
-                </div>
+            <PageHeader icon={SettingsIcon} title="Settings" description="Your plan and third-party integrations" className="px-1">
                 <div className="flex flex-wrap items-center gap-3 shrink-0">
                     {hasPending && <span className="text-sm text-muted-foreground">Unsaved changes</span>}
                     <Button variant="outline" onClick={handleDiscard} disabled={saving || !hasPending}>
@@ -128,7 +125,7 @@ export const Settings = () => {
                         {saving ? "Saving..." : "Save Changes"}
                     </Button>
                 </div>
-            </div>
+            </PageHeader>
 
             <PlanSummary />
 

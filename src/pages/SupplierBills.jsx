@@ -4,7 +4,7 @@ import { SupplierFilter } from "../components/payables/SupplierFilter";
 import { saveAs } from "file-saver";
 import { Swal } from "../components/payables/payablesUi";
 import { HelpNote } from "../components/payables/HelpNote";
-import { Download, HandCoins, Plus } from "lucide-react";
+import { Download, HandCoins, Plus, Receipt } from "lucide-react";
 import { TableSummary } from "../components/TableSummary";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
@@ -14,6 +14,7 @@ import { exportSupplierBillsExcel, getSupplierBills } from "../services/payables
 import {
     BILL_STATUS, PAYABLE_STATUSES, addDays, money, sumByCurrency, today, useCan,
 } from "../components/payables/payablesUi";
+import { PageHeader } from "@/components/PageHeader";
 
 const STATUS_TABS = [
     { value: "all", label: "All" },
@@ -113,11 +114,7 @@ export const SupplierBills = () => {
 
     return (
         <div className="h-full flex flex-col p-2 w-full">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-2">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-foreground">Accounts Payable</h1>
-                    <p className="text-sm text-muted-foreground">Supplier bills and what is still owed on them.</p>
-                </div>
+            <PageHeader icon={Receipt} title="Accounts Payable" description="Supplier bills and what is still owed on them." className="mb-2">
                 <div className="flex flex-wrap gap-2">
                     <Button variant="outline" onClick={handleExport}>
                         <Download className="mr-2 h-4 w-4" /> Export Excel
@@ -131,7 +128,7 @@ export const SupplierBills = () => {
                         <Plus className="mr-2 h-4 w-4" /> New Bill
                     </Button>
                 </div>
-            </div>
+            </PageHeader>
 
             <div className="mb-2">
                 <HelpNote id="bills" items={[

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus, Trash2, Edit, Users2 } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
 import { getTeams, deleteTeam } from "@/services/teamService";
 import Swal from 'sweetalert2';
 
@@ -81,26 +82,7 @@ export const Teams = () => {
     return (
         <div className="p-6 space-y-6" style={{ fontFamily: 'var(--font-body)' }}>
 
-            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-3">
-                    <div
-                        className="flex h-10 w-10 items-center justify-center rounded-lg"
-                        style={{ backgroundColor: "rgba(37,91,1,0.12)", border: "1px solid rgba(37,91,1,0.3)" }}
-                    >
-                        <Users2 className="h-5 w-5" style={{ color: "var(--secondary-text)" }} />
-                    </div>
-                    <div>
-                        <p
-                            className="text-base font-semibold"
-                            style={{ color: "var(--foreground)", fontFamily: 'var(--font-body)' }}
-                        >
-                            Teams
-                        </p>
-                        <p className="text-sm" style={{ color: "#9b948e" }}>
-                            Organize users into teams with a leader and a roster.
-                        </p>
-                    </div>
-                </div>
+            <PageHeader icon={Users2} title="Teams" description="Organize users into teams with a leader and a roster.">
 
                 <Link to="/team/new">
                     <button
@@ -113,7 +95,7 @@ export const Teams = () => {
                         New Team
                     </button>
                 </Link>
-            </div>
+            </PageHeader>
 
             <div
                 className="overflow-hidden"

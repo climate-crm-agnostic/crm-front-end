@@ -2,11 +2,12 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Table } from "../components/Table";
 import { Button } from "../components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Boxes } from "lucide-react";
 import { getInventoryItems, deleteInventoryItem, getInventoryItemAttributes } from "../services/inventoryService";
 import Swal from "sweetalert2";
 import { formatDecimal } from "@/lib/utils";
 
+import { PageHeader } from "@/components/PageHeader";
 export const Inventory = () => {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -103,21 +104,13 @@ export const Inventory = () => {
 
     return (
         <div className="h-full flex flex-col p-2 w-full">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-2">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-codex-texto-primary dark:text-codex-texto-dark-primary">
-                        Inventory
-                    </h1>
-                    <p className="text-sm text-muted-foreground">
-                        Manage physical stock and locations.
-                    </p>
-                </div>
+            <PageHeader icon={Boxes} title="Inventory" description="Manage physical stock and locations." className="mb-2">
                 <div className="flex flex-wrap gap-2">
                     <Button onClick={() => navigate("/inventory/new")}>
                         <Plus className="mr-2 h-4 w-4" /> Add Inventory
                     </Button>
                 </div>
-            </div>
+            </PageHeader>
 
             <div className="bg-card p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
                 <Table

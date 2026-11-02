@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Target } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Button } from "../components/ui/button";
@@ -92,15 +93,7 @@ export const Goals = () => {
 
     return (
         <div className="p-6 space-y-6">
-            <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 border">
-                    <Target className="h-5 w-5 text-primary-text" />
-                </div>
-                <div>
-                    <p className="text-base font-semibold">Goals</p>
-                    <p className="text-sm text-muted-foreground">Set a target for the whole team, then fine-tune each member.</p>
-                </div>
-            </div>
+            <PageHeader icon={Target} title="Goals" description="Set a target for the whole team, then fine-tune each member." />
 
             <div className="bg-card p-6 rounded-lg border shadow-sm space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

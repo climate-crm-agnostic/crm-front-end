@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { saveAs } from "file-saver";
-import { Download } from "lucide-react";
+import { CalendarClock, Download } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
 
 import { Button } from "../components/ui/button";
 import { DateInput } from "../components/ui/date-input";
@@ -73,17 +74,11 @@ export const PayablesAging = () => {
 
     return (
         <div className="h-full flex flex-col p-2 w-full gap-3">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-foreground">Payables Aging</h1>
-                    <p className="text-sm text-muted-foreground">
-                        What is owed to suppliers, grouped by how long it has been past due.
-                    </p>
-                </div>
+            <PageHeader icon={CalendarClock} title="Payables Aging" description="What is owed to suppliers, grouped by how long it has been past due.">
                 <Button variant="outline" onClick={handleExport}>
                     <Download className="mr-2 h-4 w-4" /> Export Excel
                 </Button>
-            </div>
+            </PageHeader>
 
             <HelpNote id="aging" items={[
                 <>Shows every open balance by how many days it is past its due date, as of the date you pick.</>,

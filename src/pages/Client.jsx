@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { RowActions } from "../components/Table";
 import { TableSummary } from "../components/TableSummary";
 import { Button } from "../components/ui/button";
-import { Plus, Download, Upload, X, CheckCircle, AlertCircle } from "lucide-react";
+import { Plus, Download, Upload, X, CheckCircle, AlertCircle, Building2 } from "lucide-react";
 import { getClients, deleteClient, getClientAttributes, importClientsFromExcel, exportClientsExcel } from "../services/clientService";
 import { formatAttributeValue } from "../utils/attributeTypes";
 import { buildFilterParams } from "../utils/attributeFilters";
@@ -11,6 +11,7 @@ import { AttributeFilterBar } from "../components/attributes/AttributeFilterBar"
 import { saveAs } from "file-saver";
 import Swal from "sweetalert2";
 
+import { PageHeader } from "@/components/PageHeader";
 export const Client = () => {
     const [clients, setClients] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -166,15 +167,7 @@ export const Client = () => {
 
     return (
         <div className="h-full flex flex-col p-2 w-full">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-2">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-codex-texto-primary dark:text-codex-texto-dark-primary">
-                        Clients
-                    </h1>
-                    <p className="text-sm text-muted-foreground">
-                        Manage your clients and view their details.
-                    </p>
-                </div>
+            <PageHeader icon={Building2} title="Clients" description="Manage your clients and view their details." className="mb-2">
                 <div className="flex flex-wrap gap-2">
                     <button
                         onClick={handleExportExcel}
@@ -198,7 +191,7 @@ export const Client = () => {
                         <Plus className="mr-2 h-4 w-4" /> Add Client
                     </Button>
                 </div>
-            </div>
+            </PageHeader>
 
             <div className="bg-card p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
                 {availableContactTypes.length > 0 && (

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { LeadBoard } from "../components/leads/LeadBoard";
 import { LeadTable } from "../components/leads/LeadTable";
 import { Plus, TrendingUp, Upload, X, CheckCircle, AlertCircle, LayoutGrid, Table as TableIcon, Download } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { getPipelines } from "../services/pipelineService";
@@ -178,29 +179,7 @@ export const Lead = () => {
             className="h-full flex flex-col w-full overflow-hidden"
             style={{ backgroundColor: "var(--background)", fontFamily: 'var(--font-body)' }}
         >
-            {/* Page header — same pattern as Attributes */}
-            <div
-                className="shrink-0 px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3"
-                style={{ borderBottom: "1px solid var(--border)", backgroundColor: "var(--card)" }}
-            >
-                <div className="flex items-center gap-3 min-w-0">
-                    <div
-                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
-                        style={{ backgroundColor: "rgba(37,91,1,0.12)", border: "1px solid rgba(37,91,1,0.3)" }}
-                    >
-                        <TrendingUp className="h-5 w-5" style={{ color: "var(--secondary-text)" }} />
-                    </div>
-                    <div className="min-w-0">
-                        <p className="text-base font-semibold truncate" style={{ color: "var(--foreground)", fontFamily: 'var(--font-body)' }}>
-                            Sales Pipeline
-                        </p>
-                        <p className="text-xs flex items-center gap-1.5 mt-0.5" style={{ color: "#9b948e" }}>
-                            <span className="h-1.5 w-1.5 rounded-full animate-pulse inline-block shrink-0" style={{ backgroundColor: "var(--secondary)" }} />
-                            Manage your opportunities and move them through stages.
-                        </p>
-                    </div>
-                </div>
-
+            <PageHeader icon={TrendingUp} title="Sales Pipeline" description="Manage your opportunities and move them through stages." className="shrink-0 px-6 py-4">
                 <div className="flex items-center flex-wrap gap-2 w-full sm:w-auto">
                     <div className="flex items-center rounded-lg p-0.5" style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)" }}>
                         <button
@@ -252,7 +231,7 @@ export const Lead = () => {
                         New Opportunity
                     </button>
                 </div>
-            </div>
+            </PageHeader>
 
             <div className="flex-1 min-h-0 min-w-0 flex flex-col">
                 {viewMode === 'kanban' ? (
@@ -268,7 +247,7 @@ export const Lead = () => {
                             className="px-5 py-2.5 flex items-center gap-3 shrink-0"
                             style={{ borderBottom: "1px solid var(--border)", backgroundColor: "var(--background)" }}
                         >
-                            <span className="text-[10px] uppercase tracking-widest font-bold shrink-0" style={{ color: "#9b948e" }}>
+                            <span className="text-xs uppercase tracking-widest font-bold shrink-0" style={{ color: "#9b948e" }}>
                                 Active Pipeline
                             </span>
                             <select

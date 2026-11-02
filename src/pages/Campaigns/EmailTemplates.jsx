@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Mail, Trash2, Edit, Eye, Sparkles } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { Button } from "../../components/ui/button";
@@ -152,15 +153,7 @@ export const EmailTemplates = () => {
 
     return (
         <div className="p-6 space-y-6">
-            <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 border">
-                    <Mail className="h-5 w-5 text-primary-text" />
-                </div>
-                <div>
-                    <p className="text-base font-semibold">Email Templates</p>
-                    <p className="text-sm text-muted-foreground">Reusable content for one-time blasts or the recurring birthday campaign.</p>
-                </div>
-            </div>
+            <PageHeader icon={Mail} title="Email Templates" description="Reusable content for one-time blasts or the recurring birthday campaign." />
 
             <div className="bg-card p-6 rounded-lg border shadow-sm space-y-4">
                 <h3 className="font-medium text-lg border-b pb-2">{editingId ? "Edit Template" : "New Template"}</h3>

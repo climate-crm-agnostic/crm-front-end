@@ -2,11 +2,12 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Table } from "../components/Table";
 import { Button } from "../components/ui/button";
-import { Plus, Download } from "lucide-react";
+import { Plus, Download, Tags } from "lucide-react";
 import { getCategories, deleteCategory, getCategoryAttributes, exportCategoriesExcel } from "../services/categoryService";
 import { saveAs } from "file-saver";
 import Swal from "sweetalert2";
 
+import { PageHeader } from "@/components/PageHeader";
 export const Category = () => {
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -112,15 +113,7 @@ export const Category = () => {
 
     return (
         <div className="h-full flex flex-col p-2 w-full">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-2">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-codex-texto-primary dark:text-codex-texto-dark-primary">
-                        Categories
-                    </h1>
-                    <p className="text-sm text-muted-foreground">
-                        Manage your categories and subcategories.
-                    </p>
-                </div>
+            <PageHeader icon={Tags} title="Categories" description="Manage your categories and subcategories." className="mb-2">
                 <div className="flex flex-wrap gap-2">
                     <button
                         onClick={handleExportExcel}
@@ -135,7 +128,7 @@ export const Category = () => {
                         <Plus className="mr-2 h-4 w-4" /> Add Category
                     </Button>
                 </div>
-            </div>
+            </PageHeader>
 
             <div className="bg-card p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
                 <Table

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { formatDateTime } from "../utils/tz";
 import { ClipboardList, ChevronDown, ChevronUp } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
 import Swal from "sweetalert2";
 import { getAuditLogs } from "@/services/auditLogService";
 import { DateInput } from "@/components/ui/date-input";
@@ -116,22 +117,7 @@ export const AuditLog = () => {
     return (
         <div className="p-6 space-y-6" style={FONT}>
             {/* Header */}
-            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-3">
-                    <div
-                        className="flex h-10 w-10 items-center justify-center rounded-lg"
-                        style={{ backgroundColor: "rgba(37,91,1,0.12)", border: "1px solid rgba(37,91,1,0.3)" }}
-                    >
-                        <ClipboardList className="h-5 w-5" style={{ color: "var(--secondary-text)" }} />
-                    </div>
-                    <div>
-                        <p className="text-base font-semibold" style={{ color: "var(--foreground)" }}>Audit Log</p>
-                        <p className="text-sm" style={{ color: "#9b948e" }}>
-                            All changes made to CRM records, indexed by actor and model.
-                        </p>
-                    </div>
-                </div>
-            </div>
+            <PageHeader icon={ClipboardList} title="Audit Log" description="All changes made to CRM records, indexed by actor and model." />
 
             {/* Filters */}
             <form onSubmit={handleFilter} className="flex flex-wrap gap-3 items-end">

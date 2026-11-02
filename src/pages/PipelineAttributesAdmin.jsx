@@ -14,6 +14,7 @@ import {
     GripVertical, Trash2, Package, GitMerge, AlertCircle 
 } from "lucide-react";
 import Swal from "sweetalert2";
+import { PageHeader } from "@/components/PageHeader";
 
 const FONT = 'var(--font-body)';
 const INK = "var(--foreground)";
@@ -45,7 +46,7 @@ const TypePill = ({ type }) => {
     const c = TYPE_COLORS[type?.toLowerCase()] || TYPE_COLORS.number;
     return (
         <span
-            className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-widest"
+            className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-black uppercase tracking-widest"
             style={{ backgroundColor: c.bg, border: `1px solid ${c.border}`, color: c.color }}
         >
             {type}
@@ -110,7 +111,7 @@ const SortableAttrCard = ({ attr, onEdit, onDelete }) => {
 
             {/* Order badge */}
             <span
-                className="shrink-0 mr-2 text-[9px] font-black tabular-nums flex items-center justify-center rounded"
+                className="shrink-0 mr-2 text-xs font-black tabular-nums flex items-center justify-center rounded"
                 style={{
                     minWidth: "18px", height: "18px",
                     backgroundColor: "rgba(37,91,1,0.12)",
@@ -128,12 +129,12 @@ const SortableAttrCard = ({ attr, onEdit, onDelete }) => {
                         {attr.label}
                     </p>
                     {attr.is_required && (
-                        <span className="text-[9px] font-bold" style={{ color: "var(--destructive)" }} title="Required">●</span>
+                        <span className="text-xs font-bold" style={{ color: "var(--destructive)" }} title="Required">●</span>
                     )}
                 </div>
                 <div className="flex items-center gap-2 mt-1">
                     <TypePill type={attr.type} />
-                    <span className="font-mono text-[9px] truncate opacity-60" style={{ color: MUTED }}>#{attr.name}</span>
+                    <span className="font-mono text-xs truncate opacity-60" style={{ color: MUTED }}>#{attr.name}</span>
                 </div>
             </div>
 
@@ -177,25 +178,25 @@ const PipelineColumn = ({ pipeline, attributes, onAdd, onEdit, onDelete, onDragE
                 <div className="flex items-center gap-3">
                     <div
                         className="flex h-9 w-9 items-center justify-center rounded-xl text-sm font-bold uppercase shadow-inner"
-                        style={{ backgroundColor: "color-mix(in srgb, var(--background) 15%, transparent)", color: LINEN }}
+                        style={{ backgroundColor: "color-mix(in srgb, var(--background) 15%, transparent)", color: "var(--secondary-foreground)" }}
                     >
                         {pipeline.name.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                        <p className="text-xs font-black uppercase tracking-widest leading-none" style={{ color: LINEN }}>
+                        <p className="text-xs font-black uppercase tracking-widest leading-none" style={{ color: "var(--secondary-foreground)" }}>
                             {pipeline.name}
                         </p>
-                        <span className="text-[9px] font-medium" style={{ color: "rgba(255,255,255,0.7)" }}>
+                        <span className="text-xs font-medium" style={{ color: "rgba(255,255,255,0.7)" }}>
                             {attributes.length} {attributes.length === 1 ? 'field' : 'fields'}
                         </span>
                     </div>
                 </div>
                 <button
                     onClick={() => onAdd(pipeline)}
-                    className="flex items-center gap-1.5 px-3.5 h-8 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer shadow-sm"
-                    style={{ backgroundColor: "color-mix(in srgb, var(--background) 20%, transparent)", color: LINEN, border: "1px solid rgba(255,255,255,0.3)" }}
-                    onMouseEnter={e => e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--background) 30%, transparent)"}
-                    onMouseLeave={e => e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--background) 20%, transparent)"}
+                    className="flex items-center gap-1.5 px-3.5 h-8 rounded-full text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shadow-sm"
+                    style={{ backgroundColor: "transparent", color: "var(--color-codex-botones-primary)", border: "1px solid var(--color-codex-botones-primary)" }}
+                    onMouseEnter={e => e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--color-codex-botones-primary) 15%, transparent)"}
+                    onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
                 >
                     <Plus size={12} /> New
                 </button>
@@ -209,8 +210,8 @@ const PipelineColumn = ({ pipeline, attributes, onAdd, onEdit, onDelete, onDragE
                         style={{ borderColor: PEBBLE, color: HINT }}
                     >
                         <Package className="opacity-20 mb-2" size={24} />
-                        <p className="text-[10px] uppercase tracking-widest font-bold">No Fields</p>
-                        <p className="text-[9px] mt-1 opacity-60 italic">Define form fields</p>
+                        <p className="text-xs uppercase tracking-widest font-bold">No Fields</p>
+                        <p className="text-xs mt-1 opacity-60 italic">Define form fields</p>
                     </div>
                 ) : (
                     <DndContext
@@ -379,36 +380,16 @@ export const PipelineAttributesAdmin = () => {
             style={{ backgroundColor: LINEN, fontFamily: FONT }}
         >
             {/* Page header */}
-            <div
-                className="shrink-0 px-8 py-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
-                style={{ borderBottom: `1px solid ${PEBBLE}`, backgroundColor: "var(--card)" }}
-            >
-                <div className="flex items-center gap-4">
-                    <div
-                        className="flex h-12 w-12 items-center justify-center rounded-2xl shadow-sm"
-                        style={{ backgroundColor: "rgba(37,91,1,0.12)", border: `1px solid rgba(37,91,1,0.3)` }}
-                    >
-                        <SlidersHorizontal className="h-6 w-6" style={{ color: "var(--secondary-text)" }} />
-                    </div>
-                    <div>
-                        <h1 className="text-xl font-black tracking-tight" style={{ color: INK }}>
-                            Pipeline Attributes
-                        </h1>
-                        <p className="text-xs flex items-center gap-2 mt-1" style={{ color: HINT }}>
-                            <span className="h-2 w-2 rounded-full animate-pulse" style={{ backgroundColor: OLIVE }} />
-                            Configure custom form fields for each sales process. Drag to reorder.
-                        </p>
-                    </div>
-                </div>
+            <PageHeader icon={SlidersHorizontal} title="Pipeline Attributes" description="Configure custom form fields for each sales process. Drag to reorder." className="shrink-0 px-6 py-4">
                 <div className="flex items-center gap-3">
                      <span
-                        className="text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-sm"
+                        className="text-xs font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-sm"
                         style={{ backgroundColor: "rgba(37,91,1,0.1)", border: `1px solid ${PEBBLE}`, color: "var(--secondary-text)" }}
                     >
                         {pipelines.length} Pipelines
                     </span>
                 </div>
-            </div>
+            </PageHeader>
 
             {/* Kanban board */}
             <div className="flex-1 min-h-0 overflow-hidden p-6 relative group/board">
