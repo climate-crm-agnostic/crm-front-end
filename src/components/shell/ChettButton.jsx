@@ -2,7 +2,7 @@ import { Bot } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useChettAccess } from "@/hooks/useMenu";
 
-/** Chett AI, one tap away from every page: a floating button in the bottom-right corner. */
+/** Chett AI on phones: a floating button above the bottom bar. Desktop has it in the IconRail instead. */
 export function ChettButton() {
     const allowed = useChettAccess();
     const { pathname } = useLocation();
@@ -18,10 +18,13 @@ export function ChettButton() {
             aria-label="Ask Chett AI"
             title="Ask Chett AI"
             // Above the phone's bottom bar; chat toasts stack above this button.
-            className="fixed bottom-20 right-4 z-40 inline-flex h-12 cursor-pointer items-center gap-2 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-lg outline-none transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-ring md:bottom-6 md:right-6"
+            // A round icon that widens to show its label on hover/focus, so it covers less of the page.
+            className="group md:hidden fixed bottom-20 right-4 z-40 inline-flex h-12 min-w-12 cursor-pointer items-center justify-center rounded-full bg-primary px-3.5 text-sm font-semibold text-primary-foreground shadow-lg outline-none transition-all hover:brightness-95 focus-visible:ring-2 focus-visible:ring-ring md:bottom-6 md:right-6"
         >
-            <Bot className="size-5" aria-hidden="true" />
-            <span className="hidden md:inline">Ask Chett</span>
+            <Bot className="size-5 shrink-0" aria-hidden="true" />
+            <span className="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-200 md:group-hover:ml-2 md:group-hover:max-w-28 md:group-hover:opacity-100 md:group-focus-visible:ml-2 md:group-focus-visible:max-w-28 md:group-focus-visible:opacity-100">
+                Ask Chett
+            </span>
         </button>
     );
 }

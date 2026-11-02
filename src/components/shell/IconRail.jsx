@@ -1,14 +1,9 @@
-import { Link } from "react-router-dom";
+import { Bot } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { useChettAccess } from "@/hooks/useMenu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { iconFor, useShellNav } from "./useShellNav";
 
-const Mark = () => (
-    <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5 text-white" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M12 2L2 7l10 5 10-5-10-5z" />
-        <path d="M2 17l10 5 10-5" />
-        <path d="M2 12l10 5 10-5" />
-    </svg>
-);
 
 const hubButton = (active, size) =>
     `grid ${size} place-items-center rounded-[calc(var(--app-radius)*0.7)] transition-colors ${
@@ -21,6 +16,8 @@ const hubButton = (active, size) =>
  */
 export function IconRail() {
     const { hubs, activeHub, hubUrl } = useShellNav();
+    const chettAllowed = useChettAccess();
+    const { pathname } = useLocation();
 
     return (
         <>
@@ -28,8 +25,8 @@ export function IconRail() {
                 aria-label="Main navigation"
                 className="hidden md:flex sticky top-4 z-30 h-[calc(100vh-2rem)] w-[72px] shrink-0 flex-col items-center gap-1.5 rounded-xl border bg-card py-3.5 shadow-sm"
             >
-                <Link to="/" aria-label="Climate by CodeX — home" className="mb-1.5 grid h-10 w-10 place-items-center rounded-xl" style={{ backgroundColor: "#255b01" }}>
-                    <Mark />
+                <Link to="/" aria-label="Climate by CodeX — home" className="mb-1.5 grid h-11 w-11 place-items-center rounded-xl" style={{ backgroundColor: "#255b01" }}>
+                    <img src="/climate-icon.svg" alt="" className="w-8 h-auto" />
                 </Link>
                 {hubs.map((hub, index) => {
                     const Icon = iconFor(hub.icon);
@@ -48,6 +45,26 @@ export function IconRail() {
                         </div>
                     );
                 })}
+
+                {/* Chett lives at the foot of the rail on desktop, so it never covers page content. */}
+                {chettAllowed && (
+                    <>
+                        <div className="flex-1" />
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Link
+                                    to="/chett-ai"
+                                    aria-label="Ask Chett AI"
+                                    aria-current={pathname.startsWith("/chett-ai") ? "page" : undefined}
+                                    className="grid h-[46px] w-[46px] place-items-center rounded-[calc(var(--app-radius)*0.7)] bg-primary text-primary-foreground shadow-sm transition-[filter] hover:brightness-95"
+                                >
+                                    <Bot className="size-5" strokeWidth={1.8} />
+                                </Link>
+                            </TooltipTrigger>
+                            <TooltipContent side="right">Ask Chett</TooltipContent>
+                        </Tooltip>
+                    </>
+                )}
             </nav>
 
             <nav
