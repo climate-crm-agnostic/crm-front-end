@@ -140,19 +140,23 @@ export const CallAudienceFilterBuilder = ({ filters = [], logic = "AND", onChang
                 const ops = OPERATORS_BY_TYPE[attr?.type] || DEFAULT_OPERATORS;
                 return (
                     <div key={index} className="grid grid-cols-1 md:grid-cols-[1fr_130px_1fr_36px] gap-2 items-center">
+                        {/* min-w-0 keeps a long attribute label from forcing the grid
+                            track wider than its 1fr share — without it the row stops
+                            tracking the trigger on open and the popper looks glued
+                            to the previous layout position. */}
                         <Select value={row.field} onValueChange={v => handleFieldChange(index, v)}>
-                            <SelectTrigger className="w-full"><SelectValue placeholder="Select a field" /></SelectTrigger>
+                            <SelectTrigger className="w-full min-w-0"><SelectValue placeholder="Select a field" /></SelectTrigger>
                             <SelectContent>
                                 {fields.map(f => <SelectItem key={f.name} value={f.name}>{f.label}</SelectItem>)}
                             </SelectContent>
                         </Select>
                         <Select value={row.operator} onValueChange={v => updateRow(index, { operator: v, value: UNARY_OPERATORS.has(v) ? "" : row.value })}>
-                            <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                            <SelectTrigger className="w-full min-w-0"><SelectValue /></SelectTrigger>
                             <SelectContent>
                                 {ops.map(([value, label]) => <SelectItem key={value} value={value}>{label}</SelectItem>)}
                             </SelectContent>
                         </Select>
-                        {renderValueInput(row, index)}
+                        <div className="min-w-0">{renderValueInput(row, index)}</div>
                         <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => removeRow(index)}>
                             <X className="h-4 w-4" />
                         </Button>
