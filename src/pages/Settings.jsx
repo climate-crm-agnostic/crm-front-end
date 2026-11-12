@@ -55,17 +55,23 @@ const SecretField = ({ label, maskedValue, fieldKey, pendingValues, onChange }) 
 
 const ConnectNumberCard = () => {
     const { claimedNumber: claimed, setClaimedNumber: setClaimed, loading, configError } = useClaimedNumber();
+    const [phoneNumberType, setPhoneNumberType] = useState("DID");
     const [zone, setZone] = useState("");
     const [numbers, setNumbers] = useState(null); // null = not searched yet
     const [searching, setSearching] = useState(false);
     const [claiming, setClaiming] = useState(null); // phone number being claimed, or null
 
+    const handleTypeChange = (type) => {
+        setPhoneNumberType(type);
+        setNumbers(null); // results from the other type don't apply here
+    };
+
     const handleSearch = async () => {
-        if (!zone.trim()) return;
+        if (phoneNumberType === 'DID' && !zone.trim()) return;
         setSearching(true);
         setNumbers(null);
         try {
-            const data = await searchNumbers(zone.trim());
+            const data = await searchNumbers(phoneNumberType, zone.trim());
             setNumbers(Array.isArray(data.numbers) ? data.numbers : []);
         } catch (err) {
             Swal.fire({ icon: 'error', title: 'Error', text: err.message, toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
@@ -129,24 +135,55 @@ const ConnectNumberCard = () => {
                         </div>
 
                         <div className="space-y-2">
-                            <Label className="text-sm font-semibold">Search by area code</Label>
+                            <Label className="text-sm font-semibold">Number type</Label>
                             <div className="flex gap-2">
-                                <Input
-                                    value={zone}
-                                    onChange={(e) => setZone(e.target.value)}
-                                    placeholder="e.g. 415"
-                                    className="font-mono"
-                                />
-                                <Button variant="outline" onClick={handleSearch} disabled={searching || !zone.trim()}>
-                                    {searching ? "Searching..." : "Search"}
+                                <Button
+                                    type="button" size="sm"
+                                    variant={phoneNumberType === 'DID' ? 'default' : 'outline'}
+                                    onClick={() => handleTypeChange('DID')}
+                                >
+                                    Local (DID)
+                                </Button>
+                                <Button
+                                    type="button" size="sm"
+                                    variant={phoneNumberType === 'TOLL_FREE' ? 'default' : 'outline'}
+                                    onClick={() => handleTypeChange('TOLL_FREE')}
+                                >
+                                    Toll-Free
                                 </Button>
                             </div>
-                            <p className="text-xs text-muted-foreground">Choose carefully — this can't be changed once claimed.</p>
                         </div>
+
+                        {phoneNumberType === 'DID' ? (
+                            <div className="space-y-2">
+                                <Label className="text-sm font-semibold">Search by area code</Label>
+                                <div className="flex gap-2">
+                                    <Input
+                                        value={zone}
+                                        onChange={(e) => setZone(e.target.value)}
+                                        placeholder="e.g. 415"
+                                        className="font-mono"
+                                    />
+                                    <Button variant="outline" onClick={handleSearch} disabled={searching || !zone.trim()}>
+                                        {searching ? "Searching..." : "Search"}
+                                    </Button>
+                                </div>
+                                <p className="text-xs text-muted-foreground">Choose carefully — this can't be changed once claimed.</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                <Button variant="outline" onClick={handleSearch} disabled={searching}>
+                                    {searching ? "Searching..." : "Search available toll-free numbers"}
+                                </Button>
+                                <p className="text-xs text-muted-foreground">Choose carefully — this can't be changed once claimed.</p>
+                            </div>
+                        )}
 
                         {numbers !== null && (
                             numbers.length === 0 ? (
-                                <p className="text-sm text-muted-foreground italic">No numbers available for that area code.</p>
+                                <p className="text-sm text-muted-foreground italic">
+                                    {phoneNumberType === 'DID' ? 'No numbers available for that area code.' : 'No toll-free numbers available right now.'}
+                                </p>
                             ) : (
                                 <div className="space-y-2 max-h-56 overflow-y-auto">
                                     {numbers.map(n => (
