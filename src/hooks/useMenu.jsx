@@ -47,6 +47,8 @@ const MENU_CONFIG = [
             { title: "Team Chat",       url: "/chat",           icon: "MessageCircle", feature: "chat" },
             { title: "Email Templates", url: "/email-template", icon: "Mail",          permission: "app.view_emailtemplate", feature: "email_campaigns" },
             { title: "Campaigns",       url: "/campaign",       icon: "Megaphone",     permission: "app.view_campaign",      feature: "email_campaigns" },
+            { title: "Call Templates",  url: "/call-template",  icon: "PhoneCall",     permission: "app.view_calltemplate",  feature: "ai_calling" },
+            { title: "Call Campaigns",  url: "/call-campaign",  icon: "PhoneCall",     permission: "app.view_callcampaign",  feature: "ai_calling" },
         ],
     },
     {

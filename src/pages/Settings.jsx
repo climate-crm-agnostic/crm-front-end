@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import { getSettings, updateSettings } from "../services/settingsService";
+import { getClaimedNumber, searchNumbers, claimNumber } from "../services/connectNumberService";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Button } from "../components/ui/button";
 import { Switch } from "../components/ui/switch";
 import { Badge } from "../components/ui/badge";
 import { Card, CardHeader } from "../components/SectionCard";
-import { CreditCard } from "lucide-react";
+import { CreditCard, PhoneCall } from "lucide-react";
 import { PlanSummary } from "../components/PlanSummary";
+import { FeatureGate } from "../components/FeatureGate";
 import Swal from "sweetalert2";
 
 const SecretField = ({ label, maskedValue, fieldKey, pendingValues, onChange }) => {
@@ -47,6 +49,125 @@ const SecretField = ({ label, maskedValue, fieldKey, pendingValues, onChange }) 
                 </div>
             )}
         </div>
+    );
+};
+
+const ConnectNumberCard = () => {
+    const [claimed, setClaimed] = useState("");
+    const [loading, setLoading] = useState(true);
+    const [configError, setConfigError] = useState(false);
+    const [zone, setZone] = useState("");
+    const [numbers, setNumbers] = useState(null); // null = not searched yet
+    const [searching, setSearching] = useState(false);
+    const [claiming, setClaiming] = useState(null); // phone number being claimed, or null
+
+    useEffect(() => {
+        const load = async () => {
+            try {
+                const data = await getClaimedNumber();
+                setClaimed(data.claimed_phone_number || "");
+            } catch {
+                setConfigError(true);
+            } finally {
+                setLoading(false);
+            }
+        };
+        load();
+    }, []);
+
+    const handleSearch = async () => {
+        if (!zone.trim()) return;
+        setSearching(true);
+        setNumbers(null);
+        try {
+            const data = await searchNumbers(zone.trim());
+            setNumbers(Array.isArray(data.numbers) ? data.numbers : []);
+        } catch (err) {
+            Swal.fire({ icon: 'error', title: 'Error', text: err.message, toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
+        } finally {
+            setSearching(false);
+        }
+    };
+
+    const handleClaim = async (phoneNumber) => {
+        setClaiming(phoneNumber);
+        try {
+            const data = await claimNumber(phoneNumber);
+            setClaimed(data.claimed_phone_number || phoneNumber);
+            setNumbers(null);
+            setZone("");
+            Swal.fire({ title: "Number claimed", icon: "success", timer: 1500, showConfirmButton: false });
+        } catch (err) {
+            Swal.fire({ icon: 'error', title: 'Error', text: err.message, toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
+        } finally {
+            setClaiming(null);
+        }
+    };
+
+    return (
+        <Card>
+            <CardHeader
+                icon={PhoneCall}
+                title="Outbound AI Calling"
+                right={
+                    <Badge variant={claimed ? "default" : "outline"}>
+                        {claimed ? "Ready" : "No number"}
+                    </Badge>
+                }
+            />
+            <div className="space-y-5 px-6 py-5">
+                <p className="text-sm text-muted-foreground">
+                    Calls go out from one number per organization — search an area code and claim a number. This only needs to be done once.
+                </p>
+
+                {loading ? (
+                    <p className="text-sm text-muted-foreground">Loading...</p>
+                ) : configError ? (
+                    <p className="text-sm text-muted-foreground italic">Outbound AI calling isn't provisioned for this organization yet.</p>
+                ) : (
+                    <>
+                        <div className="space-y-2">
+                            <Label className="text-sm font-semibold">Current number</Label>
+                            <code className="flex h-10 min-w-0 items-center truncate rounded-lg border bg-muted/40 px-3 font-mono text-sm">
+                                {claimed || <span className="font-sans text-muted-foreground">Not claimed yet</span>}
+                            </code>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label className="text-sm font-semibold">Search by area code</Label>
+                            <div className="flex gap-2">
+                                <Input
+                                    value={zone}
+                                    onChange={(e) => setZone(e.target.value)}
+                                    placeholder="e.g. 415"
+                                    className="font-mono"
+                                />
+                                <Button variant="outline" onClick={handleSearch} disabled={searching || !zone.trim()}>
+                                    {searching ? "Searching..." : "Search"}
+                                </Button>
+                            </div>
+                        </div>
+
+                        {numbers !== null && (
+                            numbers.length === 0 ? (
+                                <p className="text-sm text-muted-foreground italic">No numbers available for that area code.</p>
+                            ) : (
+                                <div className="space-y-2 max-h-56 overflow-y-auto">
+                                    {numbers.map(n => (
+                                        <div key={n} className="flex items-center justify-between p-2 border rounded-md">
+                                            <code className="font-mono text-sm">{n}</code>
+                                            <Button size="sm" onClick={() => handleClaim(n)} disabled={!!claiming}>
+                                                {claiming === n ? "Claiming..." : "Claim"}
+                                            </Button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )
+                        )}
+                    </>
+                )}
+            </div>
+        </Card>
     );
 };
 
@@ -189,6 +310,10 @@ export const Settings = () => {
                     </details>
                 </div>
             </Card>
+
+            <FeatureGate feature="ai_calling">
+                <ConnectNumberCard />
+            </FeatureGate>
         </div>
     );
 };

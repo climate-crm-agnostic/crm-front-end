@@ -59,6 +59,8 @@ import { IndicatorDetail } from "../pages/IndicatorDetail";
 import { Tasks } from "../pages/Tasks";
 import { EmailTemplates } from "../pages/Campaigns/EmailTemplates";
 import { CampaignList } from "../pages/Campaigns/CampaignList";
+import { CallCampaignList } from "../pages/CallCampaigns/CallCampaignList";
+import { CallTemplates } from "../pages/CallCampaigns/CallTemplates";
 import { Unsubscribe } from "../pages/Unsubscribe";
 import { ContractSign } from "../pages/ContractSign";
 import { ContractTemplatesPage } from "../pages/ContractTemplatesPage";
@@ -162,6 +164,8 @@ export const RouterApp = () => {
                 <Route path="task" element={<PermissionGuard requiredPermission="app.view_task"><FeatureGate feature="tasks"><Tasks /></FeatureGate></PermissionGuard>} />
                 <Route path="email-template" element={<PermissionGuard requiredPermission="app.view_emailtemplate"><FeatureGate feature="email_campaigns"><EmailTemplates /></FeatureGate></PermissionGuard>} />
                 <Route path="campaign" element={<PermissionGuard requiredPermission="app.view_campaign"><FeatureGate feature="email_campaigns"><CampaignList /></FeatureGate></PermissionGuard>} />
+                <Route path="call-template" element={<PermissionGuard requiredPermission="app.view_calltemplate"><FeatureGate feature="ai_calling"><CallTemplates /></FeatureGate></PermissionGuard>} />
+                <Route path="call-campaign" element={<PermissionGuard requiredPermission="app.view_callcampaign"><FeatureGate feature="ai_calling"><CallCampaignList /></FeatureGate></PermissionGuard>} />
                 <Route path="team" element={<PermissionGuard requiredPermission="app.view_team"><FeatureGate feature="teams"><Teams /></FeatureGate></PermissionGuard>} />
                 <Route path="team/:id" element={<PermissionGuard requiredPermission="app.view_team"><FeatureGate feature="teams"><TeamDetail /></FeatureGate></PermissionGuard>} />
                 <Route path="period" element={<PermissionGuard requiredPermission="app.view_period"><FeatureGate feature="goals"><Periods /></FeatureGate></PermissionGuard>} />
