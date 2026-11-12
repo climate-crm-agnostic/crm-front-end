@@ -12,9 +12,8 @@ export const getClaimedNumber = async () => {
   return res.json();
 };
 
-export const searchNumbers = async (phoneNumberType, zone = '') => {
-  const params = new URLSearchParams({ search: '1', phone_number_type: phoneNumberType });
-  if (zone) params.set('zone', zone);
+export const searchNumbers = async (zone) => {
+  const params = new URLSearchParams({ search: '1', zone });
   const res = await fetch(`${CONNECT_NUMBER_URL}?${params.toString()}`, { headers: getHeaders() });
   if (!res.ok) {
     const err = await res.json().catch(() => null);
