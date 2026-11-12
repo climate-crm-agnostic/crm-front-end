@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Phone, Trash2, PhoneCall, Users, Eye, RotateCcw } from "lucide-react";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
@@ -11,12 +12,15 @@ import {
     getCallCampaigns, createCallCampaign, updateCallCampaign, deleteCallCampaign,
     sendCallCampaignNow, previewRecipients, getSendProgress, getCallCampaignRecipients,
 } from "../../services/callCampaignService";
+import { useClaimedNumber } from "../../hooks/useClaimedNumber";
 import Swal from 'sweetalert2';
 import { formatCount } from "@/lib/utils";
 
 const STATUS_COLORS = { draft: "#9b948e", calling: "#c0622a", called: "var(--secondary-text)" };
 
 export const CallCampaignList = () => {
+    const navigate = useNavigate();
+    const { claimedNumber, loading: numberLoading } = useClaimedNumber();
     const [campaigns, setCampaigns] = useState([]);
     const [templates, setTemplates] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -228,15 +232,32 @@ export const CallCampaignList = () => {
 
     return (
         <div className="p-6 space-y-6">
-            <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 border">
-                    <PhoneCall className="h-5 w-5 text-primary-text" />
+            <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 border">
+                        <PhoneCall className="h-5 w-5 text-primary-text" />
+                    </div>
+                    <div>
+                        <p className="text-base font-semibold">Call Campaigns</p>
+                        <p className="text-sm text-muted-foreground">Outbound calls to Contacts by an AI agent, using a Call Template's prompt.</p>
+                    </div>
                 </div>
-                <div>
-                    <p className="text-base font-semibold">Call Campaigns</p>
-                    <p className="text-sm text-muted-foreground">Outbound calls to Contacts by an AI agent, using a Call Template's prompt.</p>
-                </div>
+                {!numberLoading && claimedNumber && (
+                    <div className="text-right shrink-0">
+                        <Label className="text-xs text-muted-foreground">Calling from</Label>
+                        <code className="block font-mono text-sm">{claimedNumber}</code>
+                    </div>
+                )}
             </div>
+
+            {!numberLoading && !claimedNumber && (
+                <div className="rounded-md border border-amber-300 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/15 px-4 py-3 flex items-center justify-between gap-3">
+                    <p className="text-sm text-amber-800 dark:text-amber-300">
+                        You must claim a phone number before you can run call campaigns.
+                    </p>
+                    <Button size="sm" variant="outline" onClick={() => navigate('/settings')}>Go to Settings</Button>
+                </div>
+            )}
 
             <div className="bg-card p-6 rounded-lg border shadow-sm space-y-4">
                 <h3 className="font-medium text-lg border-b pb-2">New Call Campaign</h3>
@@ -505,11 +526,11 @@ export const CallCampaignList = () => {
                     ) : sendPreviewData && (
                         <div className="space-y-3">
                             <p className="text-sm text-muted-foreground">
-                                This will call <strong>{formatCount(sendPreviewData.recipient_count)}</strong> contact(s) right now, up to {sendPreviewData.max_send_now} per batch. This can't be undone.
+                                This will call <strong>{formatCount(sendPreviewData.recipient_count)}</strong> contact(s) in batches of {sendPreviewData.max_send_now}. This can't be undone.
                             </p>
                             {sendPreviewData.recipient_count > sendPreviewData.max_send_now && (
                                 <div className="rounded-md border border-amber-300 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/15 px-3 py-3 text-sm text-amber-800 dark:text-amber-300">
-                                    This audience has more contacts than the per-batch limit. Starting now will be rejected — narrow the audience filters or launch additional batches afterward for the rest.
+                                    This will be sent in batches of {sendPreviewData.max_send_now}, with a 1-minute pause between batches — it may take a while for large audiences.
                                 </div>
                             )}
                             {sendPreviewData.recipient_count > 0 && (
@@ -528,7 +549,7 @@ export const CallCampaignList = () => {
                         <Button variant="secondary" onClick={() => setSendPreviewCampaign(null)}>Cancel</Button>
                         <Button
                             onClick={confirmSend}
-                            disabled={sendPreviewLoading || !sendPreviewData?.recipient_count || sendPreviewData.recipient_count > sendPreviewData.max_send_now || sendingId === sendPreviewCampaign?.id}
+                            disabled={sendPreviewLoading || !sendPreviewData?.recipient_count || sendingId === sendPreviewCampaign?.id}
                         >
                             {sendingId === sendPreviewCampaign?.id ? 'Starting...' : 'Start Calling'}
                         </Button>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getSettings, updateSettings } from "../services/settingsService";
-import { getClaimedNumber, searchNumbers, claimNumber } from "../services/connectNumberService";
+import { searchNumbers, claimNumber } from "../services/connectNumberService";
+import { useClaimedNumber } from "../hooks/useClaimedNumber";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Button } from "../components/ui/button";
@@ -53,27 +54,11 @@ const SecretField = ({ label, maskedValue, fieldKey, pendingValues, onChange }) 
 };
 
 const ConnectNumberCard = () => {
-    const [claimed, setClaimed] = useState("");
-    const [loading, setLoading] = useState(true);
-    const [configError, setConfigError] = useState(false);
+    const { claimedNumber: claimed, setClaimedNumber: setClaimed, loading, configError } = useClaimedNumber();
     const [zone, setZone] = useState("");
     const [numbers, setNumbers] = useState(null); // null = not searched yet
     const [searching, setSearching] = useState(false);
     const [claiming, setClaiming] = useState(null); // phone number being claimed, or null
-
-    useEffect(() => {
-        const load = async () => {
-            try {
-                const data = await getClaimedNumber();
-                setClaimed(data.claimed_phone_number || "");
-            } catch {
-                setConfigError(true);
-            } finally {
-                setLoading(false);
-            }
-        };
-        load();
-    }, []);
 
     const handleSearch = async () => {
         if (!zone.trim()) return;
@@ -124,12 +109,22 @@ const ConnectNumberCard = () => {
                     <p className="text-sm text-muted-foreground">Loading...</p>
                 ) : configError ? (
                     <p className="text-sm text-muted-foreground italic">Outbound AI calling isn't provisioned for this organization yet.</p>
+                ) : claimed ? (
+                    // Immutable once claimed (see ConnectNumberView.post) — no
+                    // search/claim form to show, just the permanent number.
+                    <div className="space-y-2">
+                        <Label className="text-sm font-semibold">Current number</Label>
+                        <code className="flex h-10 min-w-0 items-center truncate rounded-lg border bg-muted/40 px-3 font-mono text-sm">
+                            {claimed}
+                        </code>
+                        <p className="text-xs text-muted-foreground">This number is permanent and can't be changed once claimed.</p>
+                    </div>
                 ) : (
                     <>
                         <div className="space-y-2">
                             <Label className="text-sm font-semibold">Current number</Label>
                             <code className="flex h-10 min-w-0 items-center truncate rounded-lg border bg-muted/40 px-3 font-mono text-sm">
-                                {claimed || <span className="font-sans text-muted-foreground">Not claimed yet</span>}
+                                <span className="font-sans text-muted-foreground">Not claimed yet</span>
                             </code>
                         </div>
 
@@ -146,6 +141,7 @@ const ConnectNumberCard = () => {
                                     {searching ? "Searching..." : "Search"}
                                 </Button>
                             </div>
+                            <p className="text-xs text-muted-foreground">Choose carefully — this can't be changed once claimed.</p>
                         </div>
 
                         {numbers !== null && (

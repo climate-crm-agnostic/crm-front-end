@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { PhoneCall, Trash2, Edit, Sparkles } from "lucide-react";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { Textarea } from "../../components/ui/textarea";
 import { Button } from "../../components/ui/button";
 import { getCallTemplates, createCallTemplate, updateCallTemplate, deleteCallTemplate, polishCallPrompt } from "../../services/callTemplateService";
+import { useClaimedNumber } from "../../hooks/useClaimedNumber";
 import Swal from 'sweetalert2';
 
 const emptyForm = { name: "", prompt: "" };
@@ -17,6 +19,8 @@ const emptyForm = { name: "", prompt: "" };
  * not rendered as a document.
  */
 export const CallTemplates = () => {
+    const navigate = useNavigate();
+    const { claimedNumber, loading: numberLoading } = useClaimedNumber();
     const [templates, setTemplates] = useState([]);
     const [loading, setLoading] = useState(true);
     const [form, setForm] = useState(emptyForm);
@@ -51,6 +55,18 @@ export const CallTemplates = () => {
 
     const handleSave = async () => {
         if (!form.name.trim() || !form.prompt.trim()) return;
+
+        const confirmResult = await Swal.fire({
+            title: 'Use this prompt for AI calls?',
+            text: "Make sure this is exactly how you want the AI agent to speak on every call that uses this template — it's sent verbatim on every turn of the conversation.",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: 'var(--secondary)',
+            cancelButtonColor: '#9b948e',
+            confirmButtonText: 'Yes, save it',
+        });
+        if (!confirmResult.isConfirmed) return;
+
         setSaving(true);
         try {
             if (editingId) {
@@ -110,6 +126,16 @@ export const CallTemplates = () => {
                 </div>
             </div>
 
+            {!numberLoading && !claimedNumber && (
+                <div className="rounded-md border border-amber-300 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/15 px-4 py-3 flex items-center justify-between gap-3">
+                    <p className="text-sm text-amber-800 dark:text-amber-300">
+                        You must claim a phone number before creating a call template.
+                    </p>
+                    <Button size="sm" variant="outline" onClick={() => navigate('/settings')}>Go to Settings</Button>
+                </div>
+            )}
+
+            {(numberLoading || claimedNumber) && (
             <div className="bg-card p-6 rounded-lg border shadow-sm space-y-4">
                 <h3 className="font-medium text-lg border-b pb-2">{editingId ? "Edit Template" : "New Template"}</h3>
                 <div className="space-y-2">
@@ -145,6 +171,7 @@ export const CallTemplates = () => {
                     {editingId && <Button type="button" variant="outline" onClick={handleCancel}>Cancel</Button>}
                 </div>
             </div>
+            )}
 
             <div className="bg-card p-6 rounded-lg border shadow-sm space-y-2">
                 <h3 className="font-medium text-lg border-b pb-2">All Templates</h3>
