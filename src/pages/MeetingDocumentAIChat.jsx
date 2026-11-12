@@ -27,22 +27,103 @@ function parseInline(text, key) {
     return parts;
 }
 
-const Bubble = ({ role, content }) => {
+// Splits a message into paragraph-like chunks on blank lines — the model
+// separates distinct ideas this way (see meeting_document_prompt.py); used
+// both to render real paragraph spacing inside one bubble and, for longer
+// assistant turns, to show each chunk as its own stacked bubble instead of
+// one dense block (see AssistantBubbles below). Nothing is cut — every
+// chunk is still rendered in full, just split for readability.
+const LIST_MARKER = /^\s*(?:[-*]|\d+\.)\s+/;
+
+function splitIntoBlocks(text) {
+    return text.split(/\n{2,}/).map(b => b.trim()).filter(Boolean);
+}
+
+// Renders a single chunk: a real <ul>/<ol> for the trailing run of list-item
+// lines, plain text (line breaks preserved, not collapsed by the browser)
+// for whatever comes before it. Looking at a trailing run rather than
+// requiring the whole block to be a list also covers the common "intro
+// sentence immediately followed by its list" pattern, e.g. "Here are a few
+// options:\n- A\n- B", with no blank line between the sentence and the list.
+function renderTextLines(lines, keyPrefix) {
+    return lines.map((l, i) => (
+        <span key={i}>
+            {parseInline(l, `${keyPrefix}-l${i}`)}
+            {i < lines.length - 1 && <br />}
+        </span>
+    ));
+}
+
+function renderList(lines, key) {
+    const ordered = /^\s*\d+\./.test(lines[0]);
+    const Tag = ordered ? "ol" : "ul";
+    return (
+        <Tag key={`${key}-list`} className={`${ordered ? "list-decimal" : "list-disc"} pl-5 space-y-1`}>
+            {lines.map((l, i) => (
+                <li key={i}>{parseInline(l.replace(LIST_MARKER, ""), `${key}-li${i}`)}</li>
+            ))}
+        </Tag>
+    );
+}
+
+function renderBlockContent(block, key) {
+    const lines = block.split("\n").map(l => l.trim()).filter(Boolean);
+
+    let listStart = lines.length;
+    while (listStart > 0 && LIST_MARKER.test(lines[listStart - 1])) listStart--;
+    const hasList = lines.length - listStart > 1; // need 2+ items to count as a real list
+
+    if (!hasList) {
+        return <div key={key}>{renderTextLines(lines, key)}</div>;
+    }
+
+    const textLines = lines.slice(0, listStart);
+    const listLines = lines.slice(listStart);
+    return (
+        <div key={key}>
+            {textLines.length > 0 && <div className="mb-1">{renderTextLines(textLines, key)}</div>}
+            {renderList(listLines, key)}
+        </div>
+    );
+}
+
+const Bubble = ({ role, content, isLast = true, delay = 0 }) => {
     const isUser = role === "user";
     return (
-        <div className={`flex ${isUser ? "justify-end" : "justify-start"} mb-3`}>
+        <div
+            className={`flex ${isUser ? "justify-end" : "justify-start"}`}
+            style={{
+                marginBottom: isLast ? 12 : 4,
+                animation: isUser ? undefined : "meeting-doc-ai-rise 0.22s ease-out both",
+                animationDelay: `${delay}ms`,
+            }}
+        >
             <div style={{
                 maxWidth: "80%", padding: "10px 14px",
                 borderRadius: isUser ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
                 background: isUser ? "var(--primary)" : "var(--card)",
                 color: isUser ? "var(--primary-foreground)" : "var(--foreground)",
                 border: isUser ? "none" : "1px solid var(--border)",
-                fontSize: 14, wordBreak: "break-word", boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
+                fontSize: 14, lineHeight: 1.55, wordBreak: "break-word", boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
             }}>
-                {parseInline(content, role)}
+                {renderBlockContent(content, role)}
             </div>
         </div>
     );
+};
+
+// Longer assistant turns (several blank-line-separated ideas) render as
+// several stacked bubbles with a slight staggered fade-in instead of one
+// tall, dense box — same full content, just chunked like a real person
+// sending a few short messages in a row. Single-paragraph replies (most
+// turns, after the prompt change to ask one question at a time) still
+// render as one bubble.
+const AssistantBubbles = ({ content }) => {
+    const blocks = splitIntoBlocks(content);
+    if (blocks.length <= 1) return <Bubble role="assistant" content={content} />;
+    return blocks.map((block, i) => (
+        <Bubble key={i} role="assistant" content={block} isLast={i === blocks.length - 1} delay={i * 80} />
+    ));
 };
 
 // Tap-to-accept/decline buttons for an AI suggestion grounded in the Lead's
@@ -450,6 +531,10 @@ export const MeetingDocumentAIChat = () => {
                     0%, 80%, 100% { transform: scale(0.7); opacity: 0.4; }
                     40% { transform: scale(1); opacity: 1; }
                 }
+                @keyframes meeting-doc-ai-rise {
+                    from { opacity: 0; transform: translateY(4px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
             `}</style>
 
             <div className="flex items-center gap-3 mb-4">
@@ -469,7 +554,9 @@ export const MeetingDocumentAIChat = () => {
                     <IntroMessage outputFormat={outputFormat} />
                     {messages.map((m, i) => (
                         <div key={i}>
-                            <Bubble role={m.role} content={m.content} />
+                            {m.role === "assistant"
+                                ? <AssistantBubbles content={m.content} />
+                                : <Bubble role={m.role} content={m.content} />}
                             {m.documentPreview && (
                                 <DocumentPreviewCard
                                     title={m.documentPreview.title}
