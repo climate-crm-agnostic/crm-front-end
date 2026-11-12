@@ -142,8 +142,10 @@ const ConnectNumberCard = () => {
                                 <Label className="text-xs text-muted-foreground">Area code (optional)</Label>
                                 <Input
                                     value={zone}
-                                    onChange={(e) => setZone(e.target.value)}
+                                    onChange={(e) => setZone(e.target.value.replace(/\D/g, '').slice(0, 3))}
                                     placeholder="e.g. 415"
+                                    inputMode="numeric"
+                                    maxLength={3}
                                     className="font-mono"
                                 />
                             </div>
