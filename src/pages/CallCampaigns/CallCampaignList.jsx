@@ -425,6 +425,9 @@ export const CallCampaignList = () => {
                                                 {r.status === 'completed' && r.duration_seconds != null && (
                                                     <div className="text-xs text-muted-foreground">{r.duration_seconds}s</div>
                                                 )}
+                                                {r.status === 'completed' && r.recording_url && (
+                                                    <audio controls src={r.recording_url} className="h-6 mt-1 max-w-[180px]" />
+                                                )}
                                             </div>
                                             <span
                                                 className="shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold"
