@@ -1236,3 +1236,16 @@ Records the lending and return of assets to specific personnel. Creating an assi
 | `state` | String | State/Province |
 | `country` | String | Country |
 | `attributes` | JSONB | Dynamic key-value attributes |
+
+## AI Credits (Chett AI)
+Credits are measured and displayed only (no blocking, no alerts).
+#### Get AI Credits
+**GET** `/api/ai/credits/` (requires the `ai` plan feature and `app.view_aiconversation`; 403 otherwise)
+```json
+{"enabled": true, "tier": "full", "unit": "credits",
+ "period": {"start": "2026-11-01", "end": "2026-11-30", "label": "November 2026", "timezone": "UTC"},
+ "pool": 4000, "used": 1234.5, "remaining": 2765.5, "percent": 30.9}
+```
+`percent` is not capped at 100. When `pool` is 0, `enabled` is `false` and `percent` is `null`.
+#### Chat response
+**POST** `/api/ai/chat/` also returns `credits` (same object plus `message_credits`). The chat is a single POST, so the UI polls `GET /api/ai/credits/` every ~3 s while a reply is pending.

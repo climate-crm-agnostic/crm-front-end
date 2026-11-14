@@ -14,6 +14,8 @@ import { KpiCard } from "@/components/dashboard/KpiCard";
 import { RevenueChart } from "@/components/dashboard/RevenueChart";
 import { GoalGauge } from "@/components/dashboard/GoalGauge";
 import { LatestWins } from "@/components/dashboard/LatestWins";
+import { CreditsCard } from "@/components/dashboard/CreditsCard";
+import { getAICredits } from "@/services/aiService";
 import { formatCount } from "@/lib/utils";
 
 const fetchCount = async (endpoint) => {
@@ -399,6 +401,12 @@ export const Dashboard = () => {
     const canSeeGoals = isFeatureEnabled("goals") &&
         (user?.is_superuser === true || (user?.permissions || []).includes("app.view_goal"));
 
+    const [credits, setCredits] = useState(null);
+    const [creditsLoading, setCreditsLoading] = useState(canSeeChett);
+    useEffect(() => {
+        if (!canSeeChett) { setCreditsLoading(false); return; }
+        getAICredits().then(setCredits).catch(() => setCredits(null)).finally(() => setCreditsLoading(false));
+    }, [canSeeChett]);
     useEffect(() => {
         getDashboardSummary().then(setSummary).catch(() => setSummary(null)).finally(() => setSummaryLoading(false));
     }, []);
@@ -552,6 +560,7 @@ export const Dashboard = () => {
                 </section>
             </div>
 
+            {canSeeChett && <CreditsCard credits={credits} loading={creditsLoading} />}
             <div className="space-y-8 pt-2">
                 {canSeePayables && <PayablesWidget navigate={navigate} />}
 

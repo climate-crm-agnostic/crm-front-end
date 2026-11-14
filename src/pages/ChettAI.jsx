@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import * as XLSX from "xlsx";
+import { CreditsBar } from "@/components/CreditsBar";
 import {
     ResponsiveContainer, BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
     XAxis, YAxis, Tooltip, CartesianGrid, Legend,
 } from "recharts";
 import {
-    sendMessage, getConversations, getConversation,
+    sendMessage, getAICredits, getConversations, getConversation,
     renameConversation, deleteConversation,
 } from "../services/aiService";
 
@@ -398,6 +399,7 @@ export const ChettAI = () => {
     // Chat input
     const [input, setInput] = useState("");
     const [sending, setSending] = useState(false);
+    const [credits, setCredits] = useState(null);
 
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
@@ -411,6 +413,17 @@ export const ChettAI = () => {
             .finally(() => setConvLoading(false));
     }, []);
 
+    // Credits bar: initial load, then poll while a reply is in flight (the chat is a single POST, no stream).
+    useEffect(() => {
+        getAICredits().then(setCredits).catch(() => setCredits(null));
+    }, []);
+    useEffect(() => {
+        if (!sending) return undefined;
+        const timer = setInterval(() => {
+            getAICredits().then(setCredits).catch(() => { });
+        }, 3000);
+        return () => clearInterval(timer);
+    }, [sending]);
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages, sending]);
@@ -445,6 +458,7 @@ export const ChettAI = () => {
 
         try {
             const res = await sendMessage(text, convId);
+            if (res.credits) setCredits(res.credits);
             setMessages(prev => [...prev, { role: "assistant", content: res.assistant_message, reports: res.reports || [], suggestions: res.suggestions || [] }]);
 
             if (!convId) {
@@ -677,12 +691,15 @@ export const ChettAI = () => {
                         minHeight: 49,
                         display: "flex",
                         alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: 16,
                     }}>
                         {convName ? (
                             <span style={{ fontSize: 15, fontWeight: 600, color: "var(--foreground)" }}>{convName}</span>
                         ) : (
                             <span style={{ fontSize: 14, color: "var(--muted-foreground)" }}>Start a new conversation</span>
                         )}
+                        <CreditsBar credits={credits} />
                     </div>
 
                     {/* Messages */}
