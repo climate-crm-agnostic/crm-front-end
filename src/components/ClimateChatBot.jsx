@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { CreditsMeter } from "@/components/CreditsMeter";
+import { refreshAICredits } from "@/hooks/useAICredits";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import * as XLSX from "xlsx";
@@ -286,6 +288,7 @@ export const ClimateChatBot = () => {
             setMessages(prev => [...prev, { role: "assistant", content: `Error: ${err.message}` }]);
         } finally {
             setLoading(false);
+            refreshAICredits();
             setTimeout(() => inputRef.current?.focus(), 50);
         }
     }, [input, loading, convId]);
@@ -496,6 +499,7 @@ export const ClimateChatBot = () => {
                                     <SendIcon />
                                 </button>
                             </div>
+                            <CreditsMeter style={{ padding: "0 14px 8px", background: "var(--card)", flexShrink: 0 }} />
                         </>
                     )}
 

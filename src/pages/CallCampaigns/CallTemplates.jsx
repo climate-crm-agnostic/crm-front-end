@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { CreditsMeter } from "@/components/CreditsMeter";
+import { refreshAICredits } from "@/hooks/useAICredits";
 import { useNavigate } from "react-router-dom";
 import { PhoneCall, Trash2, Edit, Sparkles } from "lucide-react";
 import { Input } from "../../components/ui/input";
@@ -93,6 +95,7 @@ export const CallTemplates = () => {
             Swal.fire({ icon: 'error', title: 'Error', text: err.message, toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
         } finally {
             setPolishing(false);
+            refreshAICredits();
         }
     };
 
@@ -162,6 +165,7 @@ export const CallTemplates = () => {
                         placeholder="You are a friendly agent calling on behalf of... Your goal is to..."
                         rows={6}
                     />
+                    <CreditsMeter />
                     <p className="text-xs text-muted-foreground">Sent to the AI agent as its system prompt on every call that uses this template.</p>
                 </div>
                 <div className="flex gap-2">

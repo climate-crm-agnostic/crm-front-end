@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import * as XLSX from "xlsx";
-import { CreditsBar } from "@/components/CreditsBar";
+import { CreditsMeter } from "@/components/CreditsMeter";
+import { refreshAICredits, publishAICredits } from "@/hooks/useAICredits";
 import {
     ResponsiveContainer, BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
     XAxis, YAxis, Tooltip, CartesianGrid, Legend,
 } from "recharts";
 import {
-    sendMessage, getAICredits, getConversations, getConversation,
+    sendMessage, getConversations, getConversation,
     renameConversation, deleteConversation,
 } from "../services/aiService";
 
@@ -399,7 +400,6 @@ export const ChettAI = () => {
     // Chat input
     const [input, setInput] = useState("");
     const [sending, setSending] = useState(false);
-    const [credits, setCredits] = useState(null);
 
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
@@ -413,15 +413,10 @@ export const ChettAI = () => {
             .finally(() => setConvLoading(false));
     }, []);
 
-    // Credits bar: initial load, then poll while a reply is in flight (the chat is a single POST, no stream).
-    useEffect(() => {
-        getAICredits().then(setCredits).catch(() => setCredits(null));
-    }, []);
+    // While a reply is in flight, poll so the meter moves as soon as the ledger records usage.
     useEffect(() => {
         if (!sending) return undefined;
-        const timer = setInterval(() => {
-            getAICredits().then(setCredits).catch(() => { });
-        }, 3000);
+        const timer = setInterval(refreshAICredits, 3000);
         return () => clearInterval(timer);
     }, [sending]);
     useEffect(() => {
@@ -458,7 +453,7 @@ export const ChettAI = () => {
 
         try {
             const res = await sendMessage(text, convId);
-            if (res.credits) setCredits(res.credits);
+            publishAICredits(res.credits);
             setMessages(prev => [...prev, { role: "assistant", content: res.assistant_message, reports: res.reports || [], suggestions: res.suggestions || [] }]);
 
             if (!convId) {
@@ -482,6 +477,7 @@ export const ChettAI = () => {
             setMessages(prev => [...prev, { role: "assistant", content: `Error: ${err.message}` }]);
         } finally {
             setSending(false);
+            refreshAICredits();
         }
     }, [input, sending, convId]);
 
@@ -699,7 +695,6 @@ export const ChettAI = () => {
                         ) : (
                             <span style={{ fontSize: 14, color: "var(--muted-foreground)" }}>Start a new conversation</span>
                         )}
-                        <CreditsBar credits={credits} />
                     </div>
 
                     {/* Messages */}
@@ -861,7 +856,8 @@ export const ChettAI = () => {
                                 <SendIcon />
                             </button>
                         </div>
-                        <p style={{ fontSize: 11, color: "var(--muted-foreground)", textAlign: "center", marginTop: 8 }}>
+                        <CreditsMeter style={{ maxWidth: 800, margin: "6px auto 0" }} />
+                        <p style={{ fontSize: 11, color: "var(--muted-foreground)", textAlign: "center", marginTop: 6 }}>
                             Chett AI can make mistakes. Verify important data before acting on it.
                         </p>
                     </div>

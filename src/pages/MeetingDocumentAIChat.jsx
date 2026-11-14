@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { CreditsMeter } from "@/components/CreditsMeter";
+import { refreshAICredits } from "@/hooks/useAICredits";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Sparkles, FileText, Presentation, Eye, Download } from "lucide-react";
 import { Button } from "../components/ui/button";
@@ -476,6 +478,7 @@ export const MeetingDocumentAIChat = () => {
             setMessages(prev => [...prev, { role: "assistant", content: `Error: ${err.message}` }]);
         } finally {
             setSending(false);
+            refreshAICredits();
         }
     };
 
@@ -614,6 +617,7 @@ export const MeetingDocumentAIChat = () => {
                         Send
                     </Button>
                 </div>
+                <CreditsMeter className="mt-1.5" />
                 <p className="text-[11px] text-muted-foreground text-center mt-1">
                     This meeting agenda was drafted with AI assistance — review it before sharing with attendees.
                 </p>
