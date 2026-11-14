@@ -1,5 +1,5 @@
 import { BarChart3 } from "lucide-react";
-import { formatCount } from "@/lib/utils";
+import { formatCount, formatDecimal } from "@/lib/utils";
 import { useAICredits } from "@/hooks/useAICredits";
 
 export const CREDITS_METER_LABEL = "AI credits used this month";
@@ -8,7 +8,7 @@ export const CREDITS_METER_LABEL = "AI credits used this month";
 export const CreditsMeter = ({ className = "", style }) => {
     const { credits } = useAICredits();
     if (!credits || credits.enabled === false || !(Number(credits.pool) > 0)) return null;
-    const used = Math.round(Number(credits.used) || 0);
+    const used = Number(credits.used) || 0;
     const pool = Number(credits.pool);
     return (
         <div
@@ -20,7 +20,7 @@ export const CreditsMeter = ({ className = "", style }) => {
             style={style}
         >
             <BarChart3 className="h-3 w-3 shrink-0" aria-hidden="true" />
-            <span>{`${formatCount(used)} / ${formatCount(pool)}`}</span>
+            <span>{`${formatDecimal(used)} / ${formatCount(pool)}`}</span>
         </div>
     );
 };

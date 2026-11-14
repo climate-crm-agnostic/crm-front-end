@@ -1,6 +1,6 @@
 import { CreditsBar } from "@/components/CreditsBar";
 import { CREDITS_LABEL, formatPercent } from "@/lib/credits";
-import { formatCount } from "@/lib/utils";
+import { formatCount, formatDecimal } from "@/lib/utils";
 
 const Stat = ({ label, value }) => (
     <div className="min-w-0">
@@ -22,7 +22,7 @@ export const CreditsCard = ({ credits, loading }) => {
                 <>
                     <div className="mt-4 grid grid-cols-3 gap-4">
                         <Stat label="Pool" value={formatCount(credits.pool)} />
-                        <Stat label="Credits consumed" value={formatCount(credits.used)} />
+                        <Stat label="Credits consumed" value={formatDecimal(credits.used)} />
                         <Stat label="Consumed" value={formatPercent(credits.percent)} />
                     </div>
                     <CreditsBar credits={credits} className="mt-4 max-w-none" />

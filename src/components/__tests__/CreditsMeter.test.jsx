@@ -11,11 +11,11 @@ const credits = (over = {}) => ({ enabled: true, pool: 25000, used: 994.28, rema
 describe("CreditsMeter", () => {
     beforeEach(() => { resetAICredits(); getAICredits.mockReset(); });
 
-    it("shows only used / pool, used rounded to an integer", async () => {
+    it("shows only used (2 decimals) / pool", async () => {
         getAICredits.mockResolvedValue(credits());
         render(<CreditsMeter />);
         const meter = await screen.findByTestId("credits-meter");
-        expect(meter.textContent).toBe("994 / 25,000");
+        expect(meter.textContent).toBe("994.28 / 25,000");
         expect(meter.getAttribute("aria-label")).toBe("AI credits used this month");
     });
 
@@ -36,18 +36,18 @@ describe("CreditsMeter", () => {
     it("updates every mounted meter after refreshAICredits()", async () => {
         getAICredits.mockResolvedValueOnce(credits({ used: 10 }));
         render(<><CreditsMeter /><CreditsMeter /></>);
-        await waitFor(() => expect(screen.getAllByTestId("credits-meter")[0].textContent).toBe("10 / 25,000"));
+        await waitFor(() => expect(screen.getAllByTestId("credits-meter")[0].textContent).toBe("10.00 / 25,000"));
         getAICredits.mockResolvedValue(credits({ used: 47.6, remaining: 24952.4 }));
         await act(async () => { await refreshAICredits(); });
-        screen.getAllByTestId("credits-meter").forEach((m) => expect(m.textContent).toBe("48 / 25,000"));
+        screen.getAllByTestId("credits-meter").forEach((m) => expect(m.textContent).toBe("47.60 / 25,000"));
     });
 
     it("keeps the last value if a refresh fails", async () => {
         getAICredits.mockResolvedValueOnce(credits({ used: 10 }));
         render(<CreditsMeter />);
-        await screen.findByText("10 / 25,000");
+        await screen.findByText("10.00 / 25,000");
         getAICredits.mockRejectedValue(new Error("boom"));
         await act(async () => { await refreshAICredits(); });
-        expect(screen.getByTestId("credits-meter").textContent).toBe("10 / 25,000");
+        expect(screen.getByTestId("credits-meter").textContent).toBe("10.00 / 25,000");
     });
 });

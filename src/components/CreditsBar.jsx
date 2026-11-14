@@ -1,5 +1,5 @@
 import { Progress } from "@/components/ui/progress";
-import { formatCount } from "@/lib/utils";
+import { formatCount, formatDecimal } from "@/lib/utils";
 import { CREDITS_LABEL, formatPercent } from "@/lib/credits";
 
 /** Context-bar style meter of AI credits used vs the monthly pool. Measure and display only. */
@@ -7,7 +7,7 @@ export const CreditsBar = ({ credits, className = "" }) => {
     if (!credits || credits.enabled === false || !(Number(credits.pool) > 0)) return null;
     const percent = Number(credits.percent);
     const visual = Number.isFinite(percent) ? Math.min(Math.max(percent, 0), 100) : 0;
-    const text = `${formatCount(credits.used)} / ${formatCount(credits.pool)}`;
+    const text = `${formatDecimal(credits.used)} / ${formatCount(credits.pool)}`;
     return (
         <div
             data-testid="credits-bar"

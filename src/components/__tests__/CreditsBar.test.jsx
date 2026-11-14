@@ -8,7 +8,7 @@ const base = { enabled: true, pool: 2000, used: 500.4, remaining: 1499.6, percen
 describe("CreditsBar", () => {
     it("shows used / pool and the percentage", () => {
         render(<CreditsBar credits={base} />);
-        expect(screen.getByText("Credits: 500 / 2,000")).toBeTruthy();
+        expect(screen.getByText("Credits: 500.40 / 2,000")).toBeTruthy();
         expect(screen.getByText("25.0%")).toBeTruthy();
     });
     it("shows the real percentage above 100 and fills the bar at 100", () => {
@@ -28,7 +28,7 @@ describe("CreditsCard", () => {
         render(<CreditsCard credits={base} />);
         expect(screen.getByText("Credits")).toBeTruthy();
         expect(screen.getByTestId("credits-pool").textContent).toBe("2,000");
-        expect(screen.getByTestId("credits-credits-consumed").textContent).toBe("500");
+        expect(screen.getByTestId("credits-credits-consumed").textContent).toBe("500.40");
         expect(screen.getByTestId("credits-consumed").textContent).toBe("25.0%");
     });
     it("is hidden when the tier has no AI", () => {
