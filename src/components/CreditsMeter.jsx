@@ -1,6 +1,9 @@
 import { BarChart3 } from "lucide-react";
 import { formatCount, formatDecimal } from "@/lib/utils";
 import { useAICredits } from "@/hooks/useAICredits";
+import { creditStatus } from "@/lib/credits";
+
+const TONE = { ok: "text-muted-foreground", warning: "text-amber-600", exhausted: "font-semibold text-destructive" };
 
 export const CREDITS_METER_LABEL = "AI credits used this month";
 
@@ -16,7 +19,8 @@ export const CreditsMeter = ({ className = "", style }) => {
             role="status"
             aria-label={CREDITS_METER_LABEL}
             title={CREDITS_METER_LABEL}
-            className={`flex items-center gap-1 text-[11px] leading-4 text-muted-foreground ${className}`}
+            data-status={creditStatus(credits)}
+            className={`flex items-center gap-1 text-[11px] leading-4 ${TONE[creditStatus(credits)]} ${className}`}
             style={style}
         >
             <BarChart3 className="h-3 w-3 shrink-0" aria-hidden="true" />

@@ -47,15 +47,14 @@ export const deleteConversation = async (id) => {
     return true;
 };
 
-export const getMyAIUsage = async () => {
-    const res = await fetch(`${API_URL}/me/ai-usage/`, { headers: getHeaders() });
-    if (!res.ok) throw new Error("Failed to fetch AI usage");
-    return res.json();
-};
 // Monthly AI credit usage for the whole account: { enabled, pool, used, remaining, percent, period, ... }.
 // Throws on 403 (plan without AI / no permission) so callers can hide the widgets.
 export const getAICredits = async () => {
     const res = await fetch(`${base}/credits/`, { headers: getHeaders() });
-    if (!res.ok) throw new Error("Failed to fetch AI credits");
+    if (!res.ok) {
+        const err = new Error("Failed to fetch AI credits");
+        err.status = res.status;
+        throw err;
+    }
     return res.json();
 };

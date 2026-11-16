@@ -1247,5 +1247,14 @@ Credits are measured and displayed only (no blocking, no alerts).
  "pool": 4000, "used": 1234.5, "remaining": 2765.5, "percent": 30.9}
 ```
 `percent` is not capped at 100. When `pool` is 0, `enabled` is `false` and `percent` is `null`.
+The pool is per ACCOUNT: `pool = base_pool + extra` (administrator top-ups of the current month). `status` is
+`ok`, `warning` (>= `warn_percent`, 80), `exhausted` (used >= pool) or `disabled` (no pool).
+
+**Credit gate.** At `exhausted` every AI endpoint (Chett, contracts AI chat/preview/PDF upload, meeting documents chat/preview, supplier-bill scan, email/template/call-prompt Polish) answers
+**402** `{"detail": "...", "credits_exhausted": true, "credits": {...}}` before calling Bedrock. Superusers are blocked too.
+#### Top-ups (administrators: superuser or `app.add_aicredittopup`)
+**GET** `/api/ai/credits/topups/` lists this month's top-ups. **POST** `/api/ai/credits/topups/` `{"credits": 500, "note": "..."}` (0 < credits <= 1,000,000) adds credits to the account pool for the current month (append-only) and returns the new summary (201).
+#### Consumption per user (same permission)
+**GET** `/api/ai/credits/users/?period=YYYY-MM` returns `{period, total, users: [{user_id, username, credits, share}]}`.
 #### Chat response
 **POST** `/api/ai/chat/` also returns `credits` (same object plus `message_credits`). The chat is a single POST, so the UI polls `GET /api/ai/credits/` every ~3 s while a reply is pending.

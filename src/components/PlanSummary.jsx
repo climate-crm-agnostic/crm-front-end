@@ -2,9 +2,10 @@ import { BadgeCheck, Check, X } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Card, CardHeader } from "@/components/SectionCard";
 import { formatCount } from "@/lib/utils";
+import { AI_SHORT } from "@/lib/brand";
 
 const FEATURE_LABELS = {
-    ai: "Chett AI", webhooks: "Webhooks", inventory: "Inventory", assets: "Asset tracking",
+    ai: AI_SHORT, webhooks: "Webhooks", inventory: "Inventory", assets: "Asset tracking",
     audit_trail: "Audit trail", stripe: "Stripe integration", max_users: "Users", max_pipelines: "Pipelines",
 };
 const titleCase = (key) => key.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase());

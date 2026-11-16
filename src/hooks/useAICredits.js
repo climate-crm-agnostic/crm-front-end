@@ -13,18 +13,32 @@ export const publishAICredits = (credits) => {
     if (credits && typeof credits === "object") { state = credits; emit(); }
 };
 
-/** Re-fetch the credits. Never throws: on failure (e.g. 403, offline) the last known value stays. */
-export const refreshAICredits = async () => {
-    try {
-        publishAICredits(await getAICredits());
-    } catch { /* silent: the meter just stays as is (or hidden) */ }
+let inflight = null;
+
+/**
+ * Re-fetch the credits. Never throws. Concurrent callers share one request.
+ * A 401/403 (plan lost AI, no permission) clears the value so the widgets hide
+ * instead of showing stale numbers; transient failures keep the last value.
+ */
+export const refreshAICredits = () => {
+    if (inflight) return inflight;
+    inflight = (async () => {
+        try {
+            publishAICredits(await getAICredits());
+        } catch (err) {
+            if (err?.status === 403 || err?.status === 401) { state = null; emit(); }
+        } finally {
+            inflight = null;
+        }
+    })();
+    return inflight;
 };
 
 /** Test helper. */
 export const resetAICredits = () => { state = null; emit(); };
 
-export const useAICredits = () => {
+export const useAICredits = (enabled = true) => {
     const credits = useSyncExternalStore(subscribe, getSnapshot);
-    useEffect(() => { refreshAICredits(); }, []);
+    useEffect(() => { if (enabled) refreshAICredits(); }, [enabled]);
     return { credits, refresh: refreshAICredits };
 };

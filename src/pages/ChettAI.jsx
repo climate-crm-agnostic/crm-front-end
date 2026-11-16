@@ -10,6 +10,7 @@ import {
     sendMessage, getConversations, getConversation,
     renameConversation, deleteConversation,
 } from "../services/aiService";
+import { AI_NAME } from "@/lib/brand";
 
 // Palette for report charts (olive-forward, matches the brand).
 const CHART_COLORS = ["#5E6A43", "#B0592E", "#2f9e3a", "#9b7a2e", "#4a5535", "#C9A227", "#6b6560", "#3CC647"];
@@ -549,7 +550,7 @@ export const ChettAI = () => {
                         padding: "14px 16px 10px",
                         borderBottom: "1px solid var(--border)",
                     }}>
-                        <span style={{ fontWeight: 700, fontSize: 15 }}>Chett AI</span>
+                        <span style={{ fontWeight: 700, fontSize: 15 }}>{AI_NAME}</span>
                     </div>
 
                     {/* New conversation button */}
@@ -702,7 +703,7 @@ export const ChettAI = () => {
                         {messages.length === 0 && (
                             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 10, color: "var(--muted-foreground)" }}>
                                 <p style={{ fontWeight: 700, fontSize: 20, color: "var(--foreground)" }}>
-                                    Hi! I'm Chett AI.
+                                    Hi! I'm {AI_NAME}.
                                 </p>
                                 <p style={{ fontSize: 14 }}>
                                     Ask me anything about your CRM data.
@@ -858,7 +859,7 @@ export const ChettAI = () => {
                         </div>
                         <CreditsMeter style={{ maxWidth: 800, margin: "6px auto 0" }} />
                         <p style={{ fontSize: 11, color: "var(--muted-foreground)", textAlign: "center", marginTop: 6 }}>
-                            Chett AI can make mistakes. Verify important data before acting on it.
+                            {AI_NAME} can make mistakes. Verify important data before acting on it.
                         </p>
                     </div>
                 </div>

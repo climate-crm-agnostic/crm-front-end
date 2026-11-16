@@ -10,6 +10,7 @@ import {
 } from "recharts";
 import { formatDateTz } from "../utils/tz";
 import { sendMessage, getConversations, getConversation, renameConversation, deleteConversation } from "../services/aiService";
+import { AI_NAME } from "@/lib/brand";
 
 // Palette for charts (olive-forward, matches the brand).
 const CHART_COLORS = ["#5E6A43", "#B0592E", "#2f9e3a", "#9b7a2e", "#4a5535", "#C9A227", "#6b6560", "#3CC647"];
@@ -352,7 +353,7 @@ export const ClimateChatBot = () => {
             {/* ── Floating toggle button ── */}
             <button
                 onClick={toggleOpen}
-                title="Chett AI"
+                title={AI_NAME}
                 style={{
                     position: "fixed", bottom: 20, right: 40, zIndex: 9999,
                     width: 47, height: 47, borderRadius: "50%",
@@ -442,7 +443,7 @@ export const ClimateChatBot = () => {
                                 {messages.length === 0 && (
                                     <div style={{ textAlign: "center", color: "var(--muted-foreground)", fontSize: 12, marginTop: 40 }}>
                                         <BotIcon size={32} />
-                                        <p style={{ marginTop: 8 }}>Hi! I'm <strong>Chett AI</strong>.<br />Ask me anything about your CRM data.</p>
+                                        <p style={{ marginTop: 8 }}>Hi! I'm <strong>{AI_NAME}</strong>.<br />Ask me anything about your CRM data.</p>
                                     </div>
                                 )}
                                 {messages.map((m, i) => (

@@ -1,6 +1,12 @@
 import { Progress } from "@/components/ui/progress";
 import { formatCount, formatDecimal } from "@/lib/utils";
-import { CREDITS_LABEL, formatPercent } from "@/lib/credits";
+import { CREDITS_LABEL, EXHAUSTED_TEXT, creditStatus, formatPercent, warningText } from "@/lib/credits";
+
+const BAR_COLOR = {
+    ok: "",
+    warning: "[&_[data-slot=progress-indicator]]:bg-amber-500",
+    exhausted: "[&_[data-slot=progress-indicator]]:bg-destructive",
+};
 
 /** Context-bar style meter of AI credits used vs the monthly pool. Measure and display only. */
 export const CreditsBar = ({ credits, className = "" }) => {
@@ -8,6 +14,7 @@ export const CreditsBar = ({ credits, className = "" }) => {
     const percent = Number(credits.percent);
     const visual = Number.isFinite(percent) ? Math.min(Math.max(percent, 0), 100) : 0;
     const text = `${formatDecimal(credits.used)} / ${formatCount(credits.pool)}`;
+    const status = creditStatus(credits);
     return (
         <div
             data-testid="credits-bar"
@@ -22,8 +29,17 @@ export const CreditsBar = ({ credits, className = "" }) => {
                 value={visual}
                 aria-label={`${CREDITS_LABEL} used`}
                 aria-valuetext={`${text}, ${formatPercent(percent)}`}
-                className="h-1.5"
+                className={`h-1.5 ${BAR_COLOR[status]}`}
             />
+            {status !== "ok" && (
+                <p
+                    data-testid="credits-alert"
+                    role={status === "exhausted" ? "alert" : "status"}
+                    className={`text-[11px] leading-4 ${status === "exhausted" ? "font-semibold text-destructive" : "text-amber-600"}`}
+                >
+                    {status === "exhausted" ? EXHAUSTED_TEXT : warningText(percent)}
+                </p>
+            )}
         </div>
     );
 };

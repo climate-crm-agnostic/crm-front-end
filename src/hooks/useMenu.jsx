@@ -40,7 +40,7 @@ const MENU_CONFIG = [
         ],
     },
     {
-        // How people talk to customers and to each other. Chett AI is not here: it is a floating button.
+        // How people talk to customers and to each other. Intelligence is not here: it is a floating button.
         label: "Communications",
         icon: "MessageCircle",
         items: [
@@ -109,7 +109,7 @@ export const useMenu = () => {
     return { menu };
 };
 
-/** Whether the current user may open Chett AI (it lives in a floating button, not in the menu). */
+/** Whether the current user may open Intelligence by CodeX Academy (it lives in a floating button, not in the menu). */
 export const useChettAccess = () => {
     const { user, isFeatureEnabled } = useAuth();
     const allowed = user?.is_superuser === true || (user?.permissions || []).includes("app.view_aiconversation");

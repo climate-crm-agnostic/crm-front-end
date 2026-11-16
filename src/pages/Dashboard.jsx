@@ -17,6 +17,7 @@ import { LatestWins } from "@/components/dashboard/LatestWins";
 import { CreditsCard } from "@/components/dashboard/CreditsCard";
 import { getAICredits } from "@/services/aiService";
 import { formatCount } from "@/lib/utils";
+import { AI_SHORT, AI_PATH } from "@/lib/brand";
 
 const fetchCount = async (endpoint) => {
     const res = await fetch(`${API_URL}/${endpoint}/?page_size=1`, { headers: getHeaders() });
@@ -520,8 +521,8 @@ export const Dashboard = () => {
                             </button>
                         )}
                         {canSeeChett && (
-                            <button type="button" onClick={() => navigate("/chett-ai")} className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-full border bg-card px-5 text-sm font-semibold outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
-                                <Bot className="size-4" />Ask Chett
+                            <button type="button" onClick={() => navigate(AI_PATH)} className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-full border bg-card px-5 text-sm font-semibold outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
+                                <Bot className="size-4" />Ask {AI_SHORT}
                             </button>
                         )}
                     </div>

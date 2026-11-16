@@ -50,4 +50,29 @@ describe("CreditsMeter", () => {
         await act(async () => { await refreshAICredits(); });
         expect(screen.getByTestId("credits-meter").textContent).toBe("10.00 / 25,000");
     });
+
+    it("hides the meter when a refresh returns 403 (plan lost AI)", async () => {
+        getAICredits.mockResolvedValueOnce(credits({ used: 10 }));
+        render(<CreditsMeter />);
+        await screen.findByText("10.00 / 25,000");
+        getAICredits.mockRejectedValue(Object.assign(new Error("forbidden"), { status: 403 }));
+        await act(async () => { await refreshAICredits(); });
+        expect(screen.queryByTestId("credits-meter")).toBeNull();
+    });
+
+    it("mounting several meters triggers a single request", async () => {
+        getAICredits.mockResolvedValue(credits());
+        render(<><CreditsMeter /><CreditsMeter /><CreditsMeter /></>);
+        await waitFor(() => expect(screen.getAllByTestId("credits-meter")).toHaveLength(3));
+        expect(getAICredits).toHaveBeenCalledTimes(1);
+    });
+
+    it("flags the meter as warning at 80% and exhausted at 100%", async () => {
+        getAICredits.mockResolvedValueOnce(credits({ used: 20000, percent: 80 }));
+        render(<CreditsMeter />);
+        await waitFor(() => expect(screen.getByTestId("credits-meter").getAttribute("data-status")).toBe("warning"));
+        getAICredits.mockResolvedValue(credits({ used: 25000, percent: 100, status: "exhausted" }));
+        await act(async () => { await refreshAICredits(); });
+        expect(screen.getByTestId("credits-meter").getAttribute("data-status")).toBe("exhausted");
+    });
 });
