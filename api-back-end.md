@@ -1324,3 +1324,21 @@ The state lives in the database, so it survives restarts. It advances from a wor
 **POST** `/api/knowledge/sync/` `{"retry_failed": true}` re-queues failed documents (optional) and runs a cycle now without waiting for the batching window.
 **POST** `/api/knowledge/documents/{id}/resync/` retries one failed document (400 if it did not fail). Administrators only; `403` with `upgrade_required` when the plan lacks the module.
 When a job ends, each person who uploaded files in it receives one email, **"Your agent has just finished its retraining"**, listing what is now available and what could not be learned and why. Bedrock does not say which file failed, so the failing S3 keys are read from the job's failure reasons.
+
+### Asking the knowledge base (any user with Intelligence)
+
+Requires the `ai` and `knowledge_base` plan features and `app.view_aiconversation`; otherwise `403` (with `feature_gate` and `upgrade_required: true` when it is the plan). Everything an answer contains is limited to the documents the caller's access groups allow; nothing the client sends can widen that.
+
+**POST** `/api/knowledge/chat/` `{"message": "...", "conversation_id": "<uuid, optional>"}` (message up to 2000 characters) →
+`{conversation_id, conversation_name, assistant_message, sources: [{n, doc_id, title, kind, score, snippet?, start_seconds?, end_seconds?}], files: [{name, key, kind, size}], credits}`.
+- The answer cites facts as `[n]`; `sources` lists only the cited ones. Audio and video sources carry the time range they come from.
+- When nothing relevant is available to the caller, the answer says so in the same words whether nothing exists or nothing is allowed. It never reveals that restricted documents exist.
+- Asking for a presentation, a document or an action plan adds the generated file to `files` (`kind` is `pptx` or `docx`). Questions run on the general model and deliverables on the stronger one.
+- Errors: `400` empty or too long message, `402` the caller's credits are exhausted, `404` conversation not found (or not a knowledge conversation), `502` the model could not be reached.
+- Every model call, question embedding and vector query is charged to the **caller's own** monthly credits (about 1.5 credits per question, 14 per presentation, 23 per action plan on measured runs); it never touches the account's ingestion budget.
+
+**POST** `/api/knowledge/files/url/` `{"key": "generated/<your user id>/..."}` → `{url}`, a link valid for 15 minutes. Only keys of files generated for the caller are accepted; anything else is `404`.
+**GET** `/api/knowledge/sources/{doc_id}/url/` → `{title, filename, url}` (15 minutes) for a cited document, only if the caller's groups allow it. A document the caller may not read looks exactly like one that does not exist (`404`).
+
+Conversations of this mode are separate from the data-analyst chat: **GET** `/api/ai/conversations/?kind=knowledge` lists them (`kind` defaults to `chett`), and **GET** `/api/ai/conversations/{id}/` returns `kind` and, per message, `meta: {sources, files}`.
+
