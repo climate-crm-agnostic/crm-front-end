@@ -58,3 +58,17 @@ export const startKnowledgeSync = async ({ retryFailed = false } = {}) =>
 /** Puts one failed document back in the queue. */
 export const resyncKnowledgeDocument = async (id) =>
     json(await fetch(`${BASE}/documents/${id}/resync/`, { method: "POST", headers: getHeaders() }), "Could not retry the document");
+
+/* ── Ask the knowledge base (any user with Intelligence; answers respect their access groups) ── */
+export const askKnowledge = async (message, conversationId = null) => {
+    const body = { message };
+    if (conversationId) body.conversation_id = conversationId;
+    return json(await fetch(`${BASE}/chat/`, { method: "POST", headers: getHeaders(), body: JSON.stringify(body) }), "The assistant could not answer");
+};
+
+// Short-lived download links (15 min) — open them right away instead of storing them.
+export const getGeneratedFileUrl = async (key) =>
+    (await json(await fetch(`${BASE}/files/url/`, { method: "POST", headers: getHeaders(), body: JSON.stringify({ key }) }), "Could not open the file")).url;
+
+export const getSourceUrl = async (docId) =>
+    (await json(await fetch(`${BASE}/sources/${docId}/url/`, { headers: getHeaders() }), "Could not open the document")).url;

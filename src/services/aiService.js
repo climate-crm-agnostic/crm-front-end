@@ -16,8 +16,8 @@ export const sendMessage = async (message, conversationId = null) => {
     return data; // { conversation_id, conversation_name, assistant_message }
 };
 
-export const getConversations = async () => {
-    const res = await fetch(`${base}/conversations/`, { headers: getHeaders() });
+export const getConversations = async (kind = "chett") => {
+    const res = await fetch(`${base}/conversations/?kind=${kind}`, { headers: getHeaders() });
     if (!res.ok) throw new Error("Failed to fetch conversations");
     return res.json();
 };
