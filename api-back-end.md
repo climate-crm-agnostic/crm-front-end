@@ -1294,6 +1294,19 @@ Names are unique (case-insensitive). *Everyone* cannot be renamed, given members
 **POST** `/api/knowledge/documents/` multipart: `file`, `group` (required), `title` (optional) ·
 **PATCH** `/api/knowledge/documents/{id}/` (`title`, `group`) · **DELETE** (soft delete).
 - Types: PDF, DOC/DOCX, XLS/XLSX, CSV, TXT, MD (50 MB) · PNG, JPG (20 MB) · MP3, WAV, M4A, FLAC, OGG, MP4, MOV (200 MB). The file *content* is verified, not just the extension.
-- `409` duplicate file (same SHA-256) · `402` AI credits exhausted · `502` storage failure (no row is kept).
-- `kind` is `document`, `image` or `media`; `kb` is `docs` (documents and images) or `media` (audio and video).
+- `409` duplicate file (same SHA-256) · `402` AI credits exhausted **or** not enough credits to index this file (`insufficient_credits: true`, `required_credits`) · `502` storage failure (no row is kept).
+- `kind` is `document`, `image` or `media`; `kb` is `docs` (documents) or `media` (audio, video and images, parsed by Bedrock Data Automation).
+- Each document returns `est_embedding_tokens`, `est_units` / `est_unit`, `est_method`, `est_credits` and `credits_charged` (what indexing it has cost so far) and `uploaded_by_name`.
+#### Cost of indexing (charged to the person who uploads or re-syncs, in the same credits ledger)
+Bedrock does not report the tokens an ingestion job embeds, so they are estimated **from the file itself** at upload: text extracted from PDF, Word, Excel and text files
+(~4 characters per token, +10 % because chunks overlap); the real duration of audio and video read from the file header (`est_method` is `header`; `size_heuristic` if it could not be read;
+`no_text` for a PDF with no extractable text). Every sync that re-processes a file is charged again, and the same sync is never charged twice.
+| What | Credits |
+|---|---|
+| Embedding text (Titan Text Embeddings v2) | 0.008 per 1,000 tokens (a 100-page document ≈ 0.4) |
+| Audio (Bedrock Data Automation) | 2.4 per minute |
+| Video (Bedrock Data Automation) | 20 per minute |
+| Image (Bedrock Data Automation) | 1.2 per image |
+Audio and video also embed their transcript (~200 tokens per minute). The upload is refused with `402` before anything is stored if the person's remaining credits do not cover the estimate.
+In the ledger these are the features `kb_embed` (tokens) and `kb_parse` (units), so they appear in the reconciliation report and in `/api/ai/credits/users/`.
 - `status`: `pending_sync` → `syncing` → `synced` | `failed`. Moving a document to another group rewrites its S3 metadata and queues a re-sync.

@@ -6,7 +6,8 @@ const BASE = `${API_URL}/knowledge`;
 const json = async (res, fallback) => {
     if (res.status === 204) return null;
     const data = await res.json().catch(() => null);
-    if (!res.ok) throw new Error(extractErrorMessage(data, fallback));
+    // Prefer the server's own message: 402 bodies also carry a nested credits object whose strings must not leak.
+    if (!res.ok) throw new Error(data?.detail || extractErrorMessage(data, fallback));
     return data;
 };
 

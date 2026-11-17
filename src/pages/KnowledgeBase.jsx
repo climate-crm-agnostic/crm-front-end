@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardHeader } from "@/components/SectionCard";
 import { AI_NAME } from "@/lib/brand";
+import { formatDecimal } from "@/lib/utils";
 import { getUsers } from "@/services/userService";
 import {
     createKnowledgeGroup, deleteKnowledgeDocument, deleteKnowledgeGroup, getKnowledgeDocuments,
@@ -94,7 +95,7 @@ function UploadDialog({ open, onClose, groups, onUploaded }) {
                                 setFile(f);
                                 if (f && !title) setTitle(f.name.replace(/\.[^.]+$/, ""));
                             }} />
-                        <p className="text-xs text-muted-foreground">Documents, images, audio and video. Documents up to 50 MB, media up to 200 MB.</p>
+                        <p className="text-xs text-muted-foreground">Documents, images, audio and video. Documents up to 50 MB, media up to 200 MB. Indexing a file uses your AI credits; audio and video use the most.</p>
                     </div>
                     <div className="space-y-1.5">
                         <Label htmlFor="kb-title">Title</Label>
@@ -192,7 +193,7 @@ function DocumentsTab({ groups }) {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Name</TableHead><TableHead>Who can consult it</TableHead><TableHead>Type</TableHead>
-                                <TableHead>Size</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead>
+                                <TableHead>Size</TableHead><TableHead>Credits</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -214,6 +215,7 @@ function DocumentsTab({ groups }) {
                                         <TableCell><GroupChip name={d.group_name} everyone={everyone} /></TableCell>
                                         <TableCell>{k.label}</TableCell>
                                         <TableCell className="tabular-nums">{formatBytes(d.size_bytes)}</TableCell>
+                                        <TableCell className="tabular-nums" title="AI credits used to index this file">{formatDecimal(Number(d.credits_charged) || 0)}</TableCell>
                                         <TableCell><span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${st.cls}`}>{st.label}</span></TableCell>
                                         <TableCell className="text-right">
                                             <Button variant="ghost" size="icon" aria-label={`Change who can consult ${d.title}`} onClick={() => setMoving(d)}><Pencil className="size-4" /></Button>

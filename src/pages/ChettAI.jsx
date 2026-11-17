@@ -12,7 +12,7 @@ import {
 } from "../services/aiService";
 import { AI_NAME } from "@/lib/brand";
 import { Link } from "react-router-dom";
-import { useKnowledgeAccess } from "@/hooks/useMenu";
+import { useCreditsAdminAccess, useKnowledgeAccess } from "@/hooks/useMenu";
 
 // Palette for report charts (olive-forward, matches the brand).
 const CHART_COLORS = ["#5E6A43", "#B0592E", "#2f9e3a", "#9b7a2e", "#4a5535", "#C9A227", "#6b6560", "#3CC647"];
@@ -388,6 +388,7 @@ export const Bubble = ({ role, content, reports }) => {
 
 export const ChettAI = () => {
     const canManageKnowledge = useKnowledgeAccess();
+    const canManageCredits = useCreditsAdminAccess();
     // Conversations sidebar
     const [conversations, setConversations] = useState([]);
     const [convLoading, setConvLoading] = useState(true);
@@ -557,6 +558,11 @@ export const ChettAI = () => {
                         {canManageKnowledge && (
                             <Link to="/intelligence/knowledge" style={{ display: "block", marginTop: 6, fontSize: 12, color: "var(--secondary-text)", textDecoration: "underline" }}>
                                 Knowledge base
+                            </Link>
+                        )}
+                        {canManageCredits && (
+                            <Link to="/intelligence/credits" style={{ display: "block", marginTop: 4, fontSize: 12, color: "var(--secondary-text)", textDecoration: "underline" }}>
+                                Credits by user
                             </Link>
                         )}
                     </div>

@@ -122,3 +122,10 @@ export const useKnowledgeAccess = () => {
     const allowed = user?.is_superuser === true || (user?.permissions || []).includes("app.add_knowledgedocument");
     return Boolean(allowed && isFeatureEnabled("knowledge_base"));
 };
+
+/** Whether the current user may see every user's AI credits and top them up (administrators). */
+export const useCreditsAdminAccess = () => {
+    const { user, isFeatureEnabled } = useAuth();
+    const allowed = user?.is_superuser === true || (user?.permissions || []).includes("app.add_aicredittopup");
+    return Boolean(allowed && isFeatureEnabled("ai"));
+};
