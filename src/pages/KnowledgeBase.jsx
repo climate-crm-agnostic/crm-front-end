@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { FileAudio, FileImage, FileText, FolderLock, Lock, Pencil, Plus, Trash2, Upload, Users as UsersIcon } from "lucide-react";
+import { FileAudio, FileImage, FileText, FolderLock, Lock, Pencil, Plus, RefreshCw, RotateCcw, Trash2, Upload, Users as UsersIcon } from "lucide-react";
 import Swal from "sweetalert2";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,8 @@ import { creditStatus, formatPercent } from "@/lib/credits";
 import { getUsers } from "@/services/userService";
 import {
     createKnowledgeGroup, deleteKnowledgeDocument, deleteKnowledgeGroup, getKnowledgeDocuments,
-    getKnowledgeGroups, updateKnowledgeDocument, updateKnowledgeGroup, uploadKnowledgeDocument,
+    getKnowledgeGroups, getKnowledgeSync, resyncKnowledgeDocument, startKnowledgeSync, updateKnowledgeDocument,
+    updateKnowledgeGroup, uploadKnowledgeDocument,
 } from "@/services/knowledgeService";
 
 const ACCEPT = ".pdf,.docx,.doc,.xlsx,.xls,.csv,.txt,.md,.png,.jpg,.jpeg,.mp3,.wav,.m4a,.flac,.ogg,.mp4,.mov";
@@ -74,6 +75,45 @@ function IngestionBudget({ budget }) {
                 </p>
             )}
             <p className="text-xs text-muted-foreground">Shared by the whole account. Indexing files uses this budget, not anyone's own credits.</p>
+        </div>
+    );
+}
+
+/* ── Sync status ─────────────────────────────────────────────────────────── */
+const SYNC_POLL_MS = 6000;
+
+/** What the agent is doing with the files: learning, waiting for its batch, failed, or up to date. */
+function SyncStatus({ sync, onSyncNow, onRetryFailed, busy }) {
+    if (!sync) return null;
+    const { pending_sync: pending = 0, syncing = 0, failed = 0 } = sync.counts || {};
+    const running = Object.values(sync.kbs || {}).some((k) => k.running);
+    const lasts = Object.values(sync.kbs || {}).map((k) => k.last?.finished_at).filter(Boolean).sort();
+    const plural = (n, one, many) => (n === 1 ? one : many);
+    let tone = "text-muted-foreground";
+    let text;
+    if (syncing > 0 || running) {
+        tone = "text-blue-700";
+        text = `Your agent is learning ${syncing > 0 ? `${syncing} ${plural(syncing, "document", "documents")}` : "your documents"}. This can take a few minutes; we'll email you when it finishes.`;
+    } else if (pending > 0) {
+        tone = "text-amber-700";
+        text = `${pending} ${plural(pending, "document is", "documents are")} waiting to be learned. Uploads are grouped, so it starts in about a minute.`;
+    } else if (failed > 0) {
+        tone = "text-destructive";
+        text = `${failed} ${plural(failed, "document", "documents")} could not be learned.`;
+    } else {
+        text = lasts.length ? `Your agent is up to date. Last retraining finished ${new Date(lasts[lasts.length - 1]).toLocaleString()}.` : "Your agent is up to date.";
+    }
+    return (
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b px-6 py-3" data-testid="sync-status">
+            <p className={`text-sm ${tone}`} role="status">{text}</p>
+            <div className="flex gap-2">
+                {failed > 0 && (
+                    <Button size="sm" variant="outline" disabled={busy} onClick={onRetryFailed}><RotateCcw className="size-4" />Retry failed</Button>
+                )}
+                {pending > 0 && (
+                    <Button size="sm" variant="outline" disabled={busy} onClick={onSyncNow}><RefreshCw className="size-4" />Sync now</Button>
+                )}
+            </div>
         </div>
     );
 }
@@ -193,6 +233,11 @@ function DocumentsTab({ groups }) {
     const [uploading, setUploading] = useState(false);
     const [moving, setMoving] = useState(null);
     const [budget, setBudget] = useState(null);
+    const [sync, setSync] = useState(null);
+    const [syncBusy, setSyncBusy] = useState(false);
+
+    const loadSync = useCallback(() => getKnowledgeSync().then(setSync).catch(() => setSync(null)), []);
+    useEffect(() => { loadSync(); }, [loadSync]);
 
     const loadBudget = useCallback(() => {
         getIngestionBudget().then(setBudget).catch(() => setBudget(null));
@@ -203,6 +248,35 @@ function DocumentsTab({ groups }) {
         try { setDocs(await getKnowledgeDocuments()); } catch (err) { await fail(err); } finally { setLoading(false); }
     }, []);
     useEffect(() => { load(); }, [load]);
+
+    // While anything is queued or being learned, keep the list and the status fresh.
+    const busyCount = (sync?.counts?.pending_sync || 0) + (sync?.counts?.syncing || 0);
+    useEffect(() => {
+        if (busyCount === 0) return undefined;
+        const timer = setInterval(() => { loadSync(); load(); }, SYNC_POLL_MS);
+        return () => clearInterval(timer);
+    }, [busyCount, loadSync, load]);
+
+    const runSync = async (retryFailed) => {
+        setSyncBusy(true);
+        try {
+            await startKnowledgeSync({ retryFailed });
+            await Promise.all([loadSync(), load()]);
+        } catch (err) {
+            await fail(err);
+        } finally {
+            setSyncBusy(false);
+        }
+    };
+
+    const retryOne = async (doc) => {
+        try {
+            await resyncKnowledgeDocument(doc.id);
+            await Promise.all([loadSync(), load()]);
+        } catch (err) {
+            await fail(err);
+        }
+    };
 
     const remove = async (doc) => {
         const ok = await Swal.fire({
@@ -219,6 +293,7 @@ function DocumentsTab({ groups }) {
             <CardHeader icon={FolderLock} title="Documents" subtitle="Files the assistant can answer from"
                 right={<Button onClick={() => setUploading(true)}><Upload className="size-4" />Upload</Button>} />
             <IngestionBudget budget={budget} />
+            <SyncStatus sync={sync} busy={syncBusy} onSyncNow={() => runSync(false)} onRetryFailed={() => runSync(true)} />
             <div className="px-2 py-2">
                 {loading ? (
                     <div className="m-4 h-24 animate-pulse rounded-lg bg-muted" />
@@ -254,7 +329,15 @@ function DocumentsTab({ groups }) {
                                         <TableCell>{k.label}</TableCell>
                                         <TableCell className="tabular-nums">{formatBytes(d.size_bytes)}</TableCell>
                                         <TableCell className="tabular-nums" title="AI credits used to index this file">{formatDecimal(Number(d.credits_charged) || 0)}</TableCell>
-                                        <TableCell><span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${st.cls}`}>{st.label}</span></TableCell>
+                                        <TableCell>
+                                            <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${st.cls}`}>{st.label}</span>
+                                            {d.status === "failed" && (
+                                                <div className="mt-1 flex items-center gap-1">
+                                                    {d.status_detail && <span className="max-w-[16rem] truncate text-xs text-destructive" title={d.status_detail}>{d.status_detail}</span>}
+                                                    <Button variant="ghost" size="sm" className="h-6 px-1.5 text-xs" aria-label={`Retry ${d.title}`} onClick={() => retryOne(d)}>Retry</Button>
+                                                </div>
+                                            )}
+                                        </TableCell>
                                         <TableCell className="text-right">
                                             <Button variant="ghost" size="icon" aria-label={`Change who can consult ${d.title}`} onClick={() => setMoving(d)}><Pencil className="size-4" /></Button>
                                             <Button variant="ghost" size="icon" aria-label={`Delete ${d.title}`} onClick={() => remove(d)}><Trash2 className="size-4" /></Button>

@@ -1,10 +1,11 @@
-import { describe, it, expect, vi, beforeEach, beforeAll } from "vitest";
-import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, beforeAll, afterEach } from "vitest";
+import { render, screen, fireEvent, waitFor, within, act } from "@testing-library/react";
 
 vi.mock("@/services/knowledgeService", () => ({
     getKnowledgeGroups: vi.fn(), getKnowledgeDocuments: vi.fn(), uploadKnowledgeDocument: vi.fn(),
     updateKnowledgeDocument: vi.fn(), deleteKnowledgeDocument: vi.fn(),
     createKnowledgeGroup: vi.fn(), updateKnowledgeGroup: vi.fn(), deleteKnowledgeGroup: vi.fn(),
+    getKnowledgeSync: vi.fn(), startKnowledgeSync: vi.fn(), resyncKnowledgeDocument: vi.fn(),
 }));
 vi.mock("@/services/userService", () => ({ getUsers: vi.fn() }));
 vi.mock("@/services/creditsAdminService", () => ({ getIngestionBudget: vi.fn() }));
@@ -12,6 +13,7 @@ vi.mock("sweetalert2", () => ({ default: { fire: vi.fn().mockResolvedValue({ isC
 
 import {
     getKnowledgeDocuments, getKnowledgeGroups, uploadKnowledgeDocument, deleteKnowledgeDocument,
+    getKnowledgeSync, startKnowledgeSync, resyncKnowledgeDocument,
 } from "@/services/knowledgeService";
 import { getUsers } from "@/services/userService";
 import { getIngestionBudget } from "@/services/creditsAdminService";
@@ -30,12 +32,21 @@ const docs = [
     { id: "d2", title: "Office hours", original_filename: "hours.txt", kind: "document", group: "g-all", group_name: "Everyone", size_bytes: 512, status: "synced" },
 ];
 
+const syncState = (counts = {}, kbs = {}) => ({
+    counts: { pending_sync: 0, syncing: 0, synced: 2, failed: 0, ...counts },
+    kbs: { docs: { configured: true, pending: 0, removing: 0, running: null, last: null }, media: { configured: true, pending: 0, removing: 0, running: null, last: null }, ...kbs },
+    debounce_seconds: 120,
+});
+
 beforeEach(() => {
     vi.clearAllMocks();
     getKnowledgeGroups.mockResolvedValue([everyone, finance]);
     getKnowledgeDocuments.mockResolvedValue(docs);
     getUsers.mockResolvedValue([{ id: 1, username: "ana", full_name: "Ana Perez", is_active: true }]);
     getIngestionBudget.mockResolvedValue({ enabled: true, pool: 4000, used: 400, percent: 10, status: "ok" });
+    getKnowledgeSync.mockResolvedValue(syncState());
+    startKnowledgeSync.mockResolvedValue({});
+    resyncKnowledgeDocument.mockResolvedValue({});
 });
 
 describe("KnowledgeBase documents", () => {
@@ -102,6 +113,87 @@ describe("KnowledgeBase documents", () => {
     });
 });
 
+describe("KnowledgeBase sync status", () => {
+    const text = async () => (await screen.findByTestId("sync-status")).textContent;
+
+    it("says the agent is up to date, with when it last retrained", async () => {
+        getKnowledgeSync.mockResolvedValue(syncState({}, { docs: { configured: true, pending: 0, removing: 0, running: null, last: { status: "complete", finished_at: "2026-11-10T12:00:00Z" } } }));
+        render(<KnowledgeBase />);
+        expect(await text()).toMatch(/Your agent is up to date\. Last retraining finished/);
+        expect(screen.queryByRole("button", { name: /Sync now|Retry failed/ })).toBeNull();
+    });
+
+    it("explains that grouped uploads wait for the batch and offers Sync now", async () => {
+        getKnowledgeSync.mockResolvedValue(syncState({ pending_sync: 2 }));
+        render(<KnowledgeBase />);
+        expect(await text()).toMatch(/2 documents are waiting to be learned\. Uploads are grouped/);
+        fireEvent.click(screen.getByRole("button", { name: /Sync now/ }));
+        await waitFor(() => expect(startKnowledgeSync).toHaveBeenCalledWith({ retryFailed: false }));
+        await waitFor(() => expect(getKnowledgeSync).toHaveBeenCalledTimes(2));
+        await waitFor(() => expect(getKnowledgeDocuments).toHaveBeenCalledTimes(2));
+    });
+
+    it("says the agent is learning and that an email will follow", async () => {
+        getKnowledgeSync.mockResolvedValue(syncState({ syncing: 3 }, { docs: { configured: true, pending: 0, removing: 0, running: { id: "j1", status: "running", documents: 3 }, last: null } }));
+        render(<KnowledgeBase />);
+        expect(await text()).toMatch(/Your agent is learning 3 documents\..*email you when it finishes/);
+        expect(screen.queryByRole("button", { name: /Sync now/ })).toBeNull();
+    });
+
+    it("reports failed documents and retries them all", async () => {
+        getKnowledgeSync.mockResolvedValue(syncState({ failed: 1 }));
+        render(<KnowledgeBase />);
+        expect(await text()).toMatch(/1 document could not be learned/);
+        fireEvent.click(screen.getByRole("button", { name: /Retry failed/ }));
+        await waitFor(() => expect(startKnowledgeSync).toHaveBeenCalledWith({ retryFailed: true }));
+    });
+
+    it("shows why one document failed and retries just that one", async () => {
+        getKnowledgeSync.mockResolvedValue(syncState({ failed: 1 }));
+        getKnowledgeDocuments.mockResolvedValue([
+            { ...docs[0], status: "failed", status_detail: "Metadata file cannot have more than 35 attributes." }, docs[1]]);
+        render(<KnowledgeBase />);
+        const row = (await screen.findByText("Budget 2027")).closest("tr");
+        expect(within(row).getByText("Failed")).toBeTruthy();
+        expect(within(row).getByText(/35 attributes/)).toBeTruthy();
+        fireEvent.click(within(row).getByRole("button", { name: "Retry Budget 2027" }));
+        await waitFor(() => expect(resyncKnowledgeDocument).toHaveBeenCalledWith("d1"));
+        await waitFor(() => expect(getKnowledgeDocuments).toHaveBeenCalledTimes(2));
+    });
+
+    it("hides the panel when the status cannot be loaded", async () => {
+        getKnowledgeSync.mockRejectedValue(new Error("403"));
+        render(<KnowledgeBase />);
+        await screen.findByText("Budget 2027");
+        expect(screen.queryByTestId("sync-status")).toBeNull();
+    });
+
+    describe("polling", () => {
+        afterEach(() => { vi.useRealTimers(); });
+
+        it("keeps refreshing while something is queued or being learned", async () => {
+            vi.useFakeTimers({ shouldAdvanceTime: true });
+            getKnowledgeSync.mockResolvedValue(syncState({ syncing: 1 }));
+            render(<KnowledgeBase />);
+            await screen.findByTestId("sync-status");
+            const before = getKnowledgeSync.mock.calls.length;
+            await act(async () => { await vi.advanceTimersByTimeAsync(6100); });
+            expect(getKnowledgeSync.mock.calls.length).toBeGreaterThan(before);
+            expect(getKnowledgeDocuments.mock.calls.length).toBeGreaterThan(1);
+        });
+
+        it("stops polling once everything is learned", async () => {
+            vi.useFakeTimers({ shouldAdvanceTime: true });
+            getKnowledgeSync.mockResolvedValue(syncState());
+            render(<KnowledgeBase />);
+            await screen.findByTestId("sync-status");
+            const before = getKnowledgeSync.mock.calls.length;
+            await act(async () => { await vi.advanceTimersByTimeAsync(20000); });
+            expect(getKnowledgeSync.mock.calls.length).toBe(before);
+        });
+    });
+});
+
 describe("KnowledgeBase ingestion budget", () => {
     it("shows the account's ingestion budget above the documents", async () => {
         render(<KnowledgeBase />);
@@ -114,7 +206,7 @@ describe("KnowledgeBase ingestion budget", () => {
     it("warns near the limit and says uploads are paused when it is used up", async () => {
         getIngestionBudget.mockResolvedValue({ enabled: true, pool: 4000, used: 3300, percent: 82.5, status: "warning" });
         const { unmount } = render(<KnowledgeBase />);
-        expect((await screen.findByRole("status")).textContent).toMatch(/Most of this month/);
+        expect(within(await screen.findByTestId("ingestion-budget")).getByRole("status").textContent).toMatch(/Most of this month/);
         unmount();
         getIngestionBudget.mockResolvedValue({ enabled: true, pool: 4000, used: 4000, percent: 100, status: "exhausted" });
         render(<KnowledgeBase />);

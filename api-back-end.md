@@ -1314,4 +1314,13 @@ Bedrock does not report the tokens an ingestion job embeds, so they are estimate
 | Image (Bedrock Data Automation) | 1.2 per image |
 Audio and video also embed their transcript (~200 tokens per minute). The upload is refused with `402` (`insufficient_ingestion_credits`, `required_credits`, `ingestion`) before anything is stored if the account's remaining ingestion budget does not cover the estimate. Running out of your own AI credits does **not** block uploads.
 In the ledger these are the features `kb_embed` (tokens) and `kb_parse` (units), so they appear in the reconciliation report and in `/api/ai/credits/users/`.
-- `status`: `pending_sync` → `syncing` → `synced` | `failed`. Moving a document to another group rewrites its S3 metadata and queues a re-sync.
+- `status`: `pending_sync` → `syncing` → `synced` | `failed`. Moving a document to another group rewrites its S3 metadata and queues a re-sync (not billed again).
+#### Sync with the knowledge bases (how files become searchable)
+A document waits as `pending_sync` until a sync job picks it up. **Uploads are batched**: nothing starts until the newest change is 2 minutes old, then one Bedrock ingestion job covers everything pending
+(Bedrock runs one job at a time per knowledge base; a partial unique constraint enforces it). Documents (`kind=document`) and media (`audio`, `video`, `image`) are separate knowledge bases with separate jobs.
+Deleted documents have their S3 files removed first and ride along in the next job so their vectors are dropped.
+The state lives in the database, so it survives restarts. It advances from a worker thread started after every change, from `python manage.py run_knowledge_sync` (deploy-app installs it in cron every minute) and from "Sync now".
+**GET** `/api/knowledge/sync/` → `{counts: {pending_sync, syncing, synced, failed}, kbs: {docs|media: {configured, pending, removing, running, last}}, debounce_seconds}`.
+**POST** `/api/knowledge/sync/` `{"retry_failed": true}` re-queues failed documents (optional) and runs a cycle now without waiting for the batching window.
+**POST** `/api/knowledge/documents/{id}/resync/` retries one failed document (400 if it did not fail). Administrators only; `403` with `upgrade_required` when the plan lacks the module.
+When a job ends, each person who uploaded files in it receives one email, **"Your agent has just finished its retraining"**, listing what is now available and what could not be learned and why. Bedrock does not say which file failed, so the failing S3 keys are read from the job's failure reasons.

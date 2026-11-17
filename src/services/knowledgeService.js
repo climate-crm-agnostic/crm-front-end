@@ -43,3 +43,18 @@ export const updateKnowledgeDocument = async (id, data) =>
 
 export const deleteKnowledgeDocument = async (id) =>
     json(await fetch(`${BASE}/documents/${id}/`, { method: "DELETE", headers: getHeaders() }), "Could not delete the document");
+
+/* ── Sync with the knowledge bases ───────────────────────────────────────── */
+/** Queue counts and the running / last sync job of each knowledge base. */
+export const getKnowledgeSync = async () =>
+    json(await fetch(`${BASE}/sync/`, { headers: getHeaders() }), "Could not load the sync status");
+
+/** "Sync now": starts a job without waiting for the batching window; optionally re-queues the failed files first. */
+export const startKnowledgeSync = async ({ retryFailed = false } = {}) =>
+    json(await fetch(`${BASE}/sync/`, {
+        method: "POST", headers: getHeaders(), body: JSON.stringify({ retry_failed: retryFailed }),
+    }), "Could not start the sync");
+
+/** Puts one failed document back in the queue. */
+export const resyncKnowledgeDocument = async (id) =>
+    json(await fetch(`${BASE}/documents/${id}/resync/`, { method: "POST", headers: getHeaders() }), "Could not retry the document");
