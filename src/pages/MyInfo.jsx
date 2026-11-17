@@ -179,7 +179,7 @@ export const MyInfo = () => {
                                     <>
                                         <CreditsBar credits={credits} className="max-w-none" />
                                         <p className="mt-3 text-[13px] text-muted-foreground">
-                                            Shared by your whole account. Resets monthly (UTC).
+                                            These are your own credits; each person has their own balance. Resets monthly (UTC).
                                         </p>
                                     </>
                                 )}

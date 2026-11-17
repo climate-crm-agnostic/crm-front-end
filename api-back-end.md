@@ -1237,27 +1237,46 @@ Records the lending and return of assets to specific personnel. Creating an assi
 | `country` | String | Country |
 | `attributes` | JSONB | Dynamic key-value attributes |
 
-## AI Credits (Chett AI)
-Credits are measured and displayed only (no blocking, no alerts).
-#### Get AI Credits
+## AI Credits (Intelligence by CodeX Academy)
+**Every user has their own monthly credit balance** (1 credit = US$0.01 of Bedrock cost, with the CodeX Academy margin applied
+in the weights). The tier sets the allotment **per user**: Full 4,000 · Full Plus 10,000 · Business 25,000 · Enterprise 50,000
+(placeholder). Free Trial and Basic have none (no AI). The month is the calendar month in UTC. Each user's calls
+are metered in a ledger, so a user running out does **not** affect anyone else.
+
+- **80 %**: `status` becomes `warning` (the UI turns amber).
+- **100 %**: `status` becomes `exhausted` and every AI endpoint answers **402** for that user (administrators included) before calling Bedrock.
+  The one message that crosses 100 % still finishes; the next is refused.
+- An administrator can **top up a specific user** (below).
+
+#### Get my AI credits
 **GET** `/api/ai/credits/` (requires the `ai` plan feature and `app.view_aiconversation`; 403 otherwise)
 ```json
-{"enabled": true, "tier": "full", "unit": "credits",
+{"enabled": true, "user_id": 12, "tier": "full", "unit": "credits",
  "period": {"start": "2026-11-01", "end": "2026-11-30", "label": "November 2026", "timezone": "UTC"},
- "pool": 4000, "used": 1234.5, "remaining": 2765.5, "percent": 30.9}
+ "pool": 4500, "base_pool": 4000, "extra": 500, "used": 1234.5, "remaining": 3265.5, "percent": 27.4,
+ "status": "ok", "warn_percent": 80}
 ```
-`percent` is not capped at 100. When `pool` is 0, `enabled` is `false` and `percent` is `null`.
-The pool is per ACCOUNT: `pool = base_pool + extra` (administrator top-ups of the current month). `status` is
-`ok`, `warning` (>= `warn_percent`, 80), `exhausted` (used >= pool) or `disabled` (no pool).
-
-**Credit gate.** At `exhausted` every AI endpoint (Chett, contracts AI chat/preview/PDF upload, meeting documents chat/preview, supplier-bill scan, email/template/call-prompt Polish) answers
-**402** `{"detail": "...", "credits_exhausted": true, "credits": {...}}` before calling Bedrock. Superusers are blocked too.
-#### Top-ups (administrators: superuser or `app.add_aicredittopup`)
-**GET** `/api/ai/credits/topups/` lists this month's top-ups. **POST** `/api/ai/credits/topups/` `{"credits": 500, "note": "..."}` (0 < credits <= 1,000,000) adds credits to the account pool for the current month (append-only) and returns the new summary (201).
-#### Consumption per user (same permission)
-**GET** `/api/ai/credits/users/?period=YYYY-MM` returns `{period, total, users: [{user_id, username, credits, share}]}`.
+`pool = base_pool + extra` (this user's top-ups of the month). `percent` is not capped at 100. `status`: `ok`, `warning`, `exhausted` or `disabled` (no allotment).
+#### Exhausted response (402)
+Any AI endpoint (Chett, contracts AI chat/preview/PDF upload, meeting documents chat/preview, supplier-bill scan, email/template/call-prompt Polish, knowledge uploads):
+`{"detail": "You have used all of your AI credits for this month. Ask an administrator to add more credits.", "credits_exhausted": true, "credits": {...}}`
 #### Chat response
-**POST** `/api/ai/chat/` also returns `credits` (same object plus `message_credits`). The chat is a single POST, so the UI polls `GET /api/ai/credits/` every ~3 s while a reply is pending.
+**POST** `/api/ai/chat/` also returns `credits` (the caller's object plus `message_credits`). The UI polls `GET /api/ai/credits/` every ~3 s while a reply is pending.
+#### Top-ups (administrators: superuser or `app.add_aicredittopup`)
+**POST** `/api/ai/credits/topups/` `{"user": 12, "credits": 500, "note": "..."}` gives **that user** extra credits for the current month
+(`0 < credits <= 1,000,000`; the user must be active). Append-only. Returns that user's new summary (201).
+**GET** `/api/ai/credits/topups/?user=<id>` lists this month's top-ups (all users, or one).
+#### Balance of every user (same permission)
+**GET** `/api/ai/credits/users/?period=YYYY-MM`
+```json
+{"period": "2026-11", "total": 5000, "unattributed": 0, "per_user_pool": 4000,
+ "users": [{"user_id": 12, "username": "ana", "full_name": "Ana Perez", "is_active": true, "used": 4000, "extra": 0,
+            "pool": 4000, "remaining": 0, "percent": 100.0, "status": "exhausted", "share": 80.0}]}
+```
+Active users always appear, even with no usage. `unattributed` is consumption with no user (system calls).
+#### Account totals (deploy-app only)
+**GET** `/api/ai/credits/service/` with header `X-Credits-Key`: account-wide `pool` (sum of every active user's allotment plus top-ups), `used`, `percent`,
+`per_user_pool`, `users`, `users_exhausted`, `users_warning` and the reconciliation counters.
 
 ## Knowledge base (Intelligence)
 Company files that Intelligence answers from. Requires the `knowledge_base` plan feature. **Administrators only**
