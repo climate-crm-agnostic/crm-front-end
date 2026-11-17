@@ -1327,7 +1327,7 @@ When a job ends, each person who uploaded files in it receives one email, **"You
 
 ### Asking the knowledge base (any user with Intelligence)
 
-Requires the `ai` and `knowledge_base` plan features and `app.view_aiconversation`; otherwise `403` (with `feature_gate` and `upgrade_required: true` when it is the plan). Everything an answer contains is limited to the documents the caller's access groups allow; nothing the client sends can widen that.
+Requires the `ai` and `knowledge_base` plan features and `app.view_aiconversation`; otherwise `403` (with `feature_gate` and `upgrade_required: true` when it is the plan). Everything an answer contains is limited to the documents the caller's access groups allow; nothing the client sends can widen that. Superusers (administrators) are the one exception by design: they can consult every group, since they manage the documents.
 
 **POST** `/api/knowledge/chat/` `{"message": "...", "conversation_id": "<uuid, optional>"}` (message up to 2000 characters) →
 `{conversation_id, conversation_name, assistant_message, sources: [{n, doc_id, title, kind, score, snippet?, start_seconds?, end_seconds?}], files: [{name, key, kind, size}], credits}`.

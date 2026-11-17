@@ -898,7 +898,7 @@ export const ChettAI = () => {
                                 value={input}
                                 onChange={e => setInput(e.target.value)}
                                 onKeyDown={handleKeyDown}
-                                placeholder="Ask about your CRM data..."
+                                placeholder={isKnowledge ? "Ask about your company documents..." : "Ask about your CRM data..."}
                                 rows={1}
                                 disabled={sending}
                                 style={{
