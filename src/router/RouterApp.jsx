@@ -47,6 +47,7 @@ import { ResetPassword } from "../pages/ResetPassword";
 import { ForgotPassword } from "../pages/ForgotPassword";
 import { Settings } from "../pages/Settings"
 import { ChettAI } from "../pages/ChettAI";
+import { KnowledgeBase } from "../pages/KnowledgeBase";
 import { AuditLog } from "../pages/AuditLog";
 import { MyInfo } from "../pages/MyInfo";
 import { Chat } from "../pages/Chat";
@@ -160,6 +161,7 @@ export const RouterApp = () => {
                 <Route path="settings" element={<PermissionGuard requiredPermission="auth.add_user"><Settings /></PermissionGuard>} />
                 <Route path="intelligence" element={<PermissionGuard requiredPermission="app.view_aiconversation"><FeatureGate feature="ai"><ChettAI /></FeatureGate></PermissionGuard>} />
                 <Route path="chett-ai" element={<Navigate to="/intelligence" replace />} />
+                <Route path="intelligence/knowledge" element={<PermissionGuard requiredPermission="app.add_knowledgedocument"><FeatureGate feature="knowledge_base"><KnowledgeBase /></FeatureGate></PermissionGuard>} />
                 <Route path="audit-log" element={<PermissionGuard requiredPermission="auth.add_user"><FeatureGate feature="audit_trail"><AuditLog /></FeatureGate></PermissionGuard>} />
                 <Route path="chat" element={<FeatureGate feature="chat"><Chat /></FeatureGate>} />
                 <Route path="task" element={<PermissionGuard requiredPermission="app.view_task"><FeatureGate feature="tasks"><Tasks /></FeatureGate></PermissionGuard>} />

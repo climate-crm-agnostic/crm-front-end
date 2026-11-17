@@ -1258,3 +1258,23 @@ The pool is per ACCOUNT: `pool = base_pool + extra` (administrator top-ups of th
 **GET** `/api/ai/credits/users/?period=YYYY-MM` returns `{period, total, users: [{user_id, username, credits, share}]}`.
 #### Chat response
 **POST** `/api/ai/chat/` also returns `credits` (same object plus `message_credits`). The chat is a single POST, so the UI polls `GET /api/ai/credits/` every ~3 s while a reply is pending.
+
+## Knowledge base (Intelligence)
+Company files that Intelligence answers from. Requires the `knowledge_base` plan feature. **Administrators only**
+(superuser or the `add_/view_/change_/delete_` knowledgegroup / knowledgedocument permissions); other users get 403.
+Access is decided by **access groups** (not CRM roles): a user may belong to many groups, plus the built-in *Everyone*.
+#### Access groups
+**GET/POST** `/api/knowledge/groups/` · **GET/PATCH/DELETE** `/api/knowledge/groups/{id}/`
+```json
+{"id": "…", "name": "Finance", "description": "", "is_everyone": false, "member_ids": [3, 7],
+ "members": [{"id": 3, "username": "ana", "full_name": "Ana Perez"}], "member_count": 2, "document_count": 4}
+```
+Names are unique (case-insensitive). *Everyone* cannot be renamed, given members or deleted; a group with documents cannot be deleted (400).
+#### Documents
+**GET** `/api/knowledge/documents/?group=<id>&kind=document|image|media` ·
+**POST** `/api/knowledge/documents/` multipart: `file`, `group` (required), `title` (optional) ·
+**PATCH** `/api/knowledge/documents/{id}/` (`title`, `group`) · **DELETE** (soft delete).
+- Types: PDF, DOC/DOCX, XLS/XLSX, CSV, TXT, MD (50 MB) · PNG, JPG (20 MB) · MP3, WAV, M4A, FLAC, OGG, MP4, MOV (200 MB). The file *content* is verified, not just the extension.
+- `409` duplicate file (same SHA-256) · `402` AI credits exhausted · `502` storage failure (no row is kept).
+- `kind` is `document`, `image` or `media`; `kb` is `docs` (documents and images) or `media` (audio and video).
+- `status`: `pending_sync` → `syncing` → `synced` | `failed`. Moving a document to another group rewrites its S3 metadata and queues a re-sync.

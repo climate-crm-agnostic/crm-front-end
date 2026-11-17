@@ -115,3 +115,10 @@ export const useChettAccess = () => {
     const allowed = user?.is_superuser === true || (user?.permissions || []).includes("app.view_aiconversation");
     return Boolean(allowed && isFeatureEnabled("ai"));
 };
+
+/** Whether the current user may manage the knowledge base (administrators, on plans that include it). */
+export const useKnowledgeAccess = () => {
+    const { user, isFeatureEnabled } = useAuth();
+    const allowed = user?.is_superuser === true || (user?.permissions || []).includes("app.add_knowledgedocument");
+    return Boolean(allowed && isFeatureEnabled("knowledge_base"));
+};
