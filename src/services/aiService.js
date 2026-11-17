@@ -47,8 +47,9 @@ export const deleteConversation = async (id) => {
     return true;
 };
 
-// Monthly AI credit usage for the whole account: { enabled, pool, used, remaining, percent, period, ... }.
-// Throws on 403 (plan without AI / no permission) so callers can hide the widgets.
+// Monthly AI credit usage of the calling user: { enabled, pool, used, remaining, percent, period, ... }.
+// Throws on 403 (plan without AI / no permission) so callers can hide the widgets; the
+// error carries `status` so the shared store can tell "not available" from a transient failure.
 export const getAICredits = async () => {
     const res = await fetch(`${base}/credits/`, { headers: getHeaders() });
     if (!res.ok) {

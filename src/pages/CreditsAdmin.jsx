@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Coins, Database, Plus, Search } from "lucide-react";
+import { Coins, Database, Phone, Plus, Search } from "lucide-react";
 import Swal from "sweetalert2";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -189,6 +189,18 @@ export const CreditsAdmin = () => {
                 </div>
             </Card>
 
+            {Number(report?.calling?.used) > 0 && (
+                <Card>
+                    <CardHeader icon={Phone} title="Outbound calls"
+                        subtitle="Reported by the calling service into the same credits; shared by the whole account, not taken from anyone's own credits" />
+                    <div className="grid grid-cols-2 gap-4 px-6 py-5 md:grid-cols-4" data-testid="calling-card">
+                        <Stat label="Call credits" value={formatDecimal(report.calling.used)} />
+                        <Stat label="Agent credits" value={formatDecimal(report.calling.agent_used)} />
+                        <Stat label="Phone credits" value={formatDecimal(report.calling.connect_used)} />
+                        <Stat label="Call minutes" value={formatDecimal(report.calling.connect_minutes)} />
+                    </div>
+                </Card>
+            )}
             {ingestion?.enabled && isCurrent && (
                 <Card>
                     <CardHeader icon={Database} title="Knowledge ingestion budget"

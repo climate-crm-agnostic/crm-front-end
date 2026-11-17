@@ -40,6 +40,26 @@ beforeEach(() => {
 
 const rowOf = async (name) => (await screen.findByText(name)).closest("tr");
 
+describe("CreditsAdmin outbound calls", () => {
+    it("shows the calling consumption reported into the credits ledger", async () => {
+        getCreditUsers.mockImplementation(async (p) => ({
+            ...report(p || "2026-11"),
+            calling: { used: 61.8, agent_used: 5.8, connect_used: 56, connect_minutes: 3.077 },
+        }));
+        render(<CreditsAdmin />);
+        await rowOf("Ana Perez");
+        expect(screen.getByTestId("stat-call-credits").textContent).toBe("61.80");
+        expect(screen.getByTestId("stat-agent-credits").textContent).toBe("5.80");
+        expect(screen.getByTestId("stat-phone-credits").textContent).toBe("56.00");
+        expect(screen.getByTestId("stat-call-minutes").textContent).toBe("3.08");
+    });
+    it("hides the card when there is no calling consumption", async () => {
+        getCreditUsers.mockImplementation(async (p) => ({ ...report(p || "2026-11"), calling: { used: 0, agent_used: 0, connect_used: 0, connect_minutes: 0 } }));
+        render(<CreditsAdmin />);
+        await rowOf("Ana Perez");
+        expect(screen.queryByTestId("calling-card")).toBeNull();
+    });
+});
 describe("CreditsAdmin balances", () => {
     it("shows every person's usage, allotment (with top-ups) and status", async () => {
         render(<CreditsAdmin />);

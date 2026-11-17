@@ -479,12 +479,6 @@ export const ChettAI = () => {
         setInput("");
     };
 
-    // While a reply is in flight, poll so the meter moves as soon as the ledger records usage.
-    useEffect(() => {
-        if (!sending) return undefined;
-        const timer = setInterval(refreshAICredits, 3000);
-        return () => clearInterval(timer);
-    }, [sending]);
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages, sending]);

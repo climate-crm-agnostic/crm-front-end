@@ -1238,7 +1238,7 @@ Records the lending and return of assets to specific personnel. Creating an assi
 | `attributes` | JSONB | Dynamic key-value attributes |
 
 ## AI Credits (Intelligence by CodeX Academy)
-**Every user has their own monthly credit balance** (1 credit = US$0.01 of Bedrock cost, with the CodeX Academy margin applied
+**Every user has their own monthly credit balance** (a credit is sold at US$0.01; the AWS cost behind it is about US$0.00275, the difference is the CodeX Academy margin applied
 in the weights). The tier sets the allotment **per user**: Full 4,000 · Full Plus 10,000 · Business 25,000 · Enterprise 50,000
 (placeholder). Free Trial and Basic have none (no AI). The month is the calendar month in UTC. Each user's calls
 are metered in a ledger, so a user running out does **not** affect anyone else.
@@ -1261,7 +1261,7 @@ are metered in a ledger, so a user running out does **not** affect anyone else.
 Any AI endpoint (Chett, contracts AI chat/preview/PDF upload, meeting documents chat/preview, supplier-bill scan, email/template/call-prompt Polish, knowledge uploads):
 `{"detail": "You have used all of your AI credits for this month. Ask an administrator to add more credits.", "credits_exhausted": true, "credits": {...}}`
 #### Chat response
-**POST** `/api/ai/chat/` also returns `credits` (the caller's object plus `message_credits`). The UI polls `GET /api/ai/credits/` every ~3 s while a reply is pending.
+**POST** `/api/ai/chat/` also returns `credits` (the caller's object plus `message_credits`). `credits` is `null` if the ledger could not be read (the answer itself is never failed by that). The UI publishes that object to the shared meter and re-fetches `GET /api/ai/credits/` once when the reply completes (concurrent callers share one request; there is no polling). A 403 hides the meters; other errors keep the last value.
 #### Top-ups (administrators: superuser or `app.add_aicredittopup`)
 **POST** `/api/ai/credits/topups/` `{"user": 12, "credits": 500, "note": "..."}` gives **that user** extra credits for the current month
 (`0 < credits <= 1,000,000`; the user must be active). Append-only. Returns that user's new summary (201).
