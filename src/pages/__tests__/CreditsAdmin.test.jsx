@@ -2,12 +2,12 @@ import { describe, it, expect, vi, beforeEach, beforeAll } from "vitest";
 import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 
 vi.mock("@/services/creditsAdminService", () => ({
-    getCreditUsers: vi.fn(), getCreditTopUps: vi.fn(), createCreditTopUp: vi.fn(),
+    getCreditUsers: vi.fn(), getCreditTopUps: vi.fn(), createCreditTopUp: vi.fn(), getIngestionBudget: vi.fn(),
 }));
 vi.mock("sweetalert2", () => ({ default: { fire: vi.fn().mockResolvedValue({ isConfirmed: true }) } }));
 
 import Swal from "sweetalert2";
-import { createCreditTopUp, getCreditTopUps, getCreditUsers } from "@/services/creditsAdminService";
+import { createCreditTopUp, getCreditTopUps, getCreditUsers, getIngestionBudget } from "@/services/creditsAdminService";
 import { CreditsAdmin } from "../CreditsAdmin.jsx";
 
 beforeAll(() => {
@@ -35,6 +35,7 @@ beforeEach(() => {
     vi.clearAllMocks();
     getCreditUsers.mockImplementation(async (p) => report(p || "2026-11"));
     getCreditTopUps.mockResolvedValue({ period: "2026-11", topups: [] });
+    getIngestionBudget.mockResolvedValue({ enabled: true, pool: 4000, used: 1200, percent: 30, status: "ok", period: { label: "November 2026" } });
 });
 
 const rowOf = async (name) => (await screen.findByText(name)).closest("tr");
@@ -142,6 +143,57 @@ describe("CreditsAdmin top-ups", () => {
     it("says so when nothing was added this month", async () => {
         render(<CreditsAdmin />);
         expect(await screen.findByTestId("topups-empty")).toBeTruthy();
+    });
+});
+
+describe("CreditsAdmin ingestion budget", () => {
+    it("shows the account's budget apart from the people's balances", async () => {
+        render(<CreditsAdmin />);
+        const card = await screen.findByTestId("ingestion-card");
+        expect(card.textContent).toContain("Used 1,200.00 of 4,000 credits");
+        expect(screen.getAllByTestId("credit-row")).toHaveLength(4);      // people unaffected
+    });
+
+    it("says uploads are paused when it is exhausted", async () => {
+        getIngestionBudget.mockResolvedValue({ enabled: true, pool: 4000, used: 4000, percent: 100, status: "exhausted" });
+        render(<CreditsAdmin />);
+        expect((await screen.findByTestId("ingestion-card")).textContent).toContain("Uploads paused");
+    });
+
+    it("tops up the ingestion budget without choosing a person", async () => {
+        createCreditTopUp.mockResolvedValue({});
+        render(<CreditsAdmin />);
+        await screen.findByTestId("ingestion-card");
+        fireEvent.click(screen.getByRole("button", { name: "Add ingestion credits" }));
+        expect(await screen.findByText("Add ingestion credits", { selector: "[data-slot=dialog-title], h2" })).toBeTruthy();
+        expect(screen.getByTestId("topup-current").textContent).toMatch(/Used 1,200\.00 of 4,000 this month\./);
+        fireEvent.change(screen.getByLabelText("Credits to add"), { target: { value: "2000" } });
+        expect(screen.getByTestId("topup-preview").textContent).toContain("New budget this month: 6,000");
+        fireEvent.change(screen.getByLabelText("Note (optional)"), { target: { value: "Onboarding" } });
+        fireEvent.click(screen.getByRole("button", { name: "Add credits" }));
+        await waitFor(() => expect(createCreditTopUp).toHaveBeenCalledWith({ pool: "ingestion", credits: 2000, note: "Onboarding" }));
+        await waitFor(() => expect(getIngestionBudget).toHaveBeenCalledTimes(2));   // budget reloaded
+    });
+
+    it("is not offered when the plan has no ingestion budget or for past months", async () => {
+        getIngestionBudget.mockResolvedValue({ enabled: false, pool: 0, used: 0, percent: null, status: "disabled" });
+        const { unmount } = render(<CreditsAdmin />);
+        await screen.findByText("Ana Perez");
+        expect(screen.queryByTestId("ingestion-card")).toBeNull();
+        unmount();
+        getIngestionBudget.mockResolvedValue({ enabled: true, pool: 4000, used: 10, percent: 0.3, status: "ok" });
+        render(<CreditsAdmin />);
+        await screen.findByTestId("ingestion-card");
+        fireEvent.change(screen.getByLabelText("Month"), { target: { value: "2026-10" } });
+        await waitFor(() => expect(screen.queryByTestId("ingestion-card")).toBeNull());
+    });
+
+    it("lists ingestion top-ups in this month's history", async () => {
+        getCreditTopUps.mockResolvedValue({ period: "2026-11", topups: [
+            { id: "t9", pool: "ingestion", user_id: null, username: null, credits: 1000, note: "", created_by: "root", created_at: "2026-11-12T10:00:00Z" },
+        ] });
+        render(<CreditsAdmin />);
+        expect((await screen.findAllByTestId("topup-row"))[0].textContent).toContain("+1,000 for the ingestion budget");
     });
 });
 

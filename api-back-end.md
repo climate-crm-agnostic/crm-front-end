@@ -1266,6 +1266,11 @@ Any AI endpoint (Chett, contracts AI chat/preview/PDF upload, meeting documents 
 **POST** `/api/ai/credits/topups/` `{"user": 12, "credits": 500, "note": "..."}` gives **that user** extra credits for the current month
 (`0 < credits <= 1,000,000`; the user must be active). Append-only. Returns that user's new summary (201).
 **GET** `/api/ai/credits/topups/?user=<id>` lists this month's top-ups (all users, or one).
+#### Knowledge ingestion budget (per account, separate from the personal credits)
+Loading files into the knowledge base is charged here, whoever uploads, so it never eats anyone's own credits. Allotment per month: Full 4,000 · Full Plus 10,000 · Business 25,000 · Enterprise 50,000 (placeholder); `AI_INGESTION_MONTHLY_POOL` overrides it per instance.
+**GET** `/api/ai/credits/ingestion/` (credits or knowledge administrators) returns the same object as a user's credits (`pool`, `base_pool`, `extra`, `used`, `remaining`, `percent`, `status`).
+**POST** `/api/ai/credits/topups/` `{"pool": "ingestion", "credits": 2000, "note": "..."}` adds to it for the current month (no `user`). `GET /api/ai/credits/topups/?pool=user|ingestion` filters the history.
+Ingestion entries (`kb_embed`, `kb_parse`) are excluded from every user's own `used`; `/api/ai/credits/users/` shows them per person as `ingestion_caused`.
 #### Balance of every user (same permission)
 **GET** `/api/ai/credits/users/?period=YYYY-MM`
 ```json
@@ -1276,7 +1281,7 @@ Any AI endpoint (Chett, contracts AI chat/preview/PDF upload, meeting documents 
 Active users always appear, even with no usage. `unattributed` is consumption with no user (system calls).
 #### Account totals (deploy-app only)
 **GET** `/api/ai/credits/service/` with header `X-Credits-Key`: account-wide `pool` (sum of every active user's allotment plus top-ups), `used`, `percent`,
-`per_user_pool`, `users`, `users_exhausted`, `users_warning` and the reconciliation counters.
+`per_user_pool`, `users`, `users_exhausted`, `users_warning`, `ingestion_pool`, `ingestion_used`, `ingestion_percent` and the reconciliation counters.
 
 ## Knowledge base (Intelligence)
 Company files that Intelligence answers from. Requires the `knowledge_base` plan feature. **Administrators only**
@@ -1294,19 +1299,19 @@ Names are unique (case-insensitive). *Everyone* cannot be renamed, given members
 **POST** `/api/knowledge/documents/` multipart: `file`, `group` (required), `title` (optional) ·
 **PATCH** `/api/knowledge/documents/{id}/` (`title`, `group`) · **DELETE** (soft delete).
 - Types: PDF, DOC/DOCX, XLS/XLSX, CSV, TXT, MD (50 MB) · PNG, JPG (20 MB) · MP3, WAV, M4A, FLAC, OGG, MP4, MOV (200 MB). The file *content* is verified, not just the extension.
-- `409` duplicate file (same SHA-256) · `402` AI credits exhausted **or** not enough credits to index this file (`insufficient_credits: true`, `required_credits`) · `502` storage failure (no row is kept).
+- `409` duplicate file (same SHA-256) · `402` the ingestion budget cannot cover this file · `502` storage failure (no row is kept).
 - `kind` is `document`, `image` or `media`; `kb` is `docs` (documents) or `media` (audio, video and images, parsed by Bedrock Data Automation).
 - Each document returns `est_embedding_tokens`, `est_units` / `est_unit`, `est_method`, `est_credits` and `credits_charged` (what indexing it has cost so far) and `uploaded_by_name`.
-#### Cost of indexing (charged to the person who uploads or re-syncs, in the same credits ledger)
+#### Cost of indexing (charged to the ACCOUNT's monthly ingestion budget, not to the uploader's own credits)
 Bedrock does not report the tokens an ingestion job embeds, so they are estimated **from the file itself** at upload: text extracted from PDF, Word, Excel and text files
 (~4 characters per token, +10 % because chunks overlap); the real duration of audio and video read from the file header (`est_method` is `header`; `size_heuristic` if it could not be read;
-`no_text` for a PDF with no extractable text). Every sync that re-processes a file is charged again, and the same sync is never charged twice.
+`no_text` for a PDF with no extractable text). Every sync that re-processes a file is charged again, and the same sync is never charged twice. The ledger still records who caused it.
 | What | Credits |
 |---|---|
 | Embedding text (Titan Text Embeddings v2) | 0.008 per 1,000 tokens (a 100-page document ≈ 0.4) |
 | Audio (Bedrock Data Automation) | 2.4 per minute |
 | Video (Bedrock Data Automation) | 20 per minute |
 | Image (Bedrock Data Automation) | 1.2 per image |
-Audio and video also embed their transcript (~200 tokens per minute). The upload is refused with `402` before anything is stored if the person's remaining credits do not cover the estimate.
+Audio and video also embed their transcript (~200 tokens per minute). The upload is refused with `402` (`insufficient_ingestion_credits`, `required_credits`, `ingestion`) before anything is stored if the account's remaining ingestion budget does not cover the estimate. Running out of your own AI credits does **not** block uploads.
 In the ledger these are the features `kb_embed` (tokens) and `kb_parse` (units), so they appear in the reconciliation report and in `/api/ai/credits/users/`.
 - `status`: `pending_sync` → `syncing` → `synced` | `failed`. Moving a document to another group rewrites its S3 metadata and queues a re-sync.

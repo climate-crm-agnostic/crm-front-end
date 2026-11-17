@@ -11,7 +11,10 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardHeader } from "@/components/SectionCard";
 import { AI_NAME } from "@/lib/brand";
-import { formatDecimal } from "@/lib/utils";
+import { Progress } from "@/components/ui/progress";
+import { getIngestionBudget } from "@/services/creditsAdminService";
+import { formatCount, formatDecimal } from "@/lib/utils";
+import { creditStatus, formatPercent } from "@/lib/credits";
 import { getUsers } from "@/services/userService";
 import {
     createKnowledgeGroup, deleteKnowledgeDocument, deleteKnowledgeGroup, getKnowledgeDocuments,
@@ -46,6 +49,34 @@ const fail = (err) => Swal.fire("Error", err?.message || "Something went wrong."
 const noOutsideClose = { onInteractOutside: (e) => e.preventDefault(), onPointerDownOutside: (e) => e.preventDefault() };
 
 const selectClass = "h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50";
+
+/* ── Ingestion budget ────────────────────────────────────────────────────── */
+const BUDGET_BAR = {
+    ok: "",
+    warning: "[&_[data-slot=progress-indicator]]:bg-amber-500",
+    exhausted: "[&_[data-slot=progress-indicator]]:bg-destructive",
+};
+
+function IngestionBudget({ budget }) {
+    if (!budget?.enabled) return null;
+    const status = creditStatus(budget);
+    return (
+        <div className="space-y-1.5 border-b px-6 py-4" data-testid="ingestion-budget">
+            <div className="flex items-baseline justify-between gap-3 text-sm">
+                <span>Ingestion budget this month: {formatDecimal(budget.used)} of {formatCount(budget.pool)} credits</span>
+                <span className="font-semibold tabular-nums">{formatPercent(budget.percent)}</span>
+            </div>
+            <Progress value={Math.min(Math.max(Number(budget.percent) || 0, 0), 100)} aria-label="Ingestion budget usage" className={`h-1.5 ${BUDGET_BAR[status]}`} />
+            {status === "warning" && <p className="text-xs text-amber-600" role="status">Most of this month's ingestion budget is used.</p>}
+            {status === "exhausted" && (
+                <p className="text-xs font-semibold text-destructive" role="alert">
+                    Ingestion budget used up. New uploads are paused until an administrator adds more credits.
+                </p>
+            )}
+            <p className="text-xs text-muted-foreground">Shared by the whole account. Indexing files uses this budget, not anyone's own credits.</p>
+        </div>
+    );
+}
 
 /* ── Documents ───────────────────────────────────────────────────────────── */
 function GroupChip({ name, everyone }) {
@@ -95,7 +126,7 @@ function UploadDialog({ open, onClose, groups, onUploaded }) {
                                 setFile(f);
                                 if (f && !title) setTitle(f.name.replace(/\.[^.]+$/, ""));
                             }} />
-                        <p className="text-xs text-muted-foreground">Documents, images, audio and video. Documents up to 50 MB, media up to 200 MB. Indexing a file uses your AI credits; audio and video use the most.</p>
+                        <p className="text-xs text-muted-foreground">Documents, images, audio and video. Documents up to 50 MB, media up to 200 MB. Indexing a file uses the account's monthly ingestion budget; audio and video use the most.</p>
                     </div>
                     <div className="space-y-1.5">
                         <Label htmlFor="kb-title">Title</Label>
@@ -161,6 +192,12 @@ function DocumentsTab({ groups }) {
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
     const [moving, setMoving] = useState(null);
+    const [budget, setBudget] = useState(null);
+
+    const loadBudget = useCallback(() => {
+        getIngestionBudget().then(setBudget).catch(() => setBudget(null));
+    }, []);
+    useEffect(() => { loadBudget(); }, [loadBudget]);
 
     const load = useCallback(async () => {
         try { setDocs(await getKnowledgeDocuments()); } catch (err) { await fail(err); } finally { setLoading(false); }
@@ -181,6 +218,7 @@ function DocumentsTab({ groups }) {
         <Card>
             <CardHeader icon={FolderLock} title="Documents" subtitle="Files the assistant can answer from"
                 right={<Button onClick={() => setUploading(true)}><Upload className="size-4" />Upload</Button>} />
+            <IngestionBudget budget={budget} />
             <div className="px-2 py-2">
                 {loading ? (
                     <div className="m-4 h-24 animate-pulse rounded-lg bg-muted" />
@@ -228,7 +266,7 @@ function DocumentsTab({ groups }) {
                     </Table>
                 )}
             </div>
-            <UploadDialog open={uploading} onClose={() => setUploading(false)} groups={groups} onUploaded={load} />
+            <UploadDialog open={uploading} onClose={() => setUploading(false)} groups={groups} onUploaded={() => { load(); loadBudget(); }} />
             <MoveDialog doc={moving} onClose={() => setMoving(null)} groups={groups} onSaved={load} />
         </Card>
     );

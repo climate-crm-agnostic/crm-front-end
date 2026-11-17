@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Coins, Plus, Search } from "lucide-react";
+import { Coins, Database, Plus, Search } from "lucide-react";
 import Swal from "sweetalert2";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,7 @@ import { Card, CardHeader } from "@/components/SectionCard";
 import { AI_NAME } from "@/lib/brand";
 import { formatCount, formatDecimal } from "@/lib/utils";
 import { formatPercent } from "@/lib/credits";
-import { createCreditTopUp, getCreditTopUps, getCreditUsers } from "@/services/creditsAdminService";
+import { createCreditTopUp, getCreditTopUps, getCreditUsers, getIngestionBudget } from "@/services/creditsAdminService";
 
 const MAX_TOPUP = 1_000_000;
 const PRESETS = [500, 1000, 5000];
@@ -49,7 +49,9 @@ function TopUpDialog({ user, onClose, onSaved }) {
     const submit = async () => {
         setBusy(true);
         try {
-            await createCreditTopUp({ user: user.user_id, credits: value, note: note.trim() });
+            await createCreditTopUp(user.ingestion
+                ? { pool: "ingestion", credits: value, note: note.trim() }
+                : { user: user.user_id, credits: value, note: note.trim() });
             await onSaved();
             onClose();
         } catch (err) {
@@ -63,16 +65,18 @@ function TopUpDialog({ user, onClose, onSaved }) {
         <Dialog open={Boolean(user)} onOpenChange={(o) => !o && !busy && onClose()}>
             <DialogContent {...noOutsideClose}>
                 <DialogHeader>
-                    <DialogTitle>Add credits for {user ? displayName(user) : ""}</DialogTitle>
+                    <DialogTitle>{user?.ingestion ? "Add ingestion credits" : `Add credits for ${user ? displayName(user) : ""}`}</DialogTitle>
                     <DialogDescription>
-                        The credits are added to this person only, for the current month. Everyone else keeps their own balance.
+                        {user?.ingestion
+                            ? "These credits are added to the account's ingestion budget for the current month. It is shared by every administrator and never touches anyone's own credits."
+                            : "The credits are added to this person only, for the current month. Everyone else keeps their own balance."}
                     </DialogDescription>
                 </DialogHeader>
                 {user && (
                     <div className="space-y-4">
                         <p className="text-sm text-muted-foreground" data-testid="topup-current">
                             Used {formatDecimal(user.used)} of {formatCount(user.pool)} this month
-                            {user.status === "exhausted" ? " — currently blocked." : "."}
+                            {user.status === "exhausted" ? (user.ingestion ? " — new uploads are paused." : " — currently blocked.") : "."}
                         </p>
                         <div className="space-y-1.5">
                             <Label htmlFor="topup-amount">Credits to add</Label>
@@ -93,7 +97,7 @@ function TopUpDialog({ user, onClose, onSaved }) {
                         </div>
                         {value !== null && (
                             <p className="text-sm font-medium" data-testid="topup-preview">
-                                New allotment this month: {formatCount(Number(user.pool) + value)} credits
+                                New {user.ingestion ? "budget" : "allotment"} this month: {formatCount(Number(user.pool) + value)} credits
                             </p>
                         )}
                     </div>
@@ -125,6 +129,7 @@ export const CreditsAdmin = () => {
     const [filter, setFilter] = useState("all");
     const [target, setTarget] = useState(null);
     const [topups, setTopups] = useState([]);
+    const [ingestion, setIngestion] = useState(null);
 
     const load = useCallback(async (p) => {
         try {
@@ -133,6 +138,7 @@ export const CreditsAdmin = () => {
             setPeriod(data.period);
             if (!p) setCurrentPeriod(data.period);
             if (!p || p === currentPeriod) setTopups((await getCreditTopUps()).topups || []);
+            getIngestionBudget().then(setIngestion).catch(() => setIngestion(null));
         } catch (err) {
             await fail(err);
         } finally {
@@ -182,6 +188,23 @@ export const CreditsAdmin = () => {
                     <Stat label="Near limit" value={formatCount(counts.near)} tone={counts.near ? "text-amber-600" : ""} />
                 </div>
             </Card>
+
+            {ingestion?.enabled && isCurrent && (
+                <Card>
+                    <CardHeader icon={Database} title="Knowledge ingestion budget"
+                        subtitle="Shared by the whole account; loading files into the knowledge base uses this, not anyone's own credits"
+                        right={<Button size="sm" variant="outline" aria-label="Add ingestion credits" onClick={() => setTarget({ ...ingestion, ingestion: true })}><Plus className="size-4" />Add credits</Button>} />
+                    <div className="space-y-2 px-6 py-5" data-testid="ingestion-card">
+                        <div className="flex items-baseline justify-between gap-3 text-sm">
+                            <span>Used {formatDecimal(ingestion.used)} of {formatCount(ingestion.pool)} credits</span>
+                            <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${(STATUS[ingestion.status] || STATUS.ok).chip}`}>
+                                {ingestion.status === "exhausted" ? "Uploads paused" : (STATUS[ingestion.status] || STATUS.ok).label}
+                            </span>
+                        </div>
+                        <Progress value={Math.min(Math.max(Number(ingestion.percent) || 0, 0), 100)} aria-label="Ingestion budget usage" className={`h-1.5 ${(STATUS[ingestion.status] || STATUS.ok).bar}`} />
+                    </div>
+                </Card>
+            )}
 
             <Card>
                 <CardHeader icon={Search} title="Balances" subtitle="Used, allotment and status of each person"
@@ -254,7 +277,7 @@ export const CreditsAdmin = () => {
                             {topups.map((t) => (
                                 <li key={t.id} className="flex items-center justify-between gap-4 px-6 py-3 text-sm" data-testid="topup-row">
                                     <div className="min-w-0">
-                                        <p className="font-medium">+{formatCount(t.credits)} for {t.username}</p>
+                                        <p className="font-medium">+{formatCount(t.credits)} for {t.username || "the ingestion budget"}</p>
                                         <p className="truncate text-xs text-muted-foreground">
                                             {t.note ? `${t.note} · ` : ""}by {t.created_by || "system"} · {new Date(t.created_at).toLocaleDateString()}
                                         </p>

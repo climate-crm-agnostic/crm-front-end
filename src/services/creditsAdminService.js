@@ -20,8 +20,16 @@ export const getCreditTopUps = async (userId) => {
     return json(await fetch(`${BASE}/topups/${qs}`, { headers: getHeaders() }), "Could not load the top-ups");
 };
 
-/** Gives one user extra credits for the current month. Returns that user's new summary. */
-export const createCreditTopUp = async ({ user, credits, note }) =>
+/** The account's monthly knowledge-ingestion budget (shared by every administrator, separate from personal credits). */
+export const getIngestionBudget = async () =>
+    json(await fetch(`${BASE}/ingestion/`, { headers: getHeaders() }), "Could not load the ingestion budget");
+
+/**
+ * Gives one user extra credits for the current month ({ user, credits, note }), or adds to the
+ * account's ingestion budget ({ pool: "ingestion", credits, note }). Returns the new summary.
+ */
+export const createCreditTopUp = async ({ user, pool, credits, note }) =>
     json(await fetch(`${BASE}/topups/`, {
-        method: "POST", headers: getHeaders(), body: JSON.stringify({ user, credits, note: note || "" }),
+        method: "POST", headers: getHeaders(),
+        body: JSON.stringify(pool === "ingestion" ? { pool, credits, note: note || "" } : { user, credits, note: note || "" }),
     }), "Could not add the credits");

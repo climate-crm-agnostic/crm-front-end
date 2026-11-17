@@ -7,12 +7,14 @@ vi.mock("@/services/knowledgeService", () => ({
     createKnowledgeGroup: vi.fn(), updateKnowledgeGroup: vi.fn(), deleteKnowledgeGroup: vi.fn(),
 }));
 vi.mock("@/services/userService", () => ({ getUsers: vi.fn() }));
+vi.mock("@/services/creditsAdminService", () => ({ getIngestionBudget: vi.fn() }));
 vi.mock("sweetalert2", () => ({ default: { fire: vi.fn().mockResolvedValue({ isConfirmed: true }) } }));
 
 import {
     getKnowledgeDocuments, getKnowledgeGroups, uploadKnowledgeDocument, deleteKnowledgeDocument,
 } from "@/services/knowledgeService";
 import { getUsers } from "@/services/userService";
+import { getIngestionBudget } from "@/services/creditsAdminService";
 import { KnowledgeBase } from "../KnowledgeBase.jsx";
 
 beforeAll(() => {
@@ -33,6 +35,7 @@ beforeEach(() => {
     getKnowledgeGroups.mockResolvedValue([everyone, finance]);
     getKnowledgeDocuments.mockResolvedValue(docs);
     getUsers.mockResolvedValue([{ id: 1, username: "ana", full_name: "Ana Perez", is_active: true }]);
+    getIngestionBudget.mockResolvedValue({ enabled: true, pool: 4000, used: 400, percent: 10, status: "ok" });
 });
 
 describe("KnowledgeBase documents", () => {
@@ -96,6 +99,45 @@ describe("KnowledgeBase documents", () => {
         fireEvent.click(screen.getByRole("button", { name: "Delete Budget 2027" }));
         await waitFor(() => expect(deleteKnowledgeDocument).toHaveBeenCalledWith("d1"));
         await waitFor(() => expect(getKnowledgeDocuments).toHaveBeenCalledTimes(2));
+    });
+});
+
+describe("KnowledgeBase ingestion budget", () => {
+    it("shows the account's ingestion budget above the documents", async () => {
+        render(<KnowledgeBase />);
+        const box = await screen.findByTestId("ingestion-budget");
+        expect(box.textContent).toContain("400.00 of 4,000 credits");
+        expect(box.textContent).toContain("10.0%");
+        expect(within(box).queryByRole("alert")).toBeNull();
+    });
+
+    it("warns near the limit and says uploads are paused when it is used up", async () => {
+        getIngestionBudget.mockResolvedValue({ enabled: true, pool: 4000, used: 3300, percent: 82.5, status: "warning" });
+        const { unmount } = render(<KnowledgeBase />);
+        expect((await screen.findByRole("status")).textContent).toMatch(/Most of this month/);
+        unmount();
+        getIngestionBudget.mockResolvedValue({ enabled: true, pool: 4000, used: 4000, percent: 100, status: "exhausted" });
+        render(<KnowledgeBase />);
+        expect((await screen.findByRole("alert")).textContent).toMatch(/Ingestion budget used up\. New uploads are paused/);
+    });
+
+    it("hides the budget when the plan has none or it cannot be loaded", async () => {
+        getIngestionBudget.mockRejectedValue(new Error("403"));
+        render(<KnowledgeBase />);
+        await screen.findByText("Budget 2027");
+        expect(screen.queryByTestId("ingestion-budget")).toBeNull();
+    });
+
+    it("refreshes the budget after an upload", async () => {
+        uploadKnowledgeDocument.mockResolvedValue({ id: "new" });
+        render(<KnowledgeBase />);
+        await screen.findByText("Budget 2027");
+        fireEvent.click(screen.getByRole("button", { name: /upload/i }));
+        await screen.findByRole("button", { name: "Upload" });
+        fireEvent.change(screen.getByLabelText("File"), { target: { files: [new File(["x"], "a.txt")] } });
+        fireEvent.change(screen.getByLabelText("Who can consult it?"), { target: { value: "g-all" } });
+        fireEvent.click(screen.getByRole("button", { name: "Upload" }));
+        await waitFor(() => expect(getIngestionBudget).toHaveBeenCalledTimes(2));
     });
 });
 
