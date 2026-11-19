@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Phone, Trash2, PhoneCall, Users, Eye, Search, Download, Square } from "lucide-react";
+import { Phone, Trash2, PhoneCall, Users, Eye, Search, Download, Square, History } from "lucide-react";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { Button } from "../../components/ui/button";
@@ -11,12 +11,41 @@ import { getCallTemplates } from "../../services/callTemplateService";
 import {
     getCallCampaigns, createCallCampaign, updateCallCampaign, deleteCallCampaign,
     sendCallCampaignNow, previewRecipients, getSendProgress, getCallCampaignRecipients, stopCallCampaign,
+    getCallingBalance, getCallingLedger, getCampaignSpend,
 } from "../../services/callCampaignService";
 import { useClaimedNumber } from "../../hooks/useClaimedNumber";
 import Swal from 'sweetalert2';
 import { formatCount } from "@/lib/utils";
 
 const STATUS_COLORS = { draft: "#9b948e", calling: "#c0622a", called: "var(--secondary-text)" };
+
+// Calling balance: $1 per minute, every started minute charged, at most the campaign's duration.
+const CALL_MINUTE_OPTIONS = [1, 2, 3, 4, 5];
+const DEFAULT_CALL_MINUTES = 5;
+const formatMoney = (cents) => `$${((cents || 0) / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const isValidEmail = (value) => EMAIL_PATTERN.test((value || '').trim());
+// Best-effort: on failure the header keeps the last balance it showed.
+const loadBalance = (setBalance) => getCallingBalance().then(setBalance).catch(() => {});
+
+// Balance history: what each kind of movement means and how it changes the money.
+// sign: +1 adds to the balance, -1 takes from it; 'reserve'/'release' only move money between
+// "available" and "reserved", the total balance does not change.
+const LEDGER_KINDS = {
+    opening_balance: { label: 'Opening balance', sign: 1 },
+    topup: { label: 'Top-up', sign: 1 },
+    reserve: { label: 'Reserved for campaign', sign: -1, reservation: true },
+    release: { label: 'Returned (not used)', sign: 1, reservation: true },
+    call_release: { label: 'Returned (call without result)', sign: 1, reservation: true },
+    charge: { label: 'Call charged', sign: -1 },
+};
+const ledgerLabel = (entry) => (entry.kind === 'charge' && !entry.amount_cents
+    ? 'Call not answered (free)' : (LEDGER_KINDS[entry.kind]?.label || entry.kind));
+const ledgerAmount = (entry) => {
+    const kind = LEDGER_KINDS[entry.kind];
+    if (!entry.amount_cents) return formatMoney(0);
+    return `${kind?.sign < 0 ? '−' : '+'}${formatMoney(entry.amount_cents)}`;
+};
 
 // A campaign reaches 'called' as soon as every call has been DIALED (seconds), but each call's
 // outcome (duration, disconnect reason, recording) only arrives when the call ends, through the
@@ -80,10 +109,15 @@ export const CallCampaignList = () => {
     const [templateId, setTemplateId] = useState("");
     const [audienceFilters, setAudienceFilters] = useState([]);
     const [audienceLogic, setAudienceLogic] = useState("AND");
+    const [maxCallMinutes, setMaxCallMinutes] = useState(String(DEFAULT_CALL_MINUTES));
+    const [escalationEmail, setEscalationEmail] = useState("");
+    const [balance, setBalance] = useState(null);
 
     const [audienceEditor, setAudienceEditor] = useState(null); // campaign being edited, or null
     const [editorFilters, setEditorFilters] = useState([]);
     const [editorLogic, setEditorLogic] = useState("AND");
+    const [editorMinutes, setEditorMinutes] = useState(String(DEFAULT_CALL_MINUTES));
+    const [editorEmail, setEditorEmail] = useState("");
     const [savingAudience, setSavingAudience] = useState(false);
 
     const [sendPreviewCampaign, setSendPreviewCampaign] = useState(null);
@@ -96,6 +130,12 @@ export const CallCampaignList = () => {
     const [detailsCampaign, setDetailsCampaign] = useState(null);
     const [detailsData, setDetailsData] = useState(null);
     const [detailsLoading, setDetailsLoading] = useState(false);
+    const [detailsSpend, setDetailsSpend] = useState(null);
+    const [historyOpen, setHistoryOpen] = useState(false);
+    const [historyEntries, setHistoryEntries] = useState([]);
+    const [historyCursor, setHistoryCursor] = useState(null);
+    const [historyLoading, setHistoryLoading] = useState(false);
+    const [historyError, setHistoryError] = useState("");
     const [detailsSearch, setDetailsSearch] = useState("");
     const [detailsStatusFilter, setDetailsStatusFilter] = useState("all");
     const [detailsResultFilter, setDetailsResultFilter] = useState("all");
@@ -217,6 +257,7 @@ export const CallCampaignList = () => {
         } catch {
             // keep the current list; the next refresh or a reload will catch up
         }
+        loadBalance(setBalance);
     };
 
     const loadAll = async () => {
@@ -225,6 +266,7 @@ export const CallCampaignList = () => {
             const [c, t] = await Promise.all([getCallCampaigns(), getCallTemplates()]);
             setCampaigns(Array.isArray(c) ? c : []);
             setTemplates(Array.isArray(t) ? t : []);
+            loadBalance(setBalance);
         } catch {
             Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load call campaigns', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
         } finally {
@@ -233,12 +275,14 @@ export const CallCampaignList = () => {
     };
 
     const handleCreate = async () => {
-        if (!name.trim() || !templateId) return;
+        if (!name.trim() || !templateId || !isValidEmail(escalationEmail)) return;
         try {
             await createCallCampaign({
                 name, template_id: templateId, audience_filters: audienceFilters, audience_logic: audienceLogic,
+                max_call_minutes: Number(maxCallMinutes), escalation_email: escalationEmail.trim(),
             });
             setName(""); setTemplateId(""); setAudienceFilters([]); setAudienceLogic("AND");
+            setMaxCallMinutes(String(DEFAULT_CALL_MINUTES)); setEscalationEmail("");
             loadAll();
         } catch (err) {
             Swal.fire({ icon: 'error', title: 'Error', text: err.message, toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
@@ -249,6 +293,8 @@ export const CallCampaignList = () => {
         setAudienceEditor(campaign);
         setEditorFilters(campaign.audience_filters || []);
         setEditorLogic(campaign.audience_logic || "AND");
+        setEditorMinutes(String(campaign.max_call_minutes || DEFAULT_CALL_MINUTES));
+        setEditorEmail(campaign.escalation_email || "");
     };
 
     const handleSaveAudience = async () => {
@@ -256,6 +302,7 @@ export const CallCampaignList = () => {
         try {
             await updateCallCampaign(audienceEditor.id, {
                 audience_filters: editorFilters, audience_logic: editorLogic,
+                max_call_minutes: Number(editorMinutes), escalation_email: editorEmail.trim(),
             });
             setAudienceEditor(null);
             loadAll();
@@ -287,6 +334,7 @@ export const CallCampaignList = () => {
         setDetailsStatusFilter("all");
         setDetailsResultFilter("all");
         setSelectedRecipientId(null);
+        setDetailsSpend(null);
         setDetailsLoading(true);
         try {
             if (campaign.status === 'draft') {
@@ -302,6 +350,8 @@ export const CallCampaignList = () => {
                 // blank detail pane the user has to click into first.
                 const landingRecipient = list.find(r => r.recording_url) || list[0];
                 setSelectedRecipientId(landingRecipient?.id ?? null);
+                // Best-effort: the history in DynamoDB is the source of truth for what was spent.
+                getCampaignSpend(campaign.id).then(setDetailsSpend).catch(() => setDetailsSpend({ error: true }));
             }
         } catch (err) {
             setDetailsCampaign(null);
@@ -309,6 +359,28 @@ export const CallCampaignList = () => {
         } finally {
             setDetailsLoading(false);
         }
+    };
+
+    const loadHistory = async (cursor = null) => {
+        setHistoryLoading(true);
+        setHistoryError("");
+        try {
+            const page = await getCallingLedger({ cursor });
+            setHistoryEntries(prev => (cursor ? [...prev, ...page.entries] : page.entries));
+            setHistoryCursor(page.next_cursor);
+            if (!page.ledger_enabled) setHistoryError('The balance history starts after the next calling setup update of this account.');
+        } catch (err) {
+            setHistoryError(err.message);
+        } finally {
+            setHistoryLoading(false);
+        }
+    };
+
+    const openHistory = () => {
+        setHistoryOpen(true);
+        setHistoryEntries([]);
+        setHistoryCursor(null);
+        loadHistory();
     };
 
     const openSendPreview = async (campaign) => {
@@ -336,8 +408,11 @@ export const CallCampaignList = () => {
             setSendResultsTimedOut(false);
             setSendProgressState({ status: 'calling', total, completed: 0, failed: 0, calling: 0 });
             setSendProgressCampaign(campaign);
+            loadBalance(setBalance);
         } catch (err) {
-            Swal.fire({ icon: 'error', title: 'Error', text: err.message, toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
+            // e.g. the balance changed since the preview (another campaign reserved it): the message
+            // says how many calls it covers now.
+            Swal.fire({ icon: 'error', title: 'Error', text: err.message, toast: true, position: 'top-end', showConfirmButton: false, timer: 9000 });
         } finally {
             setSendingId(null);
         }
@@ -395,12 +470,26 @@ export const CallCampaignList = () => {
                         <p className="text-sm text-muted-foreground">Outbound calls to Contacts by an AI agent, using a Call Template's prompt.</p>
                     </div>
                 </div>
-                {!numberLoading && claimedNumber && (
-                    <div className="text-right shrink-0">
-                        <Label className="text-xs text-muted-foreground">Calling from</Label>
-                        <code className="block font-mono text-sm">{claimedNumber}</code>
-                    </div>
-                )}
+                <div className="flex items-start gap-6 shrink-0">
+                    {balance && (
+                        <div className="text-right" title={`${formatMoney(balance.price_cents_per_minute)} per minute. Reserved: calls of campaigns still in progress.`}>
+                            <Label className="text-xs text-muted-foreground">Calling balance</Label>
+                            <p className="text-sm font-semibold tabular-nums">{formatMoney(balance.available_cents)} available</p>
+                            {balance.reserved_cents > 0 && (
+                                <p className="text-xs text-muted-foreground tabular-nums">{formatMoney(balance.reserved_cents)} reserved · {formatMoney(balance.balance_cents)} total</p>
+                            )}
+                            <Button variant="link" size="sm" className="h-auto p-0 text-xs cursor-pointer" onClick={openHistory}>
+                                <History className="h-3 w-3 mr-1" aria-hidden="true" /> Balance history
+                            </Button>
+                        </div>
+                    )}
+                    {!numberLoading && claimedNumber && (
+                        <div className="text-right">
+                            <Label className="text-xs text-muted-foreground">Calling from</Label>
+                            <code className="block font-mono text-sm">{claimedNumber}</code>
+                        </div>
+                    )}
+                </div>
             </div>
 
             {!numberLoading && !claimedNumber && (
@@ -432,6 +521,11 @@ export const CallCampaignList = () => {
                 {templates.length === 0 && (
                     <p className="text-xs text-muted-foreground">No call templates yet — create one under Call Templates first.</p>
                 )}
+                <CallLimitFields
+                    idPrefix="new-campaign"
+                    minutes={maxCallMinutes} onMinutesChange={setMaxCallMinutes}
+                    email={escalationEmail} onEmailChange={setEscalationEmail}
+                />
 
                 {templateId && (
                     <div className="pt-2 border-t">
@@ -446,7 +540,7 @@ export const CallCampaignList = () => {
                     </div>
                 )}
 
-                <Button type="button" onClick={handleCreate} disabled={!name.trim() || !templateId}>Create Campaign</Button>
+                <Button type="button" onClick={handleCreate} disabled={!name.trim() || !templateId || !isValidEmail(escalationEmail)}>Create Campaign</Button>
             </div>
 
             <div className="bg-card p-6 rounded-lg border shadow-sm space-y-2">
@@ -468,6 +562,7 @@ export const CallCampaignList = () => {
                                 </div>
                                 <span className="text-xs text-muted-foreground">
                                     {c.template?.name}
+                                    {' · '}{c.max_call_minutes} min per call
                                     {c.status !== 'draft' && (
                                         <>
                                             {' · '}{formatCount(c.completed_count)}/{formatCount(c.recipient_count || 0)} completed
@@ -475,6 +570,7 @@ export const CallCampaignList = () => {
                                             {c.voicemail_count > 0 && <> · {formatCount(c.voicemail_count)} voicemail</>}
                                             {c.no_answer_count > 0 && <> · {formatCount(c.no_answer_count)} no answer</>}
                                             {c.cancelled_count > 0 && <> · {formatCount(c.cancelled_count)} cancelled</>}
+                                            {' · '}{formatMoney(c.spent_cents)} spent
                                         </>
                                     )}
                                 </span>
@@ -485,7 +581,7 @@ export const CallCampaignList = () => {
                                 </Button>
                                 {c.status === 'draft' && (
                                     <Button variant="outline" size="sm" onClick={() => openAudienceEditor(c)}>
-                                        <Users className="h-4 w-4 mr-1" /> Edit Audience
+                                        <Users className="h-4 w-4 mr-1" /> Edit
                                     </Button>
                                 )}
                                 {/* Campaigns are sent once: no Resume. An interrupted batch is closed
@@ -527,8 +623,13 @@ export const CallCampaignList = () => {
             <Dialog open={!!audienceEditor} onOpenChange={(open) => !open && setAudienceEditor(null)}>
                 <DialogContent className="sm:max-w-2xl">
                     <DialogHeader>
-                        <DialogTitle>Edit Audience — {audienceEditor?.name}</DialogTitle>
+                        <DialogTitle>Edit Campaign — {audienceEditor?.name}</DialogTitle>
                     </DialogHeader>
+                    <CallLimitFields
+                        idPrefix="edit-campaign"
+                        minutes={editorMinutes} onMinutesChange={setEditorMinutes}
+                        email={editorEmail} onEmailChange={setEditorEmail}
+                    />
                     <CallAudienceFilterBuilder
                         filters={editorFilters}
                         logic={editorLogic}
@@ -539,8 +640,8 @@ export const CallCampaignList = () => {
                     />
                     <DialogFooter>
                         <Button variant="secondary" onClick={() => setAudienceEditor(null)}>Cancel</Button>
-                        <Button onClick={handleSaveAudience} disabled={savingAudience}>
-                            {savingAudience ? 'Saving...' : 'Save Audience'}
+                        <Button onClick={handleSaveAudience} disabled={savingAudience || !isValidEmail(editorEmail)}>
+                            {savingAudience ? 'Saving...' : 'Save'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -618,6 +719,18 @@ export const CallCampaignList = () => {
                                     </div>
                                 </div>
 
+                                {detailsSpend && (
+                                    <p className="text-sm text-muted-foreground" aria-live="polite">
+                                        {detailsSpend.error ? 'The spend of this campaign could not be read right now.' : (
+                                            <>
+                                                Spent <strong className="text-secondary-text tabular-nums">{formatMoney(detailsSpend.charged_cents)}</strong>
+                                                {' '}({formatCount(detailsSpend.charged_minutes)} min, {formatCount(detailsSpend.answered_calls)} answered call(s)
+                                                {detailsSpend.unanswered_calls > 0 && <>, {formatCount(detailsSpend.unanswered_calls)} not answered, free</>})
+                                                {' · '}reserved {formatMoney(detailsSpend.reserved_cents)} · returned {formatMoney(detailsSpend.released_cents)}
+                                            </>
+                                        )}
+                                    </p>
+                                )}
                                 <div className="relative">
                                     <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
                                     <Input
@@ -684,6 +797,22 @@ export const CallCampaignList = () => {
                                                             <div className="min-w-0">
                                                                 <p className="text-xs text-muted-foreground">Disconnect reason</p>
                                                                 <p className="truncate" title={selected.disconnect_reason}>{selected.disconnect_reason}</p>
+                                                            </div>
+                                                        )}
+                                                        {selected.billed_minutes != null && (
+                                                            <div>
+                                                                <p className="text-xs text-muted-foreground">Charged</p>
+                                                                <p className="tabular-nums">
+                                                                    {selected.billed_minutes > 0
+                                                                        ? `${selected.billed_minutes} min · ${formatMoney(selected.charged_cents)}`
+                                                                        : 'Not charged (not answered)'}
+                                                                </p>
+                                                            </div>
+                                                        )}
+                                                        {selected.escalated_at && (
+                                                            <div>
+                                                                <p className="text-xs text-muted-foreground">Escalated</p>
+                                                                <p>{new Date(selected.escalated_at).toLocaleString()}</p>
                                                             </div>
                                                         )}
                                                         {selected.called_at && (
@@ -871,6 +1000,68 @@ export const CallCampaignList = () => {
                 </DialogContent>
             </Dialog>
 
+            <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
+                <DialogContent className="sm:max-w-3xl">
+                    <DialogHeader>
+                        <DialogTitle>Balance history</DialogTitle>
+                    </DialogHeader>
+                    <p className="text-sm text-muted-foreground">
+                        Every movement of the calling balance, newest first. Reservations and returns only move money between
+                        available and reserved; charges are what answered calls cost ($1 per started minute).
+                    </p>
+                    {historyError && (
+                        <div role="alert" className="rounded-md border border-amber-300 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/15 px-3 py-2 text-sm text-amber-800 dark:text-amber-300">
+                            {historyError}
+                        </div>
+                    )}
+                    <div className="max-h-96 overflow-y-auto border rounded-md">
+                        <table className="w-full text-sm">
+                            <thead className="bg-muted/40 text-xs text-muted-foreground sticky top-0">
+                                <tr>
+                                    <th scope="col" className="text-left font-medium px-3 py-2">Date</th>
+                                    <th scope="col" className="text-left font-medium px-3 py-2">Movement</th>
+                                    <th scope="col" className="text-left font-medium px-3 py-2">Campaign / call</th>
+                                    <th scope="col" className="text-right font-medium px-3 py-2">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y">
+                                {historyEntries.map(e => (
+                                    <tr key={e.id || `${e.kind}-${e.created_at}`}>
+                                        <td className="px-3 py-2 whitespace-nowrap text-muted-foreground">
+                                            {e.kind === 'opening_balance' || !e.created_at ? '—' : new Date(e.created_at).toLocaleString()}
+                                        </td>
+                                        <td className="px-3 py-2">
+                                            {ledgerLabel(e)}
+                                            {e.kind === 'charge' && e.minutes > 0 && <span className="text-muted-foreground"> · {e.minutes} min</span>}
+                                        </td>
+                                        <td className="px-3 py-2 min-w-0">
+                                            <div className="truncate">{e.campaign_name || (e.campaign_id ? 'Deleted campaign' : '—')}</div>
+                                            {(e.contact_name || e.contact_phone) && (
+                                                <div className="text-xs text-muted-foreground truncate">{[e.contact_name, e.contact_phone].filter(Boolean).join(' · ')}</div>
+                                            )}
+                                        </td>
+                                        <td className={`px-3 py-2 text-right tabular-nums whitespace-nowrap ${LEDGER_KINDS[e.kind]?.reservation ? 'text-muted-foreground' : ''}`}>
+                                            {ledgerAmount(e)}
+                                        </td>
+                                    </tr>
+                                ))}
+                                {!historyLoading && historyEntries.length === 0 && !historyError && (
+                                    <tr><td colSpan={4} className="px-3 py-6 text-center text-muted-foreground italic">No movements yet.</td></tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                    <DialogFooter>
+                        {historyCursor && (
+                            <Button variant="outline" onClick={() => loadHistory(historyCursor)} disabled={historyLoading}>
+                                {historyLoading ? 'Loading...' : 'Load more'}
+                            </Button>
+                        )}
+                        <Button variant="secondary" onClick={() => setHistoryOpen(false)}>Close</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
             <Dialog open={!!sendPreviewCampaign} onOpenChange={(open) => !open && setSendPreviewCampaign(null)}>
                 <DialogContent className="sm:max-w-lg">
                     <DialogHeader>
@@ -880,6 +1071,7 @@ export const CallCampaignList = () => {
                         <p className="text-sm text-muted-foreground">Loading recipients...</p>
                     ) : sendPreviewData && (
                         <div className="space-y-3">
+                            {sendPreviewData.cost && <SendCostSummary cost={sendPreviewData.cost} escalationEmail={sendPreviewData.escalation_email} />}
                             <p className="text-sm text-muted-foreground">
                                 This will call <strong>{formatCount(sendPreviewData.recipient_count)}</strong> contact(s) in batches of {sendPreviewData.max_send_now}. A call campaign can only be sent once: calls that fail are not retried, they are listed in the campaign's details.
                             </p>
@@ -904,7 +1096,8 @@ export const CallCampaignList = () => {
                         <Button variant="secondary" onClick={() => setSendPreviewCampaign(null)}>Cancel</Button>
                         <Button
                             onClick={confirmSend}
-                            disabled={sendPreviewLoading || !sendPreviewData?.recipient_count || sendingId === sendPreviewCampaign?.id}
+                            disabled={sendPreviewLoading || !sendPreviewData?.recipient_count || sendingId === sendPreviewCampaign?.id
+                                || !sendPreviewData?.cost?.sufficient || !sendPreviewData?.escalation_email}
                         >
                             {sendingId === sendPreviewCampaign?.id ? 'Starting...' : 'Start Calling'}
                         </Button>
@@ -914,3 +1107,71 @@ export const CallCampaignList = () => {
         </div>
     );
 };
+
+// Duration per call and escalation email, shared by the create form and the edit dialog.
+const CallLimitFields = ({ idPrefix, minutes, onMinutesChange, email, onEmailChange }) => {
+    const emailInvalid = email.trim() !== '' && !isValidEmail(email);
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+                <Label htmlFor={`${idPrefix}-minutes`}>Max call duration</Label>
+                <Select value={minutes} onValueChange={onMinutesChange}>
+                    <SelectTrigger id={`${idPrefix}-minutes`} className="w-full"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                        {CALL_MINUTE_OPTIONS.map(m => <SelectItem key={m} value={String(m)}>{m} min ({formatMoney(m * 100)} max per call)</SelectItem>)}
+                    </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">The call is ended when it reaches this time. $1 per minute of answered calls (a voicemail counts); every started minute is charged. Unanswered calls are free.</p>
+            </div>
+            <div className="space-y-2 md:col-span-2">
+                <Label htmlFor={`${idPrefix}-email`}>Escalation email</Label>
+                <Input
+                    id={`${idPrefix}-email`} type="email" value={email} onChange={e => onEmailChange(e.target.value)}
+                    placeholder="e.g. sales-team@company.com" aria-invalid={emailInvalid}
+                />
+                <p className={`text-xs ${emailInvalid ? 'text-red-600' : 'text-muted-foreground'}`}>
+                    {emailInvalid ? 'Enter a valid email address.' : 'Calls ended at the time limit are sent here for a person to follow up.'}
+                </p>
+            </div>
+        </div>
+    );
+};
+
+// Cost check of the send dialog: the campaign can only be sent when the available balance covers
+// every call at its maximum duration.
+const SendCostSummary = ({ cost, escalationEmail }) => (
+    <div className="space-y-2">
+        <div className="rounded-md border px-3 py-2 text-sm space-y-1">
+            <div className="flex justify-between gap-3">
+                <span className="text-muted-foreground">
+                    {formatCount(cost.recipient_count)} call(s) × {cost.max_call_minutes} min × {formatMoney(cost.price_cents_per_minute)}/min
+                </span>
+                <span className="font-semibold tabular-nums">{formatMoney(cost.required_cents)} max</span>
+            </div>
+            <div className="flex justify-between gap-3">
+                <span className="text-muted-foreground">Available balance</span>
+                <span className="tabular-nums">{cost.available_cents == null ? '—' : formatMoney(cost.available_cents)}</span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+                The maximum is reserved now. Each answered call is charged when it ends; unanswered calls are free and the rest is released.
+                {escalationEmail && <> Calls ended at the time limit go to <strong>{escalationEmail}</strong>.</>}
+            </p>
+        </div>
+        {!escalationEmail && (
+            <div role="alert" className="rounded-md border border-red-300 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 px-3 py-2 text-sm text-red-700 dark:text-red-300">
+                Set an escalation email (Edit) before sending this campaign.
+            </div>
+        )}
+        {cost.balance_error && (
+            <div role="alert" className="rounded-md border border-red-300 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 px-3 py-2 text-sm text-red-700 dark:text-red-300">
+                {cost.balance_error}
+            </div>
+        )}
+        {!cost.sufficient && !cost.balance_error && (
+            <div role="alert" className="rounded-md border border-red-300 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 px-3 py-2 text-sm text-red-700 dark:text-red-300">
+                Not enough balance to call everyone: it covers {formatCount(cost.affordable_calls)} of {formatCount(cost.recipient_count)} call(s)
+                {' '}at {cost.max_call_minutes} min. Narrow the audience with a filter, lower the call duration, or top up the balance.
+            </div>
+        )}
+    </div>
+);

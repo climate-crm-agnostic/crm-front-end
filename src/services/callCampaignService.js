@@ -2,6 +2,34 @@ import { API_URL, getHeaders, fetchAllPages, extractErrorMessage } from './api';
 
 const CALL_CAMPAIGNS_URL = `${API_URL}/call-campaigns/`;
 
+// Calling balance ($1 per minute): { balance_cents, reserved_cents, available_cents,
+// price_cents_per_minute, min_call_minutes, max_call_minutes }.
+// Balance history (DynamoDB), newest first: { entries, next_cursor, ledger_enabled }.
+export const getCallingLedger = async ({ campaign, cursor, limit = 50 } = {}) => {
+  const params = new URLSearchParams({ limit: String(limit) });
+  if (campaign) params.set('campaign', campaign);
+  if (cursor) params.set('cursor', cursor);
+  const res = await fetch(`${API_URL}/calling/ledger/?${params}`, { headers: getHeaders() });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => null);
+    throw new Error(extractErrorMessage(errorData, 'Error fetching the balance history'));
+  }
+  return res.json();
+};
+
+// What one campaign moved in the balance: reserved, given back, charged, minutes, answered/unanswered calls.
+export const getCampaignSpend = async (id) => {
+  const res = await fetch(`${CALL_CAMPAIGNS_URL}${id}/spend/`, { headers: getHeaders() });
+  if (!res.ok) throw new Error('Error fetching the campaign spend');
+  return res.json();
+};
+
+export const getCallingBalance = async () => {
+  const res = await fetch(`${API_URL}/calling/balance/`, { headers: getHeaders() });
+  if (!res.ok) throw new Error('Error fetching the calling balance');
+  return res.json();
+};
+
 export const getCallCampaigns = async () => {
   return fetchAllPages(CALL_CAMPAIGNS_URL, { headers: getHeaders() });
 };
