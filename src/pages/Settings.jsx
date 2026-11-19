@@ -127,7 +127,7 @@ const ConnectNumberCard = () => {
                         <div className="space-y-1">
                             <Label className="text-base font-semibold">Choose a phone number</Label>
                             <p className="text-sm text-muted-foreground">
-                                Search by area code for a local (DID) number, or leave it blank to see any available number.
+                                Search by area code, or by the first digits of the number (for example 943226), for a local (DID) number. Leave it blank to see any available number.
                             </p>
                         </div>
 
@@ -139,13 +139,15 @@ const ConnectNumberCard = () => {
                                 </div>
                             </div>
                             <div className="flex-1 space-y-2">
-                                <Label className="text-xs text-muted-foreground">Area code (optional)</Label>
+                                <Label className="text-xs text-muted-foreground">Area code or number prefix (optional)</Label>
+                                {/* Digits only, without the +1 (shown in Country). Up to 9 digits: area code
+                                    plus the start of the number; a full 10-digit number is not a search. */}
                                 <Input
                                     value={zone}
-                                    onChange={(e) => setZone(e.target.value.replace(/\D/g, '').slice(0, 3))}
-                                    placeholder="e.g. 415"
+                                    onChange={(e) => setZone(e.target.value.replace(/\D/g, '').slice(0, 9))}
+                                    placeholder="e.g. 415 or 943226"
                                     inputMode="numeric"
-                                    maxLength={3}
+                                    maxLength={9}
                                     className="font-mono"
                                 />
                             </div>

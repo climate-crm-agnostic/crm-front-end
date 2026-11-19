@@ -74,6 +74,20 @@ export const sendCallCampaignNow = async (id) => {
   return res.json();
 };
 
+// Stops dialing the contacts not called yet (they become 'failed' with a "not called" reason).
+// Calls already in progress are not hung up; they finish and report back as usual.
+export const stopCallCampaign = async (id) => {
+  const res = await fetch(`${CALL_CAMPAIGNS_URL}${id}/stop/`, {
+    method: 'POST',
+    headers: getHeaders(),
+  });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => null);
+    throw new Error(extractErrorMessage(errorData, 'Error stopping call campaign'));
+  }
+  return res.json();
+};
+
 export const getSendProgress = async (id) => {
   const res = await fetch(`${CALL_CAMPAIGNS_URL}${id}/send-progress/`, { headers: getHeaders() });
   if (!res.ok) throw new Error('Error checking call progress');

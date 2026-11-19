@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Phone, Trash2, PhoneCall, Users, Eye, RotateCcw, Search, Download } from "lucide-react";
+import { Phone, Trash2, PhoneCall, Users, Eye, Search, Download, Square } from "lucide-react";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { Button } from "../../components/ui/button";
@@ -10,7 +10,7 @@ import { CallAudienceFilterBuilder } from "./CallAudienceFilterBuilder";
 import { getCallTemplates } from "../../services/callTemplateService";
 import {
     getCallCampaigns, createCallCampaign, updateCallCampaign, deleteCallCampaign,
-    sendCallCampaignNow, previewRecipients, getSendProgress, getCallCampaignRecipients,
+    sendCallCampaignNow, previewRecipients, getSendProgress, getCallCampaignRecipients, stopCallCampaign,
 } from "../../services/callCampaignService";
 import { useClaimedNumber } from "../../hooks/useClaimedNumber";
 import Swal from 'sweetalert2';
@@ -18,8 +18,49 @@ import { formatCount } from "@/lib/utils";
 
 const STATUS_COLORS = { draft: "#9b948e", calling: "#c0622a", called: "var(--secondary-text)" };
 
+// A campaign reaches 'called' as soon as every call has been DIALED (seconds), but each call's
+// outcome (duration, disconnect reason, recording) only arrives when the call ends, through the
+// call-status webhook that deploy-app's CTR reconciler sends after hang-up. So polling has two
+// phases: fast while dispatching, then slower until no recipient is still 'calling'. The cap covers
+// the 5-minute per-call limit plus the CTR delivery delay; after it, Recipients still shows the
+// latest data whenever it is reopened.
+const DISPATCH_POLL_MS = 1500;
+const RESULT_POLL_MS = 5000;
+const RESULT_POLL_MAX_MS = 10 * 60 * 1000;
+const IN_FLIGHT_STATUSES = ['pending', 'calling'];
+
+const outcomeDetails = (results) => {
+    const list = Array.isArray(results) ? results : [];
+    return {
+        mode: 'outcome',
+        recipient_count: list.length,
+        completed_count: list.filter(r => r.status === 'completed').length,
+        failed_count: list.filter(r => r.status === 'failed').length,
+        cancelled_count: list.filter(r => r.status === 'cancelled').length,
+        voicemail_count: list.filter(r => r.status === 'voicemail').length,
+        no_answer_count: list.filter(r => r.status === 'no_answer').length,
+        in_progress_count: list.filter(r => IN_FLIGHT_STATUSES.includes(r.status)).length,
+        recipients: list,
+    };
+};
+
 // Per-recipient outcome status (distinct from campaign-level status above).
-const RECIPIENT_STATUS_COLORS = { pending: "#9b948e", calling: "#c0622a", completed: "var(--secondary-text)", failed: "#dc2626" };
+// cancelled = never called (campaign stopped or batch interrupted); failed = a call attempt failed;
+// voicemail = the call connected but a machine answered (the AI agent hung up without leaving a message);
+// no_answer = dialed but nobody picked up (rang out, busy, or the carrier cancelled it).
+const RECIPIENT_STATUS_COLORS = { pending: "#9b948e", calling: "#c0622a", completed: "var(--secondary-text)", failed: "#dc2626", cancelled: "#6b7280", voicemail: "#7c3aed", no_answer: "#b45309" };
+const statusLabel = (status) => (status || '').replace(/_/g, ' ');
+// Result of a conversation (only on completed calls): what the AI agent reported when it ended the
+// call, or hung_up when the person hung up first. Matches CallCampaignRecipient.RESULT_CHOICES.
+const RESULT_LABELS = {
+    interested: 'Interested',
+    not_interested: 'Not interested',
+    callback_requested: 'Callback requested',
+    do_not_call: 'Do not call',
+    wrong_person: 'Wrong person',
+    no_response: 'No response',
+    hung_up: 'Hung up',
+};
 const recipientBadgeStyle = (status) => ({
     backgroundColor: `color-mix(in srgb, ${RECIPIENT_STATUS_COLORS[status] || '#9b948e'} 12%, transparent)`,
     color: RECIPIENT_STATUS_COLORS[status] || '#9b948e',
@@ -32,6 +73,8 @@ export const CallCampaignList = () => {
     const [templates, setTemplates] = useState([]);
     const [loading, setLoading] = useState(true);
     const [sendingId, setSendingId] = useState(null);
+    const [stoppingId, setStoppingId] = useState(null);
+    const [confirmingStop, setConfirmingStop] = useState(false);   // inline confirm in the progress modal
 
     const [name, setName] = useState("");
     const [templateId, setTemplateId] = useState("");
@@ -55,6 +98,7 @@ export const CallCampaignList = () => {
     const [detailsLoading, setDetailsLoading] = useState(false);
     const [detailsSearch, setDetailsSearch] = useState("");
     const [detailsStatusFilter, setDetailsStatusFilter] = useState("all");
+    const [detailsResultFilter, setDetailsResultFilter] = useState("all");
     const [selectedRecipientId, setSelectedRecipientId] = useState(null);
 
     // Blocking progress modal for an in-flight batch, polling send-progress
@@ -64,52 +108,116 @@ export const CallCampaignList = () => {
     const [sendProgressCampaign, setSendProgressCampaign] = useState(null);
     const [sendProgress, setSendProgressState] = useState(null);
     const [sendResults, setSendResults] = useState(null);
+    const [sendResultsTimedOut, setSendResultsTimedOut] = useState(false);
 
     useEffect(() => {
         loadAll();
     }, []);
 
+    // Phase 1 (dispatching): send-progress every DISPATCH_POLL_MS until status is 'called'.
+    // Phase 2 (calls in progress): every RESULT_POLL_MS until no recipient is 'calling',
+    // capped at RESULT_POLL_MAX_MS. The previous version stopped at 'called', when the calls
+    // were still ringing, so the modal stayed at "0 of N" until the page was reloaded.
     const pollCampaignId = sendProgressCampaign?.id ?? null;
     useEffect(() => {
         if (!pollCampaignId) return;
 
         let cancelled = false;
-        let intervalId = null;
+        let timerId = null;
+        let resultsDeadline = null;   // set when dispatching ends
 
-        const stop = () => {
-            if (intervalId !== null) {
-                clearInterval(intervalId);
-                intervalId = null;
-            }
+        const schedule = (ms) => {
+            if (!cancelled) timerId = setTimeout(tick, ms);
         };
 
         const tick = async () => {
+            let progress;
             try {
-                const progress = await getSendProgress(pollCampaignId);
-                if (cancelled) return;
-                setSendProgressState(prev => ({
-                    ...progress,
-                    total: Math.max(progress.total || 0, prev?.total || 0),
-                }));
-
-                if (progress.status === 'called') {
-                    stop();
-                    const results = await getCallCampaignRecipients(pollCampaignId);
-                    if (cancelled) return;
-                    setSendResults(Array.isArray(results) ? results : []);
-                    loadAll();
-                } else if (progress.is_stale) {
-                    stop();
-                    loadAll();
-                }
+                progress = await getSendProgress(pollCampaignId);
             } catch {
-                // transient poll failure — next tick retries, no toast needed
+                // transient poll failure: retry on the next tick, no toast needed
+                schedule(resultsDeadline === null ? DISPATCH_POLL_MS : RESULT_POLL_MS);
+                return;
+            }
+            if (cancelled) return;
+            setSendProgressState(prev => ({
+                ...progress,
+                total: Math.max(progress.total || 0, prev?.total || 0),
+            }));
+
+            if (progress.is_stale) {
+                refreshCampaigns();
+                return;
+            }
+            if (progress.status !== 'called') {
+                schedule(DISPATCH_POLL_MS);
+                return;
+            }
+
+            if (resultsDeadline === null) {
+                resultsDeadline = Date.now() + RESULT_POLL_MAX_MS;
+                refreshCampaigns();   // the list row flips to 'called' right away
+            }
+            try {
+                const results = await getCallCampaignRecipients(pollCampaignId);
+                if (cancelled) return;
+                setSendResults(Array.isArray(results) ? results : []);
+            } catch {
+                // keep the previous results; the next tick retries
+            }
+            if ((progress.calling || 0) === 0) return;   // every call has ended
+            if (Date.now() < resultsDeadline) {
+                schedule(RESULT_POLL_MS);
+            } else {
+                setSendResultsTimedOut(true);
             }
         };
 
-        intervalId = setInterval(tick, 1500);
-        return () => { cancelled = true; stop(); };
+        tick();
+        return () => {
+            cancelled = true;
+            if (timerId !== null) clearTimeout(timerId);
+        };
     }, [pollCampaignId]);
+
+    // Recipients dialog: while any recipient is still pending/calling, refresh it every
+    // RESULT_POLL_MS so duration, disconnect reason and the recording player appear on their own.
+    const detailsPollId = detailsCampaign?.id ?? null;
+    const detailsInFlight = detailsData?.mode === 'outcome'
+        && detailsData.recipients.some(r => IN_FLIGHT_STATUSES.includes(r.status));
+    useEffect(() => {
+        if (!detailsPollId || !detailsInFlight) return;
+
+        let cancelled = false;
+        const deadline = Date.now() + RESULT_POLL_MAX_MS;
+        const intervalId = setInterval(async () => {
+            if (Date.now() > deadline) {
+                clearInterval(intervalId);
+                return;
+            }
+            try {
+                const results = await getCallCampaignRecipients(detailsPollId);
+                if (!cancelled) setDetailsData(outcomeDetails(results));
+            } catch {
+                // keep showing the last data; the next tick retries
+            }
+        }, RESULT_POLL_MS);
+        return () => {
+            cancelled = true;
+            clearInterval(intervalId);
+        };
+    }, [detailsPollId, detailsInFlight]);
+
+    // Silent list refresh for background updates. loadAll() toggles `loading`, which swaps the
+    // whole page (including any open dialog) for the loading placeholder.
+    const refreshCampaigns = async () => {
+        try {
+            const c = await getCallCampaigns();
+            setCampaigns(Array.isArray(c) ? c : []);
+        } catch {
+            // keep the current list; the next refresh or a reload will catch up
+        }
+    };
 
     const loadAll = async () => {
         setLoading(true);
@@ -177,6 +285,7 @@ export const CallCampaignList = () => {
         setDetailsData(null);
         setDetailsSearch("");
         setDetailsStatusFilter("all");
+        setDetailsResultFilter("all");
         setSelectedRecipientId(null);
         setDetailsLoading(true);
         try {
@@ -185,14 +294,9 @@ export const CallCampaignList = () => {
                 setDetailsData({ mode: 'preview', recipient_count: data.recipient_count, recipients: data.recipients });
             } else {
                 const results = await getCallCampaignRecipients(campaign.id);
-                const list = Array.isArray(results) ? results : [];
-                setDetailsData({
-                    mode: 'outcome',
-                    recipient_count: list.length,
-                    completed_count: list.filter(r => r.status === 'completed').length,
-                    failed_count: list.filter(r => r.status === 'failed').length,
-                    recipients: list,
-                });
+                const details = outcomeDetails(results);
+                const list = details.recipients;
+                setDetailsData(details);
                 // Land on a recipient that already has a recording when one exists,
                 // so opening the dialog shows the player right away instead of a
                 // blank detail pane the user has to click into first.
@@ -229,7 +333,8 @@ export const CallCampaignList = () => {
             const { total } = await sendCallCampaignNow(campaign.id);
             setSendPreviewCampaign(null);
             setSendResults(null);
-            setSendProgressState({ status: 'calling', total, completed: 0, failed: 0 });
+            setSendResultsTimedOut(false);
+            setSendProgressState({ status: 'calling', total, completed: 0, failed: 0, calling: 0 });
             setSendProgressCampaign(campaign);
         } catch (err) {
             Swal.fire({ icon: 'error', title: 'Error', text: err.message, toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
@@ -238,10 +343,40 @@ export const CallCampaignList = () => {
         }
     };
 
+    // alreadyConfirmed: the progress modal confirms inline (a SweetAlert opened over a modal
+    // Radix dialog can't be clicked), the campaign list confirms with SweetAlert.
+    const handleStop = async (campaign, alreadyConfirmed = false) => {
+        if (!alreadyConfirmed) {
+            const result = await Swal.fire({
+                title: `Stop calling for "${campaign.name}"?`,
+                text: "Nobody else will be called. Calls already in progress will finish normally. A stopped campaign can't be sent again.",
+                icon: 'warning', showCancelButton: true,
+                confirmButtonColor: '#dc2626', cancelButtonColor: '#9b948e', confirmButtonText: 'Stop calling',
+            });
+            if (!result.isConfirmed) return;
+        }
+        setConfirmingStop(false);
+        setStoppingId(campaign.id);
+        try {
+            const { not_called, in_progress } = await stopCallCampaign(campaign.id);
+            Swal.fire({
+                icon: 'success', title: 'Campaign stopped', toast: true, position: 'top-end', showConfirmButton: false, timer: 4000,
+                text: `${not_called} contact(s) won't be called. ${in_progress} call(s) still in progress will finish normally.`,
+            });
+            refreshCampaigns();
+        } catch (err) {
+            Swal.fire({ icon: 'error', title: 'Error', text: err.message, toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
+        } finally {
+            setStoppingId(null);
+        }
+    };
+
     const closeSendProgress = () => {
+        setConfirmingStop(false);
         setSendProgressCampaign(null);
         setSendProgressState(null);
         setSendResults(null);
+        setSendResultsTimedOut(false);
     };
 
     if (loading) {
@@ -332,7 +467,16 @@ export const CallCampaignList = () => {
                                     </span>
                                 </div>
                                 <span className="text-xs text-muted-foreground">
-                                    {c.template?.name} · {formatCount(c.completed_count)}/{c.recipient_count ? formatCount(c.recipient_count) : '?'} completed
+                                    {c.template?.name}
+                                    {c.status !== 'draft' && (
+                                        <>
+                                            {' · '}{formatCount(c.completed_count)}/{formatCount(c.recipient_count || 0)} completed
+                                            {c.failed_count > 0 && <> · <span className="text-red-600">{formatCount(c.failed_count)} failed</span></>}
+                                            {c.voicemail_count > 0 && <> · {formatCount(c.voicemail_count)} voicemail</>}
+                                            {c.no_answer_count > 0 && <> · {formatCount(c.no_answer_count)} no answer</>}
+                                            {c.cancelled_count > 0 && <> · {formatCount(c.cancelled_count)} cancelled</>}
+                                        </>
+                                    )}
                                 </span>
                             </div>
                             <div className="flex gap-1">
@@ -344,20 +488,23 @@ export const CallCampaignList = () => {
                                         <Users className="h-4 w-4 mr-1" /> Edit Audience
                                     </Button>
                                 )}
-                                {c.status === 'calling' && c.is_call_stale && (
-                                    <Button
-                                        variant="secondary" size="sm"
-                                        onClick={() => openSendPreview(c)}
-                                        disabled={sendingId === c.id}
-                                        title="This batch was interrupted — resume it"
-                                    >
-                                        <RotateCcw className="h-4 w-4 mr-1" /> {sendingId === c.id ? 'Resuming...' : 'Resume'}
-                                    </Button>
-                                )}
-                                {c.status === 'calling' && !c.is_call_stale && (
-                                    <Button variant="secondary" size="sm" disabled title="Calls in progress">
-                                        <Phone className="h-4 w-4 mr-1" /> Calling...
-                                    </Button>
+                                {/* Campaigns are sent once: no Resume. An interrupted batch is closed
+                                    by the backend and its details show who was not called. */}
+                                {c.status === 'calling' && (
+                                    <>
+                                        <Button variant="secondary" size="sm" disabled title="Calls in progress">
+                                            <Phone className="h-4 w-4 mr-1" /> Calling...
+                                        </Button>
+                                        <Button
+                                            variant="outline" size="sm"
+                                            onClick={() => handleStop(c)}
+                                            disabled={stoppingId === c.id}
+                                            className="text-red-600 hover:text-red-700"
+                                            title="Stop calling the contacts not called yet"
+                                        >
+                                            <Square className="h-4 w-4 mr-1" /> {stoppingId === c.id ? 'Stopping...' : 'Stop'}
+                                        </Button>
+                                    </>
                                 )}
                                 {c.status === 'draft' && (
                                     <Button
@@ -426,6 +573,7 @@ export const CallCampaignList = () => {
                     {!detailsLoading && detailsData && detailsData.mode === 'outcome' && (() => {
                         const filtered = detailsData.recipients.filter(r => {
                             if (detailsStatusFilter !== 'all' && r.status !== detailsStatusFilter) return false;
+                            if (detailsResultFilter !== 'all' && r.result !== detailsResultFilter) return false;
                             const q = detailsSearch.trim().toLowerCase();
                             if (!q) return true;
                             return (r.contact_name || '').toLowerCase().includes(q) || (r.contact_phone || '').toLowerCase().includes(q);
@@ -438,18 +586,36 @@ export const CallCampaignList = () => {
                                     <p className="text-sm text-muted-foreground">
                                         <strong className="text-secondary-text">{detailsData.completed_count}</strong> completed
                                         {detailsData.failed_count > 0 && <> · <strong className="text-red-600">{detailsData.failed_count}</strong> failed</>}
+                                        {detailsData.voicemail_count > 0 && <> · <strong>{detailsData.voicemail_count}</strong> voicemail</>}
+                                        {detailsData.no_answer_count > 0 && <> · <strong>{detailsData.no_answer_count}</strong> no answer</>}
+                                        {detailsData.cancelled_count > 0 && <> · <strong>{detailsData.cancelled_count}</strong> cancelled</>}
+                                        {detailsData.in_progress_count > 0 && <> · <strong>{detailsData.in_progress_count}</strong> in progress</>}
                                         {' '}of {formatCount(detailsData.recipient_count)} total.
                                     </p>
+                                    <div className="flex items-center gap-2">
+                                    <Select value={detailsResultFilter} onValueChange={setDetailsResultFilter}>
+                                        <SelectTrigger className="w-40 h-8 text-xs" aria-label="Filter by result"><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">All results</SelectItem>
+                                            {Object.entries(RESULT_LABELS).map(([value, label]) => (
+                                                <SelectItem key={value} value={value}>{label}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                     <Select value={detailsStatusFilter} onValueChange={setDetailsStatusFilter}>
-                                        <SelectTrigger className="w-36 h-8 text-xs"><SelectValue /></SelectTrigger>
+                                        <SelectTrigger className="w-36 h-8 text-xs" aria-label="Filter by status"><SelectValue /></SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="all">All statuses</SelectItem>
                                             <SelectItem value="completed">Completed</SelectItem>
                                             <SelectItem value="failed">Failed</SelectItem>
+                                            <SelectItem value="voicemail">Voicemail</SelectItem>
+                                            <SelectItem value="no_answer">No answer</SelectItem>
+                                            <SelectItem value="cancelled">Cancelled</SelectItem>
                                             <SelectItem value="calling">Calling</SelectItem>
                                             <SelectItem value="pending">Pending</SelectItem>
                                         </SelectContent>
                                     </Select>
+                                    </div>
                                 </div>
 
                                 <div className="relative">
@@ -477,10 +643,13 @@ export const CallCampaignList = () => {
                                                     <div className="flex items-center justify-between gap-2">
                                                         <span className="font-medium truncate">{r.contact_name || '—'}</span>
                                                         <span className="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold" style={recipientBadgeStyle(r.status)}>
-                                                            {r.status}
+                                                            {statusLabel(r.status)}
                                                         </span>
                                                     </div>
-                                                    <div className="text-xs text-muted-foreground truncate">{r.contact_phone || '—'}</div>
+                                                    <div className="text-xs text-muted-foreground truncate">
+                                                        {r.contact_phone || '—'}
+                                                        {r.result && RESULT_LABELS[r.result] && <> · {RESULT_LABELS[r.result]}</>}
+                                                    </div>
                                                 </button>
                                             ))}
                                         </div>
@@ -494,11 +663,17 @@ export const CallCampaignList = () => {
                                                             <p className="text-sm text-muted-foreground">{selected.contact_phone || '—'}</p>
                                                         </div>
                                                         <span className="shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold" style={recipientBadgeStyle(selected.status)}>
-                                                            {selected.status}
+                                                            {statusLabel(selected.status)}
                                                         </span>
                                                     </div>
 
                                                     <div className="grid grid-cols-2 gap-3 text-sm">
+                                                        {selected.result && RESULT_LABELS[selected.result] && (
+                                                            <div>
+                                                                <p className="text-xs text-muted-foreground">Result</p>
+                                                                <p className="font-medium">{RESULT_LABELS[selected.result]}</p>
+                                                            </div>
+                                                        )}
                                                         {selected.duration_seconds != null && (
                                                             <div>
                                                                 <p className="text-xs text-muted-foreground">Duration</p>
@@ -525,6 +700,22 @@ export const CallCampaignList = () => {
                                                         )}
                                                     </div>
 
+                                                    {selected.status === 'voicemail' && (
+                                                        <div className="rounded-md border px-3 py-2 text-sm text-muted-foreground">
+                                                            A voicemail or automated system answered. The AI agent hung up without leaving a message.
+                                                        </div>
+                                                    )}
+                                                    {selected.status === 'no_answer' && (
+                                                        <div className="rounded-md border px-3 py-2 text-sm text-muted-foreground">
+                                                            Nobody picked up: the call rang out, the line was busy, or the carrier cancelled it.
+                                                        </div>
+                                                    )}
+                                                    {selected.outcome_reason && (
+                                                        <div className="text-sm">
+                                                            <p className="text-xs text-muted-foreground">Why the call ended</p>
+                                                            <p>{selected.outcome_reason}</p>
+                                                        </div>
+                                                    )}
                                                     {selected.status === 'failed' && selected.error_message && (
                                                         <div className="rounded-md border border-red-300 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 px-3 py-2 text-sm text-red-700 dark:text-red-300">
                                                             {selected.error_message}
@@ -545,7 +736,7 @@ export const CallCampaignList = () => {
                                                                 <Download className="h-3 w-3" /> Download recording
                                                             </a>
                                                         </div>
-                                                    ) : selected.status === 'completed' && (
+                                                    ) : (selected.status === 'completed' || selected.status === 'voicemail') && (
                                                         <p className="text-xs text-muted-foreground italic pt-2 border-t">No recording available for this call.</p>
                                                     )}
                                                 </div>
@@ -568,10 +759,12 @@ export const CallCampaignList = () => {
                 <DialogContent className="sm:max-w-lg" onInteractOutside={e => !(sendProgress?.status === 'called' || sendProgress?.is_stale) && e.preventDefault()} onEscapeKeyDown={e => !(sendProgress?.status === 'called' || sendProgress?.is_stale) && e.preventDefault()}>
                     <DialogHeader>
                         <DialogTitle>
-                            {sendProgress?.status === 'called'
-                                ? 'Batch complete'
+                            {sendProgress?.is_stopped && (sendProgress.calling || 0) === 0
+                                ? 'Calling stopped'
                                 : sendProgress?.is_stale
-                                    ? 'Batch interrupted'
+                                ? 'Batch interrupted'
+                                : sendProgress?.status === 'called'
+                                    ? ((sendProgress.calling || 0) > 0 ? 'Calls in progress' : 'Batch complete')
                                     : `Calling for "${sendProgressCampaign?.name}"...`}
                         </DialogTitle>
                     </DialogHeader>
@@ -582,16 +775,36 @@ export const CallCampaignList = () => {
                                     className="h-full transition-all duration-300"
                                     style={{
                                         width: `${sendProgress.total > 0
-                                            ? Math.min(100, Math.round(((sendProgress.completed + sendProgress.failed) / sendProgress.total) * 100))
+                                            ? Math.min(100, Math.round(((sendProgress.completed + sendProgress.failed + (sendProgress.cancelled || 0) + (sendProgress.voicemail || 0) + (sendProgress.no_answer || 0)) / sendProgress.total) * 100))
                                             : 0}%`,
                                         backgroundColor: sendProgress.status === 'called' ? 'var(--secondary)' : '#c0622a',
                                     }}
                                 />
                             </div>
                             <p className="text-sm text-muted-foreground">
-                                {formatCount(sendProgress.completed + sendProgress.failed)} of {formatCount(sendProgress.total)} processed
+                                {formatCount(sendProgress.completed + sendProgress.failed + (sendProgress.cancelled || 0) + (sendProgress.voicemail || 0) + (sendProgress.no_answer || 0))} of {formatCount(sendProgress.total)} finished
+                                {(sendProgress.voicemail || 0) > 0 && <> · {formatCount(sendProgress.voicemail)} voicemail</>}
+                                {(sendProgress.no_answer || 0) > 0 && <> · {formatCount(sendProgress.no_answer)} no answer</>}
+                                {(sendProgress.calling || 0) > 0 && <> · {formatCount(sendProgress.calling)} in progress</>}
                                 {sendProgress.failed > 0 && <> — <span className="text-red-600">{sendProgress.failed} failed</span></>}
                             </p>
+
+                            {sendProgress.is_stopped && (
+                                <p className="text-xs text-amber-600">
+                                    Calling was stopped. The contacts not called yet are listed as cancelled in the campaign's details
+                                    {(sendProgress.calling || 0) > 0 ? '; the calls already in progress will finish normally.' : '.'}
+                                </p>
+                            )}
+                            {!sendProgress.is_stopped && sendProgress.status === 'called' && (sendProgress.calling || 0) > 0 && !sendResultsTimedOut && (
+                                <p className="text-xs text-muted-foreground italic">
+                                    Every call has been dialed. Results appear here as each call ends. You can close this window; the campaign's Recipients view keeps updating too.
+                                </p>
+                            )}
+                            {sendResultsTimedOut && (
+                                <p className="text-xs text-amber-600">
+                                    Some calls are taking longer than expected to report back. Check the campaign's Recipients later.
+                                </p>
+                            )}
 
                             {sendProgress.status === 'called' && sendResults && (
                                 <div className="max-h-64 overflow-y-auto border rounded-md divide-y">
@@ -604,7 +817,12 @@ export const CallCampaignList = () => {
                                             <span className="shrink-0 text-xs font-semibold text-red-600">failed</span>
                                         </div>
                                     ))}
-                                    {sendResults.every(r => r.status !== 'failed') && (
+                                    {sendResults.some(r => r.status === 'cancelled') && (
+                                        <div className="px-3 py-2 text-sm text-muted-foreground">
+                                            {formatCount(sendResults.filter(r => r.status === 'cancelled').length)} contact(s) were not called (cancelled). See the campaign's details.
+                                        </div>
+                                    )}
+                                    {sendResults.every(r => r.status !== 'failed' && r.status !== 'cancelled') && (
                                         <div className="px-3 py-2 text-sm text-muted-foreground italic">All calls dispatched successfully.</div>
                                     )}
                                 </div>
@@ -612,7 +830,7 @@ export const CallCampaignList = () => {
 
                             {sendProgress.is_stale && (
                                 <p className="text-xs text-amber-600">
-                                    This batch was interrupted before finishing. Close this and use Resume to call the remaining contacts.
+                                    This batch was interrupted before finishing. Campaigns are sent only once, so it won't be resumed: the contacts it didn't reach are listed as cancelled in the campaign's details.
                                 </p>
                             )}
 
@@ -622,6 +840,26 @@ export const CallCampaignList = () => {
                         </div>
                     )}
                     <DialogFooter>
+                        {sendProgress && sendProgress.status !== 'called' && !sendProgress.is_stale && sendProgressCampaign && (
+                            confirmingStop ? (
+                                <div className="flex flex-wrap items-center gap-2 mr-auto">
+                                    <span className="text-xs text-muted-foreground">Stop calling the rest? Calls in progress will finish.</span>
+                                    <Button variant="ghost" size="sm" onClick={() => setConfirmingStop(false)}>Cancel</Button>
+                                    <Button
+                                        variant="outline" size="sm"
+                                        onClick={() => handleStop(sendProgressCampaign, true)}
+                                        disabled={stoppingId === sendProgressCampaign.id}
+                                        className="text-red-600 hover:text-red-700"
+                                    >
+                                        {stoppingId === sendProgressCampaign.id ? 'Stopping...' : 'Yes, stop'}
+                                    </Button>
+                                </div>
+                            ) : (
+                                <Button variant="outline" onClick={() => setConfirmingStop(true)} className="text-red-600 hover:text-red-700">
+                                    <Square className="h-4 w-4 mr-1" /> Stop calling
+                                </Button>
+                            )
+                        )}
                         <Button
                             variant="secondary"
                             onClick={closeSendProgress}
@@ -643,7 +881,7 @@ export const CallCampaignList = () => {
                     ) : sendPreviewData && (
                         <div className="space-y-3">
                             <p className="text-sm text-muted-foreground">
-                                This will call <strong>{formatCount(sendPreviewData.recipient_count)}</strong> contact(s) in batches of {sendPreviewData.max_send_now}. This can't be undone.
+                                This will call <strong>{formatCount(sendPreviewData.recipient_count)}</strong> contact(s) in batches of {sendPreviewData.max_send_now}. A call campaign can only be sent once: calls that fail are not retried, they are listed in the campaign's details.
                             </p>
                             {sendPreviewData.recipient_count > sendPreviewData.max_send_now && (
                                 <div className="rounded-md border border-amber-300 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/15 px-3 py-3 text-sm text-amber-800 dark:text-amber-300">
