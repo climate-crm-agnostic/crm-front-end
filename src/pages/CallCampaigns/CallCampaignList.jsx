@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Phone, Trash2, PhoneCall, Users, Eye, RotateCcw } from "lucide-react";
+import { Phone, Trash2, PhoneCall, Users, Eye, RotateCcw, Search, Download } from "lucide-react";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { Button } from "../../components/ui/button";
@@ -17,6 +17,13 @@ import Swal from 'sweetalert2';
 import { formatCount } from "@/lib/utils";
 
 const STATUS_COLORS = { draft: "#9b948e", calling: "#c0622a", called: "var(--secondary-text)" };
+
+// Per-recipient outcome status (distinct from campaign-level status above).
+const RECIPIENT_STATUS_COLORS = { pending: "#9b948e", calling: "#c0622a", completed: "var(--secondary-text)", failed: "#dc2626" };
+const recipientBadgeStyle = (status) => ({
+    backgroundColor: `color-mix(in srgb, ${RECIPIENT_STATUS_COLORS[status] || '#9b948e'} 12%, transparent)`,
+    color: RECIPIENT_STATUS_COLORS[status] || '#9b948e',
+});
 
 export const CallCampaignList = () => {
     const navigate = useNavigate();
@@ -46,6 +53,9 @@ export const CallCampaignList = () => {
     const [detailsCampaign, setDetailsCampaign] = useState(null);
     const [detailsData, setDetailsData] = useState(null);
     const [detailsLoading, setDetailsLoading] = useState(false);
+    const [detailsSearch, setDetailsSearch] = useState("");
+    const [detailsStatusFilter, setDetailsStatusFilter] = useState("all");
+    const [selectedRecipientId, setSelectedRecipientId] = useState(null);
 
     // Blocking progress modal for an in-flight batch, polling send-progress
     // until the background thread (see calling_view.py) finishes dispatching
@@ -165,6 +175,9 @@ export const CallCampaignList = () => {
     const openDetails = async (campaign) => {
         setDetailsCampaign(campaign);
         setDetailsData(null);
+        setDetailsSearch("");
+        setDetailsStatusFilter("all");
+        setSelectedRecipientId(null);
         setDetailsLoading(true);
         try {
             if (campaign.status === 'draft') {
@@ -180,6 +193,11 @@ export const CallCampaignList = () => {
                     failed_count: list.filter(r => r.status === 'failed').length,
                     recipients: list,
                 });
+                // Land on a recipient that already has a recording when one exists,
+                // so opening the dialog shows the player right away instead of a
+                // blank detail pane the user has to click into first.
+                const landingRecipient = list.find(r => r.recording_url) || list[0];
+                setSelectedRecipientId(landingRecipient?.id ?? null);
             }
         } catch (err) {
             setDetailsCampaign(null);
@@ -382,7 +400,7 @@ export const CallCampaignList = () => {
             </Dialog>
 
             <Dialog open={!!detailsCampaign} onOpenChange={(open) => !open && setDetailsCampaign(null)}>
-                <DialogContent className="sm:max-w-lg">
+                <DialogContent className="sm:max-w-3xl">
                     <DialogHeader>
                         <DialogTitle>Recipients — {detailsCampaign?.name}</DialogTitle>
                     </DialogHeader>
@@ -405,45 +423,141 @@ export const CallCampaignList = () => {
                             )}
                         </div>
                     )}
-                    {!detailsLoading && detailsData && detailsData.mode === 'outcome' && (
-                        <div className="space-y-3">
-                            <p className="text-sm text-muted-foreground">
-                                <strong className="text-secondary-text">{detailsData.completed_count}</strong> completed
-                                {detailsData.failed_count > 0 && <> · <strong className="text-red-600">{detailsData.failed_count}</strong> failed</>}
-                                {' '}of {formatCount(detailsData.recipient_count)} total.
-                            </p>
-                            {detailsData.recipient_count > 0 && (
-                                <div className="max-h-64 overflow-y-auto border rounded-md divide-y">
-                                    {detailsData.recipients.map(r => (
-                                        <div key={r.id} className="flex items-center justify-between px-3 py-2 text-sm gap-2">
-                                            <div className="min-w-0">
-                                                <div>{r.contact_name || '—'}</div>
-                                                <div className="text-muted-foreground truncate">{r.contact_phone}</div>
-                                                {r.status === 'failed' && r.error_message && (
-                                                    <div className="text-xs text-red-600 truncate">{r.error_message}</div>
-                                                )}
-                                                {r.status === 'completed' && r.duration_seconds != null && (
-                                                    <div className="text-xs text-muted-foreground">{r.duration_seconds}s</div>
-                                                )}
-                                                {r.status === 'completed' && r.recording_url && (
-                                                    <audio controls src={r.recording_url} className="h-6 mt-1 max-w-[180px]" />
-                                                )}
-                                            </div>
-                                            <span
-                                                className="shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold"
-                                                style={{
-                                                    backgroundColor: r.status === 'completed' ? "rgba(37,91,1,0.12)" : r.status === 'failed' ? '#dc26261f' : 'rgba(192,98,42,0.12)',
-                                                    color: r.status === 'completed' ? 'var(--secondary-text)' : r.status === 'failed' ? '#dc2626' : '#c0622a',
-                                                }}
-                                            >
-                                                {r.status}
-                                            </span>
-                                        </div>
-                                    ))}
+                    {!detailsLoading && detailsData && detailsData.mode === 'outcome' && (() => {
+                        const filtered = detailsData.recipients.filter(r => {
+                            if (detailsStatusFilter !== 'all' && r.status !== detailsStatusFilter) return false;
+                            const q = detailsSearch.trim().toLowerCase();
+                            if (!q) return true;
+                            return (r.contact_name || '').toLowerCase().includes(q) || (r.contact_phone || '').toLowerCase().includes(q);
+                        });
+                        const selected = filtered.find(r => r.id === selectedRecipientId) || filtered[0] || null;
+
+                        return (
+                            <div className="space-y-3">
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                    <p className="text-sm text-muted-foreground">
+                                        <strong className="text-secondary-text">{detailsData.completed_count}</strong> completed
+                                        {detailsData.failed_count > 0 && <> · <strong className="text-red-600">{detailsData.failed_count}</strong> failed</>}
+                                        {' '}of {formatCount(detailsData.recipient_count)} total.
+                                    </p>
+                                    <Select value={detailsStatusFilter} onValueChange={setDetailsStatusFilter}>
+                                        <SelectTrigger className="w-36 h-8 text-xs"><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">All statuses</SelectItem>
+                                            <SelectItem value="completed">Completed</SelectItem>
+                                            <SelectItem value="failed">Failed</SelectItem>
+                                            <SelectItem value="calling">Calling</SelectItem>
+                                            <SelectItem value="pending">Pending</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                 </div>
-                            )}
-                        </div>
-                    )}
+
+                                <div className="relative">
+                                    <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                                    <Input
+                                        value={detailsSearch}
+                                        onChange={e => setDetailsSearch(e.target.value)}
+                                        placeholder="Search by name or phone..."
+                                        className="h-8 pl-8 text-sm"
+                                    />
+                                </div>
+
+                                {filtered.length === 0 ? (
+                                    <p className="text-sm text-muted-foreground italic py-6 text-center">No recipients match this filter.</p>
+                                ) : (
+                                    <div className="flex flex-col md:flex-row border rounded-md overflow-hidden">
+                                        <div className="md:w-56 shrink-0 max-h-80 overflow-y-auto divide-y border-b md:border-b-0 md:border-r">
+                                            {filtered.map(r => (
+                                                <button
+                                                    key={r.id}
+                                                    type="button"
+                                                    onClick={() => setSelectedRecipientId(r.id)}
+                                                    className={`w-full text-left px-3 py-2 text-sm transition-colors ${selected?.id === r.id ? 'bg-primary/10' : 'hover:bg-muted/40'}`}
+                                                >
+                                                    <div className="flex items-center justify-between gap-2">
+                                                        <span className="font-medium truncate">{r.contact_name || '—'}</span>
+                                                        <span className="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold" style={recipientBadgeStyle(r.status)}>
+                                                            {r.status}
+                                                        </span>
+                                                    </div>
+                                                    <div className="text-xs text-muted-foreground truncate">{r.contact_phone || '—'}</div>
+                                                </button>
+                                            ))}
+                                        </div>
+
+                                        <div className="flex-1 p-4 max-h-80 overflow-y-auto">
+                                            {selected ? (
+                                                <div className="space-y-3">
+                                                    <div className="flex items-start justify-between gap-2">
+                                                        <div>
+                                                            <p className="text-base font-semibold">{selected.contact_name || '—'}</p>
+                                                            <p className="text-sm text-muted-foreground">{selected.contact_phone || '—'}</p>
+                                                        </div>
+                                                        <span className="shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold" style={recipientBadgeStyle(selected.status)}>
+                                                            {selected.status}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="grid grid-cols-2 gap-3 text-sm">
+                                                        {selected.duration_seconds != null && (
+                                                            <div>
+                                                                <p className="text-xs text-muted-foreground">Duration</p>
+                                                                <p>{selected.duration_seconds}s</p>
+                                                            </div>
+                                                        )}
+                                                        {selected.disconnect_reason && (
+                                                            <div className="min-w-0">
+                                                                <p className="text-xs text-muted-foreground">Disconnect reason</p>
+                                                                <p className="truncate" title={selected.disconnect_reason}>{selected.disconnect_reason}</p>
+                                                            </div>
+                                                        )}
+                                                        {selected.called_at && (
+                                                            <div>
+                                                                <p className="text-xs text-muted-foreground">Called at</p>
+                                                                <p>{new Date(selected.called_at).toLocaleString()}</p>
+                                                            </div>
+                                                        )}
+                                                        {selected.completed_at && (
+                                                            <div>
+                                                                <p className="text-xs text-muted-foreground">Completed at</p>
+                                                                <p>{new Date(selected.completed_at).toLocaleString()}</p>
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    {selected.status === 'failed' && selected.error_message && (
+                                                        <div className="rounded-md border border-red-300 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 px-3 py-2 text-sm text-red-700 dark:text-red-300">
+                                                            {selected.error_message}
+                                                        </div>
+                                                    )}
+
+                                                    {selected.recording_url ? (
+                                                        <div className="space-y-1.5 pt-2 border-t">
+                                                            <p className="text-xs text-muted-foreground">Recording</p>
+                                                            <audio controls src={selected.recording_url} className="w-full h-10" />
+                                                            <a
+                                                                href={selected.recording_url}
+                                                                download
+                                                                target="_blank"
+                                                                rel="noreferrer"
+                                                                className="inline-flex items-center gap-1 text-xs text-primary-text hover:underline"
+                                                            >
+                                                                <Download className="h-3 w-3" /> Download recording
+                                                            </a>
+                                                        </div>
+                                                    ) : selected.status === 'completed' && (
+                                                        <p className="text-xs text-muted-foreground italic pt-2 border-t">No recording available for this call.</p>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <p className="text-sm text-muted-foreground italic">Select a recipient to see its details.</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })()}
                     <DialogFooter>
                         <Button variant="secondary" onClick={() => setDetailsCampaign(null)}>Close</Button>
                     </DialogFooter>
