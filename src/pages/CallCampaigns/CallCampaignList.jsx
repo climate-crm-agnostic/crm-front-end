@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Phone, Trash2, PhoneCall, Users, Eye, Search, Download, Square, History } from "lucide-react";
+import { Phone, Trash2, PhoneCall, Users, Eye, Search, Download, Square, History, Plus, AlertTriangle } from "lucide-react";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { Button } from "../../components/ui/button";
@@ -16,35 +16,39 @@ import {
 import { useClaimedNumber } from "../../hooks/useClaimedNumber";
 import Swal from 'sweetalert2';
 import { formatCount } from "@/lib/utils";
+import { TopUpDialog } from "@/components/topups/TopUpDialog";
 
 const STATUS_COLORS = { draft: "#9b948e", calling: "#c0622a", called: "var(--secondary-text)" };
 
-// Calling balance: $1 per minute, every started minute charged, at most the campaign's duration.
+// Calling balance, in seconds of talk time: each connected second is charged (rounded up), at most
+// the campaign's duration; ringing and unanswered calls are free. Shown in minutes, one decimal.
 const CALL_MINUTE_OPTIONS = [1, 2, 3, 4, 5];
 const DEFAULT_CALL_MINUTES = 5;
-const formatMoney = (cents) => `$${((cents || 0) / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const formatMinutes = (seconds) => `${((seconds || 0) / 60).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} min`;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const isValidEmail = (value) => EMAIL_PATTERN.test((value || '').trim());
 // Best-effort: on failure the header keeps the last balance it showed.
 const loadBalance = (setBalance) => getCallingBalance().then(setBalance).catch(() => {});
 
-// Balance history: what each kind of movement means and how it changes the money.
-// sign: +1 adds to the balance, -1 takes from it; 'reserve'/'release' only move money between
+// Balance history: what each kind of movement means and how it changes the minutes.
+// sign: +1 adds to the balance, -1 takes from it; 'reserve'/'release' only move minutes between
 // "available" and "reserved", the total balance does not change.
 const LEDGER_KINDS = {
     opening_balance: { label: 'Opening balance', sign: 1 },
     topup: { label: 'Top-up', sign: 1 },
+    expiry: { label: 'Expired (6 months)', sign: -1 },
+    adjustment: { label: 'Adjustment', sign: 1 },
     reserve: { label: 'Reserved for campaign', sign: -1, reservation: true },
     release: { label: 'Returned (not used)', sign: 1, reservation: true },
     call_release: { label: 'Returned (call without result)', sign: 1, reservation: true },
     charge: { label: 'Call charged', sign: -1 },
 };
-const ledgerLabel = (entry) => (entry.kind === 'charge' && !entry.amount_cents
+const ledgerLabel = (entry) => (entry.kind === 'charge' && !entry.amount_seconds
     ? 'Call not answered (free)' : (LEDGER_KINDS[entry.kind]?.label || entry.kind));
 const ledgerAmount = (entry) => {
     const kind = LEDGER_KINDS[entry.kind];
-    if (!entry.amount_cents) return formatMoney(0);
-    return `${kind?.sign < 0 ? '−' : '+'}${formatMoney(entry.amount_cents)}`;
+    if (!entry.amount_seconds) return formatMinutes(0);
+    return `${kind?.sign < 0 ? '−' : '+'}${formatMinutes(entry.amount_seconds)}`;
 };
 
 // A campaign reaches 'called' as soon as every call has been DIALED (seconds), but each call's
@@ -112,6 +116,7 @@ export const CallCampaignList = () => {
     const [maxCallMinutes, setMaxCallMinutes] = useState(String(DEFAULT_CALL_MINUTES));
     const [escalationEmail, setEscalationEmail] = useState("");
     const [balance, setBalance] = useState(null);
+    const [topUpOpen, setTopUpOpen] = useState(false);
 
     const [audienceEditor, setAudienceEditor] = useState(null); // campaign being edited, or null
     const [editorFilters, setEditorFilters] = useState([]);
@@ -460,6 +465,16 @@ export const CallCampaignList = () => {
 
     return (
         <div className="p-6 space-y-6">
+            <TopUpDialog open={topUpOpen} onOpenChange={setTopUpOpen} kind="voice_minutes" onDone={() => loadBalance(setBalance)} />
+            {balance?.low_balance && (
+                <div role="status" className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                    <span className="flex items-center gap-2">
+                        <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
+                        Your calling balance is under 20% of your last top-up ({formatMinutes(balance.balance_seconds)} left). At zero, no new calls start.
+                    </span>
+                    <Button size="sm" variant="outline" onClick={() => setTopUpOpen(true)}>Top up minutes</Button>
+                </div>
+            )}
             <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 border">
@@ -472,15 +487,20 @@ export const CallCampaignList = () => {
                 </div>
                 <div className="flex items-start gap-6 shrink-0">
                     {balance && (
-                        <div className="text-right" title={`${formatMoney(balance.price_cents_per_minute)} per minute. Reserved: calls of campaigns still in progress.`}>
+                        <div className="text-right" title={`$${balance.price_usd_per_minute} per minute, charged per connected second. Reserved: calls of campaigns still in progress.`}>
                             <Label className="text-xs text-muted-foreground">Calling balance</Label>
-                            <p className="text-sm font-semibold tabular-nums">{formatMoney(balance.available_cents)} available</p>
-                            {balance.reserved_cents > 0 && (
-                                <p className="text-xs text-muted-foreground tabular-nums">{formatMoney(balance.reserved_cents)} reserved · {formatMoney(balance.balance_cents)} total</p>
+                            <p className="text-sm font-semibold tabular-nums">{formatMinutes(balance.available_seconds)} available</p>
+                            {balance.reserved_seconds > 0 && (
+                                <p className="text-xs text-muted-foreground tabular-nums">{formatMinutes(balance.reserved_seconds)} reserved · {formatMinutes(balance.balance_seconds)} total</p>
                             )}
-                            <Button variant="link" size="sm" className="h-auto p-0 text-xs cursor-pointer" onClick={openHistory}>
-                                <History className="h-3 w-3 mr-1" aria-hidden="true" /> Balance history
-                            </Button>
+                            <div className="flex justify-end gap-3">
+                                <Button variant="link" size="sm" className="h-auto p-0 text-xs cursor-pointer" onClick={openHistory}>
+                                    <History className="h-3 w-3 mr-1" aria-hidden="true" /> Balance history
+                                </Button>
+                                <Button variant="link" size="sm" className="h-auto p-0 text-xs cursor-pointer" onClick={() => setTopUpOpen(true)}>
+                                    <Plus className="h-3 w-3 mr-1" aria-hidden="true" /> Top up
+                                </Button>
+                            </div>
                         </div>
                     )}
                     {!numberLoading && claimedNumber && (
@@ -570,7 +590,7 @@ export const CallCampaignList = () => {
                                             {c.voicemail_count > 0 && <> · {formatCount(c.voicemail_count)} voicemail</>}
                                             {c.no_answer_count > 0 && <> · {formatCount(c.no_answer_count)} no answer</>}
                                             {c.cancelled_count > 0 && <> · {formatCount(c.cancelled_count)} cancelled</>}
-                                            {' · '}{formatMoney(c.spent_cents)} spent
+                                            {' · '}{formatMinutes(c.spent_seconds)} used
                                         </>
                                     )}
                                 </span>
@@ -723,10 +743,10 @@ export const CallCampaignList = () => {
                                     <p className="text-sm text-muted-foreground" aria-live="polite">
                                         {detailsSpend.error ? 'The spend of this campaign could not be read right now.' : (
                                             <>
-                                                Spent <strong className="text-secondary-text tabular-nums">{formatMoney(detailsSpend.charged_cents)}</strong>
-                                                {' '}({formatCount(detailsSpend.charged_minutes)} min, {formatCount(detailsSpend.answered_calls)} answered call(s)
+                                                Used <strong className="text-secondary-text tabular-nums">{formatMinutes(detailsSpend.charged_seconds)}</strong>
+                                                {' '}({formatCount(detailsSpend.answered_calls)} answered call(s)
                                                 {detailsSpend.unanswered_calls > 0 && <>, {formatCount(detailsSpend.unanswered_calls)} not answered, free</>})
-                                                {' · '}reserved {formatMoney(detailsSpend.reserved_cents)} · returned {formatMoney(detailsSpend.released_cents)}
+                                                {' · '}reserved {formatMinutes(detailsSpend.reserved_seconds)} · returned {formatMinutes(detailsSpend.released_seconds)}
                                             </>
                                         )}
                                     </p>
@@ -799,12 +819,12 @@ export const CallCampaignList = () => {
                                                                 <p className="truncate" title={selected.disconnect_reason}>{selected.disconnect_reason}</p>
                                                             </div>
                                                         )}
-                                                        {selected.billed_minutes != null && (
+                                                        {selected.billed_seconds != null && (
                                                             <div>
                                                                 <p className="text-xs text-muted-foreground">Charged</p>
                                                                 <p className="tabular-nums">
-                                                                    {selected.billed_minutes > 0
-                                                                        ? `${selected.billed_minutes} min · ${formatMoney(selected.charged_cents)}`
+                                                                    {selected.billed_seconds > 0
+                                                                        ? `${selected.billed_seconds} s (${formatMinutes(selected.charged_seconds)})`
                                                                         : 'Not charged (not answered)'}
                                                                 </p>
                                                             </div>
@@ -1118,7 +1138,7 @@ const CallLimitFields = ({ idPrefix, minutes, onMinutesChange, email, onEmailCha
                 <Select value={minutes} onValueChange={onMinutesChange}>
                     <SelectTrigger id={`${idPrefix}-minutes`} className="w-full"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                        {CALL_MINUTE_OPTIONS.map(m => <SelectItem key={m} value={String(m)}>{m} min ({formatMoney(m * 100)} max per call)</SelectItem>)}
+                        {CALL_MINUTE_OPTIONS.map(m => <SelectItem key={m} value={String(m)}>{m} min max per call</SelectItem>)}
                     </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">The call is ended when it reaches this time. $1 per minute of answered calls (a voicemail counts); every started minute is charged. Unanswered calls are free.</p>
@@ -1144,16 +1164,16 @@ const SendCostSummary = ({ cost, escalationEmail }) => (
         <div className="rounded-md border px-3 py-2 text-sm space-y-1">
             <div className="flex justify-between gap-3">
                 <span className="text-muted-foreground">
-                    {formatCount(cost.recipient_count)} call(s) × {cost.max_call_minutes} min × {formatMoney(cost.price_cents_per_minute)}/min
+                    {formatCount(cost.recipient_count)} call(s) × {cost.max_call_minutes} min
                 </span>
-                <span className="font-semibold tabular-nums">{formatMoney(cost.required_cents)} max</span>
+                <span className="font-semibold tabular-nums">{formatMinutes(cost.required_seconds)} max</span>
             </div>
             <div className="flex justify-between gap-3">
                 <span className="text-muted-foreground">Available balance</span>
-                <span className="tabular-nums">{cost.available_cents == null ? '—' : formatMoney(cost.available_cents)}</span>
+                <span className="tabular-nums">{cost.available_seconds == null ? '—' : formatMinutes(cost.available_seconds)}</span>
             </div>
             <p className="text-xs text-muted-foreground">
-                The maximum is reserved now. Each answered call is charged when it ends; unanswered calls are free and the rest is released.
+                The maximum is reserved now. Each answered call is charged per second when it ends; unanswered calls are free and the rest is released.
                 {escalationEmail && <> Calls ended at the time limit go to <strong>{escalationEmail}</strong>.</>}
             </p>
         </div>

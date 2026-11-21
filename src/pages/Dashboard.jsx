@@ -561,7 +561,7 @@ export const Dashboard = () => {
                 </section>
             </div>
 
-            {canSeeChett && <CreditsCard credits={credits} loading={creditsLoading} />}
+            {canSeeChett && <CreditsCard credits={credits} loading={creditsLoading} onChanged={() => getAICredits().then(setCredits).catch(() => {})} />}
             <div className="space-y-8 pt-2">
                 {canSeePayables && <PayablesWidget navigate={navigate} />}
 
