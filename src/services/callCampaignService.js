@@ -24,6 +24,14 @@ export const getCampaignSpend = async (id) => {
   return res.json();
 };
 
+// Simultaneous-calls limit and the AWS request to raise it:
+// { max_concurrent_calls, source, increase_request, active_calls }.
+export const getCallingLimits = async () => {
+  const res = await fetch(`${API_URL}/calling/limits/`, { headers: getHeaders() });
+  if (!res.ok) throw new Error('Error fetching the calling limits');
+  return res.json();
+};
+
 export const getCallingBalance = async () => {
   const res = await fetch(`${API_URL}/calling/balance/`, { headers: getHeaders() });
   if (!res.ok) throw new Error('Error fetching the calling balance');
@@ -86,7 +94,8 @@ export const previewRecipients = async (id) => {
 };
 
 // Kicks off the batch — backend dispatches each call from a background
-// thread (paced, capped at max_send_now) and returns immediately with
+// thread (never more calls at once than the line allows, see preview's
+// max_concurrent_calls) and returns immediately with
 // { status: 'started', total }. Poll getSendProgress(id) for live progress.
 // 'completed' recipients only means the call ended — not that it was
 // answered (see CallCampaignRecipient docstring on the backend).

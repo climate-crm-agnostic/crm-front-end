@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { getSettings, updateSettings } from "../services/settingsService";
 import { searchNumbers, claimNumber } from "../services/connectNumberService";
 import { useClaimedNumber } from "../hooks/useClaimedNumber";
+import { CallingLimitsNotice } from "../components/CallingLimitsNotice";
+import { useCallingLimits } from "../hooks/useCallingLimits";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Button } from "../components/ui/button";
@@ -55,6 +57,7 @@ const SecretField = ({ label, maskedValue, fieldKey, pendingValues, onChange }) 
 
 const ConnectNumberCard = () => {
     const { claimedNumber: claimed, setClaimedNumber: setClaimed, loading, configError } = useClaimedNumber();
+    const callingLimits = useCallingLimits();
     const [zone, setZone] = useState("");
     const [numbers, setNumbers] = useState(null); // null = not searched yet
     const [selected, setSelected] = useState(null);
@@ -121,6 +124,9 @@ const ConnectNumberCard = () => {
                             {claimed}
                         </code>
                         <p className="text-xs text-muted-foreground">This number is permanent and can't be changed once claimed.</p>
+                        <div className="pt-3 border-t">
+                            <CallingLimitsNotice limits={callingLimits} />
+                        </div>
                     </div>
                 ) : (
                     <>

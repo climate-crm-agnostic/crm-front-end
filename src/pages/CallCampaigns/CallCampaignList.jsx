@@ -14,6 +14,8 @@ import {
     getCallingBalance, getCallingLedger, getCampaignSpend,
 } from "../../services/callCampaignService";
 import { useClaimedNumber } from "../../hooks/useClaimedNumber";
+import { CallingLimitsNotice } from "../../components/CallingLimitsNotice";
+import { useCallingLimits } from "../../hooks/useCallingLimits";
 import Swal from 'sweetalert2';
 import { formatCount } from "@/lib/utils";
 
@@ -25,6 +27,12 @@ const DEFAULT_CALL_MINUTES = 5;
 const formatMoney = (cents) => `$${((cents || 0) / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const isValidEmail = (value) => EMAIL_PATTERN.test((value || '').trim());
+const formatDuration = (minutes) => {
+    const m = Math.max(Math.round(minutes || 0), 1);
+    if (m < 60) return `${m} min`;
+    const h = Math.floor(m / 60), rest = m % 60;
+    return rest ? `${h} h ${rest} min` : `${h} h`;
+};
 // Best-effort: on failure the header keeps the last balance it showed.
 const loadBalance = (setBalance) => getCallingBalance().then(setBalance).catch(() => {});
 
@@ -98,6 +106,7 @@ const recipientBadgeStyle = (status) => ({
 export const CallCampaignList = () => {
     const navigate = useNavigate();
     const { claimedNumber, loading: numberLoading } = useClaimedNumber();
+    const callingLimits = useCallingLimits();
     const [campaigns, setCampaigns] = useState([]);
     const [templates, setTemplates] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -487,6 +496,7 @@ export const CallCampaignList = () => {
                         <div className="text-right">
                             <Label className="text-xs text-muted-foreground">Calling from</Label>
                             <code className="block font-mono text-sm">{claimedNumber}</code>
+                            <CallingLimitsNotice limits={callingLimits} compact />
                         </div>
                     )}
                 </div>
@@ -1073,11 +1083,12 @@ export const CallCampaignList = () => {
                         <div className="space-y-3">
                             {sendPreviewData.cost && <SendCostSummary cost={sendPreviewData.cost} escalationEmail={sendPreviewData.escalation_email} />}
                             <p className="text-sm text-muted-foreground">
-                                This will call <strong>{formatCount(sendPreviewData.recipient_count)}</strong> contact(s) in batches of {sendPreviewData.max_send_now}. A call campaign can only be sent once: calls that fail are not retried, they are listed in the campaign's details.
+                                This will call <strong>{formatCount(sendPreviewData.recipient_count)}</strong> contact(s), up to {formatCount(sendPreviewData.max_concurrent_calls)} at the same time. A call campaign can only be sent once: calls that fail are not retried, they are listed in the campaign's details.
                             </p>
-                            {sendPreviewData.recipient_count > sendPreviewData.max_send_now && (
+                            {sendPreviewData.recipient_count > sendPreviewData.max_concurrent_calls && (
                                 <div className="rounded-md border border-amber-300 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/15 px-3 py-3 text-sm text-amber-800 dark:text-amber-300">
-                                    This will be sent in batches of {sendPreviewData.max_send_now}, with a 1-minute pause between batches — it may take a while for large audiences.
+                                    Your phone line allows {formatCount(sendPreviewData.max_concurrent_calls)} call(s) at the same time, so each call starts when one ends.
+                                    {' '}This campaign may take about <strong>{formatDuration(sendPreviewData.estimated_minutes)}</strong>.
                                 </div>
                             )}
                             {sendPreviewData.recipient_count > 0 && (
