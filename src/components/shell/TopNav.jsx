@@ -139,22 +139,22 @@ export function TopNav({ onOpenSearch }) {
 
             <button
                 type="button" onClick={onOpenSearch} aria-label="Search pages (Command K)"
-                className="hidden h-10 min-w-[220px] cursor-pointer items-center gap-2 rounded-full bg-background px-4 text-sm text-muted-foreground outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring 2xl:flex"
+                className="hidden h-10 min-w-[220px] cursor-pointer items-center gap-2 rounded-full bg-[color-mix(in_srgb,#60d805_18%,transparent)] px-4 text-sm text-[var(--secondary-text)] outline-none transition-colors hover:bg-[color-mix(in_srgb,#60d805_30%,transparent)] focus-visible:ring-2 focus-visible:ring-ring 2xl:flex"
             >
                 <Search className="size-4" />
                 <span className="flex-1 text-left">Search</span>
                 <kbd className="rounded-md border bg-card px-1.5 text-xs">⌘K</kbd>
             </button>
-            <button type="button" onClick={onOpenSearch} aria-label="Search pages" className="grid h-10 w-10 cursor-pointer place-items-center rounded-full bg-background outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring 2xl:hidden">
-                <Search className="size-[18px]" />
+            <button type="button" onClick={onOpenSearch} aria-label="Search pages" className="grid h-10 w-10 cursor-pointer place-items-center rounded-full bg-[color-mix(in_srgb,#60d805_18%,transparent)] text-[var(--secondary-text)] outline-none transition-colors hover:bg-[color-mix(in_srgb,#60d805_30%,transparent)] focus-visible:ring-2 focus-visible:ring-ring 2xl:hidden">
+                <Search className="size-[18px]" strokeWidth={2.2} />
             </button>
 
-            <button type="button" onClick={() => setTheme(isDark ? "light" : "dark")} aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"} title={isDark ? "Light mode" : "Dark mode"} className="grid h-10 w-10 cursor-pointer place-items-center rounded-full bg-background outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
-                {isDark ? <Sun className="size-[18px]" /> : <Moon className="size-[18px]" />}
+            <button type="button" onClick={() => setTheme(isDark ? "light" : "dark")} aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"} title={isDark ? "Light mode" : "Dark mode"} className="grid h-10 w-10 cursor-pointer place-items-center rounded-full bg-[color-mix(in_srgb,#60d805_18%,transparent)] text-[var(--secondary-text)] outline-none transition-colors hover:bg-[color-mix(in_srgb,#60d805_30%,transparent)] focus-visible:ring-2 focus-visible:ring-ring">
+                {isDark ? <Sun className="size-[18px]" strokeWidth={2.2} /> : <Moon className="size-[18px]" strokeWidth={2.2} />}
             </button>
 
-            <Link to="/chat" aria-label={totalUnread ? `Messages, ${totalUnread} unread` : "Messages"} className="relative grid h-10 w-10 place-items-center rounded-full bg-background outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
-                <Bell className="size-[18px]" />
+            <Link to="/chat" aria-label={totalUnread ? `Messages, ${totalUnread} unread` : "Messages"} className="relative grid h-10 w-10 place-items-center rounded-full bg-[color-mix(in_srgb,#60d805_18%,transparent)] text-[var(--secondary-text)] outline-none transition-colors hover:bg-[color-mix(in_srgb,#60d805_30%,transparent)] focus-visible:ring-2 focus-visible:ring-ring">
+                <Bell className="size-[18px]" strokeWidth={2.2} />
                 {totalUnread > 0 && (
                     <span className="absolute -right-0.5 -top-0.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-destructive px-1 text-[11px] font-bold text-white">
                         {totalUnread > 9 ? "9+" : totalUnread}

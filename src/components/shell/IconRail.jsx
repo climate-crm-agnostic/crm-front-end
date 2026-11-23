@@ -6,9 +6,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { iconFor, useShellNav } from "./useShellNav";
 
 
+// Hub icons are brand green; the selected hub is a dark green tile with a white icon.
 const hubButton = (active, size) =>
     `grid ${size} place-items-center rounded-[calc(var(--app-radius)*0.7)] transition-colors ${
-        active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+        active ? "bg-[#255b01] text-white" : "text-[var(--primary-text)] hover:bg-[color-mix(in_srgb,#60d805_15%,transparent)]"
     }`;
 
 /**
@@ -26,8 +27,10 @@ export function IconRail() {
                 aria-label="Main navigation"
                 className="hidden md:flex sticky top-4 z-30 h-[calc(100vh-2rem)] w-[72px] shrink-0 flex-col items-center gap-1.5 rounded-xl border bg-card py-3.5 shadow-sm"
             >
-                <Link to="/" aria-label="Climate by CodeX — home" className="mb-1.5 grid h-11 w-11 place-items-center rounded-xl" style={{ backgroundColor: "#255b01" }}>
-                    <img src="/climate-icon.svg" alt="" className="w-8 h-auto" />
+                {/* Full logo with its byline, no box; the dark file swaps in for dark mode. */}
+                <Link to="/" aria-label="Climate by CodeX Academy Technologies — home" className="mb-1.5 block px-1">
+                    <img src="/climate.svg" alt="" className="w-16 h-auto dark:hidden" />
+                    <img src="/climate-dark.svg" alt="" className="w-16 h-auto hidden dark:block" />
                 </Link>
                 {hubs.map((hub, index) => {
                     const Icon = iconFor(hub.icon);
@@ -38,7 +41,7 @@ export function IconRail() {
                             <Tooltip>
                                 <TooltipTrigger asChild>
                                     <Link to={hubUrl(hub)} aria-label={hub.label} aria-current={active ? "page" : undefined} className={hubButton(active, "h-[46px] w-[46px]")}>
-                                        <Icon className="size-5" strokeWidth={1.8} />
+                                        <Icon className="size-[22px]" strokeWidth={2.2} />
                                     </Link>
                                 </TooltipTrigger>
                                 <TooltipContent side="right">{hub.label}</TooltipContent>
@@ -77,7 +80,7 @@ export function IconRail() {
                     const active = activeHub?.label === hub.label;
                     return (
                         <Link key={hub.label} to={hubUrl(hub)} aria-label={hub.label} aria-current={active ? "page" : undefined} className={hubButton(active, "h-12 min-w-0 flex-1 max-w-12")}>
-                            <Icon className="size-[22px]" strokeWidth={1.8} />
+                            <Icon className="size-[22px]" strokeWidth={2.2} />
                         </Link>
                     );
                 })}
