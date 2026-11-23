@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import * as XLSX from "xlsx";
+import { CreditsMeter } from "@/components/CreditsMeter";
+import { refreshAICredits, publishAICredits } from "@/hooks/useAICredits";
 import {
     ResponsiveContainer, BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
     XAxis, YAxis, Tooltip, CartesianGrid, Legend,
@@ -8,6 +10,11 @@ import {
     sendMessage, getConversations, getConversation,
     renameConversation, deleteConversation,
 } from "../services/aiService";
+import { AI_NAME } from "@/lib/brand";
+import { Link } from "react-router-dom";
+import { useCreditsAdminAccess, useKnowledgeAccess } from "@/hooks/useMenu";
+import { useAuth } from "@/context/AuthContext";
+import { askKnowledge, getGeneratedFileUrl, getSourceUrl } from "../services/knowledgeService";
 
 // Palette for report charts (olive-forward, matches the brand).
 const CHART_COLORS = ["#5E6A43", "#B0592E", "#2f9e3a", "#9b7a2e", "#4a5535", "#C9A227", "#6b6560", "#3CC647"];
@@ -29,6 +36,49 @@ const FOLLOWUPS = [
     "Leads by stage — chart only",
     "Overdue invoices",
 ];
+
+// Starter prompts for the knowledge-base mode.
+const KNOWLEDGE_SUGGESTIONS = [
+    "What does our company policy say about vacations?",
+    "Summarize the latest board meeting",
+    "Create a presentation about our Q4 priorities",
+    "Make an action plan to fix our biggest risk",
+];
+
+const openUrl = async (getUrl) => {
+    try { window.open(await getUrl(), "_blank", "noopener"); } catch (e) { window.alert(e.message); }
+};
+
+const clock = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+
+// Sources cited by a knowledge answer and the files it generated.
+const KnowledgeExtras = ({ sources, files }) => {
+    const chip = { fontSize: 12, padding: "4px 10px", borderRadius: 999, border: "1px solid var(--border)", background: "var(--muted)", cursor: "pointer", color: "var(--foreground)" };
+    return (
+        <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
+            {files?.length > 0 && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    {files.map((f) => (
+                        <button key={f.key} style={{ ...chip, fontWeight: 600, background: "var(--primary)", color: "var(--primary-foreground)", border: "none" }}
+                            onClick={() => openUrl(() => getGeneratedFileUrl(f.key))}>
+                            Download {f.name}
+                        </button>
+                    ))}
+                </div>
+            )}
+            {sources?.length > 0 && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
+                    <span style={{ fontSize: 11, color: "var(--muted-foreground)" }}>Sources:</span>
+                    {sources.map((s) => (
+                        <button key={s.n} style={chip} title={s.snippet || s.title} onClick={() => openUrl(() => getSourceUrl(s.doc_id))}>
+                            [{s.n}] {s.title}{s.start_seconds != null ? ` · ${clock(s.start_seconds)}` : ""}
+                        </button>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
 
 // Renders a single report inside an assistant message: an optional chart, the
 // data table, an Export to Excel button, and a note when the dataset was
@@ -355,7 +405,7 @@ const TypingDots = () => (
 
 // ── Message bubble ────────────────────────────────────────────────────────
 
-export const Bubble = ({ role, content, reports }) => {
+export const Bubble = ({ role, content, reports, sources, files }) => {
     const isUser = role === "user";
     const hasReports = !isUser && Array.isArray(reports) && reports.length > 0;
     return (
@@ -374,6 +424,7 @@ export const Bubble = ({ role, content, reports }) => {
             }}>
                 {isUser ? content : <MarkdownContent text={content} />}
                 {hasReports && reports.map((rep, i) => <ReportBlock key={i} report={rep} />)}
+                {!isUser && (sources?.length > 0 || files?.length > 0) && <KnowledgeExtras sources={sources} files={files} />}
             </div>
         </div>
     );
@@ -382,6 +433,13 @@ export const Bubble = ({ role, content, reports }) => {
 // ── Main page ─────────────────────────────────────────────────────────────
 
 export const ChettAI = () => {
+    const canManageKnowledge = useKnowledgeAccess();
+    const canManageCredits = useCreditsAdminAccess();
+    const { isFeatureEnabled } = useAuth();
+    const hasKnowledge = isFeatureEnabled("knowledge_base");
+    // "chett" = ask about CRM data; "knowledge" = ask the company knowledge base. Each keeps its own conversations.
+    const [mode, setMode] = useState("chett");
+    const isKnowledge = mode === "knowledge";
     // Conversations sidebar
     const [conversations, setConversations] = useState([]);
     const [convLoading, setConvLoading] = useState(true);
@@ -405,11 +463,21 @@ export const ChettAI = () => {
 
     // Load conversation list on mount
     useEffect(() => {
-        getConversations()
+        setConvLoading(true);
+        getConversations(mode)
             .then(setConversations)
             .catch(() => { })
             .finally(() => setConvLoading(false));
-    }, []);
+    }, [mode]);
+
+    const switchMode = (next) => {
+        if (next === mode || sending) return;
+        setMode(next);
+        setConvId(null);
+        setConvName("");
+        setMessages([]);
+        setInput("");
+    };
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -425,7 +493,7 @@ export const ChettAI = () => {
             const data = await getConversation(id);
             setConvId(data.id);
             setConvName(data.name);
-            setMessages(data.messages.map(m => ({ role: m.role, content: m.content, reports: m.reports || [] })));
+            setMessages(data.messages.map(m => ({ role: m.role, content: m.content, reports: m.reports || [], sources: m.meta?.sources || [], files: m.meta?.files || [] })));
         } catch { }
     }, [convId]);
 
@@ -444,8 +512,9 @@ export const ChettAI = () => {
         setSending(true);
 
         try {
-            const res = await sendMessage(text, convId);
-            setMessages(prev => [...prev, { role: "assistant", content: res.assistant_message, reports: res.reports || [], suggestions: res.suggestions || [] }]);
+            const res = await (isKnowledge ? askKnowledge : sendMessage)(text, convId);
+            publishAICredits(res.credits);
+            setMessages(prev => [...prev, { role: "assistant", content: res.assistant_message, reports: res.reports || [], suggestions: res.suggestions || [], sources: res.sources || [], files: res.files || [] }]);
 
             if (!convId) {
                 // New conversation was auto-created
@@ -468,8 +537,9 @@ export const ChettAI = () => {
             setMessages(prev => [...prev, { role: "assistant", content: `Error: ${err.message}` }]);
         } finally {
             setSending(false);
+            refreshAICredits();
         }
-    }, [input, sending, convId]);
+    }, [input, sending, convId, isKnowledge]);
 
     const handleKeyDown = (e) => {
         if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
@@ -539,7 +609,30 @@ export const ChettAI = () => {
                         padding: "14px 16px 10px",
                         borderBottom: "1px solid var(--border)",
                     }}>
-                        <span style={{ fontWeight: 700, fontSize: 15 }}>Chett AI</span>
+                        <span style={{ fontWeight: 700, fontSize: 15 }}>{AI_NAME}</span>
+                        {hasKnowledge && (
+                            <div style={{ display: "flex", gap: 4, marginTop: 8, padding: 3, borderRadius: 999, background: "var(--muted)" }}>
+                                {[["chett", "CRM data"], ["knowledge", "Company knowledge"]].map(([key, label]) => (
+                                    <button key={key} onClick={() => switchMode(key)} disabled={sending}
+                                        style={{ flex: 1, fontSize: 12, fontWeight: 600, padding: "5px 8px", borderRadius: 999, border: "none", cursor: "pointer",
+                                            background: mode === key ? "var(--card)" : "transparent",
+                                            color: mode === key ? "var(--foreground)" : "var(--muted-foreground)",
+                                            boxShadow: mode === key ? "0 1px 2px rgba(0,0,0,0.12)" : "none" }}>
+                                        {label}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                        {canManageKnowledge && (
+                            <Link to="/intelligence/knowledge" style={{ display: "block", marginTop: 6, fontSize: 12, color: "var(--secondary-text)", textDecoration: "underline" }}>
+                                Knowledge base
+                            </Link>
+                        )}
+                        {canManageCredits && (
+                            <Link to="/intelligence/credits" style={{ display: "block", marginTop: 4, fontSize: 12, color: "var(--secondary-text)", textDecoration: "underline" }}>
+                                Credits by user
+                            </Link>
+                        )}
                     </div>
 
                     {/* New conversation button */}
@@ -677,6 +770,8 @@ export const ChettAI = () => {
                         minHeight: 49,
                         display: "flex",
                         alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: 16,
                     }}>
                         {convName ? (
                             <span style={{ fontSize: 15, fontWeight: 600, color: "var(--foreground)" }}>{convName}</span>
@@ -690,16 +785,16 @@ export const ChettAI = () => {
                         {messages.length === 0 && (
                             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 10, color: "var(--muted-foreground)" }}>
                                 <p style={{ fontWeight: 700, fontSize: 20, color: "var(--foreground)" }}>
-                                    Hi! I'm Chett AI.
+                                    Hi! I'm {AI_NAME}.
                                 </p>
                                 <p style={{ fontSize: 14 }}>
-                                    Ask me anything about your CRM data.
+                                    {isKnowledge ? "Ask me anything about your company's documents, recordings and images." : "Ask me anything about your CRM data."}
                                 </p>
                                 <p style={{ fontSize: 12 }}>
-                                    I can query clients, invoices, leads, services, and more.
+                                    {isKnowledge ? "I answer only from what you have access to, cite my sources, and can build presentations, documents and action plans." : "I can query clients, invoices, leads, services, and more."}
                                 </p>
                                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", maxWidth: 620, marginTop: 8 }}>
-                                    {SUGGESTIONS.map((s) => (
+                                    {(isKnowledge ? KNOWLEDGE_SUGGESTIONS : SUGGESTIONS).map((s) => (
                                         <button
                                             key={s}
                                             onClick={() => sendSuggestion(s)}
@@ -721,14 +816,14 @@ export const ChettAI = () => {
                         )}
 
                         {messages.map((m, i) => (
-                            <Bubble key={i} role={m.role} content={m.content} reports={m.reports} />
+                            <Bubble key={i} role={m.role} content={m.content} reports={m.reports} sources={m.sources} files={m.files} />
                         ))}
 
                         {/* Suggestions under the latest answer. If the AI attached
                             clarifying-question options (suggestions), show those as
                             prominent chips; otherwise show the subtle "Try next" set. */}
                         {(() => {
-                            if (sending || messages.length === 0) return null;
+                            if (sending || messages.length === 0 || isKnowledge) return null;
                             const last = messages[messages.length - 1];
                             if (last.role !== "assistant") return null;
                             const clarifying = Array.isArray(last.suggestions) && last.suggestions.length > 0;
@@ -803,7 +898,7 @@ export const ChettAI = () => {
                                 value={input}
                                 onChange={e => setInput(e.target.value)}
                                 onKeyDown={handleKeyDown}
-                                placeholder="Ask about your CRM data..."
+                                placeholder={isKnowledge ? "Ask about your company documents..." : "Ask about your CRM data..."}
                                 rows={1}
                                 disabled={sending}
                                 style={{
@@ -844,8 +939,9 @@ export const ChettAI = () => {
                                 <SendIcon />
                             </button>
                         </div>
-                        <p style={{ fontSize: 11, color: "var(--muted-foreground)", textAlign: "center", marginTop: 8 }}>
-                            Chett AI can make mistakes. Verify important data before acting on it.
+                        <CreditsMeter style={{ maxWidth: 800, margin: "6px auto 0" }} />
+                        <p style={{ fontSize: 11, color: "var(--muted-foreground)", textAlign: "center", marginTop: 6 }}>
+                            {AI_NAME} can make mistakes. Verify important data before acting on it.
                         </p>
                     </div>
                 </div>

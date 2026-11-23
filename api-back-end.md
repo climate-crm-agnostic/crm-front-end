@@ -1236,3 +1236,109 @@ Records the lending and return of assets to specific personnel. Creating an assi
 | `state` | String | State/Province |
 | `country` | String | Country |
 | `attributes` | JSONB | Dynamic key-value attributes |
+
+## AI Credits (Intelligence by CodeX Academy)
+**Every user has their own monthly credit balance** (a credit is sold at US$0.01; the AWS cost behind it is about US$0.00275, the difference is the CodeX Academy margin applied
+in the weights). The tier sets the allotment **per user**: Full 4,000 · Full Plus 10,000 · Business 25,000 · Enterprise 50,000
+(placeholder). Free Trial and Basic have none (no AI). The month is the calendar month in UTC. Each user's calls
+are metered in a ledger, so a user running out does **not** affect anyone else.
+
+- **80 %**: `status` becomes `warning` (the UI turns amber).
+- **100 %**: `status` becomes `exhausted` and every AI endpoint answers **402** for that user (administrators included) before calling Bedrock.
+  The one message that crosses 100 % still finishes; the next is refused.
+- An administrator can **top up a specific user** (below).
+
+#### Get my AI credits
+**GET** `/api/ai/credits/` (requires the `ai` plan feature and `app.view_aiconversation`; 403 otherwise)
+```json
+{"enabled": true, "user_id": 12, "tier": "full", "unit": "credits",
+ "period": {"start": "2026-11-01", "end": "2026-11-30", "label": "November 2026", "timezone": "UTC"},
+ "pool": 4500, "base_pool": 4000, "extra": 500, "used": 1234.5, "remaining": 3265.5, "percent": 27.4,
+ "status": "ok", "warn_percent": 80}
+```
+`pool = base_pool + extra` (this user's top-ups of the month). `percent` is not capped at 100. `status`: `ok`, `warning`, `exhausted` or `disabled` (no allotment).
+#### Exhausted response (402)
+Any AI endpoint (Chett, contracts AI chat/preview/PDF upload, meeting documents chat/preview, supplier-bill scan, email/template/call-prompt Polish, knowledge uploads):
+`{"detail": "You have used all of your AI credits for this month. Ask an administrator to add more credits.", "credits_exhausted": true, "credits": {...}}`
+#### Chat response
+**POST** `/api/ai/chat/` also returns `credits` (the caller's object plus `message_credits`). `credits` is `null` if the ledger could not be read (the answer itself is never failed by that). The UI publishes that object to the shared meter and re-fetches `GET /api/ai/credits/` once when the reply completes (concurrent callers share one request; there is no polling). A 403 hides the meters; other errors keep the last value.
+#### Top-ups (administrators: superuser or `app.add_aicredittopup`)
+**POST** `/api/ai/credits/topups/` `{"user": 12, "credits": 500, "note": "..."}` gives **that user** extra credits for the current month
+(`0 < credits <= 1,000,000`; the user must be active). Append-only. Returns that user's new summary (201).
+**GET** `/api/ai/credits/topups/?user=<id>` lists this month's top-ups (all users, or one).
+#### Knowledge ingestion budget (per account, separate from the personal credits)
+Loading files into the knowledge base is charged here, whoever uploads, so it never eats anyone's own credits. Allotment per month: Full 4,000 · Full Plus 10,000 · Business 25,000 · Enterprise 50,000 (placeholder); `AI_INGESTION_MONTHLY_POOL` overrides it per instance.
+**GET** `/api/ai/credits/ingestion/` (credits or knowledge administrators) returns the same object as a user's credits (`pool`, `base_pool`, `extra`, `used`, `remaining`, `percent`, `status`).
+**POST** `/api/ai/credits/topups/` `{"pool": "ingestion", "credits": 2000, "note": "..."}` adds to it for the current month (no `user`). `GET /api/ai/credits/topups/?pool=user|ingestion` filters the history.
+Ingestion entries (`kb_embed`, `kb_parse`) are excluded from every user's own `used`; `/api/ai/credits/users/` shows them per person as `ingestion_caused`.
+#### Balance of every user (same permission)
+**GET** `/api/ai/credits/users/?period=YYYY-MM`
+```json
+{"period": "2026-11", "total": 5000, "unattributed": 0, "per_user_pool": 4000,
+ "users": [{"user_id": 12, "username": "ana", "full_name": "Ana Perez", "is_active": true, "used": 4000, "extra": 0,
+            "pool": 4000, "remaining": 0, "percent": 100.0, "status": "exhausted", "share": 80.0}]}
+```
+Active users always appear, even with no usage. `unattributed` is consumption with no user (system calls).
+#### Account totals (deploy-app only)
+**GET** `/api/ai/credits/service/` with header `X-Credits-Key`: account-wide `pool` (sum of every active user's allotment plus top-ups), `used`, `percent`,
+`per_user_pool`, `users`, `users_exhausted`, `users_warning`, `ingestion_pool`, `ingestion_used`, `ingestion_percent` and the reconciliation counters.
+
+## Knowledge base (Intelligence)
+Company files that Intelligence answers from. Requires the `knowledge_base` plan feature. **Administrators only**
+(superuser or the `add_/view_/change_/delete_` knowledgegroup / knowledgedocument permissions); other users get 403.
+Access is decided by **access groups** (not CRM roles): a user may belong to many groups, plus the built-in *Everyone*.
+#### Access groups
+**GET/POST** `/api/knowledge/groups/` · **GET/PATCH/DELETE** `/api/knowledge/groups/{id}/`
+```json
+{"id": "…", "name": "Finance", "description": "", "is_everyone": false, "member_ids": [3, 7],
+ "members": [{"id": 3, "username": "ana", "full_name": "Ana Perez"}], "member_count": 2, "document_count": 4}
+```
+Names are unique (case-insensitive). *Everyone* cannot be renamed, given members or deleted; a group with documents cannot be deleted (400).
+#### Documents
+**GET** `/api/knowledge/documents/?group=<id>&kind=document|image|media` ·
+**POST** `/api/knowledge/documents/` multipart: `file`, `group` (required), `title` (optional) ·
+**PATCH** `/api/knowledge/documents/{id}/` (`title`, `group`) · **DELETE** (soft delete).
+- Types: PDF, DOC/DOCX, XLS/XLSX, CSV, TXT, MD (50 MB) · PNG, JPG (20 MB) · MP3, WAV, M4A, FLAC, OGG, MP4, MOV (200 MB). The file *content* is verified, not just the extension.
+- `409` duplicate file (same SHA-256) · `402` the ingestion budget cannot cover this file · `502` storage failure (no row is kept).
+- `kind` is `document`, `image` or `media`; `kb` is `docs` (documents) or `media` (audio, video and images, parsed by Bedrock Data Automation).
+- Each document returns `est_embedding_tokens`, `est_units` / `est_unit`, `est_method`, `est_credits` and `credits_charged` (what indexing it has cost so far) and `uploaded_by_name`.
+#### Cost of indexing (charged to the ACCOUNT's monthly ingestion budget, not to the uploader's own credits)
+Bedrock does not report the tokens an ingestion job embeds, so they are estimated **from the file itself** at upload: text extracted from PDF, Word, Excel and text files
+(~4 characters per token, +10 % because chunks overlap); the real duration of audio and video read from the file header (`est_method` is `header`; `size_heuristic` if it could not be read;
+`no_text` for a PDF with no extractable text). Every sync that re-processes a file is charged again, and the same sync is never charged twice. The ledger still records who caused it.
+| What | Credits |
+|---|---|
+| Embedding text (Titan Text Embeddings v2) | 0.008 per 1,000 tokens (a 100-page document ≈ 0.4) |
+| Audio (Bedrock Data Automation) | 2.4 per minute |
+| Video (Bedrock Data Automation) | 20 per minute |
+| Image (Bedrock Data Automation) | 1.2 per image |
+Audio and video also embed their transcript (~200 tokens per minute). The upload is refused with `402` (`insufficient_ingestion_credits`, `required_credits`, `ingestion`) before anything is stored if the account's remaining ingestion budget does not cover the estimate. Running out of your own AI credits does **not** block uploads.
+In the ledger these are the features `kb_embed` (tokens) and `kb_parse` (units), so they appear in the reconciliation report and in `/api/ai/credits/users/`.
+- `status`: `pending_sync` → `syncing` → `synced` | `failed`. Moving a document to another group rewrites its S3 metadata and queues a re-sync (not billed again).
+#### Sync with the knowledge bases (how files become searchable)
+A document waits as `pending_sync` until a sync job picks it up. **Uploads are batched**: nothing starts until the newest change is 2 minutes old, then one Bedrock ingestion job covers everything pending
+(Bedrock runs one job at a time per knowledge base; a partial unique constraint enforces it). Documents (`kind=document`) and media (`audio`, `video`, `image`) are separate knowledge bases with separate jobs.
+Deleted documents have their S3 files removed first and ride along in the next job so their vectors are dropped.
+The state lives in the database, so it survives restarts. It advances from a worker thread started after every change, from `python manage.py run_knowledge_sync` (deploy-app installs it in cron every minute) and from "Sync now".
+**GET** `/api/knowledge/sync/` → `{counts: {pending_sync, syncing, synced, failed}, kbs: {docs|media: {configured, pending, removing, running, last}}, debounce_seconds}`.
+**POST** `/api/knowledge/sync/` `{"retry_failed": true}` re-queues failed documents (optional) and runs a cycle now without waiting for the batching window.
+**POST** `/api/knowledge/documents/{id}/resync/` retries one failed document (400 if it did not fail). Administrators only; `403` with `upgrade_required` when the plan lacks the module.
+When a job ends, each person who uploaded files in it receives one email, **"Your agent has just finished its retraining"**, listing what is now available and what could not be learned and why. Bedrock does not say which file failed, so the failing S3 keys are read from the job's failure reasons.
+
+### Asking the knowledge base (any user with Intelligence)
+
+Requires the `ai` and `knowledge_base` plan features and `app.view_aiconversation`; otherwise `403` (with `feature_gate` and `upgrade_required: true` when it is the plan). Everything an answer contains is limited to the documents the caller's access groups allow; nothing the client sends can widen that. Superusers (administrators) are the one exception by design: they can consult every group, since they manage the documents.
+
+**POST** `/api/knowledge/chat/` `{"message": "...", "conversation_id": "<uuid, optional>"}` (message up to 2000 characters) →
+`{conversation_id, conversation_name, assistant_message, sources: [{n, doc_id, title, kind, score, snippet?, start_seconds?, end_seconds?}], files: [{name, key, kind, size}], credits}`.
+- The answer cites facts as `[n]`; `sources` lists only the cited ones. Audio and video sources carry the time range they come from.
+- When nothing relevant is available to the caller, the answer says so in the same words whether nothing exists or nothing is allowed. It never reveals that restricted documents exist.
+- Asking for a presentation, a document or an action plan adds the generated file to `files` (`kind` is `pptx` or `docx`). Questions run on the general model and deliverables on the stronger one.
+- Errors: `400` empty or too long message, `402` the caller's credits are exhausted, `404` conversation not found (or not a knowledge conversation), `502` the model could not be reached.
+- Every model call, question embedding and vector query is charged to the **caller's own** monthly credits (about 1.5 credits per question, 14 per presentation, 23 per action plan on measured runs); it never touches the account's ingestion budget.
+
+**POST** `/api/knowledge/files/url/` `{"key": "generated/<your user id>/..."}` → `{url}`, a link valid for 15 minutes. Only keys of files generated for the caller are accepted; anything else is `404`.
+**GET** `/api/knowledge/sources/{doc_id}/url/` → `{title, filename, url}` (15 minutes) for a cited document, only if the caller's groups allow it. A document the caller may not read looks exactly like one that does not exist (`404`).
+
+Conversations of this mode are separate from the data-analyst chat: **GET** `/api/ai/conversations/?kind=knowledge` lists them (`kind` defaults to `chett`), and **GET** `/api/ai/conversations/{id}/` returns `kind` and, per message, `meta: {sources, files}`.
+

@@ -92,7 +92,13 @@ function SelectContent({
           `,
           // Capped rather than "as tall as the viewport allows", which is what
           // made a list of 60 minutes or 240 countries fill the screen.
-          "max-h-80 overflow-y-auto",
+          // overflow-hidden (not overflow-y-auto): Radix's own Viewport below
+          // already has a native scrollbar (overflow: "hidden auto", baked
+          // into @radix-ui/react-select). A second native scroll container
+          // here fights the inner one on fast wheel scroll — each corrects
+          // position independently, which looked like duplicated/ghosted
+          // text mid-scroll. This div should only clip to the max height.
+          "max-h-80 overflow-hidden",
           position === "popper" &&
           "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
           className

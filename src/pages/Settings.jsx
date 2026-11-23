@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react";
 import { getSettings, updateSettings } from "../services/settingsService";
+import { searchNumbers, claimNumber } from "../services/connectNumberService";
+import { useClaimedNumber } from "../hooks/useClaimedNumber";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Button } from "../components/ui/button";
 import { Switch } from "../components/ui/switch";
 import { Badge } from "../components/ui/badge";
 import { Card, CardHeader } from "../components/SectionCard";
-import { CreditCard, Settings as SettingsIcon } from "lucide-react";
+import { CreditCard, PhoneCall, Settings as SettingsIcon } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { PlanSummary } from "../components/PlanSummary";
+import { FeatureGate } from "../components/FeatureGate";
 import Swal from "sweetalert2";
 
 const SecretField = ({ label, maskedValue, fieldKey, pendingValues, onChange }) => {
@@ -48,6 +51,148 @@ const SecretField = ({ label, maskedValue, fieldKey, pendingValues, onChange }) 
                 </div>
             )}
         </div>
+    );
+};
+
+const ConnectNumberCard = () => {
+    const { claimedNumber: claimed, setClaimedNumber: setClaimed, loading, configError } = useClaimedNumber();
+    const [zone, setZone] = useState("");
+    const [numbers, setNumbers] = useState(null); // null = not searched yet
+    const [selected, setSelected] = useState(null);
+    const [searching, setSearching] = useState(false);
+    const [claiming, setClaiming] = useState(false);
+
+    const handleSearch = async () => {
+        setSearching(true);
+        setNumbers(null);
+        setSelected(null);
+        try {
+            const data = await searchNumbers(zone.trim());
+            setNumbers(Array.isArray(data.numbers) ? data.numbers : []);
+        } catch (err) {
+            Swal.fire({ icon: 'error', title: 'Error', text: err.message, toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
+        } finally {
+            setSearching(false);
+        }
+    };
+
+    const handleClaim = async () => {
+        if (!selected) return;
+        setClaiming(true);
+        try {
+            const data = await claimNumber(selected);
+            setClaimed(data.claimed_phone_number || selected);
+            setNumbers(null);
+            setSelected(null);
+            setZone("");
+            Swal.fire({ title: "Number claimed", icon: "success", timer: 1500, showConfirmButton: false });
+        } catch (err) {
+            Swal.fire({ icon: 'error', title: 'Error', text: err.message, toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
+        } finally {
+            setClaiming(false);
+        }
+    };
+
+    return (
+        <Card>
+            <CardHeader
+                icon={PhoneCall}
+                title="Outbound AI Calling"
+                right={
+                    <Badge variant={claimed ? "default" : "outline"}>
+                        {claimed ? "Ready" : "No number"}
+                    </Badge>
+                }
+            />
+            <div className="space-y-5 px-6 py-5">
+                <p className="text-sm text-muted-foreground">
+                    Calls go out from one number per organization — search an area code and claim a number. This only needs to be done once.
+                </p>
+
+                {loading ? (
+                    <p className="text-sm text-muted-foreground">Loading...</p>
+                ) : configError ? (
+                    <p className="text-sm text-muted-foreground italic">Outbound AI calling isn't provisioned for this organization yet.</p>
+                ) : claimed ? (
+                    // Immutable once claimed (see ConnectNumberView.post) — no
+                    // search/claim form to show, just the permanent number.
+                    <div className="space-y-2">
+                        <Label className="text-sm font-semibold">Current number</Label>
+                        <code className="flex h-10 min-w-0 items-center truncate rounded-lg border bg-muted/40 px-3 font-mono text-sm">
+                            {claimed}
+                        </code>
+                        <p className="text-xs text-muted-foreground">This number is permanent and can't be changed once claimed.</p>
+                    </div>
+                ) : (
+                    <>
+                        <div className="space-y-1">
+                            <Label className="text-base font-semibold">Choose a phone number</Label>
+                            <p className="text-sm text-muted-foreground">
+                                Search by area code, or by the first digits of the number (for example 943226), for a local (DID) number. Leave it blank to see any available number.
+                            </p>
+                        </div>
+
+                        <div className="flex gap-3">
+                            <div className="space-y-2">
+                                <Label className="text-xs text-muted-foreground">Country</Label>
+                                <div className="flex h-10 w-40 items-center rounded-lg border bg-muted/40 px-3 text-sm text-muted-foreground">
+                                    United States +1
+                                </div>
+                            </div>
+                            <div className="flex-1 space-y-2">
+                                <Label className="text-xs text-muted-foreground">Area code or number prefix (optional)</Label>
+                                {/* Digits only, without the +1 (shown in Country). Up to 9 digits: area code
+                                    plus the start of the number; a full 10-digit number is not a search. */}
+                                <Input
+                                    value={zone}
+                                    onChange={(e) => setZone(e.target.value.replace(/\D/g, '').slice(0, 9))}
+                                    placeholder="e.g. 415 or 943226"
+                                    inputMode="numeric"
+                                    maxLength={9}
+                                    className="font-mono"
+                                />
+                            </div>
+                        </div>
+
+                        <Button variant="outline" onClick={handleSearch} disabled={searching}>
+                            {searching ? "Searching..." : "Search available numbers"}
+                        </Button>
+
+                        {numbers !== null && (
+                            numbers.length === 0 ? (
+                                <p className="text-sm text-muted-foreground italic">No numbers available for that area code.</p>
+                            ) : (
+                                <div className="space-y-3">
+                                    <div className="max-h-56 space-y-1 overflow-y-auto rounded-lg border p-1">
+                                        {numbers.map(n => (
+                                            <label
+                                                key={n}
+                                                className="flex cursor-pointer items-center gap-3 rounded-md px-3 py-2 text-sm hover:bg-muted/40"
+                                            >
+                                                <input
+                                                    type="radio"
+                                                    name="connect-number"
+                                                    checked={selected === n}
+                                                    onChange={() => setSelected(n)}
+                                                    className="h-4 w-4 accent-foreground"
+                                                />
+                                                <code className="font-mono">{n}</code>
+                                            </label>
+                                        ))}
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Button onClick={handleClaim} disabled={!selected || claiming}>
+                                            {claiming ? "Claiming..." : "Claim this number"}
+                                        </Button>
+                                        <p className="text-xs text-muted-foreground">Choose carefully — this can't be changed once claimed.</p>
+                                    </div>
+                                </div>
+                            )
+                        )}
+                    </>
+                )}
+            </div>
+        </Card>
     );
 };
 
@@ -186,6 +331,10 @@ export const Settings = () => {
                     </details>
                 </div>
             </Card>
+
+            <FeatureGate feature="ai_calling">
+                <ConnectNumberCard />
+            </FeatureGate>
         </div>
     );
 };

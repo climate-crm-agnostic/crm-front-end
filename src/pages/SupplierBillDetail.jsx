@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { CreditsMeter } from "@/components/CreditsMeter";
+import { refreshAICredits } from "@/hooks/useAICredits";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Swal } from "../components/payables/payablesUi";
 import { HelpNote } from "../components/payables/HelpNote";
@@ -278,6 +280,7 @@ export const SupplierBillDetail = () => {
             Swal.fire("Could not read the invoice", err.message, "warning");
         } finally {
             setScanning(false);
+            refreshAICredits();
         }
     };
 
@@ -504,6 +507,7 @@ export const SupplierBillDetail = () => {
                                 </div>
                             </div>
                         )}
+                        {pendingFile && isFeatureEnabled("ai") && <CreditsMeter className="mt-1.5" />}
                     </div>
                 )}
                 {scanResult && (

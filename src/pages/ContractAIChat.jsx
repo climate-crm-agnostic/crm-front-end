@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { CreditsMeter } from "@/components/CreditsMeter";
+import { refreshAICredits } from "@/hooks/useAICredits";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, FileSignature, Sparkles, FileText, Eye } from "lucide-react";
 import { Button } from "../components/ui/button";
@@ -141,6 +143,7 @@ export const ContractAIChat = () => {
             setMessages(prev => [...prev, { role: "assistant", content: `Error: ${err.message}` }]);
         } finally {
             setSending(false);
+            refreshAICredits();
         }
     };
 
@@ -162,6 +165,7 @@ export const ContractAIChat = () => {
             setPreview(null);
         } finally {
             setPreviewLoading(false);
+            refreshAICredits();
         }
     };
 
@@ -251,6 +255,7 @@ export const ContractAIChat = () => {
                             Send
                         </Button>
                     </div>
+                    <CreditsMeter className="mt-1.5" />
                     <p className="text-[11px] text-muted-foreground text-center mt-1">
                         AI-generated contracts are not legal advice.
                     </p>

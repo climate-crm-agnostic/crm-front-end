@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { CreditsMeter } from "@/components/CreditsMeter";
+import { refreshAICredits } from "@/hooks/useAICredits";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Sparkles, Pencil, Trash2, CheckCircle2, Clock, Upload, FileText } from "lucide-react";
 import { Button } from "../components/ui/button";
@@ -62,6 +64,7 @@ export const ContractTemplatesPage = () => {
             setError(err.message || "Error uploading PDF");
         } finally {
             setUploading(false);
+            refreshAICredits();
         }
     };
 
@@ -130,6 +133,7 @@ export const ContractTemplatesPage = () => {
                         </Button>
                     </div>
                 </div>
+                <CreditsMeter className="sm:justify-end" />
             </div>
 
             {error && <div className="p-3 bg-destructive/10 text-destructive text-sm rounded-md">{error}</div>}

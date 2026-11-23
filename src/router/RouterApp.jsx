@@ -47,6 +47,8 @@ import { ResetPassword } from "../pages/ResetPassword";
 import { ForgotPassword } from "../pages/ForgotPassword";
 import { Settings } from "../pages/Settings"
 import { ChettAI } from "../pages/ChettAI";
+import { KnowledgeBase } from "../pages/KnowledgeBase";
+import { CreditsAdmin } from "../pages/CreditsAdmin";
 import { AuditLog } from "../pages/AuditLog";
 import { MyInfo } from "../pages/MyInfo";
 import { Chat } from "../pages/Chat";
@@ -59,6 +61,8 @@ import { IndicatorDetail } from "../pages/IndicatorDetail";
 import { Tasks } from "../pages/Tasks";
 import { EmailTemplates } from "../pages/Campaigns/EmailTemplates";
 import { CampaignList } from "../pages/Campaigns/CampaignList";
+import { CallCampaignList } from "../pages/CallCampaigns/CallCampaignList";
+import { CallTemplates } from "../pages/CallCampaigns/CallTemplates";
 import { Unsubscribe } from "../pages/Unsubscribe";
 import { ContractSign } from "../pages/ContractSign";
 import { ContractTemplatesPage } from "../pages/ContractTemplatesPage";
@@ -156,12 +160,17 @@ export const RouterApp = () => {
                 <Route path="users" element={<PermissionGuard requiredPermission="auth.add_user"><Users /></PermissionGuard>} />
                 <Route path="users/:id" element={<PermissionGuard requiredPermission="auth.add_user"><UserDetail /></PermissionGuard>} />
                 <Route path="settings" element={<PermissionGuard requiredPermission="auth.add_user"><Settings /></PermissionGuard>} />
-                <Route path="chett-ai" element={<PermissionGuard requiredPermission="app.view_aiconversation"><FeatureGate feature="ai"><ChettAI /></FeatureGate></PermissionGuard>} />
+                <Route path="intelligence" element={<PermissionGuard requiredPermission="app.view_aiconversation"><FeatureGate feature="ai"><ChettAI /></FeatureGate></PermissionGuard>} />
+                <Route path="chett-ai" element={<Navigate to="/intelligence" replace />} />
+                <Route path="intelligence/credits" element={<PermissionGuard requiredPermission="app.add_aicredittopup"><FeatureGate feature="ai"><CreditsAdmin /></FeatureGate></PermissionGuard>} />
+                <Route path="intelligence/knowledge" element={<PermissionGuard requiredPermission="app.add_knowledgedocument"><FeatureGate feature="knowledge_base"><KnowledgeBase /></FeatureGate></PermissionGuard>} />
                 <Route path="audit-log" element={<PermissionGuard requiredPermission="auth.add_user"><FeatureGate feature="audit_trail"><AuditLog /></FeatureGate></PermissionGuard>} />
                 <Route path="chat" element={<FeatureGate feature="chat"><Chat /></FeatureGate>} />
                 <Route path="task" element={<PermissionGuard requiredPermission="app.view_task"><FeatureGate feature="tasks"><Tasks /></FeatureGate></PermissionGuard>} />
                 <Route path="email-template" element={<PermissionGuard requiredPermission="app.view_emailtemplate"><FeatureGate feature="email_campaigns"><EmailTemplates /></FeatureGate></PermissionGuard>} />
                 <Route path="campaign" element={<PermissionGuard requiredPermission="app.view_campaign"><FeatureGate feature="email_campaigns"><CampaignList /></FeatureGate></PermissionGuard>} />
+                <Route path="call-template" element={<PermissionGuard requiredPermission="app.view_calltemplate"><FeatureGate feature="ai_calling"><CallTemplates /></FeatureGate></PermissionGuard>} />
+                <Route path="call-campaign" element={<PermissionGuard requiredPermission="app.view_callcampaign"><FeatureGate feature="ai_calling"><CallCampaignList /></FeatureGate></PermissionGuard>} />
                 <Route path="team" element={<PermissionGuard requiredPermission="app.view_team"><FeatureGate feature="teams"><Teams /></FeatureGate></PermissionGuard>} />
                 <Route path="team/:id" element={<PermissionGuard requiredPermission="app.view_team"><FeatureGate feature="teams"><TeamDetail /></FeatureGate></PermissionGuard>} />
                 <Route path="period" element={<PermissionGuard requiredPermission="app.view_period"><FeatureGate feature="goals"><Periods /></FeatureGate></PermissionGuard>} />

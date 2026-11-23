@@ -16,8 +16,8 @@ export const sendMessage = async (message, conversationId = null) => {
     return data; // { conversation_id, conversation_name, assistant_message }
 };
 
-export const getConversations = async () => {
-    const res = await fetch(`${base}/conversations/`, { headers: getHeaders() });
+export const getConversations = async (kind = "chett") => {
+    const res = await fetch(`${base}/conversations/?kind=${kind}`, { headers: getHeaders() });
     if (!res.ok) throw new Error("Failed to fetch conversations");
     return res.json();
 };
@@ -47,8 +47,15 @@ export const deleteConversation = async (id) => {
     return true;
 };
 
-export const getMyAIUsage = async () => {
-    const res = await fetch(`${API_URL}/me/ai-usage/`, { headers: getHeaders() });
-    if (!res.ok) throw new Error("Failed to fetch AI usage");
+// Monthly AI credit usage of the calling user: { enabled, pool, used, remaining, percent, period, ... }.
+// Throws on 403 (plan without AI / no permission) so callers can hide the widgets; the
+// error carries `status` so the shared store can tell "not available" from a transient failure.
+export const getAICredits = async () => {
+    const res = await fetch(`${base}/credits/`, { headers: getHeaders() });
+    if (!res.ok) {
+        const err = new Error("Failed to fetch AI credits");
+        err.status = res.status;
+        throw err;
+    }
     return res.json();
 };

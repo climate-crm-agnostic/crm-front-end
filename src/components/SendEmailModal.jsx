@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { CreditsMeter } from "@/components/CreditsMeter";
+import { refreshAICredits } from "@/hooks/useAICredits";
 import { X, Paperclip, Sparkles } from "lucide-react";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -80,6 +82,7 @@ export const SendEmailModal = ({ open, onClose, to: initialTo = "", subject: ini
             setError(err.message || "Failed to polish email.");
         } finally {
             setPolishing(false);
+            refreshAICredits();
         }
     };
 
@@ -170,6 +173,7 @@ export const SendEmailModal = ({ open, onClose, to: initialTo = "", subject: ini
                             </Button>
                         </div>
                         <RichTextEditor ref={bodyRef} value={body} onChange={setBody} placeholder="Write your message..." />
+                        <CreditsMeter />
                     </div>
 
                     {attachment && (

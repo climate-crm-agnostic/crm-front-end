@@ -40,13 +40,15 @@ const MENU_CONFIG = [
         ],
     },
     {
-        // How people talk to customers and to each other. Chett AI is not here: it is a floating button.
+        // How people talk to customers and to each other. Intelligence is not here: it is a floating button.
         label: "Communications",
         icon: "MessageCircle",
         items: [
             { title: "Team Chat",       url: "/chat",           icon: "MessageCircle", feature: "chat" },
             { title: "Email Templates", url: "/email-template", icon: "Mail",          permission: "app.view_emailtemplate", feature: "email_campaigns" },
             { title: "Campaigns",       url: "/campaign",       icon: "Megaphone",     permission: "app.view_campaign",      feature: "email_campaigns" },
+            { title: "Call Templates",  url: "/call-template",  icon: "PhoneCall",     permission: "app.view_calltemplate",  feature: "ai_calling" },
+            { title: "Call Campaigns",  url: "/call-campaign",  icon: "PhoneCall",     permission: "app.view_callcampaign",  feature: "ai_calling" },
         ],
     },
     {
@@ -107,9 +109,23 @@ export const useMenu = () => {
     return { menu };
 };
 
-/** Whether the current user may open Chett AI (it lives in a floating button, not in the menu). */
+/** Whether the current user may open Intelligence by CodeX Academy (it lives in a floating button, not in the menu). */
 export const useChettAccess = () => {
     const { user, isFeatureEnabled } = useAuth();
     const allowed = user?.is_superuser === true || (user?.permissions || []).includes("app.view_aiconversation");
+    return Boolean(allowed && isFeatureEnabled("ai"));
+};
+
+/** Whether the current user may manage the knowledge base (administrators, on plans that include it). */
+export const useKnowledgeAccess = () => {
+    const { user, isFeatureEnabled } = useAuth();
+    const allowed = user?.is_superuser === true || (user?.permissions || []).includes("app.add_knowledgedocument");
+    return Boolean(allowed && isFeatureEnabled("knowledge_base"));
+};
+
+/** Whether the current user may see every user's AI credits and top them up (administrators). */
+export const useCreditsAdminAccess = () => {
+    const { user, isFeatureEnabled } = useAuth();
+    const allowed = user?.is_superuser === true || (user?.permissions || []).includes("app.add_aicredittopup");
     return Boolean(allowed && isFeatureEnabled("ai"));
 };

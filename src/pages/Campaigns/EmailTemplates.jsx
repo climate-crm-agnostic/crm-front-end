@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { CreditsMeter } from "@/components/CreditsMeter";
+import { refreshAICredits } from "@/hooks/useAICredits";
 import { Mail, Trash2, Edit, Eye, Sparkles } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { Input } from "../../components/ui/input";
@@ -131,6 +133,7 @@ export const EmailTemplates = () => {
             Swal.fire({ icon: 'error', title: 'Error', text: err.message, toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
         } finally {
             setPolishing(false);
+            refreshAICredits();
         }
     };
 
@@ -225,6 +228,7 @@ export const EmailTemplates = () => {
                             placeholder="Write the email content — click Insert Variable to add {contact.x} or {client.x} fields..."
                             onUploadImage={handleUploadImage}
                         />
+                        <CreditsMeter />
                         <p className="text-xs text-muted-foreground">An unsubscribe link is appended automatically — no need to add one.</p>
                     </div>
                 </div>
