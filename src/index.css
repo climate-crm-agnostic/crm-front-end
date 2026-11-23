@@ -350,7 +350,9 @@
      Black #000000, Light grey #f9fafc, White #ffffff. */
 
   /* Surfaces */
-  --background: #f9fafc;   /* Light grey — page background (cards float above it) */
+  /* Page background: a soft Green Grey tint, so white cards stand out from it.
+     (#f9fafc next to #ffffff was too close to tell sections apart.) */
+  --background: color-mix(in srgb, #34534a 9%, white);
   --foreground: #000000;   /* Black — all text */
 
   --card: #ffffff;         /* White — cards float on the grey page */
@@ -382,8 +384,8 @@
   --destructive: #c0392b;
 
   /* Structure */
-  --border: color-mix(in srgb, #34534a 15%, white);
-  --input: color-mix(in srgb, #34534a 15%, white);
+  --border: color-mix(in srgb, #60d805 45%, white);   /* light Green — same as --chart-4 */
+  --input: color-mix(in srgb, #60d805 45%, white);
   --ring: #60d805; /* Green focus ring */
 
   /* Charts — brand palette */
@@ -400,13 +402,13 @@
   --chartcodex-5: color-mix(in srgb, #255b01 45%, white);
 
   /* Sidebar */
-  --sidebar: #f9fafc;
+  --sidebar: #ffffff;
   --sidebar-foreground: #000000;
   --sidebar-primary: #255b01;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: color-mix(in srgb, #60d805 15%, white);
   --sidebar-accent-foreground: #000000;
-  --sidebar-border: color-mix(in srgb, #34534a 15%, white);
+  --sidebar-border: color-mix(in srgb, #60d805 45%, white);
   --sidebar-ring: #60d805;
 }
 
