@@ -73,11 +73,13 @@ export function TopUpDialog({ open, onOpenChange, kind, onDone }) {
 
     async function waitForCredit(paymentIntentId) {
         setWaiting(true);
-        for (let i = 0; i < CREDIT_POLL_MAX; i += 1) {
+        let credited = false;
+        for (let i = 0; i < CREDIT_POLL_MAX && !credited; i += 1) {
             const status = await getTopUp(paymentIntentId).catch(() => null);
-            if (status?.credited) break;
-            await new Promise((r) => setTimeout(r, CREDIT_POLL_MS));
+            credited = !!status?.credited;
+            if (!credited) await new Promise((r) => setTimeout(r, CREDIT_POLL_MS));
         }
+        setResult((r) => ({ ...r, credited }));
         setWaiting(false);
         setPhase("done");
         onDone?.();
@@ -141,11 +143,13 @@ export function TopUpDialog({ open, onOpenChange, kind, onDone }) {
                 {phase === "done" ? (
                     <div className="space-y-3 py-2" role="status">
                         <div className="flex items-center gap-2 text-sm font-semibold text-green-700">
-                            <Check className="h-4 w-4" aria-hidden="true" /> Payment received
+                            <Check className="h-4 w-4" aria-hidden="true" /> {result?.credited ? "Added to your balance" : "Payment received"}
                         </div>
                         <p className="text-sm text-muted-foreground">
                             {result?.pack?.label} for {money(result?.amount_cents || 0)} on {brandName(options?.card?.brand)} •••• {options?.card?.last4}.
-                            It is added to your balance in a few seconds; you will also get the receipt by email.
+                            {result?.credited
+                                ? " It is already in your balance."
+                                : ` It is still being added to your balance. If it does not appear in a few minutes, contact support with this reference: ${result?.payment_intent_id}.`}
                         </p>
                     </div>
                 ) : !options && !error ? (

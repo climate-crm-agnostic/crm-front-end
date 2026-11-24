@@ -81,7 +81,7 @@ describe("TopUpDialog", () => {
         await screen.findByText("140 voice minutes");
         await new Promise((r) => setTimeout(r, 0));
         fireEvent.click(screen.getByRole("button", { name: "Pay $25.00" }));
-        expect(await screen.findByText("Payment received", {}, { timeout: 3000 })).toBeTruthy();
+        expect(await screen.findByText("Added to your balance", {}, { timeout: 3000 })).toBeTruthy();
         expect(screen.queryByText(/element destroyed/)).toBeNull();
     });
 });
