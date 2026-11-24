@@ -25,7 +25,11 @@ const ELEMENT_STYLE = { base: { fontSize: "15px", fontFamily: "inherit", color: 
 export function TopUpDialog({ open, onOpenChange, kind, onDone }) {
     const [options, setOptions] = useState(null);
     const [price, setPrice] = useState("");
-    const [phase, setPhase] = useState("choose");   // choose | card | paying | waiting | done
+    // phase decides what is ON SCREEN; working/waiting only lock it. Keeping them apart keeps the
+    // Stripe Element mounted while its request runs (a phase change used to unmount it mid-request).
+    const [phase, setPhase] = useState("choose");   // choose | card | done
+    const [working, setWorking] = useState(false);
+    const [waiting, setWaiting] = useState(false);
     const [error, setError] = useState("");
     const [result, setResult] = useState(null);
     const cvcRef = useRef(null);
@@ -38,7 +42,7 @@ export function TopUpDialog({ open, onOpenChange, kind, onDone }) {
     useEffect(() => {
         if (!open) return undefined;
         let cancelled = false;
-        setOptions(null); setError(""); setPhase("choose"); setResult(null); setPrice("");
+        setOptions(null); setError(""); setPhase("choose"); setResult(null); setPrice(""); setWorking(false); setWaiting(false);
         getTopUpOptions()
             .then((data) => {
                 if (cancelled) return;
@@ -65,15 +69,16 @@ export function TopUpDialog({ open, onOpenChange, kind, onDone }) {
             elements.current = { stripe, element };
         }).catch((e) => !cancelled && setError(e.message));
         return () => { cancelled = true; element?.destroy(); elements.current = {}; };
-    }, [open, options, phase]);
+    }, [open, options?.publishable_key, options?.card, phase]);
 
     async function waitForCredit(paymentIntentId) {
-        setPhase("waiting");
+        setWaiting(true);
         for (let i = 0; i < CREDIT_POLL_MAX; i += 1) {
             const status = await getTopUp(paymentIntentId).catch(() => null);
             if (status?.credited) break;
             await new Promise((r) => setTimeout(r, CREDIT_POLL_MS));
         }
+        setWaiting(false);
         setPhase("done");
         onDone?.();
     }
@@ -82,7 +87,7 @@ export function TopUpDialog({ open, onOpenChange, kind, onDone }) {
         setError("");
         const { stripe, element } = elements.current;
         if (!pack || !stripe || !element) return;
-        setPhase("paying");
+        setWorking(true);
         try {
             const started = await startTopUp(pack.price);
             const token = await stripe.createToken("cvc_update", element);
@@ -100,7 +105,9 @@ export function TopUpDialog({ open, onOpenChange, kind, onDone }) {
             await waitForCredit(started.payment_intent_id);
         } catch (e) {
             setError(e.message);
-            setPhase("choose");
+        } finally {
+            setWorking(false);
+            setWaiting(false);
         }
     }
 
@@ -108,7 +115,7 @@ export function TopUpDialog({ open, onOpenChange, kind, onDone }) {
         setError("");
         const { stripe, element } = elements.current;
         if (!stripe || !element) return;
-        setPhase("paying");
+        setWorking(true);
         try {
             const setup = await startCardChange();
             const confirmed = await stripe.confirmCardSetup(setup.client_secret, { payment_method: { card: element } });
@@ -118,11 +125,12 @@ export function TopUpDialog({ open, onOpenChange, kind, onDone }) {
             setPhase("choose");
         } catch (e) {
             setError(e.message);
-            setPhase("card");
+        } finally {
+            setWorking(false);
         }
     }
 
-    const busy = phase === "paying" || phase === "waiting";
+    const busy = working || waiting;
     return (
         <Dialog open={open} onOpenChange={(v) => !busy && onOpenChange(v)}>
             <DialogContent className="sm:max-w-lg">
@@ -193,7 +201,7 @@ export function TopUpDialog({ open, onOpenChange, kind, onDone }) {
                             </div>
                         )}
 
-                        {phase === "waiting" && (
+                        {waiting && (
                             <p className="flex items-center gap-2 text-sm text-muted-foreground" role="status">
                                 <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> Payment approved, adding it to your balance…
                             </p>
@@ -210,7 +218,7 @@ export function TopUpDialog({ open, onOpenChange, kind, onDone }) {
                             <Button variant="outline" disabled={busy} onClick={() => setPhase("choose")}>Cancel</Button>
                             <Button disabled={busy} onClick={saveCard}>Save card</Button>
                         </>
-                    ) : phase === "paying" && !result ? (
+                    ) : working && !waiting ? (
                         <Button disabled><Loader2 className="h-4 w-4 animate-spin mr-2" aria-hidden="true" /> Processing…</Button>
                     ) : (
                         <>
