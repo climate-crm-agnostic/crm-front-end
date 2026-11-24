@@ -37,6 +37,7 @@ export const CallingLimitsNotice = ({ limits, compact = false }) => {
         return (
             <p className="text-xs text-muted-foreground tabular-nums">
                 {limitText}
+                {limits.capacity_ready === false && <span className={TONE_CLASS.bad}> · campaigns blocked (needs {limits.required_concurrent_calls})</span>}
                 {requestOpen && <span className={TONE_CLASS.pending}> · increase to {request.desired_value} pending</span>}
             </p>
         );
@@ -47,6 +48,9 @@ export const CallingLimitsNotice = ({ limits, compact = false }) => {
             <p className="text-xs text-muted-foreground">
                 Your phone line can have this many AI calls in progress at the same time; campaigns start each call as soon as one ends.
             </p>
+            {limits.capacity_ready === false && (
+                <p role="alert" className={`text-xs ${TONE_CLASS.bad}`}>{limits.capacity_message}</p>
+            )}
             {request && status && (
                 <p className={`text-xs ${TONE_CLASS[status.tone]}`}>
                     Increase to {request.desired_value} simultaneous calls{request.created ? ` requested on ${formatDate(request.created)}` : ''}: {status.text}.
