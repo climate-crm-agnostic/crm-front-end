@@ -2,8 +2,9 @@ import { API_URL, getHeaders, fetchAllPages, extractErrorMessage } from './api';
 
 const CALL_CAMPAIGNS_URL = `${API_URL}/call-campaigns/`;
 
-// Calling balance ($1 per minute): { balance_cents, reserved_cents, available_cents,
-// price_cents_per_minute, min_call_minutes, max_call_minutes }.
+// Calling balance, in seconds of talk time ($0.179 per minute, charged per connected second):
+// { balance_seconds, reserved_seconds, available_seconds, lots, low_balance, cycle_start_seconds,
+// price_usd_per_minute, min_call_minutes, max_call_minutes }.
 // Balance history (DynamoDB), newest first: { entries, next_cursor, ledger_enabled }.
 export const getCallingLedger = async ({ campaign, cursor, limit = 50 } = {}) => {
   const params = new URLSearchParams({ limit: String(limit) });
