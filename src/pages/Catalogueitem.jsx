@@ -130,7 +130,7 @@ export const Catalogueitem = () => {
                 fetchData();
                 Swal.fire(
                     'Deleted!',
-                    'Catalogue item has been deleted.',
+                    'Catalog item has been deleted.',
                     'success'
                 );
             } catch (error) {
@@ -149,14 +149,14 @@ export const Catalogueitem = () => {
             const blob = await exportCatalogueItemsExcel();
             saveAs(blob, "catalogue_report.xlsx");
         } catch (error) {
-            console.error("Error exporting catalogue", error);
-            Swal.fire('Error!', 'There was an error exporting the catalogue.', 'error');
+            console.error("Error exporting catalog", error);
+            Swal.fire('Error!', 'There was an error exporting the catalog.', 'error');
         }
     };
 
     return (
         <div className="h-full flex flex-col p-2 w-full">
-            <PageHeader icon={ShoppingBag} title="Catalogue" description="Manage your products, services, and subscriptions." className="mb-2">
+            <PageHeader icon={ShoppingBag} title="Catalog" description="Manage your products, services, and subscriptions." className="mb-2">
                 <div className="flex flex-wrap items-center gap-2">
                     <div role="group" aria-label="View" className="inline-flex gap-0.5 rounded-full bg-muted p-[3px]">
                         {[["gallery", "Gallery"], ["table", "Table"]].map(([value, label]) => (

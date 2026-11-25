@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { iconFor, useShellNav } from "./useShellNav";
 import { useChettAccess } from "@/hooks/useMenu";
-import { AI_SHORT, AI_PATH } from "@/lib/brand";
+import { AI_ASK, AI_PATH } from "@/lib/brand";
 
 /** ⌘K / Ctrl+K: jump to any page the current user can open. */
 export function CommandPalette({ open, onOpenChange }) {
@@ -40,7 +40,7 @@ export function CommandPalette({ open, onOpenChange }) {
                     <CommandGroup heading="Assistant">
                         <CommandItem value="Assistant Intelligence CodeX Academy AI ask" onSelect={() => go(AI_PATH)} className="cursor-pointer gap-2">
                             {(() => { const Icon = iconFor("Bot"); return <Icon className="size-4" />; })()}
-                            Ask {AI_SHORT}
+                            {AI_ASK}
                         </CommandItem>
                     </CommandGroup>
                 )}

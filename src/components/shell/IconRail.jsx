@@ -1,7 +1,7 @@
 import { Bot } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useChettAccess } from "@/hooks/useMenu";
-import { AI_NAME, AI_SHORT, AI_PATH } from "@/lib/brand";
+import { AI_ASK, AI_PATH } from "@/lib/brand";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { iconFor, useShellNav } from "./useShellNav";
 
@@ -60,14 +60,14 @@ export function IconRail() {
                             <TooltipTrigger asChild>
                                 <Link
                                     to={AI_PATH}
-                                    aria-label={`Ask ${AI_NAME}`}
+                                    aria-label={AI_ASK}
                                     aria-current={pathname.startsWith(AI_PATH) ? "page" : undefined}
                                     className="grid h-[46px] w-[46px] place-items-center rounded-[calc(var(--app-radius)*0.7)] bg-primary text-primary-foreground shadow-sm transition-[filter] hover:brightness-95"
                                 >
                                     <Bot className="size-5" strokeWidth={1.8} />
                                 </Link>
                             </TooltipTrigger>
-                            <TooltipContent side="right">Ask {AI_SHORT}</TooltipContent>
+                            <TooltipContent side="right">{AI_ASK}</TooltipContent>
                         </Tooltip>
                     </>
                 )}

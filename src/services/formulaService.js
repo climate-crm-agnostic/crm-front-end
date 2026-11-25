@@ -30,7 +30,7 @@ export const getFormulaCatalogue = async (entity) => {
             headers: getHeaders(),
         })
             .then((res) => {
-                if (!res.ok) throw new Error('Could not load the formula catalogue');
+                if (!res.ok) throw new Error('Could not load the formula catalog');
                 return res.json();
             })
             .then((data) => ({

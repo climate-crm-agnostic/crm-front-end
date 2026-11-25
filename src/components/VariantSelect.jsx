@@ -3,7 +3,7 @@ import { sellableVariants } from "../lib/variants";
 import { formatCount, formatDecimal } from "@/lib/utils";
 
 /**
- * Variant picker for a catalogue item. Renders nothing for items without
+ * Variant picker for a catalog item. Renders nothing for items without
  * variants, so callers can drop it in unconditionally.
  * onChange(variantId, variant) — variant is the full object (carries effective_price).
  */

@@ -168,7 +168,7 @@ export const CategoryDetail = () => {
                             {isNew ? "New Category" : "Edit Category"}
                         </h1>
                         <p className="text-sm text-muted-foreground truncate">
-                            {isNew ? "Add a new catalogue category" : `Managing details for ${name}`}
+                            {isNew ? "Add a new catalog category" : `Managing details for ${name}`}
                         </p>
                     </div>
                 </div>

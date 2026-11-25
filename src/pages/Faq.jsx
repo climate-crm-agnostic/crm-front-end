@@ -113,29 +113,29 @@ export const Faq = () => {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Catalogue & Billing</CardTitle>
+                        <CardTitle>Catalog & Billing</CardTitle>
                         <CardDescription>Managing your products, services, and invoices.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Accordion type="single" collapsible className="w-full">
                             <AccordionItem value="item-cat-1">
-                                <AccordionTrigger>Categories vs. Catalogue Items</AccordionTrigger>
+                                <AccordionTrigger>Categories vs. Catalog Items</AccordionTrigger>
                                 <AccordionContent>
-                                    <strong>Categories</strong> group similar offerings (like "Software" or "Consulting"). <strong>Catalogue Items</strong> are the specific products, services, or subscriptions that you sell, which belong to a Category and have a predefined price.
+                                    <strong>Categories</strong> group similar offerings (like "Software" or "Consulting"). <strong>Catalog Items</strong> are the specific products, services, or subscriptions that you sell, which belong to a Category and have a predefined price.
                                 </AccordionContent>
                             </AccordionItem>
                             <AccordionItem value="item-inv-1">
                                 <AccordionTrigger>How do Invoices work?</AccordionTrigger>
                                 <AccordionContent>
-                                    You can create <strong>Invoices</strong> for Clients. Add <strong>Line Items</strong> from your Catalogue to the invoice, and the system will automatically calculate the subtotal and total. When you record <strong>Payments</strong>, the invoice status will automatically update to "paid" once fully covered.
+                                    You can create <strong>Invoices</strong> for Clients. Add <strong>Line Items</strong> from your Catalog to the invoice, and the system will automatically calculate the subtotal and total. When you record <strong>Payments</strong>, the invoice status will automatically update to "paid" once fully covered.
                                 </AccordionContent>
                             </AccordionItem>
                             <AccordionItem value="item-fields-cat">
-                                <AccordionTrigger>What do the different Category and Catalogue fields mean?</AccordionTrigger>
+                                <AccordionTrigger>What do the different Category and Catalog fields mean?</AccordionTrigger>
                                 <AccordionContent>
                                     <ul className="list-disc list-inside space-y-2 mt-2">
                                         <li><strong>Category Fields:</strong> <code className="px-1 rounded font-mono text-xs" style={{ backgroundColor: "var(--card)", color: "var(--secondary-text)" }}>name</code> (the category name), <code className="px-1 rounded font-mono text-xs" style={{ backgroundColor: "var(--card)", color: "var(--secondary-text)" }}>description</code> (details about the category's purpose), and <code className="px-1 rounded font-mono text-xs" style={{ backgroundColor: "var(--card)", color: "var(--secondary-text)" }}>parent</code> (links to a parent category to create subcategories).</li>
-                                        <li><strong>Catalogue Item Fields:</strong> <code className="px-1 rounded font-mono text-xs" style={{ backgroundColor: "var(--card)", color: "var(--secondary-text)" }}>name</code> (product/service name), <code className="px-1 rounded font-mono text-xs" style={{ backgroundColor: "var(--card)", color: "var(--secondary-text)" }}>type</code> (product, service, or subscription), <code className="px-1 rounded font-mono text-xs" style={{ backgroundColor: "var(--card)", color: "var(--secondary-text)" }}>base_price</code> & <code className="px-1 rounded font-mono text-xs" style={{ backgroundColor: "var(--card)", color: "var(--secondary-text)" }}>currency</code> (standard pricing), <code className="px-1 rounded font-mono text-xs" style={{ backgroundColor: "var(--card)", color: "var(--secondary-text)" }}>unit</code> (unit of measure like hour or seat), <code className="px-1 rounded font-mono text-xs" style={{ backgroundColor: "var(--card)", color: "var(--secondary-text)" }}>tax_rate</code> (applicable tax percentage), and <code className="px-1 rounded font-mono text-xs" style={{ backgroundColor: "var(--card)", color: "var(--secondary-text)" }}>inventory</code> (link to physical stock).</li>
+                                        <li><strong>Catalog Item Fields:</strong> <code className="px-1 rounded font-mono text-xs" style={{ backgroundColor: "var(--card)", color: "var(--secondary-text)" }}>name</code> (product/service name), <code className="px-1 rounded font-mono text-xs" style={{ backgroundColor: "var(--card)", color: "var(--secondary-text)" }}>type</code> (product, service, or subscription), <code className="px-1 rounded font-mono text-xs" style={{ backgroundColor: "var(--card)", color: "var(--secondary-text)" }}>base_price</code> & <code className="px-1 rounded font-mono text-xs" style={{ backgroundColor: "var(--card)", color: "var(--secondary-text)" }}>currency</code> (standard pricing), <code className="px-1 rounded font-mono text-xs" style={{ backgroundColor: "var(--card)", color: "var(--secondary-text)" }}>unit</code> (unit of measure like hour or seat), <code className="px-1 rounded font-mono text-xs" style={{ backgroundColor: "var(--card)", color: "var(--secondary-text)" }}>tax_rate</code> (applicable tax percentage), and <code className="px-1 rounded font-mono text-xs" style={{ backgroundColor: "var(--card)", color: "var(--secondary-text)" }}>inventory</code> (link to physical stock).</li>
                                         <li><strong>Inventory Fields:</strong> <code className="px-1 rounded font-mono text-xs" style={{ backgroundColor: "var(--card)", color: "var(--secondary-text)" }}>sku</code> (unique tracking code), <code className="px-1 rounded font-mono text-xs" style={{ backgroundColor: "var(--card)", color: "var(--secondary-text)" }}>quantity_on_hand</code> (current stock), <code className="px-1 rounded font-mono text-xs" style={{ backgroundColor: "var(--card)", color: "var(--secondary-text)" }}>reorder_level</code> (threshold for low stock warnings), and <code className="px-1 rounded font-mono text-xs" style={{ backgroundColor: "var(--card)", color: "var(--secondary-text)" }}>location</code> (physical location of the item).</li>
                                     </ul>
                                 </AccordionContent>

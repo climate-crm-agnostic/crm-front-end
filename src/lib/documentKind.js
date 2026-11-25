@@ -5,7 +5,7 @@ const WORD = { product: "products", service: "services" };
 
 /**
  * A quotation or invoice sells one kind of thing, like the lead it comes from. The kind is the
- * lead's when it has one, otherwise whatever the document's catalogue lines already are.
+ * lead's when it has one, otherwise whatever the document's catalog lines already are.
  * `lockedKind` is null while the document is still free to be either.
  */
 export function useDocumentKind({ lineItems, catalogueItems, leadSells }) {

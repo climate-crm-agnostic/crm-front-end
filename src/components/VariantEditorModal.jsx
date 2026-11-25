@@ -10,7 +10,7 @@ import { formatDecimal } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
 
 /**
- * Create or edit one variant of a catalogue item (name, SKU, optional own price,
+ * Create or edit one variant of a catalog item (name, SKU, optional own price,
  * active flag, and its own photos). A new variant is saved first — photos need
  * an id to attach to — after which the same dialog switches to editing it, so
  * the user can add photos without reopening anything.

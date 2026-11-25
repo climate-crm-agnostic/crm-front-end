@@ -18,7 +18,7 @@ const NEW_ITEMS = [
     { label: "Client", url: "/client/new", permission: "app.add_client" },
     { label: "Contact", url: "/contact/new", permission: "app.add_contact" },
     { label: "Invoice", url: "/invoice/new", permission: "app.add_invoice" },
-    { label: "Catalogue item", url: "/catalogue/new", permission: "app.add_catalogueitem" },
+    { label: "Catalog item", url: "/catalogue/new", permission: "app.add_catalogueitem" },
 ];
 
 const routeLabels = {

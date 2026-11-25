@@ -13,7 +13,7 @@ import { PageHeader } from "@/components/PageHeader";
 import Swal from 'sweetalert2';
 
 const ENTITY_LABELS = {
-    catalogue_item: 'Catalogue Item',
+    catalogue_item: 'Catalog Item',
     asset_assignment: 'Asset Assignment',
     follow_up: 'Follow Up',
 };

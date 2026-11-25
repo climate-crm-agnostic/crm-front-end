@@ -52,7 +52,7 @@ const VariantStrip = ({ variants }) => {
     );
 };
 
-/** Product-style cards for the catalogue: photo, type, price (or range) and variants. */
+/** Product-style cards for the catalog: photo, type, price (or range) and variants. */
 export const CatalogueGallery = ({ items, onOpen, attributes = [] }) => {
     const def = (name) => attributes.find((a) => a.name === name);
     const [filter, setFilter] = useState("all");
@@ -71,7 +71,7 @@ export const CatalogueGallery = ({ items, onOpen, attributes = [] }) => {
                 <label className="flex h-9 min-w-[240px] items-center gap-2 rounded-full bg-muted px-4 text-muted-foreground focus-within:ring-2 focus-within:ring-ring">
                     <Search className="size-4" aria-hidden="true" />
                     <input
-                        type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search the catalogue" aria-label="Search the catalogue"
+                        type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search the catalog" aria-label="Search the catalog"
                         className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
                     />
                 </label>

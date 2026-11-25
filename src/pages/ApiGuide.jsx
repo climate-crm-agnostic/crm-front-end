@@ -159,7 +159,7 @@ export const ApiGuide = () => {
                                         <CopyBlock text={`curl -X GET https://climatebycodex.com/api/leads/ \\\n-H "Authorization: Token YOUR_TOKEN"`} />
                                     </EndpointBlock>
                                     <EndpointBlock method="POST" path="/api/leads/">
-                                        <p className="text-sm mb-3" style={{ color: "var(--muted-foreground)" }}>Create a new lead. Uses <code>attributes</code> for custom fields, <code>client_attributes</code> for future Client data, and <code>items</code> array linking catalogue items.</p>
+                                        <p className="text-sm mb-3" style={{ color: "var(--muted-foreground)" }}>Create a new lead. Uses <code>attributes</code> for custom fields, <code>client_attributes</code> for future Client data, and <code>items</code> array linking catalog items.</p>
                                         <CopyBlock text={`{\n  "name": "New Service Lead",\n  "stage": "Prospecting",\n  "responsible": 1,\n  "attributes": { "source": "Web" },\n  "items": [{ "catalogue_item": "UUID", "quantity": 1 }]\n}`} />
                                     </EndpointBlock>
                                     <EndpointBlock method="PUT" path="/api/leads/{uuid}/" description="Update an existing lead.">
@@ -250,20 +250,20 @@ export const ApiGuide = () => {
                                 </>)}
 
                                 {activeTab === 'catalogue' && (<>
-                                    <SectionTitle>Catalogue & Categories</SectionTitle>
+                                    <SectionTitle>Catalog & Categories</SectionTitle>
                                     <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>Manage products, services, subscriptions, and their categories.</p>
                                     <EndpointBlock method="GET" path="/api/categories/" description="List product and service categories." />
                                     <EndpointBlock method="POST" path="/api/categories/" description="Create a new category.">
                                         <CopyBlock text={`{ "name": "Software", "description": "Software products", "parent": null }`} />
                                     </EndpointBlock>
-                                    <EndpointBlock method="GET" path="/api/catalogue/" description="List catalogue items. Supports filtering by category or type." />
-                                    <EndpointBlock method="POST" path="/api/catalogue/" description="Create a new catalogue item.">
+                                    <EndpointBlock method="GET" path="/api/catalogue/" description="List catalog items. Supports filtering by category or type." />
+                                    <EndpointBlock method="POST" path="/api/catalogue/" description="Create a new catalog item.">
                                         <CopyBlock text={`{ "category": "category-uuid", "name": "Web Development", "type": "service", "base_price": "100.00", "currency": "USD", "unit": "hour", "is_active": true }`} />
                                     </EndpointBlock>
-                                    <EndpointBlock method="PATCH" path="/api/catalogue/{uuid}/" description="Update a catalogue item.">
+                                    <EndpointBlock method="PATCH" path="/api/catalogue/{uuid}/" description="Update a catalog item.">
                                         <CopyBlock text={`{ "base_price": "120.00" }`} />
                                     </EndpointBlock>
-                                    <EndpointBlock method="DELETE" path="/api/catalogue/{uuid}/" description="Delete a catalogue item.">
+                                    <EndpointBlock method="DELETE" path="/api/catalogue/{uuid}/" description="Delete a catalog item.">
                                         <CopyBlock text={`curl -X DELETE https://climatebycodex.com/api/catalogue/{uuid}/ \\\n-H "Authorization: Token YOUR_TOKEN"`} />
                                     </EndpointBlock>
                                     <p className="text-sm font-semibold mt-4" style={{ color: "var(--foreground)" }}>Base Fields Guide</p>
@@ -272,7 +272,7 @@ export const ApiGuide = () => {
                                         <><code>description</code>: Details about the category's purpose.</>,
                                         <><code>parent</code>: UUID of a parent category to create subcategories.</>,
                                     ]} />
-                                    <InfoBlock title="Catalogue Item Fields" color="var(--accent)" items={[
+                                    <InfoBlock title="Catalog Item Fields" color="var(--accent)" items={[
                                         <><code>name</code>: The name of the product or service.</>,
                                         <><code>type</code>: product, service, or subscription.</>,
                                         <><code>base_price</code> &amp; <code>currency</code>: Standard pricing.</>,

@@ -205,7 +205,7 @@ export const LeadDetail = () => {
         if (activePipelineId) {
             fetchAttributes(activePipelineId);
         } else {
-            // Fetch at least client attributes and catalogue even if no pipeline
+            // Fetch at least client attributes and catalog even if no pipeline
             fetchAttributes(null);
         }
     }, [activePipelineId]);
@@ -429,7 +429,7 @@ export const LeadDetail = () => {
         itemsList
             .filter(item => item.catalogue_item)
             .map(item => catalogueOptions.find(o => String(o.id) === String(item.catalogue_item)))
-            .filter(Boolean)           // skip lines whose catalogue item hasn't loaded yet
+            .filter(Boolean)           // skip lines whose catalog item hasn't loaded yet
             .map(itemKind)
     );
     const mixedKinds = lineKinds.size > 1;   // legacy leads created before the rule
@@ -1013,7 +1013,7 @@ export const LeadDetail = () => {
                             <p className="text-xs text-muted-foreground">
                                 A lead sells one kind or the other.{" "}
                                 {saleKind === "service"
-                                    ? "Services can be billed recurring (set on each catalogue item)."
+                                    ? "Services can be billed recurring (set on each catalog item)."
                                     : "Products are sold once; they can't be billed recurring."}
                             </p>
                         </div>

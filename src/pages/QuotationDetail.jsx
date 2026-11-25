@@ -200,7 +200,7 @@ export const QuotationDetail = () => {
             }
             payload.catalogue_item = newLineCatalogueId;
             if (variant) payload.variant = variant.id;
-            payload.description = item ? (variant ? `${item.name} — ${variant.name}` : item.name) : "Catalogue Item";
+            payload.description = item ? (variant ? `${item.name} — ${variant.name}` : item.name) : "Catalog Item";
         } else {
             if (!newLineDesc) return;
             payload.description = newLineDesc;
@@ -349,7 +349,7 @@ export const QuotationDetail = () => {
                                 <Select value={newLineType} onValueChange={setNewLineType}>
                                     <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="catalogue">Catalogue Item</SelectItem>
+                                        <SelectItem value="catalogue">Catalog Item</SelectItem>
                                         <SelectItem value="custom">Custom Line</SelectItem>
                                     </SelectContent>
                                 </Select>

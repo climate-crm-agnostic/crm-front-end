@@ -315,7 +315,7 @@ export const CatalogueitemDetail = () => {
 
         } catch (err) {
             console.error("Error saving item", err);
-            setError(`Failed to save catalogue item. ${err.message || ""}`);
+            setError(`Failed to save catalog item. ${err.message || ""}`);
         } finally {
             setLoading(false);
         }
@@ -332,7 +332,7 @@ export const CatalogueitemDetail = () => {
                     </Button>
                     <div className="min-w-0">
                         <h1 className="text-xl font-semibold truncate">
-                            {isNew ? "New Catalogue Item" : "Edit Item"}
+                            {isNew ? "New Catalog Item" : "Edit Item"}
                         </h1>
                         <p className="text-sm text-muted-foreground truncate">
                             {isNew ? "Add a new product, service, or subscription" : `Managing details for ${name}`}

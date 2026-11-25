@@ -21,7 +21,7 @@ const MODEL_LABELS = {
     client: "Client", service: "Service", lead: "Lead", leaditem: "Lead Item",
     pipeline: "Pipeline", pipelineattribute: "Pipeline Attribute",
     followup: "Follow-Up", contact: "Contact", category: "Category",
-    catalogueitem: "Catalogue Item", inventory: "Inventory",
+    catalogueitem: "Catalog Item", inventory: "Inventory",
     invoice: "Invoice", invoicelineitem: "Invoice Line", payment: "Payment",
     asset: "Asset", assetassignment: "Asset Assignment",
     webhook: "Webhook", attribute: "Attribute",

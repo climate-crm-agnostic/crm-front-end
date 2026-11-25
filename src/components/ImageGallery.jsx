@@ -6,7 +6,7 @@ const toast = (icon, text) =>
     Swal.fire({ icon, title: icon === 'error' ? 'Error' : 'Notice', text, toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
 
 /**
- * Photo gallery for anything with a `list_of_images` (catalogue items, variants).
+ * Photo gallery for anything with a `list_of_images` (catalog items, variants).
  *
  * images — presigned URLs to display; paths — the matching S3 paths, used to
  * identify an image when removing/reordering (never position). The first image

@@ -89,7 +89,7 @@ export const InvoiceDetail = () => {
 
     // Line Items State
     const [lineItems, setLineItems] = useState([]);
-    const [newLineType, setNewLineType] = useState("catalogue"); // catalogue or custom
+    const [newLineType, setNewLineType] = useState("catalogue"); // catalog or custom
     const [newLineCatalogueId, setNewLineCatalogueId] = useState("");
     const [newLineVariantId, setNewLineVariantId] = useState("");
     const [newLineKind, setNewLineKind] = useState("product");
@@ -273,7 +273,7 @@ export const InvoiceDetail = () => {
 
         if (newLineType === 'catalogue') {
             if (!newLineCatalogueId || newLineCatalogueId === 'none') return;
-            // Get item description from catalogue
+            // Get item description from catalog
             const item = catalogueItems.find(c => String(c.id) === String(newLineCatalogueId));
             const variant = (item?.variants || []).find(v => String(v.id) === String(newLineVariantId));
             if (sellableVariants(item).length > 0 && !variant) {
@@ -282,7 +282,7 @@ export const InvoiceDetail = () => {
             }
             payload.catalogue_item = newLineCatalogueId;
             if (variant) payload.variant = variant.id;
-            payload.description = item ? (variant ? `${item.name} — ${variant.name}` : item.name) : "Catalogue Item";
+            payload.description = item ? (variant ? `${item.name} — ${variant.name}` : item.name) : "Catalog Item";
         } else {
             if (!newLineDesc) return;
             payload.description = newLineDesc;
@@ -791,7 +791,7 @@ export const InvoiceDetail = () => {
                                     <Select value={newLineType} onValueChange={setNewLineType}>
                                         <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="catalogue">Catalogue Item</SelectItem>
+                                            <SelectItem value="catalogue">Catalog Item</SelectItem>
                                             <SelectItem value="custom">Custom Line</SelectItem>
                                         </SelectContent>
                                     </Select>

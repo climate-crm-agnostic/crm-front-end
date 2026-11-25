@@ -18,7 +18,7 @@ export const getCatalogueItemById = async (id) => {
         method: "GET",
         headers: getHeaders(),
     });
-    if (!res.ok) throw new Error("Error fetching catalogue item");
+    if (!res.ok) throw new Error("Error fetching catalog item");
     return res.json();
 };
 
@@ -30,7 +30,7 @@ export const createCatalogueItem = async (data) => {
     });
     if (!res.ok) {
         const errorData = await res.json().catch(() => null);
-        throw new Error(extractErrorMessage(errorData, "Error creating catalogue item"));
+        throw new Error(extractErrorMessage(errorData, "Error creating catalog item"));
     }
     return res.json();
 };
@@ -43,7 +43,7 @@ export const updateCatalogueItem = async (id, data) => {
     });
     if (!res.ok) {
         const errorData = await res.json().catch(() => null);
-        throw new Error(extractErrorMessage(errorData, "Error updating catalogue item"));
+        throw new Error(extractErrorMessage(errorData, "Error updating catalog item"));
     }
     return res.json();
 };
@@ -53,7 +53,7 @@ export const deleteCatalogueItem = async (id) => {
         method: "DELETE",
         headers: getHeaders(),
     });
-    if (!res.ok) throw new Error("Error deleting catalogue item");
+    if (!res.ok) throw new Error("Error deleting catalog item");
     return true;
 };
 
@@ -69,7 +69,7 @@ export const exportCatalogueItemsExcel = async () => {
         method: "GET",
         headers: getHeaders(),
     });
-    if (!res.ok) throw new Error("Error exporting catalogue to Excel");
+    if (!res.ok) throw new Error("Error exporting catalog to Excel");
     return res.blob();
 };
 
