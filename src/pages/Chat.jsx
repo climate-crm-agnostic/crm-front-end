@@ -563,10 +563,9 @@ export const Chat = () => {
                 />
             )}
 
-            <div style={{
-                display: 'flex', margin: '-1rem', marginTop: 0,
-                height: 'calc(100vh - var(--shell-top, 104px))', overflow: 'hidden',
-            }}>
+            {/* A card like every other page: the shell already supplies the margins, so no negative margin here.
+                Its height leaves the shell's bottom gutter (and the phone's bottom bar). */}
+            <div className="flex overflow-hidden rounded-xl border bg-card shadow-sm h-[calc(100vh-var(--shell-top,104px)-6rem)] md:h-[calc(100vh-var(--shell-top,104px)-1rem)]">
 
                 {/* ── Left sidebar ──────────────────────────────────── */}
                 <div style={{

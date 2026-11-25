@@ -9,6 +9,7 @@ import { useChatNotifications } from "@/context/ChatNotificationContext";
 import { UseTheme } from "@/components/UseTheme";
 import { UserMenu } from "./UserMenu";
 import { useShellNav } from "./useShellNav";
+import { AI_PATH, AI_SHORT } from "@/lib/brand";
 
 const TAB_GAP = 4; // gap-1 between tabs
 
@@ -23,6 +24,7 @@ const NEW_ITEMS = [
 
 const routeLabels = {
     "/apidocs": "API Docs", "/faq": "FAQ", "/plan-expired": "Plan",
+    [AI_PATH]: AI_SHORT,    // Intelligence is not a menu hub, so its top bar needs a title of its own
 };
 
 const tabClass = (active) =>
