@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Coins, Database, Phone, Plus, Search } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
 import Swal from "sweetalert2";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -165,12 +166,8 @@ export const CreditsAdmin = () => {
 
     return (
         <div className="mx-auto w-full max-w-5xl space-y-6 p-6">
-            <div>
-                <h1 className="font-heading text-2xl font-bold">AI credits by user</h1>
-                <p className="text-sm text-muted-foreground">
-                    Every person has their own monthly credits for {AI_NAME}. When someone runs out, only they are paused until you add more.
-                </p>
-            </div>
+            <PageHeader icon={Coins} title="AI credits by user"
+                description={`Every person has their own monthly credits for ${AI_NAME}. When someone runs out, only they are paused until you add more.`} />
 
             <Card>
                 <CardHeader icon={Coins} title="This month" subtitle={report ? `${formatCount(report.per_user_pool)} credits per person` : ""}

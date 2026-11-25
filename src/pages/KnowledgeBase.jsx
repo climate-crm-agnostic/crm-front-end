@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { PageHeader } from "@/components/PageHeader";
 import { FileAudio, FileImage, FileText, FolderLock, Lock, Pencil, Plus, RefreshCw, RotateCcw, Trash2, Upload, Users as UsersIcon } from "lucide-react";
 import Swal from "sweetalert2";
 import { Button } from "@/components/ui/button";
@@ -479,10 +480,8 @@ export const KnowledgeBase = () => {
 
     return (
         <div className="mx-auto w-full max-w-5xl space-y-6 p-6">
-            <div>
-                <h1 className="font-heading text-2xl font-bold">Knowledge base</h1>
-                <p className="text-sm text-muted-foreground">Upload your company files and choose who can consult each one through {AI_NAME}.</p>
-            </div>
+            <PageHeader icon={FolderLock} title="Knowledge base"
+                description={`Upload your company files and choose who can consult each one through ${AI_NAME}.`} />
             <Tabs defaultValue="documents">
                 <TabsList>
                     <TabsTrigger value="documents">Documents</TabsTrigger>

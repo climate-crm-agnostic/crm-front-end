@@ -3,6 +3,7 @@ import { CreditsMeter } from "@/components/CreditsMeter";
 import { refreshAICredits } from "@/hooks/useAICredits";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Sparkles, Pencil, Trash2, CheckCircle2, Clock, Upload, FileText } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { getPipeline } from "../services/pipelineService";
@@ -118,11 +119,8 @@ export const ContractTemplatesPage = () => {
                 <Button type="button" variant="ghost" size="sm" className="-ml-2 w-fit" onClick={() => navigate("/pipeline")}>
                     <ArrowLeft className="h-4 w-4 mr-1" /> Pipelines
                 </Button>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div>
-                        <h1 className="text-xl font-semibold">Contract Templates</h1>
-                        {pipeline && <p className="text-sm text-muted-foreground mt-0.5">Pipeline: {pipeline.name}</p>}
-                    </div>
+                <PageHeader icon={FileText} title="Contract Templates"
+                    description={pipeline ? `Pipeline: ${pipeline.name}` : undefined}>
                     <div className="flex items-center gap-2">
                         <input ref={pdfInputRef} type="file" accept="application/pdf" className="hidden" onChange={handlePdfChosen} />
                         <Button type="button" variant="outline" onClick={() => pdfInputRef.current?.click()} disabled={uploading}>
@@ -132,7 +130,7 @@ export const ContractTemplatesPage = () => {
                             <Sparkles className="h-4 w-4 mr-1.5" /> Create with AI
                         </Button>
                     </div>
-                </div>
+                </PageHeader>
                 <CreditsMeter className="sm:justify-end" />
             </div>
 

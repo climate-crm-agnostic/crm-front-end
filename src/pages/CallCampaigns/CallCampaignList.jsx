@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Phone, Trash2, PhoneCall, Users, Eye, Search, Download, Square, History, Plus, AlertTriangle } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { Button } from "../../components/ui/button";
@@ -484,16 +485,8 @@ export const CallCampaignList = () => {
                     <Button size="sm" variant="outline" onClick={() => setTopUpOpen(true)}>Top up minutes</Button>
                 </div>
             )}
-            <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 border">
-                        <PhoneCall className="h-5 w-5 text-primary-text" />
-                    </div>
-                    <div>
-                        <p className="text-base font-semibold">Call Campaigns</p>
-                        <p className="text-sm text-muted-foreground">Outbound calls to Contacts by an AI agent, using a Call Template's prompt.</p>
-                    </div>
-                </div>
+            <PageHeader icon={PhoneCall} title="Call Campaigns"
+                description="Outbound calls to Contacts by an AI agent, using a Call Template's prompt.">
                 <div className="flex items-start gap-6 shrink-0">
                     {balance && (
                         <div className="text-right" title={`$${balance.price_usd_per_minute} per minute, charged per connected second. Reserved: calls of campaigns still in progress.`}>
@@ -520,7 +513,7 @@ export const CallCampaignList = () => {
                         </div>
                     )}
                 </div>
-            </div>
+            </PageHeader>
 
             {!numberLoading && !claimedNumber && (
                 <div className="rounded-md border border-amber-300 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/15 px-4 py-3 flex items-center justify-between gap-3">

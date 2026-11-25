@@ -3,6 +3,7 @@ import { CreditsMeter } from "@/components/CreditsMeter";
 import { refreshAICredits } from "@/hooks/useAICredits";
 import { useNavigate } from "react-router-dom";
 import { PhoneCall, Trash2, Edit, Sparkles } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { Textarea } from "../../components/ui/textarea";
@@ -119,15 +120,8 @@ export const CallTemplates = () => {
 
     return (
         <div className="p-6 space-y-6">
-            <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 border">
-                    <PhoneCall className="h-5 w-5 text-primary-text" />
-                </div>
-                <div>
-                    <p className="text-base font-semibold">Call Templates</p>
-                    <p className="text-sm text-muted-foreground">Reusable rules for the AI agent — written once, used by one or more call campaigns.</p>
-                </div>
-            </div>
+            <PageHeader icon={PhoneCall} title="Call Templates"
+                description="Reusable rules for the AI agent — written once, used by one or more call campaigns." />
 
             {!numberLoading && !claimedNumber && (
                 <div className="rounded-md border border-amber-300 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/15 px-4 py-3 flex items-center justify-between gap-3">
