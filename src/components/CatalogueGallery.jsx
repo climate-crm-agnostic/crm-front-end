@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { Image as ImageIcon, Repeat, Search } from "lucide-react";
 import { formatDecimal } from "@/lib/utils";
+import { OptionChip } from "@/components/OptionChip";
+import { findOption } from "@/utils/attributeTypes";
 
 const FILTERS = [
     { value: "all", label: "All" },
@@ -51,7 +53,8 @@ const VariantStrip = ({ variants }) => {
 };
 
 /** Product-style cards for the catalogue: photo, type, price (or range) and variants. */
-export const CatalogueGallery = ({ items, onOpen }) => {
+export const CatalogueGallery = ({ items, onOpen, attributes = [] }) => {
+    const def = (name) => attributes.find((a) => a.name === name);
     const [filter, setFilter] = useState("all");
     const [query, setQuery] = useState("");
 
@@ -104,6 +107,15 @@ export const CatalogueGallery = ({ items, onOpen }) => {
                                 <span className="font-heading text-[15px] font-bold leading-tight">{item.name}</span>
                                 <span className="font-semibold tabular-nums">{priceLabel(item)}{item.billing_type === "recurring" && <span className="font-normal text-muted-foreground"> / {item.billing_cycle === "yearly" ? "year" : item.billing_cycle === "quarterly" ? "quarter" : "month"}</span>}</span>
                                 <VariantStrip variants={item.variants || []} />
+                                {/* Where a property came from and whether it is still for sale (custom list fields, in their own colours). */}
+                                {(item.listing_source || item.listing_status) && (
+                                    <span className="flex flex-wrap gap-1.5">
+                                        {["listing_source", "listing_status"].filter((name) => item[name]).map((name) => {
+                                            const option = findOption(def(name)?.list_values, item[name]);
+                                            return <OptionChip key={name} label={option?.label ?? item[name]} color={option?.color} />;
+                                        })}
+                                    </span>
+                                )}
                             </div>
                         </button>
                     ))}

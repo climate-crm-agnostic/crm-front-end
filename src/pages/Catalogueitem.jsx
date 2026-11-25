@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Table } from "../components/Table";
 import { CatalogueGallery } from "../components/CatalogueGallery";
+import { buildAttributeColumns } from "../utils/attributeColumns";
 import { Button } from "../components/ui/button";
 import { Plus, Download, Image as ImageIcon, ShoppingBag } from "lucide-react";
 import { getCatalogueItems, deleteCatalogueItem, getCatalogueItemAttributes, exportCatalogueItemsExcel } from "../services/catalogueService";
@@ -97,10 +98,7 @@ export const Catalogueitem = () => {
             setAttributes(attributesData);
 
             // Dynamic columns from attributes
-            const dynamicColumns = attributesData.map(attr => ({
-                key: attr.name,
-                label: attr.label
-            }));
+            const dynamicColumns = buildAttributeColumns(attributesData);
 
             setColumns([...staticColumns, ...dynamicColumns]);
 
@@ -192,7 +190,7 @@ export const Catalogueitem = () => {
                             {[0, 1, 2, 3].map((i) => <div key={i} className="h-64 animate-pulse rounded-xl bg-muted" />)}
                         </div>
                     ) : (
-                        <CatalogueGallery items={items} onOpen={handleEdit} />
+                        <CatalogueGallery items={items} attributes={attributes} onOpen={handleEdit} />
                     )}
                 </div>
             ) : (
