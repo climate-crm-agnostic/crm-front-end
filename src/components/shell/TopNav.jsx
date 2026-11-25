@@ -95,8 +95,22 @@ export function TopNav({ onOpenSearch }) {
 
     const title = activeHub?.label ?? routeLabels["/" + pathname.split("/")[1]] ?? "";
 
+    // Full-height pages (Team Chat, Intelligence) size themselves from --shell-top: the space above them, which is
+    // the shell's top padding + this bar + the gap below it. The bar's height changes with the width (it wraps on a
+    // phone), so it reports its real height instead of leaving every page to guess it.
+    const barRef = useRef(null);
+    useLayoutEffect(() => {
+        const bar = barRef.current;
+        if (!bar) return undefined;
+        const publish = () => document.documentElement.style.setProperty("--shell-top", `${bar.offsetHeight + 32}px`);
+        publish();
+        const observer = new ResizeObserver(publish);
+        observer.observe(bar);
+        return () => { observer.disconnect(); document.documentElement.style.removeProperty("--shell-top"); };
+    }, []);
+
     return (
-        <header className="sticky top-4 z-30 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-[28px] border bg-card py-2 pl-5 pr-2.5 shadow-sm md:flex-nowrap md:rounded-full">
+        <header ref={barRef} className="sticky top-4 z-30 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-[28px] border bg-card py-2 pl-5 pr-2.5 shadow-sm md:flex-nowrap md:rounded-full">
             <span className="shrink-0 font-heading text-base font-bold">{title}</span>
 
             {items.length > 1 && (
