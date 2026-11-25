@@ -27,10 +27,12 @@ export function IconRail() {
                 aria-label="Main navigation"
                 className="hidden md:flex sticky top-4 z-30 h-[calc(100vh-2rem)] w-[72px] shrink-0 flex-col items-center gap-1.5 rounded-xl border bg-card py-3.5 shadow-sm"
             >
-                {/* Full logo with its byline, no box; the dark file swaps in for dark mode. */}
-                <Link to="/" aria-label="Climate by CodeX Academy Technologies — home" className="mb-1.5 block px-1">
-                    <img src="/climate.svg" alt="" className="w-16 h-auto dark:hidden" />
-                    <img src="/climate-dark.svg" alt="" className="w-16 h-auto hidden dark:block" />
+                {/* Full logo with its byline, no box; the dark file swaps in for dark mode. It is 56px wide in a
+                    rail with 70px inside its border: at 64px the artwork (which fills its whole viewBox) touched
+                    the rounded border and looked cut off. */}
+                <Link to="/" aria-label="Climate by CodeX Academy Technologies — home" className="mb-1.5 block px-2">
+                    <img src="/climate.svg" alt="" className="w-14 h-auto dark:hidden" />
+                    <img src="/climate-dark.svg" alt="" className="w-14 h-auto hidden dark:block" />
                 </Link>
                 {hubs.map((hub, index) => {
                     const Icon = iconFor(hub.icon);
