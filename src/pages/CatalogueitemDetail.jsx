@@ -575,7 +575,7 @@ export const CatalogueitemDetail = () => {
                                             <div className="h-14 w-14 shrink-0 overflow-hidden rounded-md border bg-muted">
                                                 {v.list_of_images?.[0]
                                                     ? <img src={v.list_of_images[0]} alt="" className="h-full w-full object-cover" />
-                                                    : <div className="flex h-full w-full items-center justify-center text-[10px] text-muted-foreground">No photo</div>}
+                                                    : <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">No photo</div>}
                                             </div>
                                             <div className="min-w-0 flex-1">
                                                 <p className="truncate text-sm font-medium">{v.name}</p>

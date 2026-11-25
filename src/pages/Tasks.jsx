@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { ChartGantt, ListTodo, MoreHorizontal, Pencil, Plus, Trash2, LayoutGrid } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
 import Swal from "sweetalert2";
 import { Button } from "../components/ui/button";
 import { Checkbox } from "../components/ui/checkbox";
@@ -160,20 +161,11 @@ export const Tasks = () => {
 
     return (
         <div className="space-y-5 p-6">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg border bg-primary/10">
-                        <ListTodo className="h-5 w-5 text-primary-text" />
-                    </div>
-                    <div>
-                        <p className="text-base font-semibold">Tasks</p>
-                        <p className="text-sm text-muted-foreground">A board per topic — internal work, a client, a project. Move tasks from Created to Finished.</p>
-                    </div>
-                </div>
+            <PageHeader icon={ListTodo} title="Tasks" description="A board per topic — internal work, a client, a project. Move tasks from Created to Finished.">
                 <Button variant="outline" onClick={() => setBoardModal({ open: true, board: null, name: "" })}>
                     <Plus className="mr-2 h-4 w-4" /> New board
                 </Button>
-            </div>
+            </PageHeader>
 
             {tabs.length === 0 ? (
                 <div className="mx-auto max-w-md space-y-4 rounded-2xl border bg-card p-8 text-center shadow-sm">

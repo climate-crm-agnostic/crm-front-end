@@ -12,6 +12,7 @@ import {
 } from "../utils/conditionOperators";
 import { useNavigate } from "react-router-dom";
 import { Plus, Edit2, Columns, ChevronDown, ChevronUp, Trash2, SlidersHorizontal, ShieldCheck, FileSignature } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
 import { useAuth } from "@/context/AuthContext";
 import { ATTRIBUTE_TYPES } from "../utils/attributeTypes";
 
@@ -108,7 +109,7 @@ function AttributeManager({ pipeline }) {
                 <button
                     type="button"
                     onClick={() => { setEditing(null); setCreating(true); }}
-                    className="flex items-center gap-1 px-3 h-7 rounded-full text-[10px] font-bold uppercase tracking-wider cursor-pointer"
+                    className="flex items-center gap-1 px-3 h-7 rounded-full text-xs font-bold uppercase tracking-wider cursor-pointer"
                     style={{ backgroundColor: OLIVE, color: LINEN }}
                 >
                     <Plus size={11} /> New field
@@ -132,7 +133,7 @@ function AttributeManager({ pipeline }) {
                         <div key={attr.id}
                              className="flex items-center gap-2 rounded-lg px-3 py-2"
                              style={{ border: `1px solid ${PEBBLE}`, backgroundColor: "var(--background)" }}>
-                            <span className="shrink-0 text-[9px] font-black tabular-nums rounded px-1.5 py-0.5"
+                            <span className="shrink-0 text-xs font-black tabular-nums rounded px-1.5 py-0.5"
                                   style={{ backgroundColor: "rgba(37,91,1,0.12)", color: "var(--secondary-text)" }}>
                                 {attr.order ?? 0}
                             </span>
@@ -141,7 +142,7 @@ function AttributeManager({ pipeline }) {
                                     {attr.label}
                                     {attr.is_required && <span style={{ color: "var(--destructive)" }}> *</span>}
                                 </p>
-                                <p className="truncate" style={{ fontSize: 10, color: HINT, fontFamily: "ui-monospace, monospace" }}>
+                                <p className="truncate" style={{ fontSize: 12, color: HINT, fontFamily: "ui-monospace, monospace" }}>
                                     {TYPE_LABELS[attr.type] || attr.type} · #{attr.name}
                                 </p>
                             </div>
@@ -312,7 +313,7 @@ function ValidationRuleManager({ pipeline }) {
             style={{ borderTop: `1px solid ${PEBBLE}`, marginTop: "16px", paddingTop: "16px" }}
             onClick={e => e.stopPropagation()}
         >
-            <p style={{ fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: HINT, marginBottom: "12px", fontFamily: FONT }}>
+            <p style={{ fontSize: "12px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: HINT, marginBottom: "12px", fontFamily: FONT }}>
                 Stage Rules
             </p>
 
@@ -328,7 +329,7 @@ function ValidationRuleManager({ pipeline }) {
                                         <span style={{ fontSize: "13px", fontWeight: 600, color: INK, fontFamily: FONT }}>{rule.name}</span>
                                         <span style={{ fontSize: "11px", color: HINT, marginLeft: "6px", fontFamily: FONT }}>→ {rule.target_stage}</span>
                                         {!rule.is_active && (
-                                            <span style={{ fontSize: "10px", color: "#dc2626", fontWeight: 700, marginLeft: "6px", fontFamily: FONT }}>INACTIVE</span>
+                                            <span style={{ fontSize: "12px", color: "#dc2626", fontWeight: 700, marginLeft: "6px", fontFamily: FONT }}>INACTIVE</span>
                                         )}
                                         <div style={{ fontSize: "11px", color: HINT, fontFamily: FONT, marginTop: "2px" }}>
                                             {rule.conditions.map(c => `${c.field} ${c.operator}${UNARY_OPERATORS.has(c.operator) ? '' : ' ' + c.value}`).join(rule.condition_logic === 'AND' ? " AND " : " OR ")}
@@ -531,19 +532,7 @@ export const Pipeline = () => {
             style={{ backgroundColor: LINEN, fontFamily: FONT }}
         >
             {/* Header */}
-            <div className="flex justify-between items-start mb-6">
-                <div className="flex items-center gap-3">
-                    <div
-                        className="flex h-10 w-10 items-center justify-center rounded-lg"
-                        style={{ backgroundColor: "rgba(37,91,1,0.12)", border: "1px solid rgba(37,91,1,0.3)" }}
-                    >
-                        <Columns className="h-5 w-5" style={{ color: "var(--secondary-text)" }} />
-                    </div>
-                    <div>
-                        <p className="text-base font-semibold" style={{ color: INK, fontFamily: FONT }}>Pipelines</p>
-                        <p className="text-sm" style={{ color: HINT }}>Manage your sales pipelines and stages</p>
-                    </div>
-                </div>
+            <PageHeader icon={Columns} title="Pipelines" description="Manage your sales pipelines and stages" className="mb-6">
                 <button
                     onClick={handleCreateClick}
                     className="flex items-center gap-2 h-10 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
@@ -553,7 +542,7 @@ export const Pipeline = () => {
                 >
                     <Plus size={16} /> New Pipeline
                 </button>
-            </div>
+            </PageHeader>
 
             {loading ? (
                 <div className="flex-1 flex items-center justify-center" style={{ color: MUTED }}>
@@ -606,7 +595,7 @@ export const Pipeline = () => {
 
                             {/* Stages */}
                             <div className="space-y-2">
-                                <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: HINT }}>Stages</p>
+                                <p className="text-xs font-bold uppercase tracking-widest" style={{ color: HINT }}>Stages</p>
                                 <div className="flex flex-wrap gap-1.5">
                                     {[...(pipeline.stages || [])].sort((a, b) => a.order - b.order).map((stage) => {
                                         const bg = stage.color || PEBBLE;

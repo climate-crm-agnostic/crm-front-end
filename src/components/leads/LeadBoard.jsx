@@ -225,7 +225,7 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
             >
                 <div className="flex items-center gap-2">
                     <span
-                        className="text-[10px] uppercase tracking-widest font-bold shrink-0"
+                        className="text-xs uppercase tracking-widest font-bold shrink-0"
                         style={{ color: "#9b948e" }}
                     >
                         Active Pipeline
@@ -353,14 +353,14 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
                                         style={{ backgroundColor: stageColor }}
                                     />
                                     <h3
-                                        className="font-black text-[10px] uppercase tracking-widest"
+                                        className="font-black text-xs uppercase tracking-widest"
                                         style={{ color: "var(--foreground)" }}
                                     >
                                         {stage.name}
                                     </h3>
                                 </div>
                                 <span
-                                    className="text-[10px] font-bold px-2 py-0.5 rounded-full tabular-nums"
+                                    className="text-xs font-bold px-2 py-0.5 rounded-full tabular-nums"
                                     style={{
                                         backgroundColor: "rgba(37,91,1,0.12)",
                                         border: "1px solid rgba(37,91,1,0.25)",
@@ -389,10 +389,10 @@ export const LeadBoard = ({ refreshTrigger, selectedPipelineId, setSelectedPipel
                                         className="h-20 flex flex-col items-center justify-center rounded-lg mx-1"
                                         style={{ border: "1.5px dashed var(--border)" }}
                                     >
-                                        <p className="text-[9px] uppercase tracking-widest font-bold" style={{ color: "#9b948e" }}>
+                                        <p className="text-xs uppercase tracking-widest font-bold" style={{ color: "#9b948e" }}>
                                             Empty Stage
                                         </p>
-                                        <p className="text-[8px] mt-0.5 opacity-60" style={{ color: "#9b948e" }}>
+                                        <p className="text-xs mt-0.5" style={{ color: "#9b948e" }}>
                                             Drop cards here
                                         </p>
                                     </div>

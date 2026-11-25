@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowDown, ArrowUp, Gauge, Plus, SquarePen, Trash2 } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
 import Swal from "sweetalert2";
 import { Button } from "../components/ui/button";
 import { deleteIndicator, getIndicators, updateIndicator } from "../services/indicatorService";
@@ -72,22 +73,11 @@ export const Indicators = () => {
 
     return (
         <div className="p-6 space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 border">
-                        <Gauge className="h-5 w-5 text-primary-text" />
-                    </div>
-                    <div>
-                        <p className="text-base font-semibold">KPIs</p>
-                        <p className="text-sm text-muted-foreground">
-                            Each KPI is a rule over the CRM’s own data. Its value is calculated live — nothing is typed in by hand.
-                        </p>
-                    </div>
-                </div>
+            <PageHeader icon={Gauge} title="KPIs" description="Each KPI is a rule over the CRM’s own data. Its value is calculated live — nothing is typed in by hand.">
                 <Button onClick={() => navigate("/indicator/new")}>
                     <Plus className="mr-2 h-4 w-4" /> New KPI
                 </Button>
-            </div>
+            </PageHeader>
 
             <div className="overflow-x-auto rounded-lg border bg-card">
                 <table className="w-full text-sm">

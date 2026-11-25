@@ -23,7 +23,7 @@ const TaskCard = ({ task, onOpen, onDragStart }) => {
             <div className="flex items-center justify-between gap-2">
                 {task.assignee ? (
                     <span className="inline-flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
-                        <span className="grid size-6 shrink-0 place-items-center rounded-full text-[10px] font-bold" style={{ background: "var(--secondary)", color: "var(--secondary-foreground)" }}>
+                        <span className="grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold" style={{ background: "var(--secondary)", color: "var(--secondary-foreground)" }}>
                             {initials(task.assignee.name)}
                         </span>
                         <span className="truncate">{task.assignee.name}</span>

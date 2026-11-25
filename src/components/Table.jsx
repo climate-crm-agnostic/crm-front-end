@@ -50,7 +50,9 @@ export const Table = ({
     [baseCols]
   );
 
-  const isDateKey = (k) => typeof k === "string" && k.startsWith("fecha");
+  const isDateKey = (k) => typeof k === "string" && (k.startsWith("fecha") || /(^|_)date$|_at$/.test(k));
+  // Free-text columns get room to breathe instead of wrapping one word per line.
+  const isLongTextKey = (k) => typeof k === "string" && /comment|description|note|message|summary/i.test(k);
 
   const renderCell = (col, row) => {
     if (col.key === "_actions") {
@@ -315,13 +317,14 @@ export const Table = ({
                         letterSpacing: "0.06em",
                       }}
                       className={[
-                        "px-3 py-3 text-xs font-semibold text-center",
+                        "px-3 py-3 text-xs font-semibold whitespace-nowrap",
+                        col.key === "_actions" ? "text-center" : "text-left",
                         canSort ? "cursor-pointer select-none" : "",
                       ].join(" ")}
                       onClick={canSort ? () => toggleSort(col.key) : undefined}
                       title={canSort ? "Click to sort" : undefined}
                     >
-                      <div className="flex items-center gap-1 justify-center">
+                      <div className={`flex items-center gap-1 ${col.key === "_actions" ? "justify-center" : "justify-start"}`}>
                         {col.label}
                         {isSorted === "asc" && <span className="opacity-70">▲</span>}
                         {isSorted === "desc" && <span className="opacity-70">▼</span>}
@@ -341,13 +344,15 @@ export const Table = ({
                     onMouseEnter={e => e.currentTarget.style.backgroundColor = "var(--muted)"}
                     onMouseLeave={e => e.currentTarget.style.backgroundColor = ""}
                   >
-                    {visibleCols.map((col) => (
+                    {visibleCols.map((col, colIdx) => (
                       <td
                         key={col.key}
                         className={[
-                          "px-3 py-1",
+                          "px-3 py-2.5",
+                          colIdx === 0 && !isDateKey(col.key) ? "min-w-[14rem]" : "",
+                          isLongTextKey(col.key) ? "min-w-[18rem] max-w-[32rem]" : "",
                           col.key === "_actions" ? "text-center" : "",
-                          isDateKey(col.key) ? "text-center" : "",
+                          isDateKey(col.key) ? "whitespace-nowrap" : "",
                           col.key === "activo" ? "text-center" : "",
                           col.key === "valores_pre_cargados" ? "text-center" : "",
                         ].join(" ")}
@@ -403,7 +408,7 @@ export const Table = ({
                 <Button
                   key={page}
                   variant={isActive ? "terciary" : "paginacionNoActive"}
-                  className={isActive ? "text-codex-cards-secondary-variante1 h-9 px-3 shrink-0" : "h-9 px-3 shrink-0"}
+                  className="h-9 px-3 shrink-0"
                   onClick={() => setCurrentPage(page)}
                 >
                   {page}

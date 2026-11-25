@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus, Trash2, Edit, Globe, Activity, Webhook } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import {
     Select,
@@ -132,26 +133,7 @@ export const WebhookList = () => {
         <div className="p-6 space-y-6" style={{ fontFamily: 'var(--font-body)' }}>
 
             {/* Page header */}
-            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-3">
-                    <div
-                        className="flex h-10 w-10 items-center justify-center rounded-lg"
-                        style={{ backgroundColor: "rgba(37,91,1,0.12)", border: "1px solid rgba(37,91,1,0.3)" }}
-                    >
-                        <Webhook className="h-5 w-5" style={{ color: "var(--secondary-text)" }} />
-                    </div>
-                    <div>
-                        <p
-                            className="text-base font-semibold"
-                            style={{ color: "var(--foreground)", fontFamily: 'var(--font-body)' }}
-                        >
-                            Webhooks
-                        </p>
-                        <p className="text-sm" style={{ color: "#9b948e" }}>
-                            Manage your system webhooks and event listeners.
-                        </p>
-                    </div>
-                </div>
+            <PageHeader icon={Webhook} title="Webhooks" description="Manage your system webhooks and event listeners.">
 
                 <div className="flex gap-2 items-center mt-3 sm:mt-0">
                     <Select value={selectedModel} onValueChange={setSelectedModel}>
@@ -177,7 +159,7 @@ export const WebhookList = () => {
                         </button>
                     </Link>
                 </div>
-            </div>
+            </PageHeader>
 
             {/* Table card */}
             <div

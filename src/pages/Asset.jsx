@@ -3,11 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { RowActions } from "../components/Table";
 import { TableSummary } from "../components/TableSummary";
 import { Button } from "../components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Package } from "lucide-react";
 import { getAssets, deleteAsset } from "../services/assetService";
 import Swal from "sweetalert2";
 import { formatCount, formatDecimal } from "@/lib/utils";
 
+import { PageHeader } from "@/components/PageHeader";
 export const Asset = () => {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -103,21 +104,13 @@ export const Asset = () => {
 
     return (
         <div className="h-full flex flex-col p-2 w-full">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-2">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-codex-texto-primary dark:text-codex-texto-dark-primary">
-                        Assets
-                    </h1>
-                    <p className="text-sm text-muted-foreground">
-                        Manage physical company assets and supplies.
-                    </p>
-                </div>
+            <PageHeader icon={Package} title="Assets" description="Manage physical company assets and supplies." className="mb-2">
                 <div className="flex flex-wrap gap-2">
                     <Button onClick={() => navigate("/asset/new")}>
                         <Plus className="mr-2 h-4 w-4" /> Add Asset
                     </Button>
                 </div>
-            </div>
+            </PageHeader>
 
             <div className="bg-card p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
                 <TableSummary

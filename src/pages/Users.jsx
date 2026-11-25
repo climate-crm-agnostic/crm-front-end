@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { UserPlus } from "lucide-react";
+import { UserPlus, Users as UsersIcon } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Table } from "@/components/Table";
 import Swal from "sweetalert2";
@@ -97,16 +98,12 @@ export const Users = () => {
 
     return (
         <div className="p-6 space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Users</h1>
-                    <p className="text-muted-foreground text-sm mt-1">Manage your team members and their roles.</p>
-                </div>
+            <PageHeader icon={UsersIcon} title="Users" description="Manage your team members and their roles.">
                 <Button className="self-start sm:self-auto" onClick={() => navigate("/users/new")}>
                     <UserPlus className="h-4 w-4 mr-2" />
                     New User
                 </Button>
-            </div>
+            </PageHeader>
 
             {loading ? (
                 <p className="text-muted-foreground text-sm">Loading...</p>

@@ -4,7 +4,7 @@ import { SupplierFilter } from "../components/payables/SupplierFilter";
 import { saveAs } from "file-saver";
 import { Swal } from "../components/payables/payablesUi";
 import { HelpNote } from "../components/payables/HelpNote";
-import { Download, Plus } from "lucide-react";
+import { Download, Plus, Wallet } from "lucide-react";
 import { TableSummary } from "../components/TableSummary";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
@@ -13,6 +13,7 @@ import { formatDate } from "../utils/date";
 import { exportSupplierPaymentsExcel, getSupplierPayments } from "../services/payablesService";
 import { methodLabel, money, sumByCurrency, today, useCan } from "../components/payables/payablesUi";
 
+import { PageHeader } from "@/components/PageHeader";
 const hasCredit = (row) => row.status === "posted" && Number(row.amount_unapplied) > 0;
 
 const STATUS_TABS = [
@@ -106,11 +107,7 @@ export const SupplierPayments = () => {
 
     return (
         <div className="h-full flex flex-col p-2 w-full">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-2">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-foreground">Supplier Payments</h1>
-                    <p className="text-sm text-muted-foreground">Money paid to suppliers and the bills it settled.</p>
-                </div>
+            <PageHeader icon={Wallet} title="Supplier Payments" description="Money paid to suppliers and the bills it settled." className="mb-2">
                 <div className="flex flex-wrap gap-2">
                     <Button variant="outline" onClick={handleExport}>
                         <Download className="mr-2 h-4 w-4" /> Export Excel
@@ -121,7 +118,7 @@ export const SupplierPayments = () => {
                         </Button>
                     )}
                 </div>
-            </div>
+            </PageHeader>
 
             <div className="mb-2">
                 <HelpNote id="payments" items={[

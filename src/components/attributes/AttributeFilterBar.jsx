@@ -95,7 +95,7 @@ export const AttributeFilterBar = ({ attributes = [], rows, onChange, onApply })
                     <Filter size={13} />
                     Filters
                     {activeCount > 0 && (
-                        <span className="rounded-full px-1.5 text-[10px] font-black"
+                        <span className="rounded-full px-1.5 text-xs font-black"
                               style={{ backgroundColor: OLIVE, color: "var(--secondary-foreground)" }}>
                             {activeCount}
                         </span>

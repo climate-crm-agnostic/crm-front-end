@@ -975,7 +975,7 @@ export const InvoiceDetail = () => {
                                 {notesList.length === 0 ? <p className="text-sm text-muted-foreground italic">No notes.</p> : notesList.slice().reverse().map((item, idx) => (
                                     <div key={idx} className="p-3 bg-muted/20 border rounded-md space-y-1">
                                         <p className="text-sm whitespace-pre-wrap">{item.note}</p>
-                                        <div className="flex justify-between items-center text-[10px] text-muted-foreground">
+                                        <div className="flex justify-between items-center text-xs text-muted-foreground">
                                             <span>{formatDateTime(item.date)}</span>
                                             {item.user_name && <span>{item.user_name}</span>}
                                         </div>

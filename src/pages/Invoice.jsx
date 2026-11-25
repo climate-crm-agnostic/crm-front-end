@@ -4,7 +4,7 @@ import { RowActions } from "../components/Table";
 import { TableSummary } from "../components/TableSummary";
 import { Button } from "../components/ui/button";
 import { DateInput } from "../components/ui/date-input";
-import { Plus, Download } from "lucide-react";
+import { Plus, Download, FileText } from "lucide-react";
 import { getInvoices, deleteInvoice, exportInvoicesExcel } from "../services/invoiceService";
 import { getClients } from "../services/clientService";
 import { saveAs } from "file-saver";
@@ -12,6 +12,7 @@ import Swal from "sweetalert2";
 import { Badge } from "../components/ui/badge";
 import { formatDecimal } from "@/lib/utils";
 
+import { PageHeader } from "@/components/PageHeader";
 const STATUS_COLORS = {
     paid: "var(--primary)",
     pending: "var(--muted-foreground)",
@@ -182,15 +183,7 @@ export const Invoice = () => {
 
     return (
         <div className="h-full flex flex-col p-2 w-full">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-2">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-codex-texto-primary dark:text-codex-texto-dark-primary">
-                        Invoices
-                    </h1>
-                    <p className="text-sm text-muted-foreground">
-                        Manage your invoices and track payments.
-                    </p>
-                </div>
+            <PageHeader icon={FileText} title="Invoices" description="Manage your invoices and track payments." className="mb-2">
                 <div className="flex flex-wrap gap-2">
                     <button
                         onClick={handleExportExcel}
@@ -205,7 +198,7 @@ export const Invoice = () => {
                         <Plus className="mr-2 h-4 w-4" /> Create Invoice
                     </Button>
                 </div>
-            </div>
+            </PageHeader>
 
             <div className="bg-card p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
                 <TableSummary

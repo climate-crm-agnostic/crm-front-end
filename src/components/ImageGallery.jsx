@@ -62,7 +62,7 @@ export const ImageGallery = ({ images = [], paths = [], api, onChange, max = 20,
                     <div key={paths[idx] || url} className="group relative aspect-square overflow-hidden rounded-lg border bg-muted">
                         <img src={url} alt={`Photo ${idx + 1}`} className="h-full w-full object-cover" loading="lazy" />
                         {idx === 0 && (
-                            <span className="absolute left-1.5 top-1.5 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground">
+                            <span className="absolute left-1.5 top-1.5 rounded-full bg-primary px-2 py-0.5 text-xs font-semibold text-primary-foreground">
                                 Cover
                             </span>
                         )}

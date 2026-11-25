@@ -18,7 +18,7 @@ const METHOD_PILL = {
 const MethodBadge = ({ method }) => {
     const c = METHOD_PILL[method] || METHOD_PILL.GET;
     return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest"
+        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-black uppercase tracking-widest"
             style={{ backgroundColor: c.bg, border: `1px solid ${c.border}`, color: c.color }}>
             {method}
         </span>

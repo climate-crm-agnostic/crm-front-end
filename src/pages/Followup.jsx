@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Table } from "../components/Table";
 import { Button } from "../components/ui/button";
-import { Plus, ArrowLeft } from "lucide-react";
+import { Plus, ArrowLeft, MessagesSquare } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
 import { getFollowups, deleteFollowup, getFollowupAttributes } from "../services/followupService";
 import { FollowupModal } from "../components/followups/FollowupModal";
 import Swal from "sweetalert2";
@@ -127,24 +128,19 @@ export const Followup = () => {
 
     return (
         <div className="h-full flex flex-col p-2 w-full">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-2">
-                <div>
-                    <Button variant="ghost" className="mb-2 pl-0 hover:bg-transparent hover:text-primary-text" onClick={() => navigate("/service")}>
-                        <ArrowLeft className="mr-2 h-4 w-4" /> Back to Services
-                    </Button>
-                    <h1 className="text-2xl font-bold tracking-tight text-codex-texto-primary dark:text-codex-texto-dark-primary">
-                        Follow Ups
-                    </h1>
-                    <p className="text-sm text-muted-foreground">
-                        History for: <span className="font-semibold text-foreground">{serviceName}</span>
-                    </p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                    <Button onClick={openNewFollowupModal}>
-                        <Plus className="mr-2 h-4 w-4" /> Add Follow Up
-                    </Button>
-                </div>
-            </div>
+            <Button variant="ghost" className="self-start mb-1 pl-0 hover:bg-transparent hover:text-primary-text" onClick={() => navigate("/service")}>
+                <ArrowLeft className="mr-2 h-4 w-4" /> Back to Services
+            </Button>
+            <PageHeader
+                icon={MessagesSquare}
+                title="Follow Ups"
+                description={<>History for: <span className="font-semibold text-foreground">{serviceName}</span></>}
+                className="mb-2"
+            >
+                <Button onClick={openNewFollowupModal}>
+                    <Plus className="mr-2 h-4 w-4" /> Add Follow Up
+                </Button>
+            </PageHeader>
 
             <div className="bg-card p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">
                 <Table

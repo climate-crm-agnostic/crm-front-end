@@ -114,7 +114,7 @@ export const LeadTable = ({ selectedPipelineId, refreshTrigger, onLeadClick }) =
                 <button
                     type="button"
                     onClick={() => onLeadClick?.(row)}
-                    className="font-semibold hover:underline cursor-pointer"
+                    className="font-semibold text-left hover:underline cursor-pointer"
                     style={{ color: "var(--secondary-text)" }}
                 >
                     {val}

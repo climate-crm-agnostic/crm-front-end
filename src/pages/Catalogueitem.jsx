@@ -3,13 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { Table } from "../components/Table";
 import { CatalogueGallery } from "../components/CatalogueGallery";
 import { Button } from "../components/ui/button";
-import { Plus, Download, Image as ImageIcon } from "lucide-react";
+import { Plus, Download, Image as ImageIcon, ShoppingBag } from "lucide-react";
 import { getCatalogueItems, deleteCatalogueItem, getCatalogueItemAttributes, exportCatalogueItemsExcel } from "../services/catalogueService";
 import { saveAs } from "file-saver";
 import Swal from "sweetalert2";
 import { Badge } from "../components/ui/badge";
 import { formatDecimal } from "@/lib/utils";
 
+import { PageHeader } from "@/components/PageHeader";
 export const Catalogueitem = () => {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -157,15 +158,7 @@ export const Catalogueitem = () => {
 
     return (
         <div className="h-full flex flex-col p-2 w-full">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-2">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-codex-texto-primary dark:text-codex-texto-dark-primary">
-                        Catalogue
-                    </h1>
-                    <p className="text-sm text-muted-foreground">
-                        Manage your products, services, and subscriptions.
-                    </p>
-                </div>
+            <PageHeader icon={ShoppingBag} title="Catalogue" description="Manage your products, services, and subscriptions." className="mb-2">
                 <div className="flex flex-wrap items-center gap-2">
                     <div role="group" aria-label="View" className="inline-flex gap-0.5 rounded-full bg-muted p-[3px]">
                         {[["gallery", "Gallery"], ["table", "Table"]].map(([value, label]) => (
@@ -190,7 +183,7 @@ export const Catalogueitem = () => {
                         <Plus className="mr-2 h-4 w-4" /> Add Item
                     </Button>
                 </div>
-            </div>
+            </PageHeader>
 
             {view === "gallery" ? (
                 <div className="p-2">

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus, Trash2, Eye, CalendarDays, MapPin, Video, BarChart3, ArrowLeft } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
 import { getEvents, deleteEvent } from "@/services/eventService";
 import Swal from "sweetalert2";
 import { LeadsReportView } from "@/components/events/LeadsReportView";
@@ -80,21 +81,7 @@ export const Events = () => {
 
     return (
         <div className="p-6 space-y-6" style={{ fontFamily: 'var(--font-body)' }}>
-            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-3">
-                    <div
-                        className="flex h-10 w-10 items-center justify-center rounded-lg"
-                        style={{ backgroundColor: "rgba(37,91,1,0.12)", border: "1px solid rgba(37,91,1,0.3)" }}
-                    >
-                        <CalendarDays className="h-5 w-5" style={{ color: "var(--secondary-text)" }} />
-                    </div>
-                    <div>
-                        <p className="text-base font-semibold" style={{ color: "var(--foreground)" }}>Events</p>
-                        <p className="text-sm" style={{ color: "#9b948e" }}>
-                            Capture attendees through a public registration form linked to a pipeline.
-                        </p>
-                    </div>
-                </div>
+            <PageHeader icon={CalendarDays} title="Events" description="Capture attendees through a public registration form linked to a pipeline.">
 
                 <div className="flex items-center gap-2">
                     <button
@@ -121,7 +108,7 @@ export const Events = () => {
                         </button>
                     </Link>
                 </div>
-            </div>
+            </PageHeader>
 
             {view === "report" ? (
                 <LeadsReportView />

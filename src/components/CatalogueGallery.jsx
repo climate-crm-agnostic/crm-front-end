@@ -38,7 +38,7 @@ const VariantStrip = ({ variants }) => {
         <span className="flex items-center gap-1.5">
             <span className="flex -space-x-1.5" aria-hidden="true">
                 {active.slice(0, 4).map((variant) => (
-                    <span key={variant.id} className="grid size-5 place-items-center overflow-hidden rounded-full border-2 border-card bg-muted text-[9px] font-bold text-muted-foreground">
+                    <span key={variant.id} className="grid size-5 place-items-center overflow-hidden rounded-full border-2 border-card bg-muted text-xs font-bold text-muted-foreground">
                         {variant.list_of_images?.[0]
                             ? <img src={variant.list_of_images[0]} alt="" className="size-full object-cover" />
                             : variant.name.slice(0, 1).toUpperCase()}

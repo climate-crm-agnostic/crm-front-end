@@ -6,7 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 const MENU_CONFIG = [
     {
         label: "Sales",
-        icon: "TrendingUp",
+        icon: "Handshake",
         items: [
             { title: "Leads",    url: "/lead",     icon: "Magnet",    permission: "app.add_lead", also: ["/quotation"] },
             { title: "Pipeline", url: "/pipeline", icon: "GitMerge",  permission: "app.add_pipeline" },
@@ -19,7 +19,7 @@ const MENU_CONFIG = [
     {
         // Money in and out, plus what it is spent on: suppliers and equipment.
         label: "Finance",
-        icon: "Wallet",
+        icon: "CircleDollarSign",
         items: [
             { title: "Invoices",          url: "/invoice",          icon: "Receipt",       permission: "app.add_invoice" },
             { title: "Suppliers",         url: "/supplier",         icon: "Truck",         permission: "app.add_supplier" },
@@ -32,7 +32,7 @@ const MENU_CONFIG = [
     },
     {
         label: "Operations",
-        icon: "Wrench",
+        icon: "Boxes",
         items: [
             { title: "Catalogue",  url: "/catalogue", icon: "Package",    permission: "app.add_catalogueitem" },
             { title: "Categories", url: "/category",  icon: "FolderTree", permission: "app.add_category" },
@@ -42,7 +42,7 @@ const MENU_CONFIG = [
     {
         // How people talk to customers and to each other. Intelligence is not here: it is a floating button.
         label: "Communications",
-        icon: "MessageCircle",
+        icon: "Megaphone",
         items: [
             { title: "Team Chat",       url: "/chat",           icon: "MessageCircle", feature: "chat" },
             { title: "Email Templates", url: "/email-template", icon: "Mail",          permission: "app.view_emailtemplate", feature: "email_campaigns" },
@@ -54,7 +54,7 @@ const MENU_CONFIG = [
     {
         // Everything about measuring people's work, in the order you set it up: who, when, what, how much, how it went.
         label: "Performance",
-        icon: "Gauge",
+        icon: "ChartColumn",
         items: [
             { title: "Tasks",   url: "/task",      icon: "ListTodo",      permission: "app.view_task",      feature: "tasks" },
             { title: "Teams",   url: "/team",      icon: "Users2",        permission: "app.view_team",      feature: "teams" },
@@ -66,7 +66,7 @@ const MENU_CONFIG = [
     {
         // The technical side of running the CRM; for administrators.
         label: "Admin",
-        icon: "ShieldCheck",
+        icon: "Settings",
         items: [
             { title: "Users",       url: "/users",               icon: "Users",             permission: "auth.add_user" },
             { title: "Attributes",  url: "/attribute",           icon: "SlidersHorizontal", permission: "app.add_attribute" },
@@ -78,7 +78,7 @@ const MENU_CONFIG = [
     },
     {
         label: "My Account",
-        icon: "UserCircle2",
+        icon: "User",
         items: [
             { title: "My Info",  url: "/my-info",  icon: "UserCircle2" },
             { title: "Settings", url: "/settings", icon: "Settings2", permission: "auth.add_user" },  // plan and integrations (Stripe)

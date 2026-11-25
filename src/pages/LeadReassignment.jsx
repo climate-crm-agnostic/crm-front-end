@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { getSales } from "../services/salesService";
 import { getLeads, reassignLeads } from "../services/leadService";
-import { Users } from "lucide-react";
+import { UserCog, Users } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
 import { Button } from "../components/ui/button";
 import { Label } from "../components/ui/label";
 import { Card, CardHeader } from "../components/SectionCard";
@@ -73,12 +74,7 @@ export const LeadReassignment = () => {
 
     return (
         <div className="max-w-2xl mx-auto py-6 px-2 space-y-4" style={FONT}>
-            <div className="px-1">
-                <h1 className="text-2xl font-semibold">Lead Reassignment</h1>
-                <p className="text-sm text-muted-foreground">
-                    Move every lead owned by one user to another — e.g. after an employee leaves.
-                </p>
-            </div>
+            <PageHeader icon={UserCog} title="Lead Reassignment" description="Move every lead owned by one user to another — e.g. after an employee leaves." className="px-1" />
 
             <Card>
                 <CardHeader icon={Users} title="Reassign Leads" />

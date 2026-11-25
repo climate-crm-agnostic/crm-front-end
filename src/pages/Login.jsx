@@ -57,7 +57,7 @@ export const Login = ({ className, ...props }) => {
 
   return (
     <>
-      <div className="w-full h-screen lg:grid lg:grid-cols-2" style={{ fontFamily: 'var(--font-body)' }}>
+      <div className="w-full min-h-screen lg:grid lg:grid-cols-2" style={{ fontFamily: 'var(--font-body)' }}>
 
         {/* Left — Form */}
         <div className="flex items-center justify-center py-12 px-8" style={{ backgroundColor: "var(--background)" }}>
@@ -67,14 +67,15 @@ export const Login = ({ className, ...props }) => {
 
             {/* Brand mark */}
             <div className="flex flex-col items-center gap-4">
-              <img src="/climate.svg" alt="Climate by CodeX" className="h-16 w-auto" />
+              <img src="/climate.svg" alt="Climate by CodeX" className="h-16 w-auto dark:hidden" />
+              <img src="/climate-dark.svg" alt="Climate by CodeX" className="h-16 w-auto hidden dark:block" />
               <div className="text-center">
                 <h1 className="font-heading text-3xl font-bold tracking-tight" style={{ color: "var(--foreground)", lineHeight: 1.15 }}>
                   Welcome back
                 </h1>
                 <p className="text-sm mt-1.5" style={{ color: "var(--muted-foreground)" }}>
                   Sign into your{" "}
-                  <span className="font-bold" style={{ color: "#4F8071" }}>ClimateCRM</span>{" "}
+                  <span className="font-bold" style={{ color: "var(--secondary-text)" }}>ClimateCRM</span>{" "}
                   workspace
                 </p>
               </div>
@@ -270,7 +271,7 @@ export const Login = ({ className, ...props }) => {
               </form>
             )}
 
-            <p className="text-center text-xs" style={{ color: "var(--border)" }}>
+            <p className="text-center text-xs" style={{ color: "var(--muted-foreground)" }}>
               © {new Date().getFullYear()} Codex Technologies
             </p>
           </div>
@@ -278,7 +279,7 @@ export const Login = ({ className, ...props }) => {
 
         {/* Right — Branding */}
         <div
-          className="hidden lg:flex flex-col relative justify-center p-14 overflow-hidden"
+          className="hidden lg:flex flex-col relative justify-center-safe p-10 xl:p-14 overflow-hidden"
           style={{ backgroundColor: "#000000" }}
         >
           {/* Decorative elements */}

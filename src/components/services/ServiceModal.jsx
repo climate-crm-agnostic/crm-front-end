@@ -379,7 +379,7 @@ export const ServiceModal = ({ isOpen, onClose, onServiceSaved, serviceToEdit = 
                                     notes.slice().reverse().map((item, idx) => (
                                         <div key={idx} className="p-3 bg-card border rounded-md space-y-1">
                                             <p className="text-sm">{item.note}</p>
-                                            <div className="flex justify-between items-center text-[10px] text-muted-foreground">
+                                            <div className="flex justify-between items-center text-xs text-muted-foreground">
                                                 <span>{formatDateTime(item.date)}</span>
                                                 {item.user_id && <span>User ID: {item.user_id}</span>}
                                             </div>

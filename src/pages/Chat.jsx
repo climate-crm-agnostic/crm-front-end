@@ -615,7 +615,7 @@ export const Chat = () => {
 
                         {groups.length > 0 && (
                             <>
-                                <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--muted-foreground)', padding: '10px 8px 4px' }}>
+                                <p style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--muted-foreground)', padding: '10px 8px 4px' }}>
                                     Groups
                                 </p>
                                 {groups.map(room => (
@@ -626,7 +626,7 @@ export const Chat = () => {
 
                         {dms.length > 0 && (
                             <>
-                                <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--muted-foreground)', padding: '10px 8px 4px' }}>
+                                <p style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--muted-foreground)', padding: '10px 8px 4px' }}>
                                     Direct Messages
                                 </p>
                                 {dms.map(room => (
@@ -720,7 +720,7 @@ export const Chat = () => {
                                                 {msg.content}
                                             </div>
                                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, flexShrink: 0 }}>
-                                                <span style={{ fontSize: 10, color: 'var(--muted-foreground)', whiteSpace: 'nowrap' }}>
+                                                <span style={{ fontSize: 12, color: 'var(--muted-foreground)', whiteSpace: 'nowrap' }}>
                                                     {formatTime(msg.created_at)}
                                                 </span>
                                                 {isOwn && !msg.id?.toString().startsWith('temp-') && (
