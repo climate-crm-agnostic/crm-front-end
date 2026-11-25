@@ -8,6 +8,7 @@ import { FollowupModal } from "../components/followups/FollowupModal";
 import { Table } from "../components/Table";
 import Swal from "sweetalert2";
 import { useAuth } from "../context/AuthContext";
+import { useCan } from "@/hooks/useCan";
 
 // UI Components
 import { Input } from "../components/ui/input";
@@ -27,6 +28,9 @@ export const ServiceDetail = () => {
     const location = useLocation();
     const { user } = useAuth();
     const isNew = id === 'new';
+    // Someone who may only view services (an agent logging showings) sees the record read-only.
+    const can = useCan();
+    const canSave = can(isNew ? "add_service" : "change_service");
 
     // Check if client was pre-selected (e.g. from Client page logic, though less common here, mostly from Service page)
     // Or if we need to support ?client_id=...
@@ -401,9 +405,13 @@ export const ServiceDetail = () => {
                 </div>
                 <div className="flex flex-wrap gap-2">
                     <Button variant="outline" onClick={() => navigate(-1)}>Cancel</Button>
-                    <Button onClick={handleSubmit} disabled={loading || uploading}>
-                        {loading ? "Saving..." : "Save Service"}
-                    </Button>
+                    {canSave ? (
+                        <Button onClick={handleSubmit} disabled={loading || uploading}>
+                            {loading ? "Saving..." : "Save Service"}
+                        </Button>
+                    ) : (
+                        <span className="self-center text-sm text-muted-foreground">View only</span>
+                    )}
                 </div>
             </div>
 
@@ -415,6 +423,7 @@ export const ServiceDetail = () => {
                 )}
 
                 <div className="space-y-6">
+                    <fieldset disabled={!canSave} className="min-w-0 space-y-6">
                     {/* Main Info */}
                     <div className="bg-card p-6 rounded-lg border shadow-sm space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -521,6 +530,8 @@ export const ServiceDetail = () => {
                         </div>
                     )}
 
+                    </fieldset>
+
                     {/* Sub-tabs (existing services only) */}
                     {!isNew && (
                         <div className="flex gap-1 border-b overflow-x-auto" role="tablist">
@@ -551,9 +562,11 @@ export const ServiceDetail = () => {
                     {!isNew && activeTab === "followups" && (
                         <div className="space-y-4">
                             <div className="flex justify-end">
-                                <Button onClick={() => { setFollowupToEdit(null); setFollowupModalOpen(true); }}>
-                                    <Plus className="mr-2 h-4 w-4" /> Add Follow-up
-                                </Button>
+                                {can("add_followup") && (
+                                    <Button onClick={() => { setFollowupToEdit(null); setFollowupModalOpen(true); }}>
+                                        <Plus className="mr-2 h-4 w-4" /> Add Follow-up
+                                    </Button>
+                                )}
                             </div>
                             {followupsLoading ? (
                                 <div className="h-24 rounded-lg animate-pulse bg-muted" />
@@ -564,8 +577,8 @@ export const ServiceDetail = () => {
                                     <Table
                                         data={followups}
                                         columns={followupColumns}
-                                        onEdit={(followup) => { setFollowupToEdit(followup); setFollowupModalOpen(true); }}
-                                        onAskDelete={handleDeleteFollowup}
+                                        onEdit={can("change_followup") ? (followup) => { setFollowupToEdit(followup); setFollowupModalOpen(true); } : undefined}
+                                        onAskDelete={can("delete_followup") ? handleDeleteFollowup : undefined}
                                         searchable={true}
                                     />
                                 </div>
@@ -574,7 +587,7 @@ export const ServiceDetail = () => {
                     )}
 
                     {/* Tasks & Notes Row */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6" hidden={!isNew && activeTab !== "tasks"}>
+                    <fieldset disabled={!canSave} className="grid min-w-0 grid-cols-1 md:grid-cols-2 gap-6" hidden={!isNew && activeTab !== "tasks"}>
                         {/* Tasks */}
                         <div className="bg-card p-6 rounded-lg border shadow-sm space-y-4">
                             <h3 className="font-medium text-lg border-b pb-2">Tasks</h3>
@@ -650,11 +663,11 @@ export const ServiceDetail = () => {
                                 ))}
                             </div>
                         </div>
-                    </div>
+                    </fieldset>
 
                     {/* Files & Images */}
                     {!isNew && activeTab === "files" && (
-                        <div className="bg-card p-6 rounded-lg border shadow-sm space-y-4">
+                        <fieldset disabled={!canSave} className="min-w-0 bg-card p-6 rounded-lg border shadow-sm space-y-4">
                             <h3 className="font-medium text-lg border-b pb-2">Files & Images</h3>
                             {images.length > 0 ? (
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -686,7 +699,7 @@ export const ServiceDetail = () => {
                                     {uploading ? "..." : "Upload"}
                                 </Button>
                             </div>
-                        </div>
+                        </fieldset>
                     )}
                 </div>
             </div>

@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { buildFilterParams } from "../utils/attributeFilters";
 import { AttributeFilterBar } from "../components/attributes/AttributeFilterBar";
 import Swal from "sweetalert2";
+import { useCan } from "@/hooks/useCan";
 
 const IMPORT_FIXED_FIELDS = [
     { name: 'name',   label: 'Name',   required: true },
@@ -40,6 +41,7 @@ const serviceBadgeVariant = (status) => {
 };
 
 export const Service = () => {
+    const can = useCan();
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(false);
     const [attributes, setAttributes] = useState([]);
@@ -226,7 +228,7 @@ export const Service = () => {
                 {service.status && (
                     <Badge variant={serviceBadgeVariant(service.status)} className="capitalize">{service.status}</Badge>
                 )}
-                <RowActions row={service} onEdit={handleEdit} onAskDelete={handleDelete} verSeguimiento={handleViewFollowup} />
+                <RowActions row={service} onEdit={handleEdit} onAskDelete={can("delete_service") ? handleDelete : undefined} verSeguimiento={handleViewFollowup} />
             </div>
         </div>
     );
@@ -278,24 +280,28 @@ export const Service = () => {
                 >
                     <Search className="h-4 w-4" /> Search
                 </button>
-                <button
-                    onClick={openImportModal}
-                    className="flex items-center gap-2 h-9 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
-                    style={{ backgroundColor: "var(--card)", border: "1px solid var(--secondary-text)", color: "var(--secondary-text)" }}
-                    onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(37,91,1,0.15)"}
-                    onMouseLeave={e => e.currentTarget.style.backgroundColor = "var(--card)"}
-                >
-                    <Upload className="h-4 w-4" /> Import Excel
-                </button>
-                <button
-                    onClick={() => navigate("/service/new", { state: { clientId: selectedClient } })}
-                    className="flex items-center gap-2 h-9 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
-                    style={{ backgroundColor: "var(--secondary)", color: "var(--secondary-foreground)" }}
-                    onMouseEnter={e => e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--secondary) 80%, black)"}
-                    onMouseLeave={e => e.currentTarget.style.backgroundColor = "var(--secondary)"}
-                >
-                    <Plus className="h-4 w-4" /> Add Service
-                </button>
+                {can("add_service") && (
+                    <button
+                        onClick={openImportModal}
+                        className="flex items-center gap-2 h-9 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
+                        style={{ backgroundColor: "var(--card)", border: "1px solid var(--secondary-text)", color: "var(--secondary-text)" }}
+                        onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(37,91,1,0.15)"}
+                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "var(--card)"}
+                    >
+                        <Upload className="h-4 w-4" /> Import Excel
+                    </button>
+                )}
+                {can("add_service") && (
+                    <button
+                        onClick={() => navigate("/service/new", { state: { clientId: selectedClient } })}
+                        className="flex items-center gap-2 h-9 px-4 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
+                        style={{ backgroundColor: "var(--secondary)", color: "var(--secondary-foreground)" }}
+                        onMouseEnter={e => e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--secondary) 80%, black)"}
+                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "var(--secondary)"}
+                    >
+                        <Plus className="h-4 w-4" /> Add Service
+                    </button>
+                )}
             </div>
 
             <div className="bg-card p-2 rounded-lg shadow flex-1 min-h-0 overflow-hidden flex flex-col">

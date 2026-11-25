@@ -12,7 +12,7 @@ const MENU_CONFIG = [
             { title: "Pipeline", url: "/pipeline", icon: "GitMerge",  permission: "app.add_pipeline" },
             { title: "Clients",  url: "/client",   icon: "Building2", permission: "app.add_client" },
             { title: "Contacts", url: "/contact",  icon: "UserCircle",permission: "app.add_contact" },
-            { title: "Services", url: "/service",  icon: "Briefcase", permission: "app.add_service" },
+            { title: "Services", url: "/service",  icon: "Briefcase", permission: "app.view_service" },
             { title: "Events",   url: "/event",    icon: "CalendarDays", permission: "app.view_event", feature: "events" },
         ],
     },

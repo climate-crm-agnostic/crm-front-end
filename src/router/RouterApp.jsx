@@ -133,8 +133,8 @@ export const RouterApp = () => {
                 <Route path="client/:id" element={<PermissionGuard requiredPermission="app.add_client"><ClientDetail /></PermissionGuard>} />
                 <Route path="contact" element={<PermissionGuard requiredPermission="app.add_contact"><Contact /></PermissionGuard>} />
                 <Route path="contact/:id" element={<PermissionGuard requiredPermission="app.add_contact"><ContactDetail /></PermissionGuard>} />
-                <Route path="service" element={<PermissionGuard requiredPermission="app.add_service"><Service /></PermissionGuard>} />
-                <Route path="service/:id" element={<PermissionGuard requiredPermission="app.add_service"><ServiceDetail /></PermissionGuard>} />
+                <Route path="service" element={<PermissionGuard requiredPermission="app.view_service"><Service /></PermissionGuard>} />
+                <Route path="service/:id" element={<PermissionGuard requiredPermission="app.view_service"><ServiceDetail /></PermissionGuard>} />
                 <Route path="category" element={<PermissionGuard requiredPermission="app.add_category"><Category /></PermissionGuard>} />
                 <Route path="category/:id" element={<PermissionGuard requiredPermission="app.add_category"><CategoryDetail /></PermissionGuard>} />
                 <Route path="catalogue" element={<PermissionGuard requiredPermission="app.add_catalogueitem"><Catalogueitem /></PermissionGuard>} />

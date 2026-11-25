@@ -459,10 +459,12 @@ export const RowActions = ({
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" side="bottom" sideOffset={4} className="w-48">
-        <DropdownMenuItem onClick={() => onEdit?.(row)}>
-          <SquarePen className="w-6 h-6 text-codex-iconos-primary dark:text-codex-iconos-primary-variante1" />
-          Edit
-        </DropdownMenuItem>
+        {typeof onEdit === "function" && (
+          <DropdownMenuItem onClick={() => onEdit(row)}>
+            <SquarePen className="w-6 h-6 text-codex-iconos-primary dark:text-codex-iconos-primary-variante1" />
+            Edit
+          </DropdownMenuItem>
+        )}
 
         {hasContacto && (
           <>
@@ -512,14 +514,18 @@ export const RowActions = ({
           </>
         )}
 
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          className="hover:text-destructive focus:text-destructive"
-          onClick={() => onAskDelete?.(row)}
-        >
-          <OctagonX className="w-6 h-6 text-destructive focus:text-destructive" />
-          Delete
-        </DropdownMenuItem>
+        {typeof onAskDelete === "function" && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="hover:text-destructive focus:text-destructive"
+              onClick={() => onAskDelete(row)}
+            >
+              <OctagonX className="w-6 h-6 text-destructive focus:text-destructive" />
+              Delete
+            </DropdownMenuItem>
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
