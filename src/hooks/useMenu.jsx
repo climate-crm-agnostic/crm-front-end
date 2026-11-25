@@ -74,6 +74,8 @@ const MENU_CONFIG = [
             { title: "Webhooks",    url: "/webhook",             icon: "Webhook",           permission: "app.add_webhook", feature: "webhooks" },
             { title: "Audit Log",   url: "/audit-log",           icon: "ClipboardList",     permission: "auth.add_user",   feature: "audit_trail" },
             { title: "Integrations", url: "/integrations", icon: "Plug", superuserOnly: true },
+            // Where documents are uploaded for Intelligence to answer from (also linked inside the Intelligence page).
+            { title: "Knowledge Base", url: "/intelligence/knowledge", icon: "BookOpen", permission: "app.add_knowledgedocument", feature: "knowledge_base" },
             { title: "Lead Reassignment", url: "/lead-reassignment", icon: "ArrowLeftRight", superuserOnly: true },
         ],
     },
