@@ -48,6 +48,7 @@ import { ForgotPassword } from "../pages/ForgotPassword";
 import { Settings } from "../pages/Settings"
 import { ChettAI } from "../pages/ChettAI";
 import { KnowledgeBase } from "../pages/KnowledgeBase";
+import { Integrations } from "../pages/Integrations";
 import { CreditsAdmin } from "../pages/CreditsAdmin";
 import { AuditLog } from "../pages/AuditLog";
 import { MyInfo } from "../pages/MyInfo";
@@ -181,6 +182,7 @@ export const RouterApp = () => {
                 <Route path="event/new" element={<PermissionGuard requiredPermission="app.add_event"><FeatureGate feature="events"><EventCreate /></FeatureGate></PermissionGuard>} />
                 <Route path="event/:id" element={<PermissionGuard requiredPermission="app.view_event"><FeatureGate feature="events"><EventDetail /></FeatureGate></PermissionGuard>} />
                 <Route path="my-info" element={<MyInfo />} />
+                <Route path="integrations" element={<PermissionGuard requireSuperuser><Integrations /></PermissionGuard>} />
                 <Route path="lead-reassignment" element={<PermissionGuard requireSuperuser><LeadReassignment /></PermissionGuard>} />
             </Route>
 

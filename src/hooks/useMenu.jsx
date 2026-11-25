@@ -73,6 +73,7 @@ const MENU_CONFIG = [
             { title: "Lead Fields", url: "/attribute-pipeline",  icon: "FormInput",         permission: "app.add_pipeline" },
             { title: "Webhooks",    url: "/webhook",             icon: "Webhook",           permission: "app.add_webhook", feature: "webhooks" },
             { title: "Audit Log",   url: "/audit-log",           icon: "ClipboardList",     permission: "auth.add_user",   feature: "audit_trail" },
+            { title: "Integrations", url: "/integrations", icon: "Plug", superuserOnly: true },
             { title: "Lead Reassignment", url: "/lead-reassignment", icon: "ArrowLeftRight", superuserOnly: true },
         ],
     },
